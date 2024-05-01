@@ -16,6 +16,7 @@ pub enum ContractErrors {
     InvalidKey = 1,
     ProjectAlreadyExist = 2,
     UnregisteredMaintainer = 3,
+    NoHashFound = 4,
 }
 
 #[contracttype]
@@ -31,7 +32,7 @@ pub enum ProjectKey {
 
 #[contracttype]
 pub struct Config {
-    pub url: Bytes,
+    pub url: Bytes,       // link to toml file with project metadata
     pub hash: BytesN<32>, // hash of the file found at the URL
 }
 
@@ -62,6 +63,7 @@ impl Versioning {
         env.deployer().update_current_contract_wasm(new_wasm_hash);
     }
 
+    /// Register a new Git projects and associated metadata.
     pub fn register(
         env: Env,
         maintainer: Address,
@@ -89,6 +91,7 @@ impl Versioning {
         }
     }
 
+    /// Change the configuration of the project.
     pub fn update_config(
         env: Env,
         maintainer: Address,
@@ -110,6 +113,7 @@ impl Versioning {
         }
     }
 
+    /// Set the last commit hash
     pub fn commit(env: Env, maintainer: Address, project_key: BytesN<32>, hash: BytesN<32>) {
         let key_ = ProjectKey::Key(project_key.clone());
         if let Some(project) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
@@ -117,6 +121,21 @@ impl Versioning {
             env.storage()
                 .persistent()
                 .set(&ProjectKey::LastHash(project_key), &hash);
+        } else {
+            panic_with_error!(&env, &ContractErrors::InvalidKey);
+        }
+    }
+
+    /// Get the last commit hash
+    pub fn get_commit(env: Env, project_key: BytesN<32>) -> BytesN<32> {
+        let key_ = ProjectKey::Key(project_key.clone());
+        if let Some(_) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
+            env.storage()
+                .persistent()
+                .get(&ProjectKey::LastHash(project_key))
+                .unwrap_or_else(|| {
+                    panic_with_error!(&env, &ContractErrors::NoHashFound);
+                })
         } else {
             panic_with_error!(&env, &ContractErrors::InvalidKey);
         }

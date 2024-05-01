@@ -36,6 +36,18 @@ fn test() {
     ];
     assert_eq!(id, expected_id);
 
+    let hash_commit = [
+        142, 21, 249, 254, 234, 45, 86, 108, 11, 6, 159, 77, 137, 217, 24, 43, 25, 59, 17, 78, 25,
+        102, 129, 221, 240, 103, 68, 102, 78, 221, 90, 125,
+    ];
+    let hash_commit = BytesN::from_array(&env, &hash_commit);
+    contract.commit(&mando, &id, &hash_commit);
+
+    let res_hash_commit = contract.get_commit(&id);
+    assert_eq!(res_hash_commit, hash_commit);
+
+    // error handling
+
     // double registration
     let error = contract
         .try_register(&grogu, &name, &maintainers, &url, &hash)
