@@ -1,5 +1,6 @@
 target
 contract/target
+contracts/versioning/test_snapshots
 
 .idea
 .DS_Store
