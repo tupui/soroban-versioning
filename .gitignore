@@ -1,6 +1,7 @@
 target
 contract/target
 contracts/versioning/test_snapshots
+.soroban/identity
 
 .idea
 .DS_Store

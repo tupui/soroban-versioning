@@ -1,7 +1,5 @@
 #![no_std]
 
-extern crate alloc;
-
 use soroban_sdk::{
     contract, contractimpl, contracttype, panic_with_error, Address, Bytes, BytesN, Env, Vec,
 };
