@@ -2,11 +2,12 @@
 
 extern crate alloc;
 
-use soroban_sdk::contracterror;
 use soroban_sdk::{
-    contract, contractimpl, contracttype, panic_with_error, Address, Bytes, BytesN, Env,
-    Vec,
+    contract, contractimpl, contracttype, panic_with_error, Address, Bytes, BytesN, Env, Vec,
 };
+use soroban_sdk::{contracterror, contractmeta};
+
+contractmeta!(key = "Description", val = "Soroban Versioning");
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -61,7 +62,20 @@ impl Versioning {
         env.deployer().update_current_contract_wasm(new_wasm_hash);
     }
 
-    pub fn register(env: Env, maintainer: Address, project: Project) -> BytesN<32> {
+    pub fn register(
+        env: Env,
+        maintainer: Address,
+        name: Bytes,
+        maintainers: Vec<Address>,
+        url: Bytes,
+        hash: BytesN<32>,
+    ) -> BytesN<32> {
+        let project = Project {
+            name,
+            config: Config { url, hash },
+            maintainers,
+        };
+
         let key = env.crypto().keccak256(&project.name.clone());
 
         let key_ = ProjectKey::Key(key.clone());
@@ -75,24 +89,34 @@ impl Versioning {
         }
     }
 
-    pub fn update_config(env: Env, maintainer: Address, key: BytesN<32>, config: Config) {
+    pub fn update_config(
+        env: Env,
+        maintainer: Address,
+        key: BytesN<32>,
+        maintainers: Vec<Address>,
+        url: Bytes,
+        hash: BytesN<32>,
+    ) {
         let key_ = ProjectKey::Key(key);
         if let Some(mut project) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
             auth_maintainers(&env, &maintainer, &project.maintainers);
+
+            let config = Config { url, hash };
             project.config = config;
+            project.maintainers = maintainers;
             env.storage().persistent().set(&key_, &project);
         } else {
             panic_with_error!(&env, &ContractErrors::InvalidKey);
         }
     }
 
-    pub fn commit(env: Env, maintainer: Address, key: BytesN<32>, hash: BytesN<32>) {
-        let key_ = ProjectKey::Key(key.clone());
+    pub fn commit(env: Env, maintainer: Address, project_key: BytesN<32>, hash: BytesN<32>) {
+        let key_ = ProjectKey::Key(project_key.clone());
         if let Some(project) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
             auth_maintainers(&env, &maintainer, &project.maintainers);
             env.storage()
                 .persistent()
-                .set(&ProjectKey::LastHash(key), &hash);
+                .set(&ProjectKey::LastHash(project_key), &hash);
         } else {
             panic_with_error!(&env, &ContractErrors::InvalidKey);
         }
