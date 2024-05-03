@@ -1,0 +1,11 @@
+repos:
+  - repo: local
+    hooks:
+      - id: soroban-versioning
+        name: Send hash to Soroban contract before push
+        language: python
+        additional_dependencies:
+          - soroban
+        entry: python pre-commit.py
+        stages:
+          - pre-push
