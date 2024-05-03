@@ -2,7 +2,7 @@
 
 use super::{ContractErrors, Versioning, VersioningClient};
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{vec, Address, Bytes, BytesN, Env};
+use soroban_sdk::{vec, Address, Bytes, Env};
 // use soroban_sdk::testutils::arbitrary::std::println;
 
 #[test]
@@ -23,7 +23,7 @@ fn test() {
         47, 228, 204, 106, 21, 249, 70, 107, 173, 113, 237, 64, 122, 143, 27, 125, 168, 30, 253,
         147, 30, 119, 18, 117, 49, 82, 170, 23, 171, 192, 224, 110,
     ];
-    let hash = BytesN::from_array(&env, &hash_config);
+    let hash = Bytes::from_array(&env, &hash_config);
     let grogu = Address::generate(&env);
     let mando = Address::generate(&env);
     let maintainers = vec![&env, grogu.clone(), mando.clone()];
@@ -34,13 +34,14 @@ fn test() {
         154, 252, 222, 74, 217, 43, 29, 68, 231, 69, 123, 243, 128, 203, 176, 248, 239, 30, 179,
         243, 81, 126, 231, 183, 47, 67, 190, 183, 195, 188, 2, 172,
     ];
+    let expected_id = Bytes::from_array(&env, &expected_id);
     assert_eq!(id, expected_id);
 
     let hash_commit = [
         142, 21, 249, 254, 234, 45, 86, 108, 11, 6, 159, 77, 137, 217, 24, 43, 25, 59, 17, 78, 25,
         102, 129, 221, 240, 103, 68, 102, 78, 221, 90, 125,
     ];
-    let hash_commit = BytesN::from_array(&env, &hash_commit);
+    let hash_commit = Bytes::from_array(&env, &hash_commit);
     contract.commit(&mando, &id, &hash_commit);
 
     let res_hash_commit = contract.get_commit(&id);

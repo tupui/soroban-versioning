@@ -24,14 +24,14 @@ pub enum DataKey {
 
 #[contracttype]
 pub enum ProjectKey {
-    Key(BytesN<32>),      // UUID of the project from keccak256(name)
-    LastHash(BytesN<32>), // last hash of the project
+    Key(Bytes),      // UUID of the project from keccak256(name)
+    LastHash(Bytes), // last hash of the project
 }
 
 #[contracttype]
 pub struct Config {
     pub url: Bytes,       // link to toml file with project metadata
-    pub hash: BytesN<32>, // hash of the file found at the URL
+    pub hash: Bytes, // hash of the file found at the URL
 }
 
 #[contracttype]
@@ -68,15 +68,15 @@ impl Versioning {
         name: Bytes,
         maintainers: Vec<Address>,
         url: Bytes,
-        hash: BytesN<32>,
-    ) -> BytesN<32> {
+        hash: Bytes,
+    ) -> Bytes {
         let project = Project {
             name,
             config: Config { url, hash },
             maintainers,
         };
 
-        let key = env.crypto().keccak256(&project.name.clone());
+        let key: Bytes = env.crypto().keccak256(&project.name.clone()).into();
 
         let key_ = ProjectKey::Key(key.clone());
         if let Some(_) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
@@ -93,10 +93,10 @@ impl Versioning {
     pub fn update_config(
         env: Env,
         maintainer: Address,
-        key: BytesN<32>,
+        key: Bytes,
         maintainers: Vec<Address>,
         url: Bytes,
-        hash: BytesN<32>,
+        hash: Bytes,
     ) {
         let key_ = ProjectKey::Key(key);
         if let Some(mut project) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
@@ -112,7 +112,7 @@ impl Versioning {
     }
 
     /// Set the last commit hash
-    pub fn commit(env: Env, maintainer: Address, project_key: BytesN<32>, hash: BytesN<32>) {
+    pub fn commit(env: Env, maintainer: Address, project_key: Bytes, hash: Bytes) {
         let key_ = ProjectKey::Key(project_key.clone());
         if let Some(project) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
             auth_maintainers(&env, &maintainer, &project.maintainers);
@@ -125,7 +125,7 @@ impl Versioning {
     }
 
     /// Get the last commit hash
-    pub fn get_commit(env: Env, project_key: BytesN<32>) -> BytesN<32> {
+    pub fn get_commit(env: Env, project_key: Bytes) -> Bytes {
         let key_ = ProjectKey::Key(project_key.clone());
         if let Some(_) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
             env.storage()
