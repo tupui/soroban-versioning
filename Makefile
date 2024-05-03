@@ -41,8 +41,8 @@ else
 endif
 
 prepare: prepare-network  ## Setup network and generate addresses and add funds
-	soroban keys generate grogu --network $(network) && \
-	soroban keys generate mando --network $(network)
+	soroban keys generate grogu-$(network) --network $(network) && \
+	soroban keys generate mando-$(network) --network $(network)
 
 fmt:
 	cargo fmt --all
@@ -64,14 +64,14 @@ build-release: build
 deploy: test build-release  ## Deploy Soroban contract to testnet
 	soroban contract deploy \
   		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
-  		--source-account mando \
+  		--source-account mando-$(network) \
   		--network $(network) \
   		> .soroban/soroban_versioning_id && \
   	cat .soroban/soroban_versioning_id
 
 contract_help:
 	soroban contract invoke \
-    	--source-account mando \
+    	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
@@ -79,7 +79,7 @@ contract_help:
 
 contract_version:
 	soroban contract invoke \
-    	--source-account mando \
+    	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
@@ -87,40 +87,40 @@ contract_version:
 
 contract_init:
 	soroban contract invoke \
-    	--source-account mando \
+    	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
     	init \
-    	--admin $(shell soroban keys address mando)
+    	--admin $(shell soroban keys address mando-$(network))
 
 contract_register:
 	soroban contract invoke \
-    	--source-account mando \
+    	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
     	register \
-    	--maintainer $(shell soroban keys address mando) \
+    	--maintainer $(shell soroban keys address mando-$(network)) \
     	--name 736f726f62616e2d76657273696f6e696e67 \
-    	--maintainers '{ "vec": [{ "address": "$(shell soroban config identity address mando)" }] }' \
+    	--maintainers '{ "vec": [{ "address": "$(shell soroban config identity address mando-$(network))" }] }' \
     	--url 68747470733a2f2f6769746875622e636f6d2f74757075692f736f726f62616e2d76657273696f6e696e67 \
     	--hash a8b643ffc4d76d896d601d82a58f291eb6f2f233
 
 contract_commit:
 	soroban contract invoke \
-    	--source-account mando \
+    	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
     	commit \
-    	--maintainer $(shell soroban keys address mando) \
+    	--maintainer $(shell soroban keys address mando-$(network)) \
     	--project_key 9afcde4ad92b1d44e7457bf380cbb0f8ef1eb3f3517ee7b72f43beb7c3bc02ac \
     	--hash 35113943ffda2b538193234f0caa5c2261400c1c
 
 contract_get_commit:
 	soroban contract invoke \
-    	--source-account mando \
+    	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
@@ -130,9 +130,9 @@ contract_get_commit:
 
 contract_upgrade: build-release
 	soroban contract invoke \
-    	--source-account mando \
+    	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
     	upgrade \
-		--new_wasm_hash $(shell soroban contract install --source-account mando --network $(network) --wasm target/wasm32-unknown-unknown/release/seal_coin.optimized.wasm)
+		--new_wasm_hash $(shell soroban contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/seal_coin.optimized.wasm)
