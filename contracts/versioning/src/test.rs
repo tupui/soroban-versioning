@@ -2,7 +2,7 @@
 
 use super::{ContractErrors, Versioning, VersioningClient};
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{vec, Address, Bytes, Env};
+use soroban_sdk::{testutils::Events, vec, Address, Bytes, Env, IntoVal, symbol_short};
 // use soroban_sdk::testutils::arbitrary::std::println;
 
 #[test]
@@ -46,6 +46,24 @@ fn test() {
 
     let res_hash_commit = contract.get_commit(&id);
     assert_eq!(res_hash_commit, hash_commit);
+
+    // events
+    assert_eq!(
+        env.events().all(),
+        vec![
+            &env,
+            (
+                contract_id.clone(),
+                (symbol_short!("register"), name.clone()).into_val(&env),
+                id.clone().into_val(&env)
+            ),
+            (
+                contract_id.clone(),
+                (symbol_short!("commit"), id.clone()).into_val(&env),
+                hash_commit.into_val(&env)
+            ),
+        ]
+    );
 
     // error handling
 

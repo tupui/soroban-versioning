@@ -1,8 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{
-    contract, contractimpl, contracttype, panic_with_error, Address, Bytes, BytesN, Env, Vec,
-};
+use soroban_sdk::{contract, contractimpl, contracttype, panic_with_error, Address, Bytes, BytesN, Env, Vec, symbol_short};
 use soroban_sdk::{contracterror, contractmeta};
 
 contractmeta!(key = "Description", val = "Soroban Versioning");
@@ -71,12 +69,12 @@ impl Versioning {
         hash: Bytes,
     ) -> Bytes {
         let project = Project {
-            name,
+            name: name.clone(),
             config: Config { url, hash },
             maintainers,
         };
 
-        let key: Bytes = env.crypto().keccak256(&project.name.clone()).into();
+        let key: Bytes = env.crypto().keccak256(&name).into();
 
         let key_ = ProjectKey::Key(key.clone());
         if let Some(_) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
@@ -85,6 +83,7 @@ impl Versioning {
             auth_maintainers(&env, &maintainer, &project.maintainers);
             env.storage().persistent().set(&key_, &project);
 
+            env.events().publish((symbol_short!("register"), name, ), key.clone());
             return key;
         }
     }
@@ -118,7 +117,8 @@ impl Versioning {
             auth_maintainers(&env, &maintainer, &project.maintainers);
             env.storage()
                 .persistent()
-                .set(&ProjectKey::LastHash(project_key), &hash);
+                .set(&ProjectKey::LastHash(project_key.clone()), &hash);
+            env.events().publish((symbol_short!("commit"), project_key, ), hash);
         } else {
             panic_with_error!(&env, &ContractErrors::InvalidKey);
         }
