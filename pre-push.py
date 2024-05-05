@@ -3,16 +3,19 @@ import subprocess
 
 import soroban
 
-res = subprocess.run(
+project_key = os.getenv("SVN_PROJECT_KEY")
+project_key = bytes.fromhex(project_key)
+
+commit_hash = subprocess.run(
     ["git", "rev-parse", "HEAD"],
     capture_output=True
-)
-commit_hash = res.stdout.decode().split('\n')[0]
-project_key = os.getenv("SVN_KEY")
-
+).stdout.decode().split('\n')[0]
 commit_hash = bytes.fromhex(commit_hash)
-project_key = bytes.fromhex(project_key)
-contract_id = "CDNDBI7IOGIYJ7WI3WSMNBU7JTF5GOG4DIJNQOANOQPBLEMDO25M47TV"
+
+contract_id = os.getenv(
+    "SVN_CONTRACT_ID",
+    "CAHCQFBMZIY6Y6QPHPN2N64QVKIA6CTGTWBS3SNNIRCATRBANAV3NHWK"
+)
 
 source_account = soroban.Identity()
 args = [
