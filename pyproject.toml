@@ -1,0 +1,6 @@
+[project]
+name = "soroban-versioning-pre-commit"
+version = "1.0.0"
+dependencies = [
+    "soroban",
+]
