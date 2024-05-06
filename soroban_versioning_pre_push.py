@@ -25,7 +25,7 @@ def main():
         {"name": "project_key", "type": "bytes", "value": project_key},
         {"name": "hash", "type": "bytes", "value": commit_hash},
     ]
-    args = soroban.Parameters(args=args).model_dump()
+    args = soroban.Parameters(args=args)
 
     soroban.invoke(
         contract_id=contract_id,
