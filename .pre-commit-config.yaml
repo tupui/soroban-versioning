@@ -6,7 +6,7 @@ repos:
         language: python
         additional_dependencies:
           - soroban
-        entry: python pre-push.py
+        entry: python soroban_versioning_pre_push.py
         pass_filenames: false
         always_run: true
         stages:
