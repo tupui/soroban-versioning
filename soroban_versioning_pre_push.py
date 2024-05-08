@@ -8,15 +8,15 @@ def main():
     project_key = os.getenv("SVN_PROJECT_KEY")
     project_key = bytes.fromhex(project_key)
 
-    commit_hash = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        capture_output=True
-    ).stdout.decode().split('\n')[0]
+    commit_hash = (
+        subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True)
+        .stdout.decode()
+        .split("\n")[0]
+    )
     commit_hash = bytes.fromhex(commit_hash)
 
     contract_id = os.getenv(
-        "SVN_CONTRACT_ID",
-        "CAHCQFBMZIY6Y6QPHPN2N64QVKIA6CTGTWBS3SNNIRCATRBANAV3NHWK"
+        "SVN_CONTRACT_ID", "CAHCQFBMZIY6Y6QPHPN2N64QVKIA6CTGTWBS3SNNIRCATRBANAV3NHWK"
     )
 
     source_account = soroban.Identity()
@@ -31,7 +31,7 @@ def main():
         contract_id=contract_id,
         function_name="commit",
         args=args,
-        source_account=source_account
+        source_account=source_account,
     )
 
 
