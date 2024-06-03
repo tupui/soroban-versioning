@@ -57,6 +57,18 @@ soroban contract invoke \
 
 ![Contract on-chain](doc/storage.png)
 
+![transactions](doc/transactions.png)
+
+### Events
+
+Registering a project or committing a new hash, send a contract event off-chain.
+
+![Contract events off-chain](doc/events.png)
+
+These events are ingested by a backend to make them easily consumable off-chain.
+
+### Git Hooks
+
 There is a convenient pre-push hook which can be used. This ensures that a
 commit is only pushed if the hash is sent properly on-chain first.
 
