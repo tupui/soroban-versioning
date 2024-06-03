@@ -1,0 +1,2 @@
+sqlalchemy
+stellar-sdk
