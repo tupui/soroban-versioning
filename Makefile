@@ -103,7 +103,7 @@ contract_register:
     	register \
     	--maintainer $(shell soroban keys address mando-$(network)) \
     	--name 736f726f62616e2d76657273696f6e696e67 \
-    	--maintainers '{ "vec": [{ "address": "$(shell soroban config identity address mando-$(network))" }] }' \
+    	--maintainers '{ "vec": [{ "address": "$(shell soroban keys address mando-$(network))" }] }' \
     	--url 68747470733a2f2f6769746875622e636f6d2f74757075692f736f726f62616e2d76657273696f6e696e67 \
     	--hash a8b643ffc4d76d896d601d82a58f291eb6f2f233
 
