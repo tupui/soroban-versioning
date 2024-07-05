@@ -15,7 +15,7 @@ def fetch_events(
     soroban_server = stellar_sdk.SorobanServer()
     if start_ledger is None:
         last_ledger = soroban_server.get_latest_ledger().sequence
-        start_ledger = int(last_ledger-(3600 / 6 * 20))  # around 20h back
+        start_ledger = int(last_ledger - (3600 / 6 * 20))  # around 20h back
 
     res = soroban_server.get_events(
         start_ledger,

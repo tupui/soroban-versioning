@@ -8,15 +8,44 @@ import stellar_sdk.xdr
 class Event(BaseModel):
     # XDR encoded or decoded to Python types
     topics: list[
-        bool | None | int | str | bytes | stellar_sdk.Address | stellar_sdk.xdr.SCVal | list | dict]
-    value: bool | None | int | str | bytes | stellar_sdk.Address | stellar_sdk.xdr.SCVal | list | dict
+        bool
+        | None
+        | int
+        | str
+        | bytes
+        | stellar_sdk.Address
+        | stellar_sdk.xdr.SCVal
+        | list
+        | dict
+    ]
+    value: (
+        bool
+        | None
+        | int
+        | str
+        | bytes
+        | stellar_sdk.Address
+        | stellar_sdk.xdr.SCVal
+        | list
+        | dict
+    )
 
     model_config = dict(arbitrary_types_allowed=True)
 
     @staticmethod
     def parse_xdr(
-        xdr: str
-    ) -> bool | None | int | str | bytes | stellar_sdk.Address | stellar_sdk.xdr.SCVal | list | dict:
+        xdr: str,
+    ) -> (
+        bool
+        | None
+        | int
+        | str
+        | bytes
+        | stellar_sdk.Address
+        | stellar_sdk.xdr.SCVal
+        | list
+        | dict
+    ):
         parsed_scval = stellar_sdk.scval.to_native(xdr)
 
         if isinstance(parsed_scval, bytes):
@@ -26,7 +55,8 @@ class Event(BaseModel):
     def decompress(self):
         return Event(
             topics=[Event.parse_xdr(xdr) for xdr in self.topics],
-            value=Event.parse_xdr(self.value)
+            value=Event.parse_xdr(self.value),
         )
+
 
 # Event = namedtuple("Event", ["topics", "value"])
