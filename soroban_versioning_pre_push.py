@@ -16,7 +16,7 @@ def main():
     commit_hash = bytes.fromhex(commit_hash)
 
     contract_id = os.getenv(
-        "SVN_CONTRACT_ID", "CAHCQFBMZIY6Y6QPHPN2N64QVKIA6CTGTWBS3SNNIRCATRBANAV3NHWK"
+        "SVN_CONTRACT_ID", "CC3JCYWHNMPMQTOQUNDCJSCFSWRFZIE2JVSAUEXEG56DMKOMI3RL7VOH"
     )
 
     source_account = soroban.Identity()
