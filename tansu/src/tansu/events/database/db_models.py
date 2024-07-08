@@ -1,4 +1,4 @@
-from .session_factory import SqlAlchemyBase
+from tansu.events.database.session_factory import SqlAlchemyBase
 
 from sqlalchemy import orm
 

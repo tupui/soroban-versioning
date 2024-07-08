@@ -2,15 +2,14 @@ import stellar_sdk
 import stellar_sdk.xdr
 from stellar_sdk.soroban_rpc import EventFilter, EventFilterType
 
-from database import db_models
-from database.session_factory import Warehouse
-import models
+from tansu.events.database import db_models
+from tansu.events.database.session_factory import Warehouse
 
 
 def fetch_events(
     contract_id: str, start_ledger: int | None = None
-) -> tuple[list[models.Event], int]:
-    """Fetch events from Soroban RPC."""
+) -> tuple[list[db_models.Event], int]:
+    """Fetch events-events from Soroban RPC."""
     # stellar_sdk.soroban_server_async.SorobanServerAsync
     soroban_server = stellar_sdk.SorobanServer()
     if start_ledger is None:
@@ -34,13 +33,13 @@ def fetch_events(
     for event in res.events:
         topic_ = event.topic
         value = event.value
-        events_.append(models.Event(topics=topic_, value=value))
+        events_.append(db_models.Event(topics=topic_, value=value))
 
     return events_, latest_ledger
 
 
-def events_to_db(events: list[models.Event]) -> None:
-    """Commit events to DB."""
+def events_to_db(events: list[db_models.Event]) -> None:
+    """Commit events-events to DB."""
     with Warehouse().session_factory_sync() as session:
         events_db = []
         for event in events:

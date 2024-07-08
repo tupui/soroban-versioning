@@ -47,7 +47,7 @@ fn test() {
     let res_hash_commit = contract.get_commit(&id);
     assert_eq!(res_hash_commit, hash_commit);
 
-    // events
+    // events-events
     assert_eq!(
         env.events().all(),
         vec![

@@ -12,12 +12,12 @@ from typing import Any, AsyncIterator, Dict, Optional
 
 from pydantic import BaseModel
 import sqlalchemy.orm
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import create_engine, JSON, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy import create_engine, JSON
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-from ..log import logger
+from tansu.events.log import logger
 
 
 class SqlAlchemyBase(DeclarativeBase):
@@ -54,7 +54,7 @@ class Warehouse:
     Examples
     --------
 
-    >>> from tansu.database import Warehouse
+    >>> from tansu.events import Warehouse
     >>> async with Warehouse().begin() as session:
     ...     await session.get(...)
 

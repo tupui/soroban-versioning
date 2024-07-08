@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tansu"
+version = "1.0.0"
+dependencies = [
+    "sqlalchemy",
+    "stellar-sdk",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tansu"]

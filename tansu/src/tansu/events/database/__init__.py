@@ -1,4 +1,4 @@
-from .session_factory import (
+from tansu.events.database.session_factory import (
     database_url,
     SqlAlchemyBase,
     Warehouse,

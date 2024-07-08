@@ -1,8 +1,8 @@
 import sqlalchemy
 import stellar_sdk
 
-from database import db_models
-from log import logger
+from tansu.events.database import db_models
+from tansu.events.log import logger
 
 
 @sqlalchemy.event.listens_for(db_models.Event, "after_insert")
