@@ -7,6 +7,9 @@ name = "tansu"
 version = "1.0.0"
 dependencies = [
     "sqlalchemy",
+    "psycopg[binary]",
+    "pydantic",
+    "pydantic-settings",
     "stellar-sdk",
 ]
 
