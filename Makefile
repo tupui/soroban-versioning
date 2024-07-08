@@ -31,18 +31,18 @@ testnet-local:
 
 prepare-network:  ## Setup network
 ifeq ($(network),testnet)
-	soroban network add --global testnet \
+	stellar network add --global testnet \
 		--rpc-url https://soroban-testnet.stellar.org:443 \
 		--network-passphrase "Test SDF Network ; September 2015"
 else
-	soroban network add --global testnet-local \
+	stellar network add --global testnet-local \
 		--rpc-url http://localhost:8000/soroban/rpc \
 		--network-passphrase "Standalone Network ; February 2017"
 endif
 
 prepare: prepare-network  ## Setup network and generate addresses and add funds
-	soroban keys generate grogu-$(network) --network $(network) && \
-	soroban keys generate mando-$(network) --network $(network)
+	stellar keys generate grogu-$(network) --network $(network) && \
+	stellar keys generate mando-$(network) --network $(network)
 
 fmt:
 	cargo fmt --all
@@ -51,18 +51,18 @@ clean:
 	cargo clean
 
 build:
-	soroban contract build
+	stellar contract build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 test: build
 	cargo test
 
 build-release: build
-	soroban contract optimize --wasm target/wasm32-unknown-unknown/release/versioning.wasm
+	stellar contract optimize --wasm target/wasm32-unknown-unknown/release/versioning.wasm
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 deploy: test build-release  ## Deploy Soroban contract to testnet
-	soroban contract deploy \
+	stellar contract deploy \
   		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
   		--source-account mando-$(network) \
   		--network $(network) \
@@ -70,7 +70,7 @@ deploy: test build-release  ## Deploy Soroban contract to testnet
   	cat .soroban/soroban_versioning_id
 
 contract_help:
-	soroban contract invoke \
+	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
@@ -78,7 +78,7 @@ contract_help:
     	--help
 
 contract_version:
-	soroban contract invoke \
+	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
@@ -86,7 +86,7 @@ contract_version:
     	version
 
 contract_init:
-	soroban contract invoke \
+	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
@@ -95,7 +95,7 @@ contract_init:
     	--admin $(shell soroban keys address mando-$(network))
 
 contract_register:
-	soroban contract invoke \
+	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
@@ -108,7 +108,7 @@ contract_register:
     	--hash a8b643ffc4d76d896d601d82a58f291eb6f2f233
 
 contract_commit:
-	soroban contract invoke \
+	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
@@ -119,7 +119,7 @@ contract_commit:
     	--hash 35113943ffda2b538193234f0caa5c2261400c1c
 
 contract_get_commit:
-	soroban contract invoke \
+	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
@@ -129,10 +129,10 @@ contract_get_commit:
 
 
 contract_upgrade: build-release
-	soroban contract invoke \
+	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
     	upgrade \
-		--new_wasm_hash $(shell soroban contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/seal_coin.optimized.wasm)
+		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/seal_coin.optimized.wasm)
