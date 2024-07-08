@@ -6,6 +6,9 @@ import soroban
 
 def main():
     project_key = os.getenv("SVN_PROJECT_KEY")
+    if project_key is None:
+        raise ValueError("'SVN_PROJECT_KEY' is missing from the environment")
+
     project_key = bytes.fromhex(project_key)
 
     commit_hash = (
