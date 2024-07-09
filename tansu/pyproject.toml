@@ -6,12 +6,28 @@ build-backend = "hatchling.build"
 name = "tansu"
 version = "1.0.0"
 dependencies = [
-    "sqlalchemy",
-    "psycopg[binary]",
+    "sqlalchemy[postgresql-psycopgbinary,postgresql-asyncpg]",
     "pydantic",
     "pydantic-settings",
     "stellar-sdk",
+    "alembic[tz]",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "locust",
+]
+
+dev = [
+    "tansu[test]",
+    "pre-commit",
+    "hatch",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tansu"]
+
+[tool.ruff.per-file-ignores]
+"**/__init__.py" = ["F403", "F405"]
