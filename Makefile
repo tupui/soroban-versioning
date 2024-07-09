@@ -19,17 +19,7 @@ install:  ## install Rust and Soroban-CLI
 	rustup target add wasm32-unknown-unknown && \
 	cargo install --locked soroban-cli --features opt
 
-testnet-local:  ## local testnet
-	docker run --rm -d \
-		-p "8000:8000" \
-		--name stellar \
-		stellar/quickstart:latest \
-		--local \
-		--limits testnet \  # unlimited
-		--enable-soroban-rpc \
-		--enable-soroban-diagnostic-events
-
-db-local:  ## local DB
+local-stack:  ## local stack
 	docker compose up
 
 prepare-network:  ## Setup network
