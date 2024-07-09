@@ -41,9 +41,4 @@ async def events_to_db(events: list[db_models.Event]) -> None:
     """Commit events-events to DB."""
     async with SessionFactory() as session:
         async with session.begin():
-            events_db = []
-            for event in events:
-                topics_ = {i: topic_ for i, topic_ in event.topics}
-                event_ = db_models.Event(topics=topics_, value=event.value)
-                events_db.append(event_)
-            session.add_all(events_db)
+            session.add_all(events)
