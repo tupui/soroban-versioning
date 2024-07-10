@@ -24,10 +24,12 @@ dev = [
     "tansu[test]",
     "pre-commit",
     "hatch",
+    "ruff",
 ]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tansu"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "**/__init__.py" = ["F403", "F405"]
+"**/tests/**" = ["E402"]
