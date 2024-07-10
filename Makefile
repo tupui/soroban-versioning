@@ -19,9 +19,6 @@ install:  ## install Rust and Soroban-CLI
 	rustup target add wasm32-unknown-unknown && \
 	cargo install --locked soroban-cli --features opt
 
-local-stack:  ## local stack
-	docker compose up
-
 prepare-network:  ## Setup network
 ifeq ($(network),testnet)
 	stellar network add --global testnet \
@@ -43,24 +40,38 @@ fmt:
 clean:
 	cargo clean
 
-build:
+# --------- Events --------- #
+
+events_test:
+	pass
+
+# --------- Fullstack --------- #
+
+local-stack:  ## local stack
+	docker compose up
+
+# --------- CONTRACT BUILD/TEST/DEPLOY --------- #
+
+contract_build:
 	stellar contract build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
-test: build
+contract_test: build
 	cargo test
 
-build-release: build
+contract_build-release: build
 	stellar contract optimize --wasm target/wasm32-unknown-unknown/release/versioning.wasm
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
-deploy: test build-release  ## Deploy Soroban contract to testnet
+contract_deploy: test build-release  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
   		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
   		--source-account mando-$(network) \
   		--network $(network) \
   		> .soroban/soroban_versioning_id && \
   	cat .soroban/soroban_versioning_id
+
+# --------- CONTRACT USAGE --------- #
 
 contract_help:
 	stellar contract invoke \
