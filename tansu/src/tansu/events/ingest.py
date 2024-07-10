@@ -32,7 +32,8 @@ def fetch_events(
     for event in res.events:
         topic_ = event.topic
         value = event.value
-        events_.append(db_models.Event(topics=topic_, value=value))
+        ledger = event.ledger
+        events_.append(db_models.Event(ledger=ledger, topics=topic_, value=value))
 
     return events_, latest_ledger
 
