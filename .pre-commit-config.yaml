@@ -20,5 +20,6 @@ repos:
         entry: python pre-commit/soroban_versioning_pre_push.py
         pass_filenames: false
         always_run: true
+        require_serial: true
         stages:
           - pre-push
