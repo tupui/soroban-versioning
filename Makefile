@@ -43,7 +43,7 @@ clean:
 # --------- Events --------- #
 
 events_test:
-	pass
+	echo 0
 
 # --------- Fullstack --------- #
 
