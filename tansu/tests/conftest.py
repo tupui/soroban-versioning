@@ -34,7 +34,6 @@ def tables(engine):
         SqlAlchemyBase.metadata.drop_all(engine)
 
 
-@pytest.mark.asycio
 @pytest.fixture(scope="session", autouse=True)
 async def fake_events(tables):
     event_1 = db_models.Event(
