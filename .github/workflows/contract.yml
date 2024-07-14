@@ -1,5 +1,8 @@
 name: Test Contract
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main ]

@@ -1,13 +1,13 @@
 name: Linting
 
+permissions:
+  contents: read
+
 on:
   # TODO adjust once we do PR
   push:
     branches: [ main ]
   pull_request:
-
-permissions:
-  contents: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}

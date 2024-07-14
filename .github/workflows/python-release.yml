@@ -1,0 +1,45 @@
+name: publish distributions
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish Python distribution to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+    environment:
+      name: publish-package
+
+    steps:
+      # - name: Collect built artifacts
+      # ...
+
+      - name: Generate artifact attestation for sdist and wheels
+        uses: actions/attest-build-provenance@<full action commit SHA> # vX.Y.Z
+        with:
+          subject-path: "dist/tansu*"
+
+      - name: Verify artifact attestation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          for artifact in dist/*; do
+              echo "# ${artifact}"
+              gh attestation verify "${artifact}" --repo ${{ github.repository }}
+          done
+
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@<full action commit SHA> # vX.Y.Z
+        with:
+          print-hash: true
