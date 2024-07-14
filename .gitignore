@@ -9,3 +9,5 @@ contracts/versioning/test_snapshots
 
 *.pyc
 .ipynb_checkpoints
+
+dist
