@@ -38,14 +38,14 @@ jobs:
       - name: Generate artifact attestation for sdist and wheels
         uses: actions/attest-build-provenance@5e9cb68e95676991667494a6a4e59b8a2f13e1d0
         with:
-          subject-path: "dist/tansu*"
+          subject-path: "tansu/dist/tansu*"
 
       - name: Verify artifact attestation
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          for artifact in dist/*; do
+          for artifact in tansu/dist/*; do
               echo "# ${artifact}"
               gh attestation verify "${artifact}" --repo ${{ github.repository }}
           done
