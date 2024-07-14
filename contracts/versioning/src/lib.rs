@@ -1,6 +1,9 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracttype, panic_with_error, Address, Bytes, BytesN, Env, Vec, symbol_short};
+use soroban_sdk::{
+    contract, contractimpl, contracttype, panic_with_error, symbol_short, Address, Bytes, BytesN,
+    Env, Vec,
+};
 use soroban_sdk::{contracterror, contractmeta};
 
 contractmeta!(key = "Description", val = "Soroban Versioning");
@@ -28,7 +31,7 @@ pub enum ProjectKey {
 
 #[contracttype]
 pub struct Config {
-    pub url: Bytes,       // link to toml file with project metadata
+    pub url: Bytes,  // link to toml file with project metadata
     pub hash: Bytes, // hash of the file found at the URL
 }
 
@@ -77,14 +80,20 @@ impl Versioning {
         let key: Bytes = env.crypto().keccak256(&name).into();
 
         let key_ = ProjectKey::Key(key.clone());
-        if let Some(_) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
+        if env
+            .storage()
+            .persistent()
+            .get::<ProjectKey, Project>(&key_)
+            .is_some()
+        {
             panic_with_error!(&env, &ContractErrors::ProjectAlreadyExist);
         } else {
             auth_maintainers(&env, &maintainer, &project.maintainers);
             env.storage().persistent().set(&key_, &project);
 
-            env.events().publish((symbol_short!("register"), name, ), key.clone());
-            return key;
+            env.events()
+                .publish((symbol_short!("register"), name), key.clone());
+            key
         }
     }
 
@@ -118,7 +127,8 @@ impl Versioning {
             env.storage()
                 .persistent()
                 .set(&ProjectKey::LastHash(project_key.clone()), &hash);
-            env.events().publish((symbol_short!("commit"), project_key, ), hash);
+            env.events()
+                .publish((symbol_short!("commit"), project_key), hash);
         } else {
             panic_with_error!(&env, &ContractErrors::InvalidKey);
         }
@@ -127,7 +137,12 @@ impl Versioning {
     /// Get the last commit hash
     pub fn get_commit(env: Env, project_key: Bytes) -> Bytes {
         let key_ = ProjectKey::Key(project_key.clone());
-        if let Some(_) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
+        if env
+            .storage()
+            .persistent()
+            .get::<ProjectKey, Project>(&key_)
+            .is_some()
+        {
             env.storage()
                 .persistent()
                 .get(&ProjectKey::LastHash(project_key))

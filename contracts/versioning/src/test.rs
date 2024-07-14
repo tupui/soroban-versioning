@@ -2,7 +2,7 @@
 
 use super::{ContractErrors, Versioning, VersioningClient};
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{testutils::Events, vec, Address, Bytes, Env, IntoVal, symbol_short};
+use soroban_sdk::{symbol_short, testutils::Events, vec, Address, Bytes, Env, IntoVal};
 // use soroban_sdk::testutils::arbitrary::std::println;
 
 #[test]
