@@ -33,7 +33,7 @@ jobs:
         run: pip install hatch
 
       - name: Build
-        run: hatch build
+        run: cd tansu && hatch build
 
       - name: Generate artifact attestation for sdist and wheels
         uses: actions/attest-build-provenance@5e9cb68e95676991667494a6a4e59b8a2f13e1d0
