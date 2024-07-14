@@ -1,0 +1,36 @@
+name: Test Contract
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+  workflow_dispatch:
+#  schedule:
+#    - cron: "0 6 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  RUSTFLAGS: -C debuginfo=0  # Do not produce debug symbols to keep memory usage down
+  RUST_BACKTRACE: 1
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Rust
+        run: rustup show
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref_name == 'main' }}
+
+      - name: Compile and tests
+        run: cargo test

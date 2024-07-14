@@ -1,4 +1,4 @@
-.PHONY: help install prepare fmt clean build test build-release deploy contract_help
+.PHONY: help install prepare rust-lint clean contract_build contract_test contract_deploy contract_help
 .DEFAULT_GOAL := help
 SHELL:=/bin/bash
 
