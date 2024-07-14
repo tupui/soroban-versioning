@@ -1,4 +1,4 @@
-name: publish distributions
+name: Publish Tansu Python
 
 on:
   workflow_dispatch:
@@ -36,7 +36,7 @@ jobs:
         run: hatch build
 
       - name: Generate artifact attestation for sdist and wheels
-        uses: actions/attest-build-provenance@https://github.com/actions/attest-build-provenance/commit/5e9cb68e95676991667494a6a4e59b8a2f13e1d0
+        uses: actions/attest-build-provenance@5e9cb68e95676991667494a6a4e59b8a2f13e1d0
         with:
           subject-path: "dist/tansu*"
 
