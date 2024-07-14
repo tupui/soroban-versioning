@@ -1,6 +1,9 @@
 name: Linting
 
 on:
+  # TODO adjust once we do PR
+  push:
+    branches: [ main ]
   pull_request:
 
 permissions:

@@ -23,14 +23,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: stellar/actions/rust-cache@main
 
-      - name: Set up Rust
-        run: rustup show
+      - run: rustup update
 
-      - name: Cache Rust
-        uses: Swatinem/rust-cache@v2
-        with:
-          save-if: ${{ github.ref_name == 'main' }}
+      # soroban target
+      - run: rustup target add wasm32-unknown-unknown
 
-      - name: Compile and tests
-        run: cargo test
+      - run: cargo build
+
+      - run: cargo test
