@@ -18,14 +18,25 @@ jobs:
       id-token: write
       attestations: write
     environment:
-      name: publish-package
+      name: publish-python
 
     steps:
-      # - name: Collect built artifacts
-      # ...
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: 'x64'
+
+      - name: Install hatch
+        run: pip install hatch
+
+      - name: Build
+        run: hatch build
 
       - name: Generate artifact attestation for sdist and wheels
-        uses: actions/attest-build-provenance@<full action commit SHA> # vX.Y.Z
+        uses: actions/attest-build-provenance@https://github.com/actions/attest-build-provenance/commit/5e9cb68e95676991667494a6a4e59b8a2f13e1d0
         with:
           subject-path: "dist/tansu*"
 
@@ -40,6 +51,6 @@ jobs:
           done
 
       - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@<full action commit SHA> # vX.Y.Z
+        uses: pypa/gh-action-pypi-publish@ec4db0b4ddc65acdf4bff5fa45ac92d78b56bdf0
         with:
           print-hash: true
