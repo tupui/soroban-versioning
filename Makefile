@@ -34,8 +34,9 @@ prepare: prepare-network  ## Setup network and generate addresses and add funds
 	stellar keys generate grogu-$(network) --network $(network) && \
 	stellar keys generate mando-$(network) --network $(network)
 
-fmt:
-	cargo fmt --all
+rust-lint:
+	cargo clippy --all-targets --all-features -- -Dwarnings
+	cargo fmt -- --emit files
 
 clean:
 	cargo clean

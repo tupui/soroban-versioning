@@ -12,6 +12,18 @@ repos:
       - id: ruff-format
   - repo: local
     hooks:
+      - id: clippy
+        name: Rust clippy
+        language: rust
+        pass_filenames: false
+        entry: cargo clippy --all-targets --all-features -- -Dwarnings
+      - id: rustfmt
+        name: Rust formatting
+        language: rust
+        pass_filenames: false
+        entry: cargo fmt --all --check
+
+      # our custom action
       - id: soroban-versioning
         name: Send hash to Soroban contract before push
         language: python
