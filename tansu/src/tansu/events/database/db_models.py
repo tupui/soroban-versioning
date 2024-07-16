@@ -1,5 +1,3 @@
-from typing import Any
-
 from sqlalchemy import orm
 
 from tansu.events.database.session_factory import SqlAlchemyBase
@@ -10,7 +8,8 @@ class Event(SqlAlchemyBase):
 
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
     ledger: orm.Mapped[int]
-    topics: orm.Mapped[dict[int, Any]]
+    action: orm.Mapped[str] = orm.mapped_column(index=True)
+    project_key: orm.Mapped[str] = orm.mapped_column(index=True)
     value: orm.Mapped[str]
 
 

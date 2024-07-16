@@ -6,11 +6,9 @@ from tansu.events.log import logger
 
 
 @sqlalchemy.event.listens_for(db_models.Event, "after_insert")
-def event_handler(mapper, connection, target):
-    topics = target.topics
+def event_handler(mapper, connection, target: db_models.Event):
+    project_key = stellar_sdk.scval.to_native(target.project_key)
+    action = stellar_sdk.scval.to_native(target.action)
     value = stellar_sdk.scval.to_native(target.value)
 
-    for key, topic in topics.items():
-        topics[key] = stellar_sdk.scval.to_native(topic)
-
-    logger.info(f"Event listener: {topics} {value}")
+    logger.info(f"Event listener: {project_key} :: {action} :: {value}")
