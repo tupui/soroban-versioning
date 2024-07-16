@@ -11,6 +11,6 @@ class SqlAlchemyBase(DeclarativeBase):
     # }
 
 
-conn_str = f"postgresql+psycopg://{BACKEND_CONFIG.username}:{BACKEND_CONFIG.password}@{BACKEND_CONFIG.host}:{BACKEND_CONFIG.port}/{BACKEND_CONFIG.database}"
+conn_str = f"postgresql+psycopg://{BACKEND_CONFIG.username}:{BACKEND_CONFIG.password.get_secret_value()}@{BACKEND_CONFIG.host}:{BACKEND_CONFIG.port}/{BACKEND_CONFIG.database}"
 engine = create_async_engine(conn_str, pool_recycle=2000)
 SessionFactory = async_sessionmaker(bind=engine, expire_on_commit=False)
