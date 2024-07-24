@@ -2,7 +2,7 @@
 
 use soroban_sdk::{
     contract, contractimpl, contracttype, panic_with_error, symbol_short, Address, Bytes, BytesN,
-    Env, Vec,
+    Env, String, Vec,
 };
 use soroban_sdk::{contracterror, contractmeta};
 
@@ -31,8 +31,8 @@ pub enum ProjectKey {
 
 #[contracttype]
 pub struct Config {
-    pub url: Bytes,  // link to toml file with project metadata
-    pub hash: Bytes, // hash of the file found at the URL
+    pub url: String,  // link to toml file with project metadata
+    pub hash: String, // hash of the file found at the URL
 }
 
 #[contracttype]
@@ -68,8 +68,8 @@ impl Versioning {
         maintainer: Address,
         name: Bytes,
         maintainers: Vec<Address>,
-        url: Bytes,
-        hash: Bytes,
+        url: String,
+        hash: String,
     ) -> Bytes {
         let project = Project {
             name: name.clone(),
@@ -103,8 +103,8 @@ impl Versioning {
         maintainer: Address,
         key: Bytes,
         maintainers: Vec<Address>,
-        url: Bytes,
-        hash: Bytes,
+        url: String,
+        hash: String,
     ) {
         let key_ = ProjectKey::Key(key);
         if let Some(mut project) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
@@ -120,7 +120,7 @@ impl Versioning {
     }
 
     /// Set the last commit hash
-    pub fn commit(env: Env, maintainer: Address, project_key: Bytes, hash: Bytes) {
+    pub fn commit(env: Env, maintainer: Address, project_key: Bytes, hash: String) {
         let key_ = ProjectKey::Key(project_key.clone());
         if let Some(project) = env.storage().persistent().get::<ProjectKey, Project>(&key_) {
             auth_maintainers(&env, &maintainer, &project.maintainers);
@@ -135,7 +135,7 @@ impl Versioning {
     }
 
     /// Get the last commit hash
-    pub fn get_commit(env: Env, project_key: Bytes) -> Bytes {
+    pub fn get_commit(env: Env, project_key: Bytes) -> String {
         let key_ = ProjectKey::Key(project_key.clone());
         if env
             .storage()
