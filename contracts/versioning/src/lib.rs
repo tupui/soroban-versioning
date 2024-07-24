@@ -16,6 +16,7 @@ pub enum ContractErrors {
     ProjectAlreadyExist = 2,
     UnregisteredMaintainer = 3,
     NoHashFound = 4,
+    InputValidationError = 5,
 }
 
 #[contracttype]
@@ -37,7 +38,7 @@ pub struct Config {
 
 #[contracttype]
 pub struct Project {
-    pub name: Bytes,
+    pub name: String,
     pub config: Config,
     pub maintainers: Vec<Address>,
 }
@@ -66,7 +67,7 @@ impl Versioning {
     pub fn register(
         env: Env,
         maintainer: Address,
-        name: Bytes,
+        name: String,
         maintainers: Vec<Address>,
         url: String,
         hash: String,
@@ -77,7 +78,15 @@ impl Versioning {
             maintainers,
         };
 
-        let key: Bytes = env.crypto().keccak256(&name).into();
+        let str_len = name.len() as usize;
+        if str_len > 64 {
+            panic_with_error!(&env, &ContractErrors::InputValidationError);
+        }
+        let mut slice: [u8; 64] = [0; 64];
+        name.copy_into_slice(&mut slice[..str_len]);
+        let name_b = Bytes::from_slice(&env, &slice[0..str_len]);
+
+        let key: Bytes = env.crypto().keccak256(&name_b).into();
 
         let key_ = ProjectKey::Key(key.clone());
         if env

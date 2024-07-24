@@ -17,7 +17,7 @@ fn test() {
 
     contract.init(&contract_admin);
 
-    let name = Bytes::from_slice(&env, "soroban-versioning".as_bytes());
+    let name = String::from_str(&env, "soroban-versioning");
     let url = String::from_str(&env, "github.com/file.toml");
     let hash = String::from_str(&env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
     let grogu = Address::generate(&env);
@@ -66,6 +66,18 @@ fn test() {
         .unwrap();
 
     assert_eq!(error, ContractErrors::ProjectAlreadyExist.into());
+
+    // name too long
+    let name_long = String::from_str(
+        &env,
+        "soroban-versioningsoroban-versioningsoroban-versioningsoroban-versioning",
+    );
+    let error = contract
+        .try_register(&grogu, &name_long, &maintainers, &url, &hash)
+        .unwrap_err()
+        .unwrap();
+
+    assert_eq!(error, ContractErrors::InputValidationError.into());
 
     // un-registered maintainer
     let bob = Address::generate(&env);
