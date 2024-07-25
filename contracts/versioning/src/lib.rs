@@ -77,7 +77,6 @@ impl Versioning {
             config: Config { url, hash },
             maintainers,
         };
-
         let str_len = name.len() as usize;
         if str_len > 64 {
             panic_with_error!(&env, &ContractErrors::InputValidationError);

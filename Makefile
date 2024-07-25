@@ -57,14 +57,14 @@ contract_build:
 	stellar contract build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
-contract_test: build
+contract_test: contract_build
 	cargo test
 
-contract_build-release: build
+contract_build-release: contract_build
 	stellar contract optimize --wasm target/wasm32-unknown-unknown/release/versioning.wasm
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
-contract_deploy: test build-release  ## Deploy Soroban contract to testnet
+contract_deploy: contract_test contract_build-release  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
   		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
   		--source-account mando-$(network) \
@@ -107,10 +107,10 @@ contract_register:
     	-- \
     	register \
     	--maintainer $(shell soroban keys address mando-$(network)) \
-    	--name 736f726f62616e2d76657273696f6e696e67 \
+    	--name tansu \
     	--maintainers '{ "vec": [{ "address": "$(shell soroban keys address mando-$(network))" }] }' \
-    	--url 68747470733a2f2f6769746875622e636f6d2f74757075692f736f726f62616e2d76657273696f6e696e67 \
-    	--hash a8b643ffc4d76d896d601d82a58f291eb6f2f233
+    	--url https://github.com/tupui/soroban-versioning \
+    	--hash cc666276837abfa36543b9659b363225c5effdd5
 
 contract_commit:
 	stellar contract invoke \
@@ -120,7 +120,7 @@ contract_commit:
     	-- \
     	commit \
     	--maintainer $(shell soroban keys address mando-$(network)) \
-    	--project_key 9afcde4ad92b1d44e7457bf380cbb0f8ef1eb3f3517ee7b72f43beb7c3bc02ac \
+    	--project_key 37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156 \
     	--hash 35113943ffda2b538193234f0caa5c2261400c1c
 
 contract_get_commit:
@@ -130,14 +130,14 @@ contract_get_commit:
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
     	get_commit \
-    	--project_key 9afcde4ad92b1d44e7457bf380cbb0f8ef1eb3f3517ee7b72f43beb7c3bc02ac
+    	--project_key 37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156
 
 
-contract_upgrade: build-release
+contract_upgrade: contract_build-release
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
     	upgrade \
-		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/seal_coin.optimized.wasm)
+		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm)
