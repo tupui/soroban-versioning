@@ -64,6 +64,14 @@ contract_build-release: contract_build
 	stellar contract optimize --wasm target/wasm32-unknown-unknown/release/versioning.wasm
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
+
+contract_bindings: contract_build-release
+	stellar contract bindings typescript \
+		--network $(network) \
+		--contract-id $(shell cat .soroban/soroban_versioning_id) \
+		--output-dir web/bindings/ts \
+		--overwrite
+
 contract_deploy: contract_test contract_build-release  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
   		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
@@ -71,6 +79,24 @@ contract_deploy: contract_test contract_build-release  ## Deploy Soroban contrac
   		--network $(network) \
   		> .soroban/soroban_versioning_id && \
   	cat .soroban/soroban_versioning_id
+
+contract_init:
+	stellar contract invoke \
+    	--source-account mando-$(network) \
+    	--network $(network) \
+    	--id $(shell cat .soroban/soroban_versioning_id) \
+    	-- \
+    	init \
+    	--admin $(shell soroban keys address mando-$(network))
+
+contract_upgrade: contract_build-release
+	stellar contract invoke \
+    	--source-account mando-$(network) \
+    	--network $(network) \
+    	--id $(shell cat .soroban/soroban_versioning_id) \
+    	-- \
+    	upgrade \
+		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm)
 
 # --------- CONTRACT USAGE --------- #
 
@@ -89,15 +115,6 @@ contract_version:
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
     	version
-
-contract_init:
-	stellar contract invoke \
-    	--source-account mando-$(network) \
-    	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
-    	-- \
-    	init \
-    	--admin $(shell soroban keys address mando-$(network))
 
 contract_register:
 	stellar contract invoke \
@@ -131,13 +148,3 @@ contract_get_commit:
     	-- \
     	get_commit \
     	--project_key 37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156
-
-
-contract_upgrade: contract_build-release
-	stellar contract invoke \
-    	--source-account mando-$(network) \
-    	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
-    	-- \
-    	upgrade \
-		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm)
