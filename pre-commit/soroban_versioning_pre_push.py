@@ -6,7 +6,7 @@
 e.g. of project key
 
 ```
-9afcde4ad92b1d44e7457bf380cbb0f8ef1eb3f3517ee7b72f43beb7c3bc02ac
+37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156
 ```
 """
 
@@ -31,13 +31,12 @@ def main():
         .stdout.decode()
         .split("\n")[0]
     )
-    commit_hash = bytes.fromhex(commit_hash)
 
     source_account = soroban.Identity()
     args = [
         {"name": "maintainer", "type": "address", "value": source_account.public_key},
         {"name": "project_key", "type": "bytes", "value": project_key},
-        {"name": "hash", "type": "bytes", "value": commit_hash},
+        {"name": "hash", "type": "string", "value": commit_hash},
     ]
     args = soroban.Parameters(args=args)
 
