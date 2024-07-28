@@ -1,7 +1,5 @@
 #![no_std]
 
-const CONTRACT_DOMAIN_ID: &str = "CATRNPHYKNXAPNLHEYH55REB6YSAJLGCPA4YM6L3WUKSZOPI77M2UMKI";
-
 use soroban_sdk::{
     contract, contractimpl, contracttype, panic_with_error, symbol_short, Address, Bytes, BytesN,
     Env, IntoVal, String, Symbol, Vec,
@@ -73,6 +71,7 @@ impl Versioning {
         maintainers: Vec<Address>,
         url: String,
         hash: String,
+        domain_contract_id: Address,
     ) -> Bytes {
         let project = Project {
             name: name.clone(),
@@ -100,12 +99,12 @@ impl Versioning {
         } else {
             auth_maintainers(&env, &maintainer, &project.maintainers);
 
-            let contract_domain_id_str = String::from_str(&env, CONTRACT_DOMAIN_ID);
-            let contract_domain_id = Address::from_string(&contract_domain_id_str);
+            // domain_register(&env, &name_b, &maintainer, domain_contract_id);
+
             let tld = Bytes::from_slice(&env, &[120, 108, 109]); // xlm
             let min_duration: u64 = 31536000;
             env.invoke_contract::<()>(
-                &contract_domain_id,
+                &domain_contract_id,
                 &Symbol::new(&env, "set_record"),
                 (
                     name_b,

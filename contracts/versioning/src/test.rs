@@ -1,12 +1,12 @@
 #![cfg(test)]
 
-use super::{ContractErrors, Versioning, VersioningClient, CONTRACT_DOMAIN_ID};
+use super::{ContractErrors, Versioning, VersioningClient};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{
     symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
 };
 
-mod contract_domain {
+mod domain_contract {
     soroban_sdk::contractimport!(
         file = "../domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm"
     );
@@ -18,10 +18,8 @@ fn test() {
     env.mock_all_auths();
 
     // setup for Soroban Domain
-    let contract_domain_id_str = String::from_str(&env, CONTRACT_DOMAIN_ID);
-    let contract_domain_id = Address::from_string(&contract_domain_id_str);
-    env.register_contract_wasm(&contract_domain_id, contract_domain::WASM);
-    let contract_domain = contract_domain::Client::new(&env, &contract_domain_id);
+    let domain_contract_id = env.register_contract_wasm(None, domain_contract::WASM);
+    let domain_contract = domain_contract::Client::new(&env, &domain_contract_id);
 
     let adm: Address = Address::generate(&env);
     let node_rate: u128 = 100;
@@ -40,7 +38,7 @@ fn test() {
     let col_asset_client = token::TokenClient::new(&env, &token_address);
     let col_asset_stellar = token::StellarAssetClient::new(&env, &token_address);
 
-    contract_domain.init(
+    domain_contract.init(
         &adm,
         &node_rate,
         &col_asset_client.address.clone(),
@@ -65,7 +63,14 @@ fn test() {
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
     col_asset_stellar.mint(&grogu, &genesis_amount);
 
-    let id = contract.register(&grogu, &name, &maintainers, &url, &hash);
+    let id = contract.register(
+        &grogu,
+        &name,
+        &maintainers,
+        &url,
+        &hash,
+        &domain_contract_id,
+    );
 
     let expected_id = [
         55, 174, 131, 192, 111, 222, 16, 67, 114, 71, 67, 51, 90, 194, 243, 145, 147, 7, 137, 46,
@@ -106,7 +111,14 @@ fn test() {
 
     // double registration
     let error = contract
-        .try_register(&grogu, &name, &maintainers, &url, &hash)
+        .try_register(
+            &grogu,
+            &name,
+            &maintainers,
+            &url,
+            &hash,
+            &domain_contract_id,
+        )
         .unwrap_err()
         .unwrap();
 
@@ -118,7 +130,14 @@ fn test() {
         "soroban-versioningsoroban-versioningsoroban-versioningsoroban-versioning",
     );
     let error = contract
-        .try_register(&grogu, &name_long, &maintainers, &url, &hash)
+        .try_register(
+            &grogu,
+            &name_long,
+            &maintainers,
+            &url,
+            &hash,
+            &domain_contract_id,
+        )
         .unwrap_err()
         .unwrap();
 
