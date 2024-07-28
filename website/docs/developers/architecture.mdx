@@ -1,0 +1,94 @@
+---
+sidebar_position: 2
+---
+
+# Architecture
+
+![General diagram flow](./architecture.png)
+
+:::note[Maintainer]
+
+A person which is part of a project’s team. This is not necessarily tight to any specific role nor commit rights.
+
+:::
+
+1. Using the dApp, a maintainer registers a project providing a unique name, some metadata and a list of maintainers.
+2. The project’s registration triggers an event which can be listened to by anyone on the network. As part of our dApp infrastructure, we listen to all events and store then in our database;
+3. Either using the dApp, or from tools provided to directly call the contract, maintainers can update projects data. Most notably, the last commit hash;
+4. Users can use the dApp to easily get insights on a project. They see the project history, can click on specific commits to have more information and link to the centralized platform used by the project itself.
+
+## Soroban Contract
+
+The Soroban contract handles all on-chain features of the projects from registration, administration, to pushing new code versions. It provides the following minimal Application Programming Interface (API):
+
+```rust
+fn register(maintainer: Address, name: String, maintainers: Vec<Address>, url: String, hash: String, domain_contract_id: Address) -> Bytes
+
+fn update_config(maintainer: Address, key: Bytes, maintainers: Vec<Address>, url: String, hash: String)
+
+fn commit(maintainer: Address, project_key: Bytes, hash: String)
+
+fn get_commit(project_key: Bytes) -> String
+
+struct Config {
+    hash: String,
+    url: String
+}
+
+struct Project {
+    config: Config,
+    maintainers: Vec<Address>,
+    name: String
+}
+
+enum ProjectKey {
+    Key(Bytes),
+    LastHash(Bytes)
+}
+
+enum ContractErrors {
+    UnexpectedError = 0,
+    InvalidKey = 1,
+    ProjectAlreadyExist = 2,
+    UnregisteredMaintainer = 3,
+    NoHashFound = 4,
+    InvalidDomainError = 5,
+    MaintainerNotDomainOwner = 6,
+}
+```
+
+When maintainers register their projects, a unique hash based on the project name is created. This serves as a `project_key` to uniquely identify a project and is stored as a data entry on the ledger.
+
+Behind the scene, it uses Soroban domain as a way to prevent name squatting and other nefarious registration. The community will have easy tools to report issues. This will effectively prevent misuse of our contract.
+
+Each project stores 3 elements on-chain:
+
+- a commit hash: the last commit hash which was set by a maintainer;
+- a list of maintainers: authorized maintainers who can administer the project. They can update everything besides the project name itself;
+- the hash of a configuration file and its location: similar to a Stellar info file, as described in SEP-1. It defines meta information such as a more digestible list of maintainers, official resources for a project, etc.
+
+Maintainers can call the contract to update the commit hash as they develop their code. This contract call triggers an event containing the project_key and the commit hash.
+
+Everyone can get a project’s commit hash at any time by either making a simulation or even making a cross-contract call.
+
+## Backend
+
+At the interface between the contract and the dApp, we will have a backend infrastructure doing the heavy lifting. The backend API and specification will be open so that anyone can easily use their own infrastructure or build on top of it more easily.
+
+A PostgreSQL database will store all events, and we will use FastAPI along with SQLAlchemy to interact with it. Having a DB will help us save on explicit contract calls. Specific endpoints are yet to be defined. The contract calls will be made in Python thanks to the libraries py-stellar-base and soroban-cli-python (which was built by our team).
+
+The other key component we will bring is Git hooks. Upon specific Git actions, maintainers will trigger automatically, and behind the scene, hooks to call the contract and update the commit hash of the project. This will greatly improve the developer experience to make it a seamless operation. In the long term, users could also benefit from the hooks and have security features built-in such as warning if hash do not match between on-chain and off-chain.
+
+We also need to think about the most reluctant maintainers and have ways to observe off-chain data and pre-update on-chain data.
+
+## dApp
+
+The first version of the dApp will be simple and focus on a basic feature set. We first need to build trust with the community and only then we can expand our feature set with what our users actually need.
+
+The dApp will leverage well-known JS SDKs to propose an effective and familiar user interface. We will start with stellar-sdk and sorobandomains-sdk. This will help us build faster and handle addresses and signing safely so that our system never sees a user's secret key–hence fully non-custodial. On that note, having a list of maintainers allows a project to have “social backups” in the sense that another maintainer can help recover access.
+
+Maintainers will be able to handle all aspects of their projects on the dApp. They will have tools to add or remove maintainers, update metadata and set the new commit hash of the project.
+
+Users will be able to view project details and observe its current state. We will link each commit hash to the centralization platform the project is using. The metadata file, similar to a SEP-1, will be rendered to show useful information to users.
+
+In general, the interface should be clear enough to show where the data is coming from and there should be a simple way to see the data on-chain and off-chain.
