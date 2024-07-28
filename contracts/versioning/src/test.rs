@@ -1,34 +1,75 @@
 #![cfg(test)]
 
-use super::{ContractErrors, Versioning, VersioningClient};
+use super::{ContractErrors, Versioning, VersioningClient, CONTRACT_DOMAIN_ID};
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{symbol_short, testutils::Events, vec, Address, Bytes, Env, IntoVal, String};
-// use soroban_sdk::testutils::arbitrary::std::println;
+use soroban_sdk::{
+    symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
+};
+
+mod contract_domain {
+    soroban_sdk::contractimport!(
+        file = "../domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm"
+    );
+}
 
 #[test]
 fn test() {
     let env = Env::default();
     env.mock_all_auths();
 
-    let contract_admin = Address::generate(&env);
+    // setup for Soroban Domain
+    let contract_domain_id_str = String::from_str(&env, CONTRACT_DOMAIN_ID);
+    let contract_domain_id = Address::from_string(&contract_domain_id_str);
+    env.register_contract_wasm(&contract_domain_id, contract_domain::WASM);
+    let contract_domain = contract_domain::Client::new(&env, &contract_domain_id);
 
+    let adm: Address = Address::generate(&env);
+    let node_rate: u128 = 100;
+    let min_duration: u64 = 31536000;
+    let allowed_tlds: Vec<Bytes> = Vec::from_array(
+        &env,
+        [
+            Bytes::from_slice(&env, "xlm".as_bytes()),
+            Bytes::from_slice(&env, "stellar".as_bytes()),
+            Bytes::from_slice(&env, "wallet".as_bytes()),
+            Bytes::from_slice(&env, "dao".as_bytes()),
+        ],
+    );
+    let issuer: Address = Address::generate(&env);
+    let token_address = env.register_stellar_asset_contract(issuer.clone());
+    let col_asset_client = token::TokenClient::new(&env, &token_address);
+    let col_asset_stellar = token::StellarAssetClient::new(&env, &token_address);
+
+    contract_domain.init(
+        &adm,
+        &node_rate,
+        &col_asset_client.address.clone(),
+        &min_duration,
+        &allowed_tlds,
+    );
+
+    // setup for Tansu
+    let contract_admin = Address::generate(&env);
     let contract_id = env.register_contract(None, Versioning);
     let contract = VersioningClient::new(&env, &contract_id);
 
     contract.init(&contract_admin);
 
-    let name = String::from_str(&env, "soroban-versioning");
+    let name = String::from_str(&env, "tansu");
     let url = String::from_str(&env, "github.com/file.toml");
     let hash = String::from_str(&env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
     let grogu = Address::generate(&env);
     let mando = Address::generate(&env);
     let maintainers = vec![&env, grogu.clone(), mando.clone()];
 
+    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
+    col_asset_stellar.mint(&grogu, &genesis_amount);
+
     let id = contract.register(&grogu, &name, &maintainers, &url, &hash);
 
     let expected_id = [
-        154, 252, 222, 74, 217, 43, 29, 68, 231, 69, 123, 243, 128, 203, 176, 248, 239, 30, 179,
-        243, 81, 126, 231, 183, 47, 67, 190, 183, 195, 188, 2, 172,
+        55, 174, 131, 192, 111, 222, 16, 67, 114, 71, 67, 51, 90, 194, 243, 145, 147, 7, 137, 46,
+        230, 48, 124, 206, 140, 12, 99, 234, 165, 73, 225, 86,
     ];
     let expected_id = Bytes::from_array(&env, &expected_id);
     assert_eq!(id, expected_id);
@@ -40,8 +81,12 @@ fn test() {
     assert_eq!(res_hash_commit, hash_commit);
 
     // events-events
+    let mut all_events = env.events().all();
+    all_events.pop_front(); // set_admin
+    all_events.pop_front(); // mint
+    all_events.pop_front(); // transfer
     assert_eq!(
-        env.events().all(),
+        all_events,
         vec![
             &env,
             (
