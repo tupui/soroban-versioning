@@ -1,0 +1,47 @@
+name: Linting
+
+permissions:
+  contents: read
+
+on:
+  # TODO adjust once we do PR
+  push:
+    branches: [ main ]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit-linters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: pre-commit/action@v3.0.1
+
+  website:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout App Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "website/package-lock.json"
+
+      - name: Install App Dependencies
+        run: cd website && npm install
+
+      - name: Check MDX
+        run: cd website && npm run check:mdx
+
+      - name: Build app
+        run: cd website && npm run build

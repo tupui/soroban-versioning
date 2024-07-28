@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="logo_OSI" width="468.1909pt" height="614.0127pt" version="1.2" viewBox="0 0 468.1909 614.0127" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata id="metadata1">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <path id="shape" d="m262.006 307.1224c32.25781-11.98047 49.09765-35.05078 49.09765-74.75781s-33.46093-74.69531-75.26953-74.76563c-44.12109-0.0703-77.40234 34.91407-76.87109 74.76563s19.53906 66.36328 49.95703 75.94922l-53.88672 132.5703c-72.12109-18.67187-145.4727-103.7539-145.4727-208.5195 0-124.0859 99.70313-224.6797 224.6719-224.6797s226.2734 100.5937 226.2734 224.6797c0 106.3945-72.65625 190.293-146.3164 208.8906zm0 0" style="fill:#3da638;stroke-linecap:round;stroke-linejoin:round;stroke-width:15.3697;stroke:#1c511c"/>
+ <g id="text" transform="matrix(1.082924 0 0 1.148944 -55.53372 -162.9183)" style="fill:#000000;stroke-width:.75px">
+ </g>
+</svg>

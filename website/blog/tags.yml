@@ -1,0 +1,9 @@
+soroban:
+  label: soroban
+  permalink: /soroban
+  description: Soroban Smart Contract
+
+scf:
+  label: scf
+  permalink: /scf
+  description: Stellar Community Fund

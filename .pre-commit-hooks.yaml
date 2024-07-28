@@ -1,9 +1,0 @@
-- id: soroban-versioning
-  name: Send hash to Soroban contract before push
-  language: python
-  entry: soroban-versioning-pre-push
-  pass_filenames: false
-  always_run: true
-  require_serial: true
-  stages:
-    - pre-push

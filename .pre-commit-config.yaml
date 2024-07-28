@@ -1,16 +1,6 @@
+fail_fast: true
+
 repos:
-  - repo: local
-    hooks:
-      - id: soroban-versioning
-        name: Send hash to Soroban contract before push
-        language: python
-        additional_dependencies:
-          - soroban
-        entry: python soroban_versioning_pre_push.py
-        pass_filenames: false
-        always_run: true
-        stages:
-          - pre-push
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.4.2
@@ -20,3 +10,28 @@ repos:
         args: [ --fix ]
       # Run the formatter.
       - id: ruff-format
+  - repo: local
+    hooks:
+      - id: clippy
+        name: Rust clippy
+        language: rust
+        pass_filenames: false
+        entry: cargo clippy --all-targets --all-features -- -Dwarnings
+      - id: rustfmt
+        name: Rust formatting
+        language: rust
+        pass_filenames: false
+        entry: cargo fmt --all --check
+
+      # our custom action
+      - id: soroban-versioning
+        name: Send hash to Soroban contract before push
+        language: python
+        additional_dependencies:
+          - soroban
+        entry: python pre-commit/soroban_versioning_pre_push.py
+        pass_filenames: false
+        always_run: true
+        require_serial: true
+        stages:
+          - pre-push
