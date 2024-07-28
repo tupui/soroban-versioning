@@ -56,7 +56,7 @@ fn test() {
 
     contract.init(&contract_admin);
 
-    let name = String::from_str(&env, "soroban-versioning");
+    let name = String::from_str(&env, "tansu");
     let url = String::from_str(&env, "github.com/file.toml");
     let hash = String::from_str(&env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
     let grogu = Address::generate(&env);

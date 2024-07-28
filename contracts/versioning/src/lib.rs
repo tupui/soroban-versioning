@@ -3,8 +3,8 @@
 const CONTRACT_DOMAIN_ID: &str = "CATRNPHYKNXAPNLHEYH55REB6YSAJLGCPA4YM6L3WUKSZOPI77M2UMKI";
 
 use soroban_sdk::{
-    contract, contractimpl, contracttype, panic_with_error, symbol_short, vec, Address, Bytes,
-    BytesN, Env, String, Symbol, Val, Vec,
+    contract, contractimpl, contracttype, panic_with_error, symbol_short, Address, Bytes, BytesN,
+    Env, IntoVal, String, Symbol, Vec,
 };
 use soroban_sdk::{contracterror, contractmeta};
 
@@ -103,17 +103,18 @@ impl Versioning {
             let contract_domain_id_str = String::from_str(&env, CONTRACT_DOMAIN_ID);
             let contract_domain_id = Address::from_string(&contract_domain_id_str);
             let tld = Bytes::from_slice(&env, &[120, 108, 109]); // xlm
+            let min_duration: u64 = 31536000;
             env.invoke_contract::<()>(
                 &contract_domain_id,
                 &Symbol::new(&env, "set_record"),
-                vec![
-                    &env,
-                    name_b.to_val(),
-                    tld.to_val(),
-                    maintainer.to_val(),
-                    maintainer.to_val(),
-                    Val::from_i32(31536000).into(),
-                ],
+                (
+                    name_b,
+                    tld,
+                    maintainer.clone(),
+                    maintainer.clone(),
+                    min_duration,
+                )
+                    .into_val(&env),
             );
             env.storage().persistent().set(&key_, &project);
 
