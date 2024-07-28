@@ -5,7 +5,6 @@ use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{
     symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
 };
-// use soroban_sdk::testutils::arbitrary::std::println;
 
 mod contract_domain {
     soroban_sdk::contractimport!(
@@ -69,8 +68,8 @@ fn test() {
     let id = contract.register(&grogu, &name, &maintainers, &url, &hash);
 
     let expected_id = [
-        154, 252, 222, 74, 217, 43, 29, 68, 231, 69, 123, 243, 128, 203, 176, 248, 239, 30, 179,
-        243, 81, 126, 231, 183, 47, 67, 190, 183, 195, 188, 2, 172,
+        55, 174, 131, 192, 111, 222, 16, 67, 114, 71, 67, 51, 90, 194, 243, 145, 147, 7, 137, 46,
+        230, 48, 124, 206, 140, 12, 99, 234, 165, 73, 225, 86,
     ];
     let expected_id = Bytes::from_array(&env, &expected_id);
     assert_eq!(id, expected_id);
@@ -82,8 +81,12 @@ fn test() {
     assert_eq!(res_hash_commit, hash_commit);
 
     // events-events
+    let mut all_events = env.events().all();
+    all_events.pop_front(); // set_admin
+    all_events.pop_front(); // mint
+    all_events.pop_front(); // transfer
     assert_eq!(
-        env.events().all(),
+        all_events,
         vec![
             &env,
             (

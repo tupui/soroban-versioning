@@ -116,6 +116,7 @@ impl Versioning {
                 )
                     .into_val(&env),
             );
+
             env.storage().persistent().set(&key_, &project);
 
             env.events()
