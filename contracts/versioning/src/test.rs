@@ -1,16 +1,10 @@
 #![cfg(test)]
 
-use super::{ContractErrors, Versioning, VersioningClient};
+use super::{domain_contract, ContractErrors, Versioning, VersioningClient};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{
     symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
 };
-
-mod domain_contract {
-    soroban_sdk::contractimport!(
-        file = "../domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm"
-    );
-}
 
 #[test]
 fn test() {
@@ -19,7 +13,7 @@ fn test() {
 
     // setup for Soroban Domain
     let domain_contract_id = env.register_contract_wasm(None, domain_contract::WASM);
-    let domain_contract = domain_contract::Client::new(&env, &domain_contract_id);
+    let domain_client = domain_contract::Client::new(&env, &domain_contract_id);
 
     let adm: Address = Address::generate(&env);
     let node_rate: u128 = 100;
@@ -38,7 +32,7 @@ fn test() {
     let col_asset_client = token::TokenClient::new(&env, &token_address);
     let col_asset_stellar = token::StellarAssetClient::new(&env, &token_address);
 
-    domain_contract.init(
+    domain_client.init(
         &adm,
         &node_rate,
         &col_asset_client.address.clone(),
@@ -141,7 +135,7 @@ fn test() {
         .unwrap_err()
         .unwrap();
 
-    assert_eq!(error, ContractErrors::InputValidationError.into());
+    assert_eq!(error, ContractErrors::InvalidDomainError.into());
 
     // un-registered maintainer
     let bob = Address::generate(&env);

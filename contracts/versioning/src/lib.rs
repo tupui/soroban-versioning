@@ -1,5 +1,12 @@
 #![no_std]
 
+mod domain_contract {
+    soroban_sdk::contractimport!(
+        file = "../domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm"
+    );
+}
+
+use soroban_sdk::testutils::arbitrary::std::println;
 use soroban_sdk::{
     contract, contractimpl, contracttype, panic_with_error, symbol_short, vec, Address, Bytes,
     BytesN, Env, IntoVal, String, Symbol, Val, Vec,
@@ -16,7 +23,7 @@ pub enum ContractErrors {
     ProjectAlreadyExist = 2,
     UnregisteredMaintainer = 3,
     NoHashFound = 4,
-    InputValidationError = 5,
+    InvalidDomainError = 5,
 }
 
 #[contracttype]
@@ -79,10 +86,10 @@ impl Versioning {
             maintainers,
         };
         let str_len = name.len() as usize;
-        if str_len > 64 {
-            panic_with_error!(&env, &ContractErrors::InputValidationError);
+        if str_len > 15 {
+            panic_with_error!(&env, &ContractErrors::InvalidDomainError);
         }
-        let mut slice: [u8; 64] = [0; 64];
+        let mut slice: [u8; 15] = [0; 15];
         name.copy_into_slice(&mut slice[..str_len]);
         let name_b = Bytes::from_slice(&env, &slice[0..str_len]);
 
@@ -98,6 +105,13 @@ impl Versioning {
             panic_with_error!(&env, &ContractErrors::ProjectAlreadyExist);
         } else {
             auth_maintainers(&env, &maintainer, &project.maintainers);
+
+            let node = domain_node(&env, &key);
+            let record_keys = domain_contract::RecordKeys::Record(node);
+
+            let domain_client = domain_contract::Client::new(&env, &domain_contract_id);
+            let record = domain_client.record(&record_keys);
+            println!("{record:#?}");
 
             domain_register(&env, &name_b, &maintainer, domain_contract_id);
 
@@ -174,6 +188,7 @@ fn auth_maintainers(env: &Env, maintainer: &Address, maintainers: &Vec<Address>)
     }
 }
 
+/// Register a Soroban Domain: https://sorobandomains.org
 fn domain_register(env: &Env, name: &Bytes, maintainer: &Address, domain_contract_id: Address) {
     let tld = Bytes::from_slice(env, &[120, 108, 109]); // xlm
     let min_duration: u64 = 31536000;
@@ -199,6 +214,16 @@ fn domain_register(env: &Env, name: &Bytes, maintainer: &Address, domain_contrac
         &Symbol::new(env, "set_record"),
         init_args,
     );
+}
+
+fn domain_node(env: &Env, domain: &Bytes) -> BytesN<32> {
+    let tld = Bytes::from_slice(env, &[120, 108, 109]); // xlm
+    let parent_hash: Bytes = env.crypto().keccak256(&tld).into();
+    let mut node_builder: Bytes = Bytes::new(env);
+    node_builder.append(&parent_hash);
+    node_builder.append(domain);
+
+    env.crypto().keccak256(&node_builder).into()
 }
 
 mod test;
