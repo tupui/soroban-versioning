@@ -1,8 +1,8 @@
 #![no_std]
 
 use soroban_sdk::{
-    contract, contractimpl, contracttype, panic_with_error, symbol_short, Address, Bytes, BytesN,
-    Env, IntoVal, String, Symbol, Vec,
+    contract, contractimpl, contracttype, panic_with_error, symbol_short, vec, Address, Bytes,
+    BytesN, Env, IntoVal, String, Symbol, Val, Vec,
 };
 use soroban_sdk::{contracterror, contractmeta};
 
@@ -99,22 +99,7 @@ impl Versioning {
         } else {
             auth_maintainers(&env, &maintainer, &project.maintainers);
 
-            // domain_register(&env, &name_b, &maintainer, domain_contract_id);
-
-            let tld = Bytes::from_slice(&env, &[120, 108, 109]); // xlm
-            let min_duration: u64 = 31536000;
-            env.invoke_contract::<()>(
-                &domain_contract_id,
-                &Symbol::new(&env, "set_record"),
-                (
-                    name_b,
-                    tld,
-                    maintainer.clone(),
-                    maintainer.clone(),
-                    min_duration,
-                )
-                    .into_val(&env),
-            );
+            domain_register(&env, &name_b, &maintainer, domain_contract_id);
 
             env.storage().persistent().set(&key_, &project);
 
@@ -187,6 +172,33 @@ fn auth_maintainers(env: &Env, maintainer: &Address, maintainers: &Vec<Address>)
     if !maintainers.contains(maintainer) {
         panic_with_error!(&env, &ContractErrors::UnregisteredMaintainer);
     }
+}
+
+fn domain_register(env: &Env, name: &Bytes, maintainer: &Address, domain_contract_id: Address) {
+    let tld = Bytes::from_slice(env, &[120, 108, 109]); // xlm
+    let min_duration: u64 = 31536000;
+
+    // Convert the arguments to Val
+    let name_raw = name.to_val();
+    let tld_raw = tld.to_val();
+    let maintainer_raw = maintainer.to_val();
+    let min_duration_raw: Val = min_duration.into_val(env);
+
+    // Construct the init_args
+    let init_args = vec![
+        &env,
+        name_raw,
+        tld_raw,
+        maintainer_raw,
+        maintainer_raw,
+        min_duration_raw,
+    ];
+
+    env.invoke_contract::<()>(
+        &domain_contract_id,
+        &Symbol::new(env, "set_record"),
+        init_args,
+    );
 }
 
 mod test;
