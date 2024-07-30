@@ -6,7 +6,6 @@ mod domain_contract {
     );
 }
 
-use soroban_sdk::testutils::arbitrary::std::println;
 use soroban_sdk::{
     contract, contractimpl, contracttype, panic_with_error, symbol_short, vec, Address, Bytes,
     BytesN, Env, IntoVal, String, Symbol, Val, Vec,
@@ -110,11 +109,12 @@ impl Versioning {
             let record_keys = domain_contract::RecordKeys::Record(node);
 
             let domain_client = domain_contract::Client::new(&env, &domain_contract_id);
-            let record = domain_client.record(&record_keys);
-            println!("{record:#?}");
-
-            domain_register(&env, &name_b, &maintainer, domain_contract_id);
-
+            let record = domain_client.try_record(&record_keys);
+            match record {
+                Ok(Ok(None)) => domain_register(&env, &name_b, &maintainer, domain_contract_id),
+                Ok(_) => (), // todo check owner is maintainer
+                Err(_) => panic_with_error!(&env, &ContractErrors::InvalidDomainError),
+            }
             env.storage().persistent().set(&key_, &project);
 
             env.events()
