@@ -23,6 +23,7 @@ pub enum ContractErrors {
     UnregisteredMaintainer = 3,
     NoHashFound = 4,
     InvalidDomainError = 5,
+    MaintainerNotDomainOwner = 6,
 }
 
 #[contracttype]
@@ -109,11 +110,14 @@ impl Versioning {
             let record_keys = domain_contract::RecordKeys::Record(node);
 
             let domain_client = domain_contract::Client::new(&env, &domain_contract_id);
-            let record = domain_client.try_record(&record_keys);
-            match record {
+            match domain_client.try_record(&record_keys) {
                 Ok(Ok(None)) => domain_register(&env, &name_b, &maintainer, domain_contract_id),
-                Ok(_) => (), // todo check owner is maintainer
-                Err(_) => panic_with_error!(&env, &ContractErrors::InvalidDomainError),
+                Ok(Ok(Some(domain_contract::Record::Domain(domain)))) => {
+                    if domain.owner != maintainer {
+                        panic_with_error!(&env, &ContractErrors::MaintainerNotDomainOwner)
+                    }
+                }
+                _ => panic_with_error!(&env, &ContractErrors::InvalidDomainError),
             }
             env.storage().persistent().set(&key_, &project);
 
