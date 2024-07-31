@@ -150,8 +150,8 @@ fn test() {
 
     // ownership error
     let name_str = "bob";
-    let name = String::from_str(&env, &name_str);
-    let name_b = Bytes::from_slice(&env, &name_str.as_bytes());
+    let name = String::from_str(&env, name_str);
+    let name_b = Bytes::from_slice(&env, name_str.as_bytes());
     col_asset_stellar.mint(&mando, &genesis_amount);
     domain_register(&env, &name_b, &mando, domain_contract_id.clone());
 
@@ -169,4 +169,18 @@ fn test() {
 
     assert_eq!(error, ContractErrors::MaintainerNotDomainOwner.into());
 }
+
+#[test]
+fn test_utils() {
+    let env = Env::default();
+    let name_b = Bytes::from_slice(&env, "tansu".as_bytes());
+    let tld_b = Bytes::from_slice(&env, "xlm".as_bytes());
+    let key: Bytes = env.crypto().keccak256(&name_b).into();
+    let node = domain_node(&env, &key);
+
+    let domain_contract_id = env.register_contract_wasm(None, domain_contract::WASM);
+    let domain_client = domain_contract::Client::new(&env, &domain_contract_id);
+    let node_official = domain_client.parse_domain(&name_b, &tld_b);
+
+    assert_eq!(node, node_official);
 }
