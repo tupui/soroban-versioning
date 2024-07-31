@@ -87,6 +87,7 @@ impl Versioning {
         };
         let str_len = name.len() as usize;
         if str_len > 15 {
+            // could add more checks but handled in any case with later calls
             panic_with_error!(&env, &ContractErrors::InvalidDomainError);
         }
         let mut slice: [u8; 15] = [0; 15];

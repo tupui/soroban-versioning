@@ -1,6 +1,8 @@
 #![cfg(test)]
 
-use super::{domain_contract, ContractErrors, Versioning, VersioningClient};
+use super::{
+    domain_contract, domain_node, domain_register, ContractErrors, Versioning, VersioningClient,
+};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{
     symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
@@ -145,4 +147,26 @@ fn test() {
         .unwrap();
 
     assert_eq!(error, ContractErrors::UnregisteredMaintainer.into());
+
+    // ownership error
+    let name_str = "bob";
+    let name = String::from_str(&env, &name_str);
+    let name_b = Bytes::from_slice(&env, &name_str.as_bytes());
+    col_asset_stellar.mint(&mando, &genesis_amount);
+    domain_register(&env, &name_b, &mando, domain_contract_id.clone());
+
+    let error = contract
+        .try_register(
+            &grogu,
+            &name,
+            &maintainers,
+            &url,
+            &hash,
+            &domain_contract_id,
+        )
+        .unwrap_err()
+        .unwrap();
+
+    assert_eq!(error, ContractErrors::MaintainerNotDomainOwner.into());
+}
 }
