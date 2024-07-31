@@ -1,9 +1,9 @@
 """Pre-push commit script.
 
 - [CONTRACT_ID]: contract address, default to Tansu's contract;
-- PROJECT_KEY: hex value of the project.
+- PROJECT_KEY: hex value of the project - Keccak256 hash.
 
-e.g. of project key
+e.g. of project key for "tansu" using
 
 ```
 37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156
@@ -16,7 +16,7 @@ import subprocess
 import soroban
 
 CONTRACT_ID = os.getenv(
-    "TANSU_CONTRACT_ID", "CC3JCYWHNMPMQTOQUNDCJSCFSWRFZIE2JVSAUEXEG56DMKOMI3RL7VOH"
+    "TANSU_CONTRACT_ID", "CAP52ERGUZ65UNPHP36CQBHYUPEUG2TT4NPVEV7CREWRT7UCPD7PRWEE"
 )
 PROJECT_KEY = os.getenv("TANSU_PROJECT_KEY")
 if PROJECT_KEY is None:

@@ -6,6 +6,10 @@ ifndef network
    override network = testnet
 endif
 
+ifndef domain_contract_id
+	override domain_contract_id = CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7
+endif
+
 # Add help text after each target name starting with '\#\#'
 help:   ## show this help
 	@echo -e "Help for this makefile\n"
@@ -127,7 +131,8 @@ contract_register:
     	--name tansu \
     	--maintainers '{ "vec": [{ "address": "$(shell soroban keys address mando-$(network))" }] }' \
     	--url https://github.com/tupui/soroban-versioning \
-    	--hash cc666276837abfa36543b9659b363225c5effdd5
+    	--hash da76cd6fdcc71d730306d23b121f8cc67d3eedda \
+    	--domain_contract_id $(domain_contract_id)
 
 contract_commit:
 	stellar contract invoke \
