@@ -1,10 +1,7 @@
 import { useEffect } from "react";
 import { CONTRACT_ID } from "../constants";
 import * as StellarSdk from "@stellar/stellar-sdk";
-
-const toHexString = (arr: number[]) =>
-  Array.from(arr, (i: number) => i.toString(16).padStart(2, "0")).join("");
-
+import { toHexString } from "../lib/util";
 
 export function Events() {
   const server = new StellarSdk.SorobanRpc.Server(
@@ -30,6 +27,9 @@ export function Events() {
           event.value = toHexString(StellarSdk.scValToNative(event.value)); // either commit hash or project id depending on the topic
         });
         console.log(resp.events);
+      })
+      .catch((err) => {
+        console.log(err);
       });
   });
 

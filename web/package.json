@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@soroban-react/chains": "^9.1.10",
+    "@soroban-react/contracts": "^9.1.10",
     "@soroban-react/core": "^9.1.10",
     "@soroban-react/freighter": "^9.1.10",
     "@soroban-react/types": "^9.1.10",
@@ -25,6 +26,7 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
+    "@vitejs/plugin-basic-ssl": "^1.1.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.12.10",
