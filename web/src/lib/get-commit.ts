@@ -1,4 +1,4 @@
-import { WrappedContract } from "@soroban-react/contracts";
+import { Simulation, WrappedContract } from "@soroban-react/contracts";
 import { SorobanContextType } from "@soroban-react/core";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { toHexString } from "./util";
@@ -24,7 +24,7 @@ export async function getCommit(
     .setTimeout(0)
     .build();
 
-  const simResp = await sorobanContext.server?.simulateTransaction(txn);
+  const simResp = await sorobanContext.server?.simulateTransaction(txn) as Simulation;
 
   if (!StellarSdk.SorobanRpc.Api.isSimulationSuccess(simResp)) {
     throw simResp;
