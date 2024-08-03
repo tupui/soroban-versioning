@@ -1,6 +1,7 @@
-import { WrappedContract } from "@soroban-react/contracts";
+import { sendTx, Tx, WrappedContract } from "@soroban-react/contracts";
 import { SorobanContextType } from "@soroban-react/core";
 import * as StellarSdk from "@stellar/stellar-sdk";
+import { contractInvoke } from "@soroban-react/contracts";
 
 export async function registerRepo(
   sorobanContext: SorobanContextType,
@@ -26,15 +27,16 @@ export async function registerRepo(
     StellarSdk.nativeToScVal(encoder.encode("http://example.com")),
     StellarSdk.nativeToScVal(encoder.encode("deadbeef")),
   ];
+
   const simTxn = new StellarSdk.TransactionBuilder(
     bundlerKeyAccount as StellarSdk.Account,
     {
-      fee: "0",
+      fee: "100",
       networkPassphrase: sorobanContext.activeChain?.networkPassphrase,
     },
   )
     .addOperation(stellarContract.call("register", ...args))
-    .setTimeout(0)
+    .setTimeout(StellarSdk.TimeoutInfinite)
     .build();
 
   const simResp = await sorobanContext.server?.simulateTransaction(simTxn);
@@ -42,31 +44,24 @@ export async function registerRepo(
   if (!StellarSdk.SorobanRpc.Api.isSimulationSuccess(simResp)) {
     throw simResp;
   } else {
-    console.log(simResp.result?.auth)
-    const authTxn = StellarSdk.SorobanRpc.assembleTransaction(
-      simTxn,
-      simResp,
-    ).build();
-    const authSim = await sorobanContext.server?.simulateTransaction(authTxn);
-
-    if (
-      StellarSdk.SorobanRpc.Api.isSimulationError(authSim) ||
-      StellarSdk.SorobanRpc.Api.isSimulationRestore(authSim)
-    ) {
-      throw authSim;
-    }
-    const txn = StellarSdk.SorobanRpc.assembleTransaction(authTxn, authSim)
-      .setTimeout(30)
-      .build();
-
     const signature = await sorobanContext.activeConnector?.signTransaction(
-      txn.toXDR(),
+      simTxn.toXDR(),
       {
         networkPassphrase: sorobanContext.activeChain?.networkPassphrase,
         network: sorobanContext.activeChain?.network,
         accountToSign: sorobanContext.address,
       },
     );
-    txn.addSignature(sorobanContext.address as string, signature as string);
+    const signedTxn = StellarSdk.TransactionBuilder.fromXDR(
+      signature as string,
+      sorobanContext.activeChain?.networkPassphrase as string,
+    );
+    const res = await sendTx({
+      tx: signedTxn,
+      secondsToWait: 30,
+      server: sorobanContext.server,
+    });
+
+    console.log(res);
   }
 }
