@@ -1,0 +1,20 @@
+---
+sidebar_position: 2
+---
+
+# Architecture
+
+![General diagram flow](./architecture.png)
+
+
+
+:::note
+
+Maintainer: a person which is part of a project’s team. This is not necessarily tight to any specific role nor commit rights.
+
+:::
+
+1. Using the dApp, a maintainer registers a project providing a unique name, some metadata and a list of maintainers.
+2. The project’s registration triggers an event which can be listen by anyone on the network. As part of our dApp infrastructure, we listen to all events and store then in our database;
+3. Either using the dApp, or from tools provided to directly call the contract, maintainers can update projects data. Most notably, the last commit hash;
+4. Users can use the dApp to easily get insights on a project. The see the project history, can click on specific commits to have more information and link to the centralized platform used by the project itself.

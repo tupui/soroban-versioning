@@ -19,11 +19,11 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: 'Git',
+    title: 'Git on-chain',
     Svg: require('@site/static/img/git-logo.svg').default,
     description: (
       <>
-        Bring decentralization back to Git. Push new hashes on-chain and help secure the supply chain by allowing anyone to track code updates.
+        Tansu bring decentralization back to Git. Push new hashes on-chain and help secure the supply chain by allowing anyone to track code updates.
       </>
     ),
   },
@@ -32,7 +32,7 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/open_source_initiative.svg').default,
     description: (
       <>
-        We track Open Source projects so you can build with confidence with Open Source. Everything Tansu is Open Source.
+        Tansu track Open Source projects so you can build with confidence with Open Source. Everything Tansu is Open Source.
       </>
     ),
   },
