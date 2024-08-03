@@ -15,6 +15,8 @@ import { Api } from "@stellar/stellar-sdk/rpc";
 export async function registerRepo(
   sorobanContext: SorobanContextType,
   contract: WrappedContract,
+  repoName: string,
+  repoUrl: string,
 ) {
   const contractAddress = contract?.deploymentInfo.contractAddress;
   const stellarContract = new Contract(contractAddress as string);
@@ -32,9 +34,9 @@ export async function registerRepo(
 
   const args = [
     maintainerAddress.toScVal(),
-    nativeToScVal("testrepo"),
+    nativeToScVal(repoName),
     xdr.ScVal.scvVec([maintainerAddress.toScVal()]),
-    nativeToScVal("http://example.com"),
+    nativeToScVal(repoUrl),
     nativeToScVal("deadbeef"),
     domainAddress,
   ];
