@@ -1,0 +1,37 @@
+import { useEffect } from "react";
+import { CONTRACT_ID } from "../constants";
+import * as StellarSdk from "@stellar/stellar-sdk";
+
+const toHexString = (arr: number[]) =>
+  Array.from(arr, (i: number) => i.toString(16).padStart(2, "0")).join("");
+
+
+export function Events() {
+  const server = new StellarSdk.SorobanRpc.Server(
+    "https://soroban-testnet.stellar.org:443",
+  );
+  const eventFilter: StellarSdk.SorobanRpc.Api.EventFilter[] = [
+    {
+      type: "contract",
+      contractIds: [CONTRACT_ID],
+    },
+  ];
+
+  useEffect(() => {
+    server
+      .getEvents({ startLedger: 391673, filters: eventFilter })
+      .then((resp) => {
+        resp.events.forEach((event) => {
+          const topicName = StellarSdk.scValToNative(event.topic[0]);
+          const projectId = toHexString(
+            StellarSdk.scValToNative(event.topic[1]),
+          );
+          event.topic = [topicName, projectId];
+          event.value = toHexString(StellarSdk.scValToNative(event.value)); // either commit hash or project id depending on the topic
+        });
+        console.log(resp.events);
+      });
+  });
+
+  return <div></div>;
+}
