@@ -1,67 +1,59 @@
-import { sendTx, Tx, WrappedContract } from "@soroban-react/contracts";
+import { signAndSendTransaction, WrappedContract } from "@soroban-react/contracts";
 import { SorobanContextType } from "@soroban-react/core";
-import * as StellarSdk from "@stellar/stellar-sdk";
-import { contractInvoke } from "@soroban-react/contracts";
+import {
+  Account,
+  Address,
+  BASE_FEE,
+  Contract,
+  nativeToScVal,
+  SorobanRpc,
+  TransactionBuilder,
+  xdr,
+} from "@stellar/stellar-sdk";
+import { Api } from "@stellar/stellar-sdk/rpc";
 
 export async function registerRepo(
   sorobanContext: SorobanContextType,
   contract: WrappedContract,
 ) {
   const contractAddress = contract?.deploymentInfo.contractAddress;
-  const stellarContract = new StellarSdk.Contract(contractAddress as string);
-  const encoder = new TextEncoder();
+  const stellarContract = new Contract(contractAddress as string);
   const bundlerKeyAccount = await sorobanContext.server
     ?.getAccount(sorobanContext.address as string)
-    .then(
-      (res) => new StellarSdk.Account(res.accountId(), res.sequenceNumber()),
-    );
+    .then((res) => new Account(res.accountId(), res.sequenceNumber()));
 
-  const maintainerAddress = StellarSdk.Address.fromString(
+  const maintainerAddress = Address.fromString(
     sorobanContext.address as string,
+  );
+
+  const domainAddress = Address.fromString(
+    "CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7",
   ).toScVal();
 
   const args = [
-    maintainerAddress,
-    StellarSdk.nativeToScVal(encoder.encode("testrepo")),
-    StellarSdk.xdr.ScVal.scvVec([maintainerAddress]),
-    StellarSdk.nativeToScVal(encoder.encode("http://example.com")),
-    StellarSdk.nativeToScVal(encoder.encode("deadbeef")),
+    maintainerAddress.toScVal(),
+    nativeToScVal("testrepo"),
+    xdr.ScVal.scvVec([maintainerAddress.toScVal()]),
+    nativeToScVal("http://example.com"),
+    nativeToScVal("deadbeef"),
+    domainAddress,
   ];
 
-  const simTxn = new StellarSdk.TransactionBuilder(
-    bundlerKeyAccount as StellarSdk.Account,
-    {
-      fee: "100",
-      networkPassphrase: sorobanContext.activeChain?.networkPassphrase,
-    },
-  )
+  const simTxn = new TransactionBuilder(bundlerKeyAccount as Account, {
+    fee: BASE_FEE,
+    networkPassphrase: sorobanContext.activeChain?.networkPassphrase,
+  })
     .addOperation(stellarContract.call("register", ...args))
-    .setTimeout(StellarSdk.TimeoutInfinite)
+    .setTimeout(0)
     .build();
 
   const simResp = await sorobanContext.server?.simulateTransaction(simTxn);
 
-  if (!StellarSdk.SorobanRpc.Api.isSimulationSuccess(simResp)) {
+  if (!Api.isSimulationSuccess(simResp)) {
     throw simResp;
   } else {
-    const signature = await sorobanContext.activeConnector?.signTransaction(
-      simTxn.toXDR(),
-      {
-        networkPassphrase: sorobanContext.activeChain?.networkPassphrase,
-        network: sorobanContext.activeChain?.network,
-        accountToSign: sorobanContext.address,
-      },
-    );
-    const signedTxn = StellarSdk.TransactionBuilder.fromXDR(
-      signature as string,
-      sorobanContext.activeChain?.networkPassphrase as string,
-    );
-    const res = await sendTx({
-      tx: signedTxn,
-      secondsToWait: 30,
-      server: sorobanContext.server,
-    });
-
-    console.log(res);
+    const authTx = SorobanRpc.assembleTransaction(simTxn, simResp).build();
+    const resp = await signAndSendTransaction({txn: authTx, sorobanContext})
+    console.log(resp);
   }
 }
