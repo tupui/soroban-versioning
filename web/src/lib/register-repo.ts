@@ -1,4 +1,4 @@
-import { signAndSendTransaction, WrappedContract } from "@soroban-react/contracts";
+import { signAndSendTransaction, Simulation, WrappedContract } from "@soroban-react/contracts";
 import { SorobanContextType } from "@soroban-react/core";
 import {
   Account,
@@ -47,7 +47,7 @@ export async function registerRepo(
     .setTimeout(0)
     .build();
 
-  const simResp = await sorobanContext.server?.simulateTransaction(simTxn);
+  const simResp = await sorobanContext.server?.simulateTransaction(simTxn) as Simulation;
 
   if (!Api.isSimulationSuccess(simResp)) {
     throw simResp;
