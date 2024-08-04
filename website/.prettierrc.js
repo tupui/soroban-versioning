@@ -4,7 +4,7 @@ module.exports = {
   // diffs. Override the default for a better experience.
   overrides: [
     {
-      files: "*.mdx",
+      files: ["*.mdx", "*.md"],
       options: {
         proseWrap: "never",
       },

@@ -24,7 +24,7 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/git-logo.svg').default,
     description: (
       <>
-        Tansu bring decentralization back to Git. Push new hashes on-chain and help secure the supply chain by allowing anyone to track code updates.
+        Tansu brings decentralization back to Git. Pushing new hashes on the Stellar blockchain to ensure immutability.
       </>
     ),
   },
