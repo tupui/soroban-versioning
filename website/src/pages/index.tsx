@@ -6,6 +6,7 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
+import React from "react";
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
@@ -28,12 +29,12 @@ function HomepageHeader() {
   );
 }
 
-export default function Home(): JSX.Element {
+export default function Home(): React.JSX.Element {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      description="Tansu - Where Git meet the blockchain">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

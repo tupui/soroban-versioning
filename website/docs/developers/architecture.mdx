@@ -6,8 +6,6 @@ sidebar_position: 2
 
 ![General diagram flow](./architecture.png)
 
-
-
 :::note
 
 Maintainer: a person which is part of a project’s team. This is not necessarily tight to any specific role nor commit rights.
@@ -24,37 +22,44 @@ Maintainer: a person which is part of a project’s team. This is not necessaril
 The Soroban contract handles all on-chain features of the projects from registration, administration, to pushing new code versions. It provides the following minimal Application Programming Interface (API):
 
 ```rust
-fn register(maintainer: address, name: bytes, maintainers: vec<address>, url: bytes, hash: bytes) -> bytes
+fn register(maintainer: Address, name: String, maintainers: Vec<Address>, url: String, hash: String, domain_contract_id: Address) -> Bytes
 
-fn update_config(maintainer: address, key: bytes, maintainers: vec<address>, url: bytes, hash: bytes)
+fn update_config(maintainer: Address, key: Bytes, maintainers: Vec<Address>, url: String, hash: String)
 
-fn commit(maintainer: address, project_key: bytes, hash: bytes)
+fn commit(maintainer: Address, project_key: Bytes, hash: String)
 
-fn get_commit(project_key: bytes) -> bytes
+fn get_commit(project_key: Bytes) -> String
 
-#[contracttype]
 struct Config {
-    hash: bytes,
-    url: bytes
+    hash: String,
+    url: String
 }
 
-#[contracttype]
 struct Project {
     config: Config,
-    maintainers: vec<address>,
-    name: bytes
+    maintainers: Vec<Address>,
+    name: String
 }
 
-#[contracttype]
 enum ProjectKey {
-    Key(bytes),
-    LastHash(bytes)
+    Key(Bytes),
+    LastHash(Bytes)
+}
+
+enum ContractErrors {
+    UnexpectedError = 0,
+    InvalidKey = 1,
+    ProjectAlreadyExist = 2,
+    UnregisteredMaintainer = 3,
+    NoHashFound = 4,
+    InvalidDomainError = 5,
+    MaintainerNotDomainOwner = 6,
 }
 ```
 
-When maintainers register their projects, a unique hash based on the project name is created. This serves as a project_key to uniquely identify a project and is stored as a data entry on the ledger.
+When maintainers register their projects, a unique hash based on the project name is created. This serves as a `project_key` to uniquely identify a project and is stored as a data entry on the ledger.
 
-We intend to use Soroban domain as a way to prevent name squatting and other nefarious registration. The community will have easy tools to report issues. This will effectively prevent misuse of our contract. We would then use the node address provided by Soroban domain as a project_key.
+We intend to use Soroban domain as a way to prevent name squatting and other nefarious registration. The community will have easy tools to report issues. This will effectively prevent misuse of our contract. We would then use the node address provided by Soroban domain as a `project_key`.
 
 Each project stores 3 elements on-chain:
 

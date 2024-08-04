@@ -1,16 +1,17 @@
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
+import React from "react";
 
 type FeatureItem = {
   title: string;
   Svg: React.ComponentType<React.ComponentProps<'svg'>>;
-  description: JSX.Element;
+  description: React.JSX.Element;
 };
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Built with Soroban',
+    title: 'Secure',
     Svg: require('@site/static/img/soroban-wordmark-temp.svg').default,
     description: (
       <>
@@ -19,7 +20,7 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: 'Git on-chain',
+    title: 'Decentralized',
     Svg: require('@site/static/img/git-logo.svg').default,
     description: (
       <>
@@ -52,7 +53,7 @@ function Feature({title, Svg, description}: FeatureItem) {
   );
 }
 
-export default function HomepageFeatures(): JSX.Element {
+export default function HomepageFeatures(): React.JSX.Element {
   return (
     <section className={styles.features}>
       <div className="container">
