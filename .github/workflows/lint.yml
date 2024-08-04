@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: "20"
           cache: "yarn"
-          cache-dependency-path: "**/yarn.lock"
+          cache-dependency-path: "website/**/yarn.lock"
 
       - name: Install App Dependencies
         run: cd website && yarn --prefer-offline
