@@ -13,9 +13,9 @@ Maintainer: a person which is part of a project’s team. This is not necessaril
 :::
 
 1. Using the dApp, a maintainer registers a project providing a unique name, some metadata and a list of maintainers.
-2. The project’s registration triggers an event which can be listen by anyone on the network. As part of our dApp infrastructure, we listen to all events and store then in our database;
+2. The project’s registration triggers an event which can be listened to by anyone on the network. As part of our dApp infrastructure, we listen to all events and store then in our database;
 3. Either using the dApp, or from tools provided to directly call the contract, maintainers can update projects data. Most notably, the last commit hash;
-4. Users can use the dApp to easily get insights on a project. The see the project history, can click on specific commits to have more information and link to the centralized platform used by the project itself.
+4. Users can use the dApp to easily get insights on a project. They see the project history, can click on specific commits to have more information and link to the centralized platform used by the project itself.
 
 ## Soroban Contract
 
@@ -59,7 +59,7 @@ enum ContractErrors {
 
 When maintainers register their projects, a unique hash based on the project name is created. This serves as a `project_key` to uniquely identify a project and is stored as a data entry on the ledger.
 
-We intend to use Soroban domain as a way to prevent name squatting and other nefarious registration. The community will have easy tools to report issues. This will effectively prevent misuse of our contract. We would then use the node address provided by Soroban domain as a `project_key`.
+Behind the scene, it uses Soroban domain as a way to prevent name squatting and other nefarious registration. The community will have easy tools to report issues. This will effectively prevent misuse of our contract.
 
 Each project stores 3 elements on-chain:
 
@@ -85,7 +85,7 @@ We also need to think about the most reluctant maintainers and have ways to obse
 
 The first version of the dApp will be simple and focus on a basic feature set. We first need to build trust with the community and only then we can expand our feature set with what our users actually need.
 
-The dApp will leverage well-known JS SDKs to propose an effective and familiar user interface. We will start with stellar-sdk, sorobandomains-sdk and soroban-astro-template. This will help us build faster and handle addresses and signing safely so that our system never sees a user's secret key–hence fully non-custodial. On that note, having a list of maintainers allows a project to have “social backups” in the sense that another maintainer can help recover access.
+The dApp will leverage well-known JS SDKs to propose an effective and familiar user interface. We will start with stellar-sdk and sorobandomains-sdk. This will help us build faster and handle addresses and signing safely so that our system never sees a user's secret key–hence fully non-custodial. On that note, having a list of maintainers allows a project to have “social backups” in the sense that another maintainer can help recover access.
 
 Maintainers will be able to handle all aspects of their projects on the dApp. They will have tools to add or remove maintainers, update metadata and set the new commit hash of the project.
 

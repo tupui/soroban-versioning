@@ -1,6 +1,6 @@
 ---
-slug: road_to_testnet
-title: Road to testnet
+slug: activation_award
+title: Activation Award
 authors: pamphile
 tags: [soroban, scf]
 ---
