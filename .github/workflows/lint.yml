@@ -38,10 +38,10 @@ jobs:
           cache-dependency-path: "website/package-lock.json"
 
       - name: Install App Dependencies
-        run: cd website && yarn --prefer-offline
+        run: cd website && npm install
 
       - name: Check MDX
-        run: yarn check:mdx
+        run: cd website && npm run check:mdx
 
       - name: Build app
-        run: yarn build
+        run: cd website && npm run build
