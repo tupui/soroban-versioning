@@ -22,3 +22,26 @@ jobs:
         with:
           python-version: "3.12"
       - uses: pre-commit/action@v3.0.1
+
+  website:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout App Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "yarn"
+          cache-dependency-path: "**/yarn.lock"
+
+      - name: Install App Dependencies
+        run: cd website && yarn --prefer-offline
+
+      - name: Check MDX
+        run: yarn check:mdx
+
+      - name: Build app
+        run: yarn build
