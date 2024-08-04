@@ -34,8 +34,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "20"
-          cache: "yarn"
-          cache-dependency-path: "website/**/yarn.lock"
+          cache: "npm"
+          cache-dependency-path: "website/package-lock.json"
 
       - name: Install App Dependencies
         run: cd website && yarn --prefer-offline
