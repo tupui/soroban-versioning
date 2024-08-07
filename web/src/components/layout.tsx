@@ -1,15 +1,23 @@
-import { Events } from "../web3/events";
+import { useSorobanReact } from "@soroban-react/core";
 import { GetCommit } from "../web3/get-commit";
-import { RegisterRepo } from "../web3/register-repo";
 import { Navbar } from "./navbar";
+import { Outlet, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export function Layout() {
+  const { address } = useSorobanReact();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!address) {
+      navigate("/");
+    }
+  }, [address, navigate]);
+
   return (
-    <div className="bg-white h-[100vh] w-[100vw]">
+    <div className="bg-neutral h-[100vh] w-[100vw]">
       <Navbar />
-      <Events />
-      <RegisterRepo />
-      <GetCommit />
+      <Outlet />
     </div>
   );
 }

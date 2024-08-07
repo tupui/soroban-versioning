@@ -1,17 +1,10 @@
 import { useSorobanReact } from "@soroban-react/core";
+
 export function ConnectButton() {
   const sorobanContext = useSorobanReact();
 
-  const {
-    activeChain,
-    address,
-    disconnect,
-    setActiveConnectorAndConnect,
-    setActiveChain,
-  } = sorobanContext;
-  const activeAccount = address;
+  const { address, disconnect, setActiveConnectorAndConnect } = sorobanContext;
   const browserWallets = sorobanContext.connectors;
-  const supportedChains = sorobanContext.chains;
 
   const onClick = async () => {
     if (address) {
