@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { CONTRACT_ID } from "../constants";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { toHexString } from "../lib/util";
+import { useSorobanReact } from "@soroban-react/core";
 
 export function Events() {
-  const server = new StellarSdk.SorobanRpc.Server(
-    "https://soroban-testnet.stellar.org:443",
-  );
+  const sorobanContext = useSorobanReact();
+  const server = sorobanContext.server;
   const eventFilter: StellarSdk.SorobanRpc.Api.EventFilter[] = [
     {
       type: "contract",
