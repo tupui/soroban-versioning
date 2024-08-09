@@ -1,4 +1,4 @@
-from sqlalchemy import orm
+from sqlalchemy import orm, UniqueConstraint
 
 from tansu.events.database.session_factory import SqlAlchemyBase
 
@@ -11,6 +11,12 @@ class Event(SqlAlchemyBase):
     action: orm.Mapped[str] = orm.mapped_column(index=True)
     project_key: orm.Mapped[str] = orm.mapped_column(index=True)
     value: orm.Mapped[str]
+
+    __table_args__ = (
+        UniqueConstraint(
+            "action", "project_key", "value", name="_action_project_key_value"
+        ),
+    )
 
 
 class LatestLedger(SqlAlchemyBase):
