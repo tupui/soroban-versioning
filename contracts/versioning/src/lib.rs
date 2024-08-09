@@ -123,7 +123,7 @@ impl Versioning {
             env.storage().persistent().set(&key_, &project);
 
             env.events()
-                .publish((symbol_short!("register"), name), key.clone());
+                .publish((symbol_short!("register"), key.clone()), name);
             key
         }
     }

@@ -92,8 +92,8 @@ fn test() {
             &env,
             (
                 contract_id.clone(),
-                (symbol_short!("register"), name.clone()).into_val(&env),
-                id.clone().into_val(&env)
+                (symbol_short!("register"), id.clone()).into_val(&env),
+                name.into_val(&env)
             ),
             (
                 contract_id.clone(),
