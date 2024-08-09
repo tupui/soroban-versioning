@@ -1,7 +1,7 @@
 ![Soroban Versioning logo: representation of a planet with a circle and two
 45 degrees parallel lines cutting it in the middle. Two small circles at the
 intersection between the circle and the lines. This represent Git with
-branches and merge commits](web/website/static/img/logo.svg)
+branches and merge commits](website/static/img/logo.svg)
 
 # Soroban Versioning
 
