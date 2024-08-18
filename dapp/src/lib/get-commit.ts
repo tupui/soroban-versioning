@@ -32,6 +32,6 @@ export async function getCommit(
     const resp = StellarSdk.scValToNative(
       simResp.result?.retval as StellarSdk.xdr.ScVal,
     );
-    console.log(toHexString(resp));
+    return resp;
   }
 }

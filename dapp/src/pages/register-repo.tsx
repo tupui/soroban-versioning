@@ -11,7 +11,6 @@ export function RegisterRepo() {
   const contract = useRegisteredContract("versioning");
   const [repoName, setRepoName] = useState<string>("");
   const [repoUrl, setRepoUrl] = useState<string>("");
-  const [domainAddress, setDomainAddress] = useState<string>("");
 
   const onClick = async () => {
     await registerRepo(
@@ -19,7 +18,6 @@ export function RegisterRepo() {
       contract as WrappedContract,
       repoName,
       repoUrl,
-      domainAddress,
     );
   };
 
@@ -52,18 +50,6 @@ export function RegisterRepo() {
             />
           </label>
         </div>
-        <label className="input input-bordered flex items-center gap-2 my-2">
-          <input
-            type="text"
-            placeholder="Soroban Domain Address"
-            className="input w-full border-transparent focus:border-transparent focus:ring-0"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setDomainAddress(e.target.value);
-            }}
-            value={domainAddress}
-          />
-        </label>
-
         <button className="btn" onClick={onClick}>
           Register
         </button>

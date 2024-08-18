@@ -6,5 +6,6 @@ export const DEPLOYMENTS = [
     contractId: "versioning",
     networkPassphrase: "Test SDF Network ; September 2015",
     contractAddress: CONTRACT_ID,
+    sorobanDomainAddress: "CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7",
   },
 ];

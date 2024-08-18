@@ -5,8 +5,9 @@ import { SorobanReactProvider } from "@soroban-react/core";
 import { APP_NAME, DEPLOYMENTS } from "./constants";
 import { Layout } from "./components/layout";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { RegisterRepo } from "./web3/register-repo";
+import { RegisterRepo } from "./pages/register-repo";
 import { Menu } from "./pages/menu";
+import { GetCommit } from "./pages/get-commit";
 
 const chains: ChainMetadata[] = [testnet];
 const connectors: Connector[] = [freighter()];
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
       { index: true, element: <Menu /> },
       { path: "/register", element: <RegisterRepo /> },
       { path: "/repos", element: <RegisterRepo /> },
+      { path: "/get-commit", element: <GetCommit /> },
     ],
   },
 ]);

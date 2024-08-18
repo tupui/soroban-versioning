@@ -23,7 +23,6 @@ export async function registerRepo(
   contract: WrappedContract,
   repoName: string,
   repoUrl: string,
-  domainContractAddress: string,
   additionalMaintainers?: string[] | undefined,
 ) {
   const contractAddress = contract?.deploymentInfo.contractAddress;
@@ -31,6 +30,8 @@ export async function registerRepo(
   const bundlerKeyAccount = await sorobanContext.server
     ?.getAccount(sorobanContext.address as string)
     .then((res) => new Account(res.accountId(), res.sequenceNumber()));
+
+  const domainContractAddress = "CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7";
 
   const maintainerAddress = Address.fromString(
     sorobanContext.address as string,
