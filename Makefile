@@ -73,7 +73,7 @@ contract_bindings: contract_build-release
 	stellar contract bindings typescript \
 		--network $(network) \
 		--contract-id $(shell cat .soroban/soroban_versioning_id) \
-		--output-dir web/bindings/ts \
+		--output-dir dapp/packages/soroban_versioning \
 		--overwrite
 
 contract_deploy: contract_test contract_build-release  ## Deploy Soroban contract to testnet
