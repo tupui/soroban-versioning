@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(__filename);
 
-function importContract({alias}) {
+function importContract(alias) {
   const outputDir = `${dirname}/src/contracts/`;
 
   mkdirSync(outputDir, { recursive: true });
@@ -33,4 +33,4 @@ function importContract({alias}) {
 }
 
 
-importContract("soroban_versioning");
+importContract('soroban_versioning');

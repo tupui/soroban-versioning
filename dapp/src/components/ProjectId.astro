@@ -82,7 +82,7 @@ import OnChainCard from "./OnChainCard.astro"
   button_project_get_hash.addEventListener('click', async () => {
     button_project_get_hash.disabled = true;
     try {
-        getProjectHash();
+        await getProjectHash();
         button_project_get_hash.disabled = false;
     } catch (e) {
       console.error(e);
