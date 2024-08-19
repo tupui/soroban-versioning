@@ -50,7 +50,7 @@ import OnChainCard from "./OnChainCard.astro"
                     Commit hash
                     <input type="text" id="commit_hash" name="commit_hash" class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black" placeholder="Last commit hash" required maxlength="15">
                 </label>
-                <button data-project-commit class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex">
+                <button data-commit-hash aria-controls="commit-hash" class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex">
                     <span class="text-center text-white text-xl font-normal leading-7">Commit on-chain</span>
                 </button>
             </div>
@@ -75,6 +75,7 @@ import OnChainCard from "./OnChainCard.astro"
     } catch (e) {
       console.error(e);
     }
+    alert("Project enabled");
   });
 
   const button_project_get_hash = document.querySelector('[data-project-get-hash]');
@@ -82,15 +83,16 @@ import OnChainCard from "./OnChainCard.astro"
   button_project_get_hash.addEventListener('click', async () => {
     button_project_get_hash.disabled = true;
     try {
-        await getProjectHash();
+        const project_hash = await getProjectHash();
         button_project_get_hash.disabled = false;
+        alert(project_hash);
     } catch (e) {
       console.error(e);
     }
   });
 
   const commit_hash = document.getElementById('commit_hash');
-  const button_project_commit = document.querySelector('[data-project-commit]');
+  const button_project_commit = document.querySelector('[data-commit-hash]');
 
   button_project_commit.addEventListener('click', async () => {
     button_project_commit.disabled = true;
@@ -102,5 +104,6 @@ import OnChainCard from "./OnChainCard.astro"
     } catch (e) {
       console.error(e);
     }
+    alert("Hash committed!");
   });
 </script>

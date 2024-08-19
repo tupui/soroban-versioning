@@ -26,7 +26,7 @@ function setProjectId(project_name: string): void {
 
 async function getProjectHash(): Promise<string | void> {
   if (projectState.project_id === undefined) {
-    console.error("No project defined")
+    alert("No project defined");
     return
   }
   const res = await Versioning.get_commit({ project_key: projectState.project_id })
@@ -36,7 +36,7 @@ async function getProjectHash(): Promise<string | void> {
 
 async function commitHash(commit_hash: string): Promise<void> {
   if (!projectState.project_id) {
-    console.error("No project defined")
+    alert("No project defined");
     return;
   }
   const publicKey = loadedPublicKey();
