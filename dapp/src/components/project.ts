@@ -2,6 +2,7 @@ import pkg from 'js-sha3';
 const {keccak256} = pkg;
 import { Buffer } from "buffer";
 
+import { kit, loadedPublicKey} from "./stellar-wallets-kit.ts";
 import Versioning from "../contracts/soroban_versioning";
 
 
@@ -33,4 +34,30 @@ async function getProjectHash(): Promise<string | void> {
 }
 
 
-export { getProjectHash, loadedProjectId, setProjectId };
+async function commitHash(commit_hash: string): Promise<void> {
+  if (!projectState.project_id) {
+    console.error("No project defined")
+    return;
+  }
+  const publicKey = loadedPublicKey();
+
+  if (!publicKey) {
+    alert("Please connect your wallet first");
+    return;
+  }
+
+  const tx = await Versioning.commit({ maintainer: publicKey, project_key: projectState.project_id, hash: commit_hash })
+  try {
+    await tx.signAndSend({
+      signTransaction: async (xdr) => {
+        const { signedTxXdr } = await kit.signTransaction(xdr);
+        return signedTxXdr;
+      },
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+
+export { commitHash, getProjectHash, loadedProjectId, setProjectId };

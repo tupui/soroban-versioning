@@ -48,7 +48,7 @@ import OnChainCard from "./OnChainCard.astro"
             <div class="space-y-8 md:w-full">
                 <label class="block mb-2 text-base font-medium text-black">
                     Commit hash
-                    <input type="text" id="project-name" name="project-name" class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black" placeholder="Last commit hash" required maxlength="15">
+                    <input type="text" id="commit_hash" name="commit_hash" class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black" placeholder="Last commit hash" required maxlength="15">
                 </label>
                 <button data-project-commit class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex">
                     <span class="text-center text-white text-xl font-normal leading-7">Commit on-chain</span>
@@ -62,7 +62,7 @@ import OnChainCard from "./OnChainCard.astro"
 
 
 <script>
-  import { getProjectHash, setProjectId} from "./project";
+  import { commitHash, getProjectHash, setProjectId} from "./project";
 
   const project_name = document.getElementById('project-name');
   const button_project_name = document.querySelector('[data-project-name]');
@@ -84,6 +84,21 @@ import OnChainCard from "./OnChainCard.astro"
     try {
         await getProjectHash();
         button_project_get_hash.disabled = false;
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+  const commit_hash = document.getElementById('commit_hash');
+  const button_project_commit = document.querySelector('[data-project-commit]');
+
+  button_project_commit.addEventListener('click', async () => {
+    button_project_commit.disabled = true;
+    try {
+        button_project_commit.classList.add("loading");
+        await commitHash(commit_hash.value);
+        button_project_commit.disabled = false;
+        button_project_commit.classList.remove("loading");
     } catch (e) {
       console.error(e);
     }
