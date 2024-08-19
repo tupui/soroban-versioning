@@ -49,10 +49,16 @@ test = [
     "pytest",
     "pytest-asyncio",
     "locust",
+    "respx",
+]
+
+backend = [
+    "fastapi",
+    "uvicorn[standard]",
 ]
 
 dev = [
-    "tansu[test]",
+    "tansu[test,backend]",
     "pre-commit",
     "hatch",
     "ruff",

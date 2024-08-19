@@ -38,3 +38,9 @@ class Event(BaseModel):
     value: SCValNative_
 
     model_config = dict(arbitrary_types_allowed=True)
+
+
+class EventRequest(BaseModel):
+    project_key: str
+    action: str
+    limit: int = 1000

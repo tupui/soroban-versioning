@@ -1,3 +1,3 @@
 import logging
 
-logger = logging.getLogger("soroban-versioning-events-events")
+logger = logging.getLogger("tansu-events")
