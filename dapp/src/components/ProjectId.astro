@@ -2,6 +2,8 @@
 import Container from "./Container.astro"
 import Topic from "./Topic.astro";
 import OnChainCard from "./OnChainCard.astro"
+
+const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK ?? "testnet"
 ---
 
 <Container>
@@ -36,7 +38,7 @@ import OnChainCard from "./OnChainCard.astro"
             </div>
         </div>
 
-        <OnChainCard msg="" link="github" />
+        <OnChainCard msg="" link=`https://stellar.expert/explorer/${SOROBAN_NETWORK}/contract/CAP52ERGUZ65UNPHP36CQBHYUPEUG2TT4NPVEV7CREWRT7UCPD7PRWEE` />
     </div>
 
     <div class="relative flex flex-col items-center md:flex-row">
