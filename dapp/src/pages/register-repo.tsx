@@ -5,19 +5,37 @@ import {
 import { useSorobanReact } from "@soroban-react/core";
 import { useState } from "react";
 import { registerRepo } from "../lib/register-repo";
+import { toast } from "sonner";
+//import { scValToNative } from "@stellar/stellar-sdk";
 
 export function RegisterRepo() {
   const sorobanContext = useSorobanReact();
   const contract = useRegisteredContract("versioning");
   const [repoName, setRepoName] = useState<string>("");
   const [repoUrl, setRepoUrl] = useState<string>("");
+  const [repoHash, setRepoHash] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const onClick = async () => {
-    await registerRepo(
-      sorobanContext,
-      contract as WrappedContract,
-      repoName,
-      repoUrl,
+    toast.promise(
+      registerRepo(
+        sorobanContext,
+        contract as WrappedContract,
+        repoName,
+        repoUrl,
+      ),
+      {
+        loading: "Invoking contract...",
+        success: (data) => {
+          const hash = scValToNative(data.returnValue);
+          setRepoHash(hash);
+          return `Registered!`;
+        },
+        error: (data) => {
+          console.log(data);
+          return "Error!";
+        },
+      },
     );
   };
 

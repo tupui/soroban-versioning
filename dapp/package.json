@@ -21,7 +21,8 @@
     "lucide-react": "^0.400.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.0"
+    "react-router-dom": "^6.26.0",
+    "sonner": "^1.5.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.10",

@@ -8,6 +8,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { RegisterRepo } from "./pages/register-repo";
 import { Menu } from "./pages/menu";
 import { GetCommit } from "./pages/get-commit";
+import { Toaster } from "sonner";
 
 const chains: ChainMetadata[] = [testnet];
 const connectors: Connector[] = [freighter()];
@@ -34,6 +35,7 @@ function App() {
       connectors={connectors}
       deployments={DEPLOYMENTS}
     >
+      <Toaster />
       <RouterProvider router={router} />
     </SorobanReactProvider>
   );

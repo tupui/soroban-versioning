@@ -73,6 +73,6 @@ export async function registerRepo(
   } else {
     const authTx = SorobanRpc.assembleTransaction(simTxn, simResp).build();
     const resp = await signAndSendTransaction({ txn: authTx, sorobanContext });
-    console.log(resp);
+    return resp;
   }
 }
