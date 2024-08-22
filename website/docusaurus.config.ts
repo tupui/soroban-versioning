@@ -72,8 +72,8 @@ const config: Config = {
         },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
-          href: 'https://github.com/tupui/soroban-versioning',
-          label: 'GitHub',
+          href: 'https://testnet.tansu.dev',
+          label: 'Launch App',
           position: 'right',
         },
       ],

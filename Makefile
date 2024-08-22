@@ -129,7 +129,7 @@ contract_register:
     	register \
     	--maintainer $(shell soroban keys address mando-$(network)) \
     	--name tansu \
-    	--maintainers '{ "vec": [{ "address": "$(shell soroban keys address mando-$(network))" }] }' \
+    	--maintainers '[$(shell soroban keys address mando-$(network)),$(shell soroban keys address grogu-$(network))]' \
     	--url https://github.com/tupui/soroban-versioning \
     	--hash da76cd6fdcc71d730306d23b121f8cc67d3eedda \
     	--domain_contract_id $(domain_contract_id)
