@@ -1,9 +1,11 @@
 ---
 import Container from "./Container.astro"
 import Topic from "./Topic.astro";
-import OnChainCard from "./OnChainCard.astro"
+import LinkCard from "./LinkCard.astro"
 
-const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK ?? "testnet"
+const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK
+const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID
+
 ---
 
 <Container>
@@ -23,6 +25,7 @@ const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK ?? "testnet"
                 </button>
             </div>
         </div>
+        <LinkCard line1="On-chain" link=`https://stellar.expert/explorer/${SOROBAN_NETWORK}/contract/${TANSU_CONTRACT_ID}` />
     </div>
 
     <div class="relative flex flex-col items-center md:flex-row">
@@ -37,8 +40,6 @@ const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK ?? "testnet"
                 </button>
             </div>
         </div>
-
-        <OnChainCard msg="" link=`https://stellar.expert/explorer/${SOROBAN_NETWORK}/contract/CAP52ERGUZ65UNPHP36CQBHYUPEUG2TT4NPVEV7CREWRT7UCPD7PRWEE` />
     </div>
 
     <div class="relative flex flex-col items-center md:flex-row">

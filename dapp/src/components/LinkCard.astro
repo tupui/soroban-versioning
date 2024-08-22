@@ -1,5 +1,5 @@
 ---
-const { msg, link } = Astro.props;
+const { line1, line2, link } = Astro.props;
 ---
 
 <div class="py-4">
@@ -8,10 +8,10 @@ const { msg, link } = Astro.props;
         <div class="flex-row justify-center items-start gap-[20px] inline-flex">
             <div class="flex-row justify-start items-start flex">
                 <div class="px-[7px] bg-lime-300 rounded-[7px] flex-row justify-start items-start flex">
-                    <div class=" text-3xl font-medium">On-chain</div>
+                    <div class=" text-3xl font-medium">{line1}</div>
                 </div>
                 <div class="px-[7px] bg-lime-300 rounded-[7px] flex-row justify-start items-start flex">
-                    <div class="text-3xl font-medium">{msg}</div>
+                    <div class="text-3xl font-medium">{line2}</div>
                 </div>
             </div>
             <a class="justify-start items-center gap-[15px] inline-flex" href={link}>
