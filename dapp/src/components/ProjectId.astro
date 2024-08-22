@@ -50,7 +50,7 @@ const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK ?? "testnet"
             <div class="space-y-8 md:w-full">
                 <label class="block mb-2 text-base font-medium text-black">
                     Commit hash
-                    <input type="text" id="commit_hash" name="commit_hash" class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black" placeholder="Last commit hash" required maxlength="15">
+                    <input type="text" id="commit_hash" name="commit_hash" class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black" placeholder="Last commit hash" required minlength="40" maxlength="40">
                 </label>
                 <button data-commit-hash aria-controls="commit-hash" class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex">
                     <span class="text-center text-white text-xl font-normal leading-7">Commit on-chain</span>
@@ -74,10 +74,10 @@ const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK ?? "testnet"
     try {
         setProjectId(project_name.value);
         button_project_name.disabled = false;
+        alert("Project enabled");
     } catch (e) {
       console.error(e);
     }
-    alert("Project enabled");
   });
 
   const button_project_get_hash = document.querySelector('[data-project-get-hash]');
@@ -100,12 +100,12 @@ const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK ?? "testnet"
     button_project_commit.disabled = true;
     try {
         button_project_commit.classList.add("loading");
-        await commitHash(commit_hash.value);
+        const commit_status = await commitHash(commit_hash.value);
         button_project_commit.disabled = false;
         button_project_commit.classList.remove("loading");
+        commit_status ? alert("Hash committed!") : alert("Hash NOT committed!") ;
     } catch (e) {
       console.error(e);
     }
-    alert("Hash committed!");
   });
 </script>

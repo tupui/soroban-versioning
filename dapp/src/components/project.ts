@@ -34,17 +34,20 @@ async function getProjectHash(): Promise<string | void> {
 }
 
 
-async function commitHash(commit_hash: string): Promise<void> {
+async function commitHash(commit_hash: string): Promise<boolean> {
   if (!projectState.project_id) {
     alert("No project defined");
-    return;
+    return false;
   }
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
     alert("Please connect your wallet first");
-    return;
+    return false;
   }
+  else {
+      Versioning.options.publicKey = publicKey;
+    }
 
   const tx = await Versioning.commit({ maintainer: publicKey, project_key: projectState.project_id, hash: commit_hash })
   try {
@@ -54,8 +57,10 @@ async function commitHash(commit_hash: string): Promise<void> {
         return signedTxXdr;
       },
     });
+    return true
   } catch (e) {
     console.error(e);
+    return false
   }
 }
 
