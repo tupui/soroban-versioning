@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Tansu - Soroban Versioning',
   tagline: 'Bringing Git hashes onto Stellar’s blockchain',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/logo.svg',
 
   // Set the production url of your site here
   url: 'https://tansu.dev',
