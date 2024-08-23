@@ -1,0 +1,54 @@
+<div id="connect-wrap" class="wrap" aria-live="polite">
+  <div class="ellipsis">
+    <button data-connect aria-controls="connect-wrap">Connect</button>
+  </div>
+</div>
+
+<style>
+  .wrap {
+    text-align: center;
+  }
+
+  .ellipsis {
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    white-space: nowrap;
+  }
+</style>
+
+<script>
+  import { kit, setPublicKey } from './stellar-wallets-kit';
+
+  const ellipsis = document.querySelector('#connect-wrap .ellipsis');
+  const button = document.querySelector('[data-connect]');
+
+  async function setLoggedIn(publicKey: string) {
+    ellipsis.innerHTML = `Signed in as ${publicKey}`;
+    ellipsis.title = publicKey;
+  }
+
+  button.addEventListener('click', async () => {
+    button.disabled = true;
+
+    try {
+      await kit.openModal({
+        onWalletSelected: async option => {
+          try {
+            kit.setWallet(option.id);
+            const { address } = await kit.getAddress();
+            setPublicKey(address);
+            await setLoggedIn(address);
+            button.disabled = false;
+          } catch (e) {
+            console.error(e);
+          }
+        },
+      });
+    } catch (e) {
+      console.error(e);
+    }
+
+  });
+</script>
