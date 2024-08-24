@@ -22,13 +22,17 @@ PROJECT_KEY = os.getenv("TANSU_PROJECT_KEY")
 if PROJECT_KEY is None:
     raise ValueError("'TANSU_PROJECT_KEY' is missing from the environment")
 
-BRANCH = os.getenv("PRE_COMMIT_REMOTE_BRANCH")
-if BRANCH != "main":
-    exit(0)
-
 
 def main():
     project_key = bytes.fromhex(PROJECT_KEY)
+
+    branch = (
+        subprocess.run(["git", "branch", "--show-current"], capture_output=True)
+        .stdout.decode()
+        .strip("\n")
+    )
+    if branch != "main":
+        exit(0)
 
     commit_hash = (
         subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True)
