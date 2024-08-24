@@ -22,6 +22,8 @@ PROJECT_KEY = os.getenv("TANSU_PROJECT_KEY")
 if PROJECT_KEY is None:
     raise ValueError("'TANSU_PROJECT_KEY' is missing from the environment")
 
+BRANCH = os.getenv("TANSU_BRANCH", "main")
+
 
 def main():
     project_key = bytes.fromhex(PROJECT_KEY)
@@ -31,7 +33,7 @@ def main():
         .stdout.decode()
         .strip("\n")
     )
-    if branch != "main":
+    if branch != BRANCH:
         exit(0)
 
     commit_hash = (
