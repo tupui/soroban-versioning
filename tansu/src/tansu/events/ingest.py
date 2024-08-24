@@ -3,6 +3,7 @@ import stellar_sdk.xdr
 from stellar_sdk.soroban_rpc import EventFilter, EventFilterType
 
 from tansu.events.database import db_models, SessionFactory
+from tansu.events import api_models
 
 
 def fetch_events(
@@ -30,14 +31,13 @@ def fetch_events(
     latest_ledger = res.latest_ledger
     events_ = []
     for event in res.events:
-        action, project_key = event.topic[0], event.topic[1]
-        value = event.value
-        ledger = event.ledger
-        events_.append(
-            db_models.Event(
-                ledger=ledger, action=action, project_key=project_key, value=value
-            )
+        event = api_models.Event(
+            ledger=event.ledger,
+            action=event.topic[0],
+            project_key=event.topic[1],
+            value=event.value,
         )
+        events_.append(db_models.Event(**event.model_dump()))
 
     return events_, latest_ledger
 

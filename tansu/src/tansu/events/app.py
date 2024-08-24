@@ -60,7 +60,7 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "tansu.event.main:app",
+        "tansu.events.main:app",
         host="127.0.0.1",
         reload=True,
         port=8080,

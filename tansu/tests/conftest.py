@@ -38,19 +38,15 @@ def tables(engine):
 async def fake_events(tables):
     event_1 = db_models.Event(
         ledger=4,
-        # transfer
-        action="AAAADwAAAAh0cmFuc2Zlcg==",
-        # GA7YNBW5CBTJZ3ZZOWX3ZNBKD6OE7A7IHUQVWMY62W2ZBG2SGZVOOPVH
-        project_key="AAAAEgAAAAAAAAAAP4aG3RBmnO85da+8tCofnE+D6D0hWzMe1bWQm1I2auc=",
-        value="AAAABAAAJxA=",
+        action="commit",
+        project_key="37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156",
+        value="04cea5e23c7c50ae3dc304218314f21e7164c9d2",
     )
     event_2 = db_models.Event(
         ledger=1,
-        # transfer
-        action="AAAADwAAAAh0cmFuc2Zlcg==",
-        # GAFYGBHKVFP36EOIRGG74V42F3ORAA2ZWBXNULMNDXAMMXQH5MCIGXXI
-        project_key="AAAAEgAAAAAAAAAAC4ME6qlfvxHIiY3+V5ou3RADWbBu2i2NHcDGXgfrBIM=",
-        value="AAAABAAAE4g=",
+        action="register",
+        project_key="37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156",
+        value="bed45eef20315c731cc5912c7e2aa626b7cf2a45",
     )
 
     await events_to_db([event_1, event_2])

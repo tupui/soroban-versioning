@@ -1,3 +1,4 @@
+import sqlalchemy
 from fastapi import APIRouter
 
 from tansu.events.database import SessionFactory, db_models
@@ -9,17 +10,21 @@ router = APIRouter()
 @router.post("/events")
 async def events(request: api_models.EventRequest) -> list[api_models.Event | None]:
     async with SessionFactory() as session:
-        events_ = (
-            session.query(db_models.Event)
+        stmt = (
+            sqlalchemy.select(db_models.Event)
             .where(db_models.Event.project_key == request.project_key)
             .where(db_models.Event.action == request.action)
             .limit(request.limit)
-            .all()
         )
+        res = await session.execute(stmt)
+    events_ = res.scalars()
 
     result = [
         api_models.Event(
-            project_key=event_.project_key, action=event_.action, value=event_.value
+            ledger=event_.ledger,
+            project_key=event_.project_key,
+            action=event_.action,
+            value=event_.value,
         )
         for event_ in events_
     ]
