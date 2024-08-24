@@ -59,7 +59,7 @@ enum ContractErrors {
 
 When maintainers register their projects, a unique hash based on the project name is created. This serves as a `project_key` to uniquely identify a project and is stored as a data entry on the ledger.
 
-Behind the scene, it uses Soroban domain as a way to prevent name squatting and other nefarious registration. The community will have easy tools to report issues. This will effectively prevent misuse of our contract.
+Behind the scene, it uses [Soroban Domain](https://sorobandomains.org/) as a way to prevent name squatting and other nefarious registration. The community will have easy tools to report issues. This will effectively prevent misuse of our contract.
 
 Each project stores 3 elements on-chain:
 
@@ -77,15 +77,15 @@ At the interface between the contract and the dApp, we will have a backend infra
 
 A PostgreSQL database will store all events, and we will use FastAPI along with SQLAlchemy to interact with it. Having a DB will help us save on explicit contract calls. Specific endpoints are yet to be defined. The contract calls will be made in Python thanks to the libraries py-stellar-base and soroban-cli-python (which was built by our team).
 
-The other key component we will bring is Git hooks. Upon specific Git actions, maintainers will trigger automatically, and behind the scene, hooks to call the contract and update the commit hash of the project. This will greatly improve the developer experience to make it a seamless operation. In the long term, users could also benefit from the hooks and have security features built-in such as warning if hash do not match between on-chain and off-chain.
+The other key component which we are already bringing is Git hooks. Upon specific Git actions, maintainers will trigger automatically, and behind the scene, hooks to call the contract and update the commit hash of the project. This can greatly improve the developer experience to make it a seamless operation. In the long term, users could also benefit from the hooks and have security features built-in such as warning if hash do not match between on-chain and off-chain.
 
 We also need to think about the most reluctant maintainers and have ways to observe off-chain data and pre-update on-chain data.
 
 ## dApp
 
-The first version of the dApp will be simple and focus on a basic feature set. We first need to build trust with the community and only then we can expand our feature set with what our users actually need.
+The first version of the dApp is simple and focus on a basic feature set. We first need to build trust with the community and only then we can expand our feature set with what our users actually need.
 
-The dApp will leverage well-known JS SDKs to propose an effective and familiar user interface. We will start with stellar-sdk and sorobandomains-sdk. This will help us build faster and handle addresses and signing safely so that our system never sees a user's secret key–hence fully non-custodial. On that note, having a list of maintainers allows a project to have “social backups” in the sense that another maintainer can help recover access.
+The dApp leverages well-known JS SDKs to propose an effective and familiar user interface. We are using Astro with the `stellar-wallets-kit` (and soon `sorobandomains-sdk`.) This helps us build faster and handle addresses and signing safely so that our system never sees a user's secret key–hence fully non-custodial.
 
 Maintainers will be able to handle all aspects of their projects on the dApp. They will have tools to add or remove maintainers, update metadata and set the new commit hash of the project.
 
