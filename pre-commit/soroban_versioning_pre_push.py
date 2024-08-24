@@ -22,6 +22,10 @@ PROJECT_KEY = os.getenv("TANSU_PROJECT_KEY")
 if PROJECT_KEY is None:
     raise ValueError("'TANSU_PROJECT_KEY' is missing from the environment")
 
+BRANCH = os.getenv("PRE_COMMIT_REMOTE_BRANCH")
+if BRANCH != "main":
+    exit(0)
+
 
 def main():
     project_key = bytes.fromhex(PROJECT_KEY)
