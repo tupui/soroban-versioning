@@ -1,0 +1,115 @@
+---
+import Topic from "./Topic.astro";
+import Loading from "./Loading.astro";
+
+const SOROBAN_DOMAIN_CONTRACT_ID = import.meta.env.SOROBAN_DOMAIN_CONTRACT_ID;
+---
+
+<div class="relative flex flex-col items-center md:flex-row">
+  <Topic title="Register" description="Register a new project on-chain" />
+</div>
+
+<div
+  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-[45px]"
+>
+  <div class="row items-center py-12 px-4 md:px-20 md:w-8/12 md:py-10">
+    <div class="space-y-8 md:w-full">
+
+      <label class="block mb-2 text-base font-medium text-black">
+        Maintainers
+        <input
+          type="text"
+          id="maintainers"
+          name="config_hash"
+          class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
+          placeholder="List of maintainers' addresses as G...,G..."
+          required
+        />
+      </label>
+
+      <label class="block mb-2 text-base font-medium text-black">
+        URL
+        <input
+          type="text"
+          id="config_url"
+          name="config_hash"
+          class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
+          placeholder="Information file URL"
+          required
+        />
+      </label>
+
+      <label class="block mb-2 text-base font-medium text-black">
+        Information file hash
+        <input
+          type="text"
+          id="config_hash"
+          name="config_hash"
+          class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
+          placeholder="Information file hash"
+          required
+          minlength="40"
+          maxlength="40"
+        />
+      </label>
+
+      <div id="wrap-register-button">
+        <button
+          data-register-project
+          aria-controls="register-project"
+          class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
+        >
+          <span class="text-center text-white text-xl font-normal leading-7"
+            >Register on-chain</span
+          >
+        </button>
+      </div>
+    </div>
+    <div id="wrap-register-loader" class="hidden">
+      <Loading />
+    </div>
+  </div>
+</div>
+
+<script>
+  import {registerProject} from "./project";
+
+  const maintainers = document.getElementById(
+    "maintainers",
+  ) as HTMLInputElement;
+
+  const config_url = document.getElementById(
+    "config_url",
+  ) as HTMLInputElement;
+  const config_hash = document.getElementById(
+    "config_hash",
+  ) as HTMLInputElement;
+
+  const wrap_loader = document.getElementById(
+    "wrap-register-loader",
+  ) as HTMLDivElement;
+  const wrap_button = document.getElementById(
+    "wrap-register-button",
+  ) as HTMLDivElement;
+  const button = document.querySelector(
+    "[data-register-project]",
+  ) as HTMLButtonElement;
+
+  button.addEventListener("click", async () => {
+    wrap_loader.style.display = "block";
+    wrap_button.style.display = "none";
+    try {
+      const register_status = await registerProject(maintainers.value,  config_url.value, config_hash.value, "CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7");
+
+      wrap_loader.style.display = "none";
+      wrap_button.style.display = "block";
+      if (!register_status) {
+        alert("Project could not be registered! Please retry.");
+      } else {
+        wrap_button.innerHTML = "Project registered!";
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  });
+</script>
