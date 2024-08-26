@@ -68,7 +68,11 @@ import Loading from "./Loading.astro";
 
       wrap_loader.style.display = "none";
       wrap_button.style.display = "block";
-      wrap_button.innerHTML = commit_status ? "Hash committed!" : "Hash NOT committed!";
+      if (!commit_status) {
+        alert("Hash could not be committed! Please retry.");
+      } else {
+        wrap_button.innerHTML = "Hash committed!";
+      }
     } catch (e) {
       console.error(e);
     }
