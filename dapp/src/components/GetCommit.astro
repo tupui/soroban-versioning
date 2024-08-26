@@ -23,9 +23,9 @@ import Loading from "./Loading.astro";
 <script>
   import {getProjectHash} from "./project";
 
-  const wrap_loader = document.querySelector('#wrap-get-hash-loader');
-  const wrap_button = document.querySelector('#wrap-get-hash-button');
-  const button = document.querySelector('[data-project-get-hash]');
+  const wrap_loader = document.getElementById('wrap-get-hash-loader') as HTMLDivElement;
+  const wrap_button = document.getElementById('wrap-get-hash-button') as HTMLDivElement;
+  const button = document.querySelector('[data-project-get-hash]') as HTMLButtonElement;
 
   button.addEventListener('click', async () => {
     wrap_loader.style.display = "block";

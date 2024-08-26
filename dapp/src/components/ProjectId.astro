@@ -55,8 +55,8 @@ const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID
 <script>
   import { commitHash, setProjectId} from "./project";
 
-  const project_name = document.getElementById('project-name');
-  const button_project_name = document.querySelector('[data-project-name]');
+  const project_name = document.getElementById('project-name') as HTMLInputElement;
+  const button_project_name = document.querySelector('[data-project-name]') as HTMLButtonElement;
 
   button_project_name.addEventListener('click', async () => {
     button_project_name.disabled = true;
@@ -69,8 +69,8 @@ const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID
     }
   });
 
-  const commit_hash = document.getElementById('commit_hash');
-  const button_project_commit = document.querySelector('[data-commit-hash]');
+  const commit_hash = document.getElementById('commit_hash') as HTMLInputElement;
+  const button_project_commit = document.querySelector('[data-commit-hash]') as HTMLButtonElement;
 
   button_project_commit.addEventListener('click', async () => {
     button_project_commit.disabled = true;
