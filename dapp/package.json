@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "@astrojs/check": "^0.4.1",
+    "@astrojs/check": "^0.9.3",
     "@astrojs/tailwind": "^5.1.0",
     "@creit.tech/stellar-wallets-kit": "^1.0.0",
     "astro": "^4.2.4",
     "install": "^0.13.0",
     "js-sha3": "^0.9.3",
     "tailwindcss": "^3.4.10",
-    "typescript": "^5.3.3"
+    "typescript": "^5.5.4"
   },
   "devDependencies": {
     "dotenv": "^16.4.1",
