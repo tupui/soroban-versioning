@@ -11,7 +11,7 @@
   },
   "devDependencies": {
     "dotenv": "^16.4.1",
-    "glob": "^10.4.1",
+    "glob": "^11.0.0",
     "netlify-cli": "^17.34.1"
   },
   "name": "dapp",
