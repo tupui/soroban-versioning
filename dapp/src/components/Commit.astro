@@ -25,65 +25,50 @@ import Loading from "./Loading.astro";
           maxlength="40"
         />
       </label>
-      <button
-        data-commit-hash
-        aria-controls="commit-hash"
-        class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
-      >
-        <span class="text-center text-white text-xl font-normal leading-7"
-          >Commit on-chain</span
+      <div id="wrap-commit-button">
+        <button
+          data-commit-hash
+          aria-controls="commit-hash"
+          class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
         >
-      </button>
+          <span class="text-center text-white text-xl font-normal leading-7"
+            >Commit on-chain</span
+          >
+        </button>
+      </div>
     </div>
-  </div>
-</div>
-
-<div class="relative flex flex-col items-center md:flex-row">
-  <Topic title="Latest hash" description="Get the latest hash on-chain" />
-</div>
-
-<div
-  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-[45px]"
->
-  <div class="row items-center py-12 px-4 md:px-20 md:w-8/12 md:py-10">
-    <div id="wrap-get-hash-button" class="space-y-8 md:w-full">
-      <button
-        data-project-get-hash
-        class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
-      >
-        <span class="text-center text-white text-xl font-normal leading-7"
-          >Latest hash</span
-        >
-      </button>
-    </div>
-    <div id="wrap-get-hash-loader" class="hidden">
+    <div id="wrap-commit-loader" class="hidden">
       <Loading />
     </div>
   </div>
 </div>
 
 <script>
-  import { getProjectHash } from "./project";
+  import {commitHash} from "./project";
+
+  const commit_hash = document.getElementById(
+    "commit_hash",
+  ) as HTMLInputElement;
 
   const wrap_loader = document.getElementById(
-    "wrap-get-hash-loader",
+    "wrap-commit-loader",
   ) as HTMLDivElement;
   const wrap_button = document.getElementById(
-    "wrap-get-hash-button",
+    "wrap-commit-button",
   ) as HTMLDivElement;
   const button = document.querySelector(
-    "[data-project-get-hash]",
+    "[data-commit-hash]",
   ) as HTMLButtonElement;
 
   button.addEventListener("click", async () => {
     wrap_loader.style.display = "block";
     wrap_button.style.display = "none";
     try {
-      const project_hash = await getProjectHash();
+      const commit_status = await commitHash(commit_hash.value);
 
       wrap_loader.style.display = "none";
       wrap_button.style.display = "block";
-      wrap_button.innerHTML = `${project_hash}`;
+      wrap_button.innerHTML = commit_status ? "Hash committed!" : "Hash NOT committed!";
     } catch (e) {
       console.error(e);
     }

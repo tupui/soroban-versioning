@@ -3,6 +3,7 @@ import Container from "./Container.astro";
 import Topic from "./Topic.astro";
 import LinkCard from "./LinkCard.astro";
 import GetCommit from "./GetCommit.astro";
+import Commit from "./Commit.astro";
 
 const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK;
 const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID;
@@ -47,10 +48,11 @@ const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID;
   </div>
 
   <GetCommit />
+  <Commit />
 </Container>
 
 <script>
-  import { commitHash, setProjectId } from "./project";
+  import {setProjectId} from "./project";
 
   const project_name = document.getElementById(
     "project-name",
@@ -65,26 +67,6 @@ const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID;
       setProjectId(project_name.value);
       button_project_name.disabled = false;
       alert("Project enabled");
-    } catch (e) {
-      console.error(e);
-    }
-  });
-
-  const commit_hash = document.getElementById(
-    "commit_hash",
-  ) as HTMLInputElement;
-  const button_project_commit = document.querySelector(
-    "[data-commit-hash]",
-  ) as HTMLButtonElement;
-
-  button_project_commit.addEventListener("click", async () => {
-    button_project_commit.disabled = true;
-    try {
-      button_project_commit.classList.add("loading");
-      const commit_status = await commitHash(commit_hash.value);
-      button_project_commit.disabled = false;
-      button_project_commit.classList.remove("loading");
-      commit_status ? alert("Hash committed!") : alert("Hash NOT committed!");
     } catch (e) {
       console.error(e);
     }
