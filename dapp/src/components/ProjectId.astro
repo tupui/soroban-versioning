@@ -2,6 +2,7 @@
 import Container from "./Container.astro"
 import Topic from "./Topic.astro";
 import LinkCard from "./LinkCard.astro"
+import GetCommit from "./GetCommit.astro";
 
 const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK
 const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID
@@ -28,19 +29,7 @@ const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID
         <LinkCard line1="On-chain" link=`https://stellar.expert/explorer/${SOROBAN_NETWORK}/contract/${TANSU_CONTRACT_ID}` />
     </div>
 
-    <div class="relative flex flex-col items-center md:flex-row">
-        <Topic title="Latest hash" description="Get the latest hash on-chain" />
-    </div>
-
-    <div class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-[45px]">
-        <div class="row items-center py-12 px-4 md:px-20 md:w-8/12 md:py-10">
-            <div class="space-y-8 md:w-full">
-                <button data-project-get-hash class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex">
-                    <span class="text-center text-white text-xl font-normal leading-7">Latest hash</span>
-                </button>
-            </div>
-        </div>
-    </div>
+    <GetCommit />
 
     <div class="relative flex flex-col items-center md:flex-row">
         <Topic title="Commit" description="Update hash on-chain" />
@@ -60,12 +49,11 @@ const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID
         </div>
     </div>
 
-
 </Container>
 
 
 <script>
-  import { commitHash, getProjectHash, setProjectId} from "./project";
+  import { commitHash, setProjectId} from "./project";
 
   const project_name = document.getElementById('project-name');
   const button_project_name = document.querySelector('[data-project-name]');
@@ -73,22 +61,9 @@ const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID
   button_project_name.addEventListener('click', async () => {
     button_project_name.disabled = true;
     try {
-        setProjectId(project_name.value);
-        button_project_name.disabled = false;
-        alert("Project enabled");
-    } catch (e) {
-      console.error(e);
-    }
-  });
-
-  const button_project_get_hash = document.querySelector('[data-project-get-hash]');
-
-  button_project_get_hash.addEventListener('click', async () => {
-    button_project_get_hash.disabled = true;
-    try {
-        const project_hash = await getProjectHash();
-        button_project_get_hash.disabled = false;
-        alert(project_hash);
+      setProjectId(project_name.value);
+      button_project_name.disabled = false;
+      alert("Project enabled");
     } catch (e) {
       console.error(e);
     }
@@ -100,11 +75,11 @@ const TANSU_CONTRACT_ID = import.meta.env.TANSU_CONTRACT_ID
   button_project_commit.addEventListener('click', async () => {
     button_project_commit.disabled = true;
     try {
-        button_project_commit.classList.add("loading");
-        const commit_status = await commitHash(commit_hash.value);
-        button_project_commit.disabled = false;
-        button_project_commit.classList.remove("loading");
-        commit_status ? alert("Hash committed!") : alert("Hash NOT committed!") ;
+      button_project_commit.classList.add("loading");
+      const commit_status = await commitHash(commit_hash.value);
+      button_project_commit.disabled = false;
+      button_project_commit.classList.remove("loading");
+      commit_status ? alert("Hash committed!") : alert("Hash NOT committed!") ;
     } catch (e) {
       console.error(e);
     }
