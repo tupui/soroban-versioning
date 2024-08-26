@@ -28,15 +28,13 @@ import Loading from "./Loading.astro";
   const button = document.querySelector('[data-project-get-hash]');
 
   button.addEventListener('click', async () => {
-    wrap_loader.classList.remove("hidden");
-    wrap_loader.classList.add("visible");
-    wrap_button.classList.add("hidden");
+    wrap_loader.style.display = "block";
+    wrap_button.style.display = "none";
     try {
       const project_hash = await getProjectHash();
 
-      wrap_loader.classList.add("hidden");
-      wrap_button.classList.add("visible");
-      wrap_button.classList.remove("hidden");
+      wrap_loader.style.display = "none";
+      wrap_button.style.display = "block";
       wrap_button.innerHTML = `${project_hash}`;
     } catch (e) {
       console.error(e);
