@@ -1,7 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
 
-import ProjectId from "../components/ProjectId.astro";
+import SetProject from "../components/SetProject.astro";
+import GetCommit from "../components/GetCommit.astro";
+import Commit from "../components/Commit.astro";
+import Container from "../components/Container.astro";
 ---
 
 <script is:inline>
@@ -9,6 +12,10 @@ import ProjectId from "../components/ProjectId.astro";
 </script>
 <Layout title="Tansu">
   <main class="space-y-20">
-    <ProjectId />
+    <Container>
+      <SetProject />
+      <GetCommit />
+      <Commit />
+    </Container>
   </main>
 </Layout>
