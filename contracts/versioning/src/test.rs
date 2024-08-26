@@ -30,9 +30,9 @@ fn test() {
         ],
     );
     let issuer: Address = Address::generate(&env);
-    let token_address = env.register_stellar_asset_contract(issuer.clone());
-    let col_asset_client = token::TokenClient::new(&env, &token_address);
-    let col_asset_stellar = token::StellarAssetClient::new(&env, &token_address);
+    let sac = env.register_stellar_asset_contract_v2(issuer.clone());
+    let col_asset_client = token::TokenClient::new(&env, &sac.address());
+    let col_asset_stellar = token::StellarAssetClient::new(&env, &sac.address());
 
     domain_client.init(
         &adm,
