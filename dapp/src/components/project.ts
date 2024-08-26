@@ -70,7 +70,12 @@ async function commitHash(commit_hash: string): Promise<boolean> {
   }
 }
 
-async function registerProject(maintainers: string, config_url: string, config_hash: string, domain_contract_id: string): Promise<boolean> {
+async function registerProject(
+  maintainers: string,
+  config_url: string,
+  config_hash: string,
+  domain_contract_id: string,
+): Promise<boolean> {
   if (!projectState.project_id) {
     alert("No project defined");
     return false;
@@ -109,4 +114,10 @@ async function registerProject(maintainers: string, config_url: string, config_h
   }
 }
 
-export { commitHash, getProjectHash, loadedProjectId, registerProject, setProjectId };
+export {
+  commitHash,
+  getProjectHash,
+  loadedProjectId,
+  registerProject,
+  setProjectId,
+};

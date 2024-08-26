@@ -14,7 +14,6 @@ const SOROBAN_DOMAIN_CONTRACT_ID = import.meta.env.SOROBAN_DOMAIN_CONTRACT_ID;
 >
   <div class="row items-center py-12 px-4 md:px-20 md:w-8/12 md:py-10">
     <div class="space-y-8 md:w-full">
-
       <label class="block mb-2 text-base font-medium text-black">
         Maintainers
         <input
@@ -72,15 +71,13 @@ const SOROBAN_DOMAIN_CONTRACT_ID = import.meta.env.SOROBAN_DOMAIN_CONTRACT_ID;
 </div>
 
 <script>
-  import {registerProject} from "./project";
+  import { registerProject } from "./project";
 
   const maintainers = document.getElementById(
     "maintainers",
   ) as HTMLInputElement;
 
-  const config_url = document.getElementById(
-    "config_url",
-  ) as HTMLInputElement;
+  const config_url = document.getElementById("config_url") as HTMLInputElement;
   const config_hash = document.getElementById(
     "config_hash",
   ) as HTMLInputElement;
@@ -99,7 +96,12 @@ const SOROBAN_DOMAIN_CONTRACT_ID = import.meta.env.SOROBAN_DOMAIN_CONTRACT_ID;
     wrap_loader.style.display = "block";
     wrap_button.style.display = "none";
     try {
-      const register_status = await registerProject(maintainers.value,  config_url.value, config_hash.value, "CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7");
+      const register_status = await registerProject(
+        maintainers.value,
+        config_url.value,
+        config_hash.value,
+        "CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7",
+      );
 
       wrap_loader.style.display = "none";
       wrap_button.style.display = "block";
