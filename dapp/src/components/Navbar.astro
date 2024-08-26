@@ -1,24 +1,33 @@
 ---
-import Container from "./Container.astro"
-import ConnectWallet from '../components/ConnectWallet.astro';
+import Container from "./Container.astro";
+import ConnectWallet from "../components/ConnectWallet.astro";
 ---
 
 <header class="mt-32">
-<nav class="w-full top-0 left-0 z-50 fixed bg-white">
-  <Container>
-    <div class="flex flex-wrap items-center justify-between mx-auto py-3">
-      <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
+  <nav class="w-full top-0 left-0 z-50 fixed bg-white">
+    <Container>
+      <div class="flex flex-wrap items-center justify-between mx-auto py-3">
+        <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
           <img src="/logo.svg" class="h-8" alt="Logo" />
-      </a>
-      <div class="hidden w-full md:block md:w-auto font-medium" id="navbar-default">
-        Tansu - <span class="sm:text-sm px-1.5 font-medium bg-lime rounded-md"> Alpha </span>
-      </div>
-      <div class="md:block md:w-auto" id="navbar-default">
-        <div class="px-9 py-2 rounded-2xl border border-zinc-900 bg-white hover:bg-black text-black hover:text-white inline-flex" >
+        </a>
+        <div
+          class="hidden w-full md:block md:w-auto font-medium"
+          id="navbar-default"
+        >
+          Tansu - <span
+            class="sm:text-sm px-1.5 font-medium bg-lime rounded-md"
+          >
+            Alpha
+          </span>
+        </div>
+        <div class="md:block md:w-auto" id="navbar-default">
+          <div
+            class="px-9 py-2 rounded-2xl border border-zinc-900 bg-white hover:bg-black text-black hover:text-white inline-flex"
+          >
             <ConnectWallet />
+          </div>
         </div>
       </div>
-    </div>
-  </Container>
-</nav>
+    </Container>
+  </nav>
 </header>

@@ -1,6 +1,4 @@
 {
   "extends": "astro/tsconfigs/strictest",
-  "exclude": [
-    "packages"
-  ]
+  "exclude": ["packages"]
 }

@@ -1,7 +1,7 @@
-import 'dotenv/config';
-import { mkdirSync, writeFileSync } from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import "dotenv/config";
+import { mkdirSync, writeFileSync } from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Get dirname (equivalent to the Bash version)
 const __filename = fileURLToPath(import.meta.url);
@@ -32,5 +32,4 @@ function importContract(alias) {
   console.log(`Created import for ${alias}`);
 }
 
-
-importContract('soroban_versioning');
+importContract("soroban_versioning");

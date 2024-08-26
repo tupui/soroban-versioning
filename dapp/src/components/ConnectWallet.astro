@@ -19,22 +19,24 @@
 </style>
 
 <script>
-  import { kit, setPublicKey } from './stellar-wallets-kit';
+  import { kit, setPublicKey } from "./stellar-wallets-kit";
 
-  const ellipsis = document.querySelector('#connect-wrap .ellipsis') as HTMLDivElement;
-  const button = document.querySelector('[data-connect]') as HTMLButtonElement;
+  const ellipsis = document.querySelector(
+    "#connect-wrap .ellipsis",
+  ) as HTMLDivElement;
+  const button = document.querySelector("[data-connect]") as HTMLButtonElement;
 
   async function setLoggedIn(publicKey: string) {
     ellipsis.innerHTML = `Signed in as ${publicKey}`;
     ellipsis.title = publicKey;
   }
 
-  button.addEventListener('click', async () => {
+  button.addEventListener("click", async () => {
     button.disabled = true;
 
     try {
       await kit.openModal({
-        onWalletSelected: async option => {
+        onWalletSelected: async (option) => {
           try {
             kit.setWallet(option.id);
             const { address } = await kit.getAddress();
@@ -49,6 +51,5 @@
     } catch (e) {
       console.error(e);
     }
-
   });
 </script>
