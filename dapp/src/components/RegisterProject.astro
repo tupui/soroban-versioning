@@ -1,8 +1,6 @@
 ---
 import Topic from "./Topic.astro";
 import Loading from "./Loading.astro";
-
-const SOROBAN_DOMAIN_CONTRACT_ID = import.meta.env.SOROBAN_DOMAIN_CONTRACT_ID;
 ---
 
 <div class="relative flex flex-col items-center md:flex-row">
@@ -72,6 +70,7 @@ const SOROBAN_DOMAIN_CONTRACT_ID = import.meta.env.SOROBAN_DOMAIN_CONTRACT_ID;
 
 <script>
   import { registerProject } from "./project";
+  const SOROBAN_DOMAIN_CONTRACT_ID = `${import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID}`;
 
   const maintainers = document.getElementById(
     "maintainers",
@@ -100,7 +99,7 @@ const SOROBAN_DOMAIN_CONTRACT_ID = import.meta.env.SOROBAN_DOMAIN_CONTRACT_ID;
         maintainers.value,
         config_url.value,
         config_hash.value,
-        "CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7",
+        SOROBAN_DOMAIN_CONTRACT_ID,
       );
 
       wrap_loader.style.display = "none";
