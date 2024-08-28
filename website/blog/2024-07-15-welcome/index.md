@@ -9,6 +9,8 @@ This is the beginning for Tansu! We are happy to have received a Stellar Communi
 
 Bellow is the proposal we made for the SCF28. The full proposal can be found [here](https://dashboard.communityfund.stellar.org/scfawards/scf-28_43/activationawardreview/suggestion/1150).
 
+<!-- truncate -->
+
 ## Introduction
 
 To develop software, developers rely on Version Control Systems (VCS) to keep track of their changes and share their work. Git is one of the most widely used VCS and while being by design decentralized, developers rely on very centralized synchronization systems such as GitHub.
