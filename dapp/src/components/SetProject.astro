@@ -27,17 +27,15 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
           maxlength="15"
         />
       </label>
-      <div id="wrap-set-project-button">
-        <button
-          data-set-project
-          aria-controls="set-project"
-          class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
+      <button
+        data-set-project
+        aria-controls="set-project"
+        class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
+      >
+        <span class="text-center text-white text-xl font-normal leading-7"
+          >Set project</span
         >
-          <span class="text-center text-white text-xl font-normal leading-7"
-            >Set project</span
-          >
-        </button>
-      </div>
+      </button>
     </div>
   </div>
   <LinkCard
@@ -48,10 +46,8 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 
 <script>
   import { setProjectId } from "./project";
+  import { navigate } from "astro:transitions/client";
 
-  const wrap_button = document.getElementById(
-    "wrap-set-project-button",
-  ) as HTMLDivElement;
   const project_name = document.getElementById(
     "set-project",
   ) as HTMLInputElement;
@@ -63,7 +59,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
     button.disabled = true;
     try {
       setProjectId(project_name.value);
-      wrap_button.innerHTML = "Project is set!";
+      navigate("/commit");
     } catch (e) {
       console.error(e);
     }

@@ -70,6 +70,7 @@ import Loading from "./Loading.astro";
 
 <script>
   import { registerProject } from "./project";
+  import { navigate } from "astro:transitions/client";
   const SOROBAN_DOMAIN_CONTRACT_ID = `${import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID}`;
 
   const maintainers = document.getElementById(
@@ -94,23 +95,20 @@ import Loading from "./Loading.astro";
   button.addEventListener("click", async () => {
     wrap_loader.style.display = "block";
     wrap_button.style.display = "none";
-    try {
-      const register_status = await registerProject(
-        maintainers.value,
-        config_url.value,
-        config_hash.value,
-        SOROBAN_DOMAIN_CONTRACT_ID,
-      );
 
-      wrap_loader.style.display = "none";
-      wrap_button.style.display = "block";
-      if (!register_status) {
-        alert("Project could not be registered! Please retry.");
-      } else {
-        wrap_button.innerHTML = "Project registered!";
-      }
-    } catch (e) {
-      console.error(e);
+    const register_status = await registerProject(
+      maintainers.value,
+      config_url.value,
+      config_hash.value,
+      SOROBAN_DOMAIN_CONTRACT_ID,
+    );
+
+    wrap_loader.style.display = "none";
+    wrap_button.style.display = "block";
+    if (!register_status) {
+      alert("Project could not be registered! Please retry.");
+    } else {
+      navigate("/commit");
     }
   });
 </script>
