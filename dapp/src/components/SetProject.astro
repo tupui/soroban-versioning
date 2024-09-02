@@ -48,20 +48,22 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
   import { setProjectId } from "./project";
   import { navigate } from "astro:transitions/client";
 
-  const project_name = document.getElementById(
-    "set-project",
-  ) as HTMLInputElement;
-  const button = document.querySelector(
-    "[data-set-project]",
-  ) as HTMLButtonElement;
+  document.addEventListener("astro:page-load", () => {
+    const project_name = document.getElementById(
+      "set-project",
+    ) as HTMLInputElement;
+    const button = document.querySelector(
+      "[data-set-project]",
+    ) as HTMLButtonElement;
 
-  button.addEventListener("click", async () => {
-    button.disabled = true;
-    try {
-      setProjectId(project_name.value);
-      navigate("/commit");
-    } catch (e) {
-      console.error(e);
-    }
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      try {
+        setProjectId(project_name.value);
+        navigate("/commit");
+      } catch (e) {
+        console.error(e);
+      }
+    });
   });
 </script>

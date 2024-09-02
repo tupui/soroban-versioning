@@ -22,7 +22,8 @@
     "build": "astro check && astro build",
     "dev": "astro dev",
     "preview": "astro preview",
-    "start": "astro dev"
+    "start": "astro dev",
+    "linter": "prettier --write ."
   },
   "type": "module",
   "version": "0.0.1",

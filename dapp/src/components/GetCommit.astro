@@ -31,27 +31,29 @@ import Loading from "./Loading.astro";
 <script>
   import { getProjectHash } from "./project";
 
-  const wrap_loader = document.getElementById(
-    "wrap-get-hash-loader",
-  ) as HTMLDivElement;
-  const wrap_button = document.getElementById(
-    "wrap-get-hash-button",
-  ) as HTMLDivElement;
-  const button = document.querySelector(
-    "[data-project-get-hash]",
-  ) as HTMLButtonElement;
+  document.addEventListener("astro:page-load", () => {
+    const wrap_loader = document.getElementById(
+      "wrap-get-hash-loader",
+    ) as HTMLDivElement;
+    const wrap_button = document.getElementById(
+      "wrap-get-hash-button",
+    ) as HTMLDivElement;
+    const button = document.querySelector(
+      "[data-project-get-hash]",
+    ) as HTMLButtonElement;
 
-  button.addEventListener("click", async () => {
-    wrap_loader.style.display = "block";
-    wrap_button.style.display = "none";
-    try {
-      const project_hash = await getProjectHash();
+    button.addEventListener("click", async () => {
+      wrap_loader.style.display = "block";
+      wrap_button.style.display = "none";
+      try {
+        const project_hash = await getProjectHash();
 
-      wrap_loader.style.display = "none";
-      wrap_button.style.display = "block";
-      wrap_button.innerHTML = `${project_hash}`;
-    } catch (e) {
-      console.error(e);
-    }
+        wrap_loader.style.display = "none";
+        wrap_button.style.display = "block";
+        wrap_button.innerHTML = `${project_hash}`;
+      } catch (e) {
+        console.error(e);
+      }
+    });
   });
 </script>

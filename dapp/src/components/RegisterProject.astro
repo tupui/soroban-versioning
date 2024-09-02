@@ -73,42 +73,46 @@ import Loading from "./Loading.astro";
   import { navigate } from "astro:transitions/client";
   const SOROBAN_DOMAIN_CONTRACT_ID = `${import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID}`;
 
-  const maintainers = document.getElementById(
-    "maintainers",
-  ) as HTMLInputElement;
+  document.addEventListener("astro:page-load", () => {
+    const maintainers = document.getElementById(
+      "maintainers",
+    ) as HTMLInputElement;
 
-  const config_url = document.getElementById("config_url") as HTMLInputElement;
-  const config_hash = document.getElementById(
-    "config_hash",
-  ) as HTMLInputElement;
+    const config_url = document.getElementById(
+      "config_url",
+    ) as HTMLInputElement;
+    const config_hash = document.getElementById(
+      "config_hash",
+    ) as HTMLInputElement;
 
-  const wrap_loader = document.getElementById(
-    "wrap-register-loader",
-  ) as HTMLDivElement;
-  const wrap_button = document.getElementById(
-    "wrap-register-button",
-  ) as HTMLDivElement;
-  const button = document.querySelector(
-    "[data-register-project]",
-  ) as HTMLButtonElement;
+    const wrap_loader = document.getElementById(
+      "wrap-register-loader",
+    ) as HTMLDivElement;
+    const wrap_button = document.getElementById(
+      "wrap-register-button",
+    ) as HTMLDivElement;
+    const button = document.querySelector(
+      "[data-register-project]",
+    ) as HTMLButtonElement;
 
-  button.addEventListener("click", async () => {
-    wrap_loader.style.display = "block";
-    wrap_button.style.display = "none";
+    button.addEventListener("click", async () => {
+      wrap_loader.style.display = "block";
+      wrap_button.style.display = "none";
 
-    const register_status = await registerProject(
-      maintainers.value,
-      config_url.value,
-      config_hash.value,
-      SOROBAN_DOMAIN_CONTRACT_ID,
-    );
+      const register_status = await registerProject(
+        maintainers.value,
+        config_url.value,
+        config_hash.value,
+        SOROBAN_DOMAIN_CONTRACT_ID,
+      );
 
-    wrap_loader.style.display = "none";
-    wrap_button.style.display = "block";
-    if (!register_status) {
-      alert("Project could not be registered! Please retry.");
-    } else {
-      navigate("/commit");
-    }
+      wrap_loader.style.display = "none";
+      wrap_button.style.display = "block";
+      if (!register_status) {
+        alert("Project could not be registered! Please retry.");
+      } else {
+        navigate("/commit");
+      }
+    });
   });
 </script>
