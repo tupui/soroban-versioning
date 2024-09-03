@@ -201,6 +201,25 @@ export interface Client {
          */
         simulate?: boolean;
     }) => Promise<AssembledTransaction<string>>;
+    /**
+     * Construct and simulate a get_project transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+     */
+    get_project: ({ project_key }: {
+        project_key: Buffer;
+    }, options?: {
+        /**
+         * The fee to pay for the transaction. Default: BASE_FEE
+         */
+        fee?: number;
+        /**
+         * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+         */
+        timeoutInSeconds?: number;
+        /**
+         * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+         */
+        simulate?: boolean;
+    }) => Promise<AssembledTransaction<Project>>;
 }
 export declare class Client extends ContractClient {
     readonly options: ContractClientOptions;
@@ -213,5 +232,6 @@ export declare class Client extends ContractClient {
         update_config: (json: string) => AssembledTransaction<null>;
         commit: (json: string) => AssembledTransaction<null>;
         get_commit: (json: string) => AssembledTransaction<string>;
+        get_project: (json: string) => AssembledTransaction<Project>;
     };
 }
