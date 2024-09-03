@@ -184,6 +184,17 @@ impl Versioning {
             panic_with_error!(&env, &ContractErrors::InvalidKey);
         }
     }
+
+    pub fn get_project(env: Env, project_key: Bytes) -> Project {
+        let key_ = ProjectKey::Key(project_key.clone());
+
+        env.storage()
+            .persistent()
+            .get::<ProjectKey, Project>(&key_)
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &ContractErrors::InvalidKey);
+            })
+    }
 }
 
 fn auth_maintainers(env: &Env, maintainer: &Address, maintainers: &Vec<Address>) {

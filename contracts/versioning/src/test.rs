@@ -75,6 +75,9 @@ fn test() {
     let expected_id = Bytes::from_array(&env, &expected_id);
     assert_eq!(id, expected_id);
 
+    let project_def = contract.get_project(&id);
+    assert_eq!(project_def.name, name);
+
     let hash_commit = String::from_str(&env, "6663520bd9e6ede248fef8157b2af0b6b6b41046");
     contract.commit(&mando, &id, &hash_commit);
 
