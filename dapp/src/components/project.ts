@@ -1,10 +1,11 @@
-import pkg from "js-sha3";
+import * as pkg from "js-sha3";
 
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 
-import { kit, loadedPublicKey } from "./stellar-wallets-kit.ts";
+import { kit, loadedPublicKey } from "./stellar-wallets-kit";
 import Versioning from "../contracts/soroban_versioning";
+import type { Project } from "soroban_versioning";
 
 const projectState: {
   project_name: string | undefined;
@@ -12,6 +13,16 @@ const projectState: {
 } = {
   project_name: undefined,
   project_id: undefined,
+};
+
+const projectInfo: {
+  project_maintainers: string[] | undefined;
+  project_config_url: string | undefined;
+  project_config_hash: string | undefined;
+} = {
+  project_maintainers: undefined,
+  project_config_url: undefined,
+  project_config_hash: undefined,
 };
 
 function loadedProjectId(): Buffer | undefined {
@@ -24,6 +35,26 @@ function setProjectId(project_name: string): void {
   projectState.project_id = new Buffer.from(
     keccak256.create().update(project_name).digest(),
   );
+}
+
+function loadedProjectInfo(): Project | undefined {
+  if (!projectInfo.project_maintainers || !projectInfo.project_config_url || !projectInfo.project_config_hash || !projectState.project_name) {
+    return undefined;
+  }
+  return {
+    maintainers: projectInfo.project_maintainers,
+    name: projectState.project_name,
+    config: {
+      url: projectInfo.project_config_url,
+      hash: projectInfo.project_config_hash
+    }
+  };
+}
+
+function setProject(project: Project): void {
+  projectInfo.project_maintainers = project.maintainers;
+  projectInfo.project_config_url = project.config.url;
+  projectInfo.project_config_hash = project.config.hash;
 }
 
 async function getProjectHash(): Promise<string | void> {
@@ -100,6 +131,7 @@ async function registerProject(
     hash: config_hash,
     domain_contract_id: domain_contract_id,
   });
+  console.log("tx:", tx);
   try {
     await tx.signAndSend({
       signTransaction: async (xdr) => {
@@ -114,10 +146,24 @@ async function registerProject(
   }
 }
 
+async function getProject(): Promise<Project | void> {
+  if (projectState.project_id === undefined) {
+    alert("No project defined");
+    return;
+  }
+  const res = await Versioning.get_project({
+    project_key: projectState.project_id,
+  });
+  return res.result;
+}
+
 export {
   commitHash,
   getProjectHash,
   loadedProjectId,
+  loadedProjectInfo,
   registerProject,
   setProjectId,
+  getProject,
+  setProject,
 };
