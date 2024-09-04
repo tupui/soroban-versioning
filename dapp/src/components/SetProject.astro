@@ -60,8 +60,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
         setProjectId(project_name.value);
         const project = await getProject();
         if (project && project.name && project.config && project.maintainers) {
-          console.log("project:", project);
-          setProject(project);
+            setProject(project);
           navigate("/commit");
         } else {
           navigate("/register")

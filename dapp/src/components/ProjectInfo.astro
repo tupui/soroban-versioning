@@ -4,7 +4,7 @@ import Modal from "./utils/Modal.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row justify-between">
-  <Topic title="Project Name" description="" id="project-name-topic"/>
+  <Topic title="Project Information" description="" id="project-name-topic"/>
   <div id="open-update-config-modal-button" class="mb-1.5 mt-12 pr-3 hidden">
     <button
       update-config
@@ -110,7 +110,7 @@ import Modal from "./utils/Modal.astro";
           const ul = maintainersList.querySelector("ul");
           if (ul) {
             ul.innerHTML = '';
-            projectInfo.maintainers.forEach(maintainer => {
+            projectInfo.maintainers.forEach((maintainer: string) => {
               const li = document.createElement("li");
               li.textContent = maintainer;
               ul.appendChild(li);
@@ -119,7 +119,7 @@ import Modal from "./utils/Modal.astro";
         }
         const githubLink = document.getElementById("github-link") as HTMLAnchorElement;
         if (githubLink) {
-          githubLink.href = `${projectInfo.config.url}/commit/${projectInfo.config.hash}`;
+          githubLink.href = `${projectInfo.config.url}`;
         }
 
         // Update modal content
