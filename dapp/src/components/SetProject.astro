@@ -1,6 +1,6 @@
 ---
-import Topic from "./Topic.astro";
-import LinkCard from "./LinkCard.astro";
+import Topic from "./utils/Topic.astro";
+import LinkCard from "./utils/LinkCard.astro";
 
 const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK;
 const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
@@ -32,9 +32,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
         aria-controls="set-project"
         class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
       >
-        <span class="text-center text-white text-xl font-normal leading-7"
-          >Set project</span
-        >
+        <span class="text-center text-white text-xl font-normal leading-7">Set project</span>
       </button>
     </div>
   </div>
@@ -45,7 +43,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 </div>
 
 <script>
-  import { setProjectId } from "./project";
+  import { getProject, setProjectId, setProject } from "./project";
   import { navigate } from "astro:transitions/client";
 
   document.addEventListener("astro:page-load", () => {
@@ -60,7 +58,13 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
       button.disabled = true;
       try {
         setProjectId(project_name.value);
-        navigate("/commit");
+        const project = await getProject();
+        if (project && project.name && project.config && project.maintainers) {
+          setProject(project);
+          navigate("/commit");
+        } else {
+          navigate("/register")
+        }
       } catch (e) {
         console.error(e);
       }

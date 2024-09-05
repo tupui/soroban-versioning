@@ -19,7 +19,7 @@
 </style>
 
 <script>
-  import { kit, setPublicKey } from "./stellar-wallets-kit";
+  import { kit, loadedPublicKey, setPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
     const ellipsis = document.querySelector(
@@ -32,6 +32,11 @@
     async function setLoggedIn(publicKey: string) {
       ellipsis.innerHTML = `Signed in as ${publicKey}`;
       ellipsis.title = publicKey;
+    }
+
+    const connectedPublicKey = loadedPublicKey();
+    if (connectedPublicKey) {
+      setLoggedIn(connectedPublicKey);
     }
 
     button.addEventListener("click", async () => {

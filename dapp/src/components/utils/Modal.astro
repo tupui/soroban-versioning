@@ -1,0 +1,41 @@
+---
+interface Props {
+  id: string;
+  title: string;
+}
+
+const { id, title } = Astro.props;
+---
+<dialog id={id} class="modal p-6 rounded-lg shadow-xl relative">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold">
+      <span class="bg-lime px-2 py-1 rounded-lg inline-block">{title}</span>
+    </h2>
+    <button class="text-gray-600 hover:text-gray-800" onclick="this.closest('dialog').close()">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+  <div class="modal-content">
+    <slot />
+  </div>
+</dialog>
+
+<style>
+  .modal::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+  }
+</style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+      if (modal instanceof HTMLDialogElement) {
+        const closeBtn = modal.querySelector('button');
+        closeBtn?.addEventListener('click', () => modal.close());
+      }
+    });
+  });
+</script>

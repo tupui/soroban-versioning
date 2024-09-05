@@ -1,0 +1,214 @@
+---
+import Topic from "./utils/Topic.astro";
+import Modal from "./utils/Modal.astro";
+import Loading from "./utils/Loading.astro";
+---
+
+<div class="relative flex flex-col items-center md:flex-row justify-between">
+  <Topic title="Project" description="Details about the project" id="project-name-topic"/>
+  <div id="open-update-config-modal-button" class="mb-1.5 mt-12 pr-3 hidden">
+    <button
+      update-config
+      aria-controls="update-config-modal"
+      class="w-full p-3 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
+    >
+      <span class="text-center text-white text-xl font-normal leading-7">
+        Update Config
+      </span>
+    </button>
+  </div>
+</div>
+
+<div
+  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-[45px]"
+>
+  <div class="row items-center py-12 px-4 md:px-20 md:w-8/12 md:py-10">
+    <div class="space-y-6 md:w-full">
+      <div id="project-name" class="flex items-center space-x-2">
+        <h3 class="text-lg font-semibold">Project Name:</h3>
+        <p id="project-name-value" class="text-3xl font-bold"></p>
+      </div>
+      <div id="project-maintainers" class="space-y-2">
+        <h3 class="text-lg font-semibold">Maintainers:</h3>
+        <ul class="list-disc list-inside"></ul>
+      </div>
+      <div id="project-link" class="flex items-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" />
+        </svg>
+        <a href="#" id="github-link" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Link to GitHub</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<Modal id="update-config-modal" title="Update Config">
+  <div id="modal-content" class="space-y-4 w-[600px]">
+    <h2 id="modal-project-name" class="text-3xl font-bold mb-4">Project Name</h2>
+
+    <label class="block mb-2 text-base font-medium text-black">
+      Maintainers
+      <input
+        type="text"
+        id="modal-maintainers"
+        class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
+        placeholder="List of maintainers' addresses as G...,G..."
+        required
+      />
+    </label>
+
+    <label class="block mb-2 text-base font-medium text-black">
+      URL
+      <input
+        type="text"
+        id="modal-config-url"
+        class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
+        placeholder="Information file URL"
+        required
+      />
+    </label>
+
+    <label class="block mb-2 text-base font-medium text-black">
+      Information file hash
+      <input
+        type="text"
+        id="modal-config-hash"
+        class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
+        placeholder="Information file hash"
+        required
+        minlength="40"
+        maxlength="40"
+      />
+    </label>
+
+    <div id="wrap-update-button" class="relative">
+      <button
+        id="update-config-button"
+        class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5"
+      >
+        <span class="text-center text-white text-xl font-normal leading-7">
+          Update Config
+        </span>
+      </button>
+      <div id="update-config-loader" class="absolute top-0 left-0 w-full h-full bg-zinc-900 rounded-[14px] justify-center items-center hidden">
+        <Loading theme="dark" />
+      </div>
+    </div>
+  </div>
+</Modal>
+
+<script>
+  import { getProject, loadedProjectInfo, setProject, updateConfig } from "./project";
+  import { loadedPublicKey } from "./stellar-wallets-kit";
+
+  document.addEventListener("astro:page-load", () => {
+    const topicElement = document.getElementById("project-name-topic");
+    const topicDescriptionElement = topicElement?.querySelector("p");
+    const modal = document.getElementById("update-config-modal") as HTMLDialogElement;
+
+    function updateProjectInfo() {
+      const projectInfo = loadedProjectInfo();
+      if (projectInfo) {
+        console.log("projectInfo:", projectInfo);
+        if (topicDescriptionElement) {
+          topicDescriptionElement.textContent = projectInfo.name;
+        }
+        const projectNameElement = document.getElementById("project-name-value");
+        if (projectNameElement) {
+          projectNameElement.textContent = projectInfo.name;
+        }
+        const maintainersList = document.getElementById("project-maintainers");
+        if (maintainersList) {
+          const ul = maintainersList.querySelector("ul");
+          if (ul) {
+            ul.innerHTML = '';
+            projectInfo.maintainers.forEach((maintainer: string) => {
+              const li = document.createElement("li");
+              li.textContent = maintainer;
+              ul.appendChild(li);
+            });
+          }
+        }
+        const githubLink = document.getElementById("github-link") as HTMLAnchorElement;
+        if (githubLink) {
+          githubLink.href = `${projectInfo.config.url}`;
+        }
+
+        // Update modal content
+        const modalProjectName = document.getElementById("modal-project-name");
+        if (modalProjectName) {
+          modalProjectName.textContent = projectInfo.name;
+        }
+        
+        const modalMaintainers = document.getElementById("modal-maintainers") as HTMLInputElement;
+        if (modalMaintainers) {
+          modalMaintainers.value = projectInfo.maintainers.join(',');
+        }
+        const modalConfigUrl = document.getElementById("modal-config-url") as HTMLInputElement;
+        if (modalConfigUrl) {
+          modalConfigUrl.value = projectInfo.config.url;
+        }
+        const modalConfigHash = document.getElementById("modal-config-hash") as HTMLInputElement;
+        if (modalConfigHash) {
+          modalConfigHash.value = projectInfo.config.hash;
+        }
+
+        // Check if the connected wallet is a maintainer
+        const connectedPublicKey = loadedPublicKey();
+        const isMaintainer = connectedPublicKey ? projectInfo.maintainers.includes(connectedPublicKey) : false;
+        const updateConfigButton = document.getElementById("open-update-config-modal-button");
+        if (updateConfigButton) {
+          updateConfigButton.classList.toggle("hidden", !isMaintainer);
+        }
+      }
+    }
+
+    updateProjectInfo();
+
+    const button = document.querySelector(
+      "[update-config]",
+    ) as HTMLButtonElement; 
+    if (button) {
+      button.addEventListener("click", async () => {
+          console.log("Update config button clicked");
+          modal.showModal();
+      });
+    }
+
+    const updateConfigButton = document.getElementById("update-config-button");
+    const updateConfigLoader = document.getElementById("update-config-loader");
+    if (updateConfigButton && updateConfigLoader) {
+      updateConfigButton.addEventListener("click", async () => {
+        const modalMaintainers = (document.getElementById("modal-maintainers") as HTMLInputElement).value;
+        const modalConfigUrl = (document.getElementById("modal-config-url") as HTMLInputElement).value;
+        const modalConfigHash = (document.getElementById("modal-config-hash") as HTMLInputElement).value;
+
+        updateConfigLoader.style.display = "inline-flex";
+
+        try {
+          const updateStatus = await updateConfig(
+            modalMaintainers,
+            modalConfigUrl,
+            modalConfigHash
+          );
+
+          if (updateStatus) {
+            const project = await getProject();
+            if (project && project.name && project.config && project.maintainers) {
+              setProject(project);
+            }
+            updateProjectInfo();
+            (document.getElementById("update-config-modal") as HTMLDialogElement).close();
+          } else {
+            alert("Failed to update project config. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error updating config:", error);
+          alert("An error occurred while updating the project config. Please try again.");
+        } finally {
+          updateConfigLoader.style.display = "none";
+        }
+      });
+    }
+  });
+</script>
