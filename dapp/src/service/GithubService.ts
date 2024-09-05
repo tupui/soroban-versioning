@@ -1,12 +1,6 @@
 import axios from 'axios';
 
-interface FormattedCommit {
-  message: string;
-  author: { name: string; html_url: string };
-  commit_date: string;
-  html_url: string;
-  sha: string;
-}
+import type { FormattedCommit } from '../types/github';
 
 async function getCommitHistory(username: string, repo: string, perPage: number = 30, page: number = 1): Promise<{ date: string; commits: FormattedCommit[] }[]> {
   try {
