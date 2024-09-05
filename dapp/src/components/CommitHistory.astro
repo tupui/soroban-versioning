@@ -1,22 +1,23 @@
 ---
-import { getCommitHistory } from '../constants/CommitHistory';
+import { getCommitHistory } from '../service/GithubService';
 import CommitRecord from './CommitRecord.astro';
 import { formatDate } from '../service/utils';
+import type { FormattedCommit } from '../types/github';
 
-const commitHistory = getCommitHistory();
+const commitHistory = await getCommitHistory('tupui', 'soroban-versioning');
 ---
 
-<div class="commit-history-container relative pl-8 before:content-[''] before:absolute before:left-[0.5rem] before:top-0 before:bottom-0 before:w-0.5 before:bg-zinc-700">
-  {commitHistory.map((day) => (
+<div class="commit-history-container space-y-4 relative pl-8 before:content-[''] before:absolute before:left-[0.5rem] before:top-0 before:bottom-0 before:w-0.5 before:bg-zinc-700">
+  {commitHistory && commitHistory.length > 0 && commitHistory.map((day: { date: string; commits: FormattedCommit[] }) => (
     <div class="day-group relative">
-      <h3 class="text-lg font-semibold pt-5 pb-4 relative">
-        <div class="commit-dot absolute left-[-2.2rem] top-[1.3rem] w-[25px] h-[25px] bg-[#f3f3f3] rounded-full before:content-[''] before:absolute before:left-[50%] before:top-[50%] before:transform before:-translate-x-1/2 before:-translate-y-1/2 before:w-[15px] before:h-[15px] before:border-[2px] before:rounded-full"></div>
+      <h3 class="text-lg font-semibold pb-4 relative">
+        <div class="commit-dot absolute left-[-2.2rem] top-0 w-[25px] h-[25px] bg-[#f3f3f3] rounded-full before:content-[''] before:absolute before:left-[50%] before:top-[50%] before:transform before:-translate-x-1/2 before:-translate-y-1/2 before:w-[15px] before:h-[15px] before:border-[2px] before:rounded-full"></div>
         <span class="pr-2 relative z-10">{formatDate(day.date)}</span>
       </h3>
       <div class="space-y-4 relative">
-        {day.commits.map((commit) => (
+        {day.commits.map((commit: FormattedCommit) => (
           <div class="relative">
-            <div class="absolute left-[-1.25rem] top-1/2 w-2 h-2 bg-gray-400 rounded-full transform -translate-y-1/2"></div>
+            <div class="absolute left-[-1.25rem] top-1/2 w-2 h-2 rounded-full transform -translate-y-1/2"></div>
             <CommitRecord
               message={commit.message}
               date={commit.commit_date}

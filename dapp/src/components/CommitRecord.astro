@@ -11,18 +11,32 @@ interface Props {
 const { message, date, authorName, authorGithubLink, sha, commitLink } = Astro.props;
 
 import { formatTime } from '../service/utils';
+
+const formattedMessage = message.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+const firstLine = formattedMessage[0];
+const hasMoreLines = formattedMessage.length > 1;
 ---
 
-<div class="commit-record bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
-  <div class="commit-info">
-    <a href={commitLink} target="_blank" rel="noopener noreferrer" class="commit-message text-lg font-medium hover:underline hover:text-blue-500">{message}</a>
+<div class="commit-record bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-start">
+  <div class="commit-info flex-grow overflow-hidden mr-4">
+    <div class="flex items-center">
+      <a href={commitLink} target="_blank" rel="noopener noreferrer" class="commit-message text-lg font-medium hover:underline hover:text-blue-500 truncate">{firstLine}</a>
+      {hasMoreLines && (
+        <button class="expand-button ml-2 text-xs bg-zinc-200 hover:bg-zinc-300 text-gray-700 font-semibold py-1 px-2 rounded-md transition-colors duration-200 flex-shrink-0">
+          . . .
+        </button>
+      )}
+    </div>
+    {hasMoreLines && (
+      <div class="expanded-message hidden mt-2 text-sm text-gray-700 whitespace-pre-wrap">{formattedMessage.slice(1).join('\n')}</div>
+    )}
     <div class="commit-details text-sm text-gray-600 mt-1">
       <a href={authorGithubLink} target="_blank" rel="noopener noreferrer" class="author-name font-semibold hover:underline hover:text-blue-500">{authorName}</a>
       <span class="mx-1">committed on</span>
       <span class="commit-date">{formatTime(date)}</span>
     </div>
   </div>
-  <div class="commit-sha flex items-center space-x-2">
+  <div class="commit-sha flex items-center space-x-2 flex-shrink-0">
     <a href={commitLink} target="_blank" rel="noopener noreferrer" class="sha text-sm font-mono text-gray-500 hover:bg-zinc-400 transition-colors duration-200 px-2 py-1 rounded">{sha.substring(0, 7)}</a>
     <button class="copy-button hover:bg-zinc-400 transition-colors duration-200 p-1 rounded" data-sha={sha}>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400 hover:text-gray-600">
@@ -63,9 +77,24 @@ import { formatTime } from '../service/utils';
     });
   }
 
+  function setupExpandButtons() {
+    const expandButtons = document.querySelectorAll('.expand-button');
+    expandButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const record = button.closest('.commit-record');
+        const expandedMessage = record?.querySelector('.expanded-message');
+        if (expandedMessage) {
+          expandedMessage.classList.toggle('hidden');
+          button.textContent = expandedMessage.classList.contains('hidden') ? '. . .' : 'Less';
+        }
+      });
+    });
+  }
+
   document.addEventListener('astro:page-load', () => {
     const copyButtons = document.querySelectorAll('.copy-button');
     copyButtons.forEach(button => setupCopyButton(button as HTMLButtonElement));
+    setupExpandButtons();
   });
 </script>
 

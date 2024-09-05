@@ -11,13 +11,13 @@ export function formatTime(dateString: string): string {
     const formattedTime = date.toLocaleTimeString(undefined, timeOptions);
     return `Today, ${formattedTime}`;
   } else {
-    const dateOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    const dateOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     return date.toLocaleDateString(undefined, dateOptions);
   }
 }
 
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  const dateOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+  const dateOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
   return date.toLocaleDateString(undefined, dateOptions);
 }
