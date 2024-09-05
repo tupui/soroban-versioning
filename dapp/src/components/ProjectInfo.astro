@@ -1,6 +1,7 @@
 ---
 import Topic from "./utils/Topic.astro";
 import Modal from "./utils/Modal.astro";
+import Loading from "./utils/Loading.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row justify-between">
@@ -80,21 +81,24 @@ import Modal from "./utils/Modal.astro";
       />
     </label>
 
-    <div id="wrap-update-button">
+    <div id="wrap-update-button" class="relative">
       <button
         id="update-config-button"
-        class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
+        class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5"
       >
         <span class="text-center text-white text-xl font-normal leading-7">
           Update Config
         </span>
       </button>
+      <div id="update-config-loader" class="absolute top-0 left-0 w-full h-full bg-zinc-900 rounded-[14px] justify-center items-center hidden">
+        <Loading theme="dark" />
+      </div>
     </div>
   </div>
 </Modal>
 
 <script>
-  import { loadedProjectInfo, updateConfig } from "./project";
+  import { getProject, loadedProjectInfo, setProject, updateConfig } from "./project";
   import { loadedPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
@@ -171,24 +175,38 @@ import Modal from "./utils/Modal.astro";
       });
     }
 
-    const updateButton = document.getElementById("update-config-button");
-    if (updateButton) {
-      updateButton.addEventListener("click", async () => {
+    const updateConfigButton = document.getElementById("update-config-button");
+    const updateConfigLoader = document.getElementById("update-config-loader");
+    if (updateConfigButton && updateConfigLoader) {
+      updateConfigButton.addEventListener("click", async () => {
         const modalMaintainers = (document.getElementById("modal-maintainers") as HTMLInputElement).value;
         const modalConfigUrl = (document.getElementById("modal-config-url") as HTMLInputElement).value;
         const modalConfigHash = (document.getElementById("modal-config-hash") as HTMLInputElement).value;
 
-        const updateStatus = await updateConfig(
-          modalMaintainers,
-          modalConfigUrl,
-          modalConfigHash
-        );
+        updateConfigLoader.style.display = "inline-flex";
 
-        if (updateStatus) {
-          updateProjectInfo();
-          (document.getElementById("update-config-modal") as HTMLDialogElement).close();
-        } else {
-          alert("Failed to update project config. Please try again.");
+        try {
+          const updateStatus = await updateConfig(
+            modalMaintainers,
+            modalConfigUrl,
+            modalConfigHash
+          );
+
+          if (updateStatus) {
+            const project = await getProject();
+            if (project && project.name && project.config && project.maintainers) {
+              setProject(project);
+            }
+            updateProjectInfo();
+            (document.getElementById("update-config-modal") as HTMLDialogElement).close();
+          } else {
+            alert("Failed to update project config. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error updating config:", error);
+          alert("An error occurred while updating the project config. Please try again.");
+        } finally {
+          updateConfigLoader.style.display = "none";
         }
       });
     }
