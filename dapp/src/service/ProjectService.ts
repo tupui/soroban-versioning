@@ -3,7 +3,7 @@ import * as pkg from "js-sha3";
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 
-import { kit, loadedPublicKey } from "./stellar-wallets-kit";
+import { kit, loadedPublicKey } from "../components/stellar-wallets-kit";
 import Versioning from "../contracts/soroban_versioning";
 import type { Project } from "soroban_versioning";
 

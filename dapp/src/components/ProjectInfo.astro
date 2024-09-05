@@ -98,7 +98,7 @@ import Loading from "./utils/Loading.astro";
 </Modal>
 
 <script>
-  import { getProject, loadedProjectInfo, setProject, updateConfig } from "./project";
+  import { getProject, loadedProjectInfo, setProject, updateConfig } from "../service/ProjectService";
   import { loadedPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {

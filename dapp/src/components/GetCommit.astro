@@ -29,7 +29,7 @@ import Loading from "./utils/Loading.astro";
 </div>
 
 <script>
-  import { getProjectHash } from "./project";
+  import { getProjectHash } from "../service/ProjectService";
 
   document.addEventListener("astro:page-load", () => {
     const wrap_loader = document.getElementById(

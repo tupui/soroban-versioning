@@ -43,7 +43,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 </div>
 
 <script>
-  import { getProject, setProjectId, setProject } from "./project";
+  import { getProject, setProjectId, setProject } from "../service/ProjectService";
   import { navigate } from "astro:transitions/client";
 
   document.addEventListener("astro:page-load", () => {

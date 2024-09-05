@@ -69,7 +69,7 @@ import Loading from "./utils/Loading.astro";
 </div>
 
 <script>
-  import { registerProject } from "./project";
+  import { registerProject } from "../service/ProjectService";
   import { navigate } from "astro:transitions/client";
   const SOROBAN_DOMAIN_CONTRACT_ID = `${import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID}`;
 

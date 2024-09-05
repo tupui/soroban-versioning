@@ -44,7 +44,7 @@ import Loading from "./utils/Loading.astro";
 </div>
 
 <script>
-  import { commitHash } from "./project";
+  import { commitHash } from "../service/ProjectService";
 
   document.addEventListener("astro:page-load", () => {
     const commit_hash = document.getElementById(
