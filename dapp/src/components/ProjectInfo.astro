@@ -2,6 +2,7 @@
 import Topic from "./utils/Topic.astro";
 import Modal from "./utils/Modal.astro";
 import Loading from "./utils/Loading.astro";
+import CommitHistory from "./CommitHistory.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row justify-between">
@@ -32,12 +33,24 @@ import Loading from "./utils/Loading.astro";
         <h3 class="text-lg font-semibold">Maintainers:</h3>
         <ul class="list-disc list-inside"></ul>
       </div>
-      <div id="project-link" class="flex items-center space-x-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" />
-        </svg>
-        <a href="#" id="github-link" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Link to GitHub</a>
+      <div class="flex items-center space-x-4">
+        <div id="project-link" class="flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" />
+          </svg>
+          <a href="#" id="github-link" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Link to GitHub</a>
+        </div>
+        <div id="view-commit-history" class="flex items-center space-x-2 cursor-pointer hover:text-blue-600 hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path id="commit-icon-up" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
+            <path id="commit-icon-down" class="hidden" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+          </svg>
+          <span id="view-commit-text">View Commit History</span>
+        </div>
       </div>
+    </div>
+    <div id="commit-history-container" class="mt-4 overflow-hidden transition-all duration-300 max-h-0">
+      <CommitHistory />
     </div>
   </div>
 </div>
@@ -207,6 +220,34 @@ import Loading from "./utils/Loading.astro";
           alert("An error occurred while updating the project config. Please try again.");
         } finally {
           updateConfigLoader.style.display = "none";
+        }
+      });
+    }
+
+    const viewCommitHistory = document.getElementById("view-commit-history");
+    const viewCommitText = document.getElementById("view-commit-text");
+    const commitHistoryContainer = document.getElementById("commit-history-container");
+    const commitIconUp = document.getElementById("commit-icon-up");
+    const commitIconDown = document.getElementById("commit-icon-down");
+
+    if (viewCommitHistory && viewCommitText && commitHistoryContainer && commitIconUp && commitIconDown) {
+      viewCommitHistory.addEventListener("click", () => {
+        if (commitHistoryContainer.style.maxHeight === "0px" || !commitHistoryContainer.style.maxHeight) {
+          commitHistoryContainer.style.maxHeight = `${commitHistoryContainer.scrollHeight}px`;
+        } else {
+          commitHistoryContainer.style.maxHeight = "0px";
+        }
+      });
+
+      commitHistoryContainer.addEventListener("transitionend", () => {
+        if (commitHistoryContainer.style.maxHeight === "0px") {
+          viewCommitText.textContent = "View Commit History";
+          commitIconUp.classList.remove("hidden");
+          commitIconDown.classList.add("hidden");
+        } else {
+          viewCommitText.textContent = "Hide Commit History";
+          commitIconUp.classList.add("hidden");
+          commitIconDown.classList.remove("hidden");
         }
       });
     }
