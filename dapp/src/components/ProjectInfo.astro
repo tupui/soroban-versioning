@@ -23,7 +23,7 @@ import CommitHistory from "./CommitHistory.astro";
 <div
   class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-[45px]"
 >
-  <div class="row items-center py-12 px-4 md:px-20 md:w-8/12 md:py-10">
+  <div class="row items-center py-12 px-4 md:px-20 w-full md:py-10">
     <div class="space-y-6 md:w-full">
       <div id="project-name" class="flex items-center space-x-2">
         <h3 class="text-lg font-semibold">Project Name:</h3>
@@ -40,7 +40,7 @@ import CommitHistory from "./CommitHistory.astro";
           </svg>
           <a href="#" id="github-link" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">Link to GitHub</a>
         </div>
-        <div id="view-commit-history" class="flex items-center space-x-2 cursor-pointer hover:text-blue-600 hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1">
+        <div id="view-commit-history" class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path id="commit-icon-up" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
             <path id="commit-icon-down" class="hidden" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
