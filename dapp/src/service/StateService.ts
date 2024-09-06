@@ -22,6 +22,14 @@ const projectInfo: {
   project_config_hash: undefined,
 };
 
+const projectRepoInfo: {
+  project_author: string | undefined;
+  project_repository: string |  undefined;
+} = {
+  project_author: undefined,
+  project_repository: undefined,
+}
+
 function setProjectId(project_name: string): void {
   projectState.project_name = project_name;
   projectState.project_id = Buffer.from(
@@ -48,6 +56,17 @@ function setProject(project: Project): void {
   }
 }
 
+function setProjectRepoInfo(author: string, repository: string): void {
+  projectRepoInfo.project_author = author;
+  projectRepoInfo.project_repository = repository;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('projectRepoInfo', JSON.stringify({
+      project_author: projectRepoInfo.project_author,
+      project_repository: projectRepoInfo.project_repository,
+    }));
+  }
+}
+
 function loadedProjectId(): Buffer | undefined {
   return projectState.project_id;
 }
@@ -66,9 +85,21 @@ function loadedProjectInfo(): Project | undefined {
   };
 }
 
+function loadProjectRepoInfo(): { author: string; repository: string } | undefined {
+  if (!projectRepoInfo.project_author || !projectRepoInfo.project_repository) {
+    return undefined;
+  }
+  return {
+    author: projectRepoInfo.project_author,
+    repository: projectRepoInfo.project_repository
+  };
+}
+
 export {
   setProjectId,
   setProject,
+  setProjectRepoInfo,
   loadedProjectId,
   loadedProjectInfo,
+  loadProjectRepoInfo,
 };

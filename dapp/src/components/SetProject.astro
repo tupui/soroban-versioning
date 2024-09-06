@@ -44,8 +44,9 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 
 <script>
   import { getProject } from "../service/ProjectService";
-  import { setProjectId, setProject } from "../service/StateService";
+  import { setProjectId, setProject, setProjectRepoInfo } from "../service/StateService";
   import { navigate } from "astro:transitions/client";
+  import { getAuthorRepo } from "../service/utils";
 
   document.addEventListener("astro:page-load", () => {
     const project_name = document.getElementById(
@@ -62,6 +63,10 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
         const project = await getProject();
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
+          const { username, repoName } = getAuthorRepo(project.config.url);
+          if (username && repoName) {
+            setProjectRepoInfo(username, repoName);
+          }
           navigate("/commit");
         } else {
           navigate("/register")
