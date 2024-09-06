@@ -111,7 +111,8 @@ import CommitHistory from "./CommitHistory.astro";
 </Modal>
 
 <script>
-  import { getProject, loadedProjectInfo, setProject, updateConfig } from "../service/ProjectService";
+  import { getProject, updateConfig } from "../service/ProjectService";
+  import { loadedProjectInfo, setProject } from "../service/StateService";
   import { loadedPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
