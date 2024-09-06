@@ -50,7 +50,7 @@ import CommitHistory from "./CommitHistory.astro";
       </div>
     </div>
     <div id="commit-history-container" class="mt-4 overflow-hidden transition-all duration-300 max-h-0">
-      <CommitHistory />
+      <CommitHistory/>
     </div>
   </div>
 </div>
@@ -115,17 +115,11 @@ import CommitHistory from "./CommitHistory.astro";
   import { loadedPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
-    const topicElement = document.getElementById("project-name-topic");
-    const topicDescriptionElement = topicElement?.querySelector("p");
     const modal = document.getElementById("update-config-modal") as HTMLDialogElement;
 
     function updateProjectInfo() {
       const projectInfo = loadedProjectInfo();
       if (projectInfo) {
-        console.log("projectInfo:", projectInfo);
-        if (topicDescriptionElement) {
-          topicDescriptionElement.textContent = projectInfo.name;
-        }
         const projectNameElement = document.getElementById("project-name-value");
         if (projectNameElement) {
           projectNameElement.textContent = projectInfo.name;
