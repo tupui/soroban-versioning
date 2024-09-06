@@ -51,6 +51,8 @@
               setPublicKey(address);
               await setLoggedIn(address);
               button.disabled = false;
+              
+              window.dispatchEvent(new CustomEvent('walletConnected', { detail: address }));
             } catch (e) {
               console.error(e);
             }

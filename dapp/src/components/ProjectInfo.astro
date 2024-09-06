@@ -267,5 +267,18 @@ import CommitHistory from "./CommitHistory.astro";
         }
       });
     }
+
+    window.addEventListener('walletConnected', (_event: Event) => {
+      const projectInfo = loadedProjectInfo();
+      
+      if (projectInfo) {
+        const connectedPublicKey = loadedPublicKey();
+        const isMaintainer = connectedPublicKey ? projectInfo.maintainers.includes(connectedPublicKey) : false;
+        const updateConfigButton = document.getElementById("open-update-config-modal-button");
+        if (updateConfigButton) {
+          updateConfigButton.classList.toggle("hidden", !isMaintainer);
+        }
+      }
+    });
   });
 </script>
