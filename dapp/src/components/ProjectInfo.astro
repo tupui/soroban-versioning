@@ -31,7 +31,7 @@ import CommitHistory from "./CommitHistory.astro";
       </div>
       <div id="project-maintainers" class="space-y-2">
         <h3 class="text-lg font-semibold">Maintainers:</h3>
-        <ul class="list-disc list-inside"></ul>
+        <ul class="list-disc list-outside pl-4"></ul>
       </div>
       <div class="flex items-center space-x-4">
         <div id="project-link" class="flex items-center space-x-2">
@@ -133,7 +133,27 @@ import CommitHistory from "./CommitHistory.astro";
             ul.innerHTML = '';
             projectInfo.maintainers.forEach((maintainer: string) => {
               const li = document.createElement("li");
-              li.textContent = maintainer;
+              li.className = "relative";
+
+              const content = document.createElement("p");
+              content.className = "truncate";
+              content.textContent = maintainer;
+
+              li.appendChild(content);
+
+              const popup = document.createElement("p");
+              popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black";
+              popup.textContent = maintainer;
+              li.appendChild(popup);
+              
+              li.addEventListener("mouseenter", () => {
+                popup.classList.remove("hidden");
+              });
+              
+              li.addEventListener("mouseleave", () => {
+                popup.classList.add("hidden");
+              });
+              
               ul.appendChild(li);
             });
           }
