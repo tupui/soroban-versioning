@@ -44,7 +44,7 @@
 
       try {
         await kit.openModal({
-          onWalletSelected: async (option) => {
+          onWalletSelected: async (option: { id: string }) => {
             try {
               kit.setWallet(option.id);
               const { address } = await kit.getAddress();

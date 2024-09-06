@@ -12,7 +12,7 @@ const { message, date, authorName, authorGithubLink, sha, commitLink } = Astro.p
 
 import { formatTime } from '../service/utils';
 
-const formattedMessage = message.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+const formattedMessage = message.split(/\r?\n/).map((line: string) => line.trim()).filter(Boolean);
 const firstLine = formattedMessage[0];
 const hasMoreLines = formattedMessage.length > 1;
 ---
