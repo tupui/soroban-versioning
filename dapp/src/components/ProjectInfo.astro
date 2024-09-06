@@ -112,10 +112,11 @@ import CommitHistory from "./CommitHistory.astro";
 
 <script>
   import { getProject, updateConfig } from "../service/ProjectService";
-  import { loadedProjectInfo, setProject } from "../service/StateService";
+  import { initializeProjectState, loadedProjectInfo, setProject } from "../service/StateService";
   import { loadedPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
+    initializeProjectState();
     const modal = document.getElementById("update-config-modal") as HTMLDialogElement;
 
     function updateProjectInfo() {

@@ -30,6 +30,32 @@ const projectRepoInfo: {
   project_repository: undefined,
 }
 
+function initializeProjectState() {
+  if (typeof window !== 'undefined') {
+    const storedState = localStorage.getItem('projectState');
+    if (storedState && projectState.project_name === undefined && projectState.project_id === undefined) {
+      const parsedState = JSON.parse(storedState);
+      projectState.project_name = parsedState.project_name;
+      projectState.project_id = parsedState.project_id ? Buffer.from(parsedState.project_id, 'hex') : undefined;
+    }
+
+    const storedInfo = localStorage.getItem('projectInfo');
+    if (storedInfo && projectInfo.project_config_hash === undefined && projectInfo.project_config_url === undefined && projectInfo.project_maintainers === undefined) {
+      const parsedInfo = JSON.parse(storedInfo);
+      projectInfo.project_maintainers = parsedInfo.project_maintainers;
+      projectInfo.project_config_url = parsedInfo.project_config_url;
+      projectInfo.project_config_hash = parsedInfo.project_config_hash;
+    }
+
+    const storedRepoInfo = localStorage.getItem('projectRepoInfo');
+    if (storedRepoInfo && projectRepoInfo.project_author === undefined && projectRepoInfo.project_repository === undefined) {
+      const parsedRepoInfo = JSON.parse(storedRepoInfo);
+      projectRepoInfo.project_author = parsedRepoInfo.project_author;
+      projectRepoInfo.project_repository = parsedRepoInfo.project_repository;
+    }
+  }
+}
+
 function setProjectId(project_name: string): void {
   projectState.project_name = project_name;
   projectState.project_id = Buffer.from(
@@ -96,6 +122,7 @@ function loadProjectRepoInfo(): { author: string; repository: string } | undefin
 }
 
 export {
+  initializeProjectState,
   setProjectId,
   setProject,
   setProjectRepoInfo,
