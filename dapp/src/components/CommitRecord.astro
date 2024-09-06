@@ -17,7 +17,7 @@ const firstLine = formattedMessage[0];
 const hasMoreLines = formattedMessage.length > 1;
 ---
 
-<div class="commit-record bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-start">
+<div class="commit-record relative bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-start" data-sha={sha}>
   <div class="commit-info flex-grow overflow-hidden mr-4">
     <div class="flex items-center">
       <a href={commitLink} target="_blank" rel="noopener noreferrer" class="commit-message text-lg font-medium hover:underline hover:text-blue-500 truncate">{firstLine}</a>
@@ -47,6 +47,8 @@ const hasMoreLines = formattedMessage.length > 1;
 </div>
 
 <script>
+  import { getProjectHash } from '../service/ProjectService';
+
   function setupCopyButton(button: HTMLButtonElement) {
     button.addEventListener('click', async () => {
       const sha = button.getAttribute('data-sha');
@@ -91,7 +93,25 @@ const hasMoreLines = formattedMessage.length > 1;
     });
   }
 
+  async function highlightLatestCommit() {
+    const latestSha = await getProjectHash();
+    if (latestSha) {
+      const commitRecords = document.querySelectorAll('.commit-record');
+      commitRecords.forEach((record) => {
+        const recordSha = record.getAttribute('data-sha');
+        if (recordSha === latestSha) {
+          record.classList.add('border-2', 'border-blue-300', 'bg-zinc-300');
+          const indicator = document.createElement('div');
+          indicator.className = 'absolute top-0.5 left-1 text-xs font-bold tracking-tighter leading-3 bg-lime rounded-sm p-0.5';
+          indicator.textContent = 'latest commit';
+          record.insertBefore(indicator, record.firstChild);
+        }
+      });
+    }
+  }
+
   document.addEventListener('astro:page-load', () => {
+    highlightLatestCommit();
     const copyButtons = document.querySelectorAll('.copy-button');
     copyButtons.forEach(button => setupCopyButton(button as HTMLButtonElement));
     setupExpandButtons();
