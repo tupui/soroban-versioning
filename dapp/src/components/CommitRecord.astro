@@ -101,6 +101,7 @@ const hasMoreLines = formattedMessage.length > 1;
         const recordSha = record.getAttribute('data-sha');
         if (recordSha === latestSha) {
           record.classList.add('border-2', 'border-blue-300', 'bg-zinc-300');
+          record.id = 'latest-commit-record';
           const indicator = document.createElement('div');
           indicator.className = 'absolute top-0.5 left-1 text-xs font-bold tracking-tighter leading-3 bg-lime rounded-sm p-0.5';
           indicator.textContent = 'latest commit';

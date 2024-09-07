@@ -264,6 +264,12 @@ import CommitHistory from "./CommitHistory.astro";
           viewCommitText.textContent = "Hide Commit History";
           commitIconUp.classList.add("hidden");
           commitIconDown.classList.remove("hidden");
+          setTimeout(() => {
+            const latestCommit = document.getElementById('latest-commit-record');
+            if (latestCommit) {
+              latestCommit.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 1000);
         }
       });
     }
