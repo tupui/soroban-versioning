@@ -30,6 +30,12 @@ const projectRepoInfo: {
   project_repository: undefined,
 }
 
+const projectLatestSha: {
+  sha: string | undefined;
+} = {
+  sha: undefined,
+};
+
 function initializeProjectState() {
   if (typeof window !== 'undefined') {
     const storedState = localStorage.getItem('projectState');
@@ -52,6 +58,12 @@ function initializeProjectState() {
       const parsedRepoInfo = JSON.parse(storedRepoInfo);
       projectRepoInfo.project_author = parsedRepoInfo.project_author;
       projectRepoInfo.project_repository = parsedRepoInfo.project_repository;
+    }
+
+    const storedLatestSha = localStorage.getItem('projectLatestSha');
+    if (storedLatestSha && projectLatestSha.sha === undefined) {
+      const parsedLatestSha = JSON.parse(storedLatestSha);
+      projectLatestSha.sha = parsedLatestSha.sha;
     }
   }
 }
@@ -93,6 +105,15 @@ function setProjectRepoInfo(author: string, repository: string): void {
   }
 }
 
+function setProjectLatestSha(sha: string): void {
+  projectLatestSha.sha = sha;
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('projectLatestSha', JSON.stringify({
+      sha: projectLatestSha.sha,
+    }));
+  }
+}
+
 function loadedProjectId(): Buffer | undefined {
   return projectState.project_id;
 }
@@ -121,6 +142,10 @@ function loadProjectRepoInfo(): { author: string; repository: string } | undefin
   };
 }
 
+function loadProjectLatestSha(): string | undefined {
+  return projectLatestSha.sha;
+}
+
 export {
   initializeProjectState,
   setProjectId,
@@ -129,4 +154,6 @@ export {
   loadedProjectId,
   loadedProjectInfo,
   loadProjectRepoInfo,
+  setProjectLatestSha,
+  loadProjectLatestSha,
 };

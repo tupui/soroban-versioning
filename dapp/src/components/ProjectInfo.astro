@@ -2,7 +2,7 @@
 import Topic from "./utils/Topic.astro";
 import Modal from "./utils/Modal.astro";
 import Loading from "./utils/Loading.astro";
-import CommitHistory from "./CommitHistory.astro";
+import CommitHistory from "./CommitHistory.jsx";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row justify-between">
@@ -50,7 +50,7 @@ import CommitHistory from "./CommitHistory.astro";
       </div>
     </div>
     <div id="commit-history-container" class="mt-4 overflow-hidden transition-all duration-300 max-h-0">
-      <CommitHistory/>
+      <CommitHistory client:load/>
     </div>
   </div>
 </div>
@@ -111,8 +111,8 @@ import CommitHistory from "./CommitHistory.astro";
 </Modal>
 
 <script>
-  import { getProject, updateConfig } from "../service/ProjectService";
-  import { initializeProjectState, loadedProjectInfo, setProject } from "../service/StateService";
+  import { getProject, getProjectHash, updateConfig } from "../service/ProjectService";
+  import { initializeProjectState, loadedProjectInfo, setProject, setProjectLatestSha } from "../service/StateService";
   import { loadedPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
@@ -192,7 +192,20 @@ import CommitHistory from "./CommitHistory.astro";
       }
     }
 
+    
+  async function updateProjectLatestSha() {
+    try {
+      const latestSha = await getProjectHash();
+      if (latestSha) {
+        setProjectLatestSha(latestSha);
+      }
+    } catch (error) {
+      console.error("Error updating project latest SHA:", error);
+    }
+  }
+
     updateProjectInfo();
+    updateProjectLatestSha();  // Call this function to update the latest SHA
 
     const button = document.querySelector(
       "[update-config]",
