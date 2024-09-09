@@ -36,7 +36,7 @@ jobs:
         run: cd tansu && hatch build && mv dist ../.
 
       - name: Generate artifact attestation for sdist and wheels
-        uses: actions/attest-build-provenance@6149ea5740be74af77f260b9db67e633f6b0a9a1
+        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c
         with:
           subject-path: "dist/tansu*"
 
@@ -51,6 +51,6 @@ jobs:
           done
 
       - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@8a08d616893759ef8e1aa1f2785787c0b97e20d6
+        uses: pypa/gh-action-pypi-publish@0ab0b79471669eb3a4d647e625009c62f9f3b241
         with:
           print-hash: true
