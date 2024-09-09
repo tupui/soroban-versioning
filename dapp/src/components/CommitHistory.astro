@@ -7,7 +7,7 @@ import type { FormattedCommit } from '../types/github';
 const commitHistory = await getCommitHistory('tupui', 'soroban-versioning');
 ---
 
-<div class="commit-history-container space-y-4 relative pl-8 before:content-[''] before:absolute before:left-[0.5rem] before:top-0 before:bottom-0 before:w-0.5 before:bg-zinc-700">
+<div class="commit-history-container max-w-[900px]  max-h-[560px] mx-auto overflow-y-auto space-y-4 relative pl-8 before:content-[''] before:absolute before:left-[0.5rem] before:top-0 before:bottom-0 before:w-0.5 before:bg-zinc-700">
   {commitHistory && commitHistory.length > 0 && commitHistory.map((day: { date: string; commits: FormattedCommit[] }) => (
     <div class="day-group relative">
       <h3 class="text-lg font-semibold pb-4 relative">
@@ -32,10 +32,3 @@ const commitHistory = await getCommitHistory('tupui', 'soroban-versioning');
     </div>
   ))}
 </div>
-
-<style>
-  .commit-history-container {
-    max-width: 900px;
-    margin: 0 auto;
-  }
-</style>
