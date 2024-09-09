@@ -56,24 +56,25 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
       "[data-set-project]",
     ) as HTMLButtonElement;
 
-    button.addEventListener("click", async () => {
-      button.disabled = true;
-      try {
-        setProjectId(project_name.value);
-        const project = await getProject();
-        if (project && project.name && project.config && project.maintainers) {
-          setProject(project);
-          const { username, repoName } = getAuthorRepo(project.config.url);
-          if (username && repoName) {
-            setProjectRepoInfo(username, repoName);
+    if (button) {
+      button.addEventListener("click", async () => {
+        try {
+          setProjectId(project_name.value);
+          const project = await getProject();
+          if (project && project.name && project.config && project.maintainers) {
+            setProject(project);
+            const { username, repoName } = getAuthorRepo(project.config.url);
+            if (username && repoName) {
+              setProjectRepoInfo(username, repoName);
+            }
+            navigate("/commit");
+          } else {
+            navigate("/register")
           }
-          navigate("/commit");
-        } else {
-          navigate("/register")
+        } catch (e) {
+          console.error(e);
         }
-      } catch (e) {
-        console.error(e);
-      }
-    });
+      });
+    }
   });
 </script>
