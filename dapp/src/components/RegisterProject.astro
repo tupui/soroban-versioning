@@ -1,6 +1,7 @@
 ---
 import Topic from "./utils/Topic.astro";
 import Loading from "./utils/Loading.astro";
+import ModalInput from "./utils/ModalInput.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row">
@@ -14,11 +15,9 @@ import Loading from "./utils/Loading.astro";
     <div class="space-y-8 md:w-full">
       <label class="block mb-2 text-base font-medium text-black">
         Maintainers
-        <input
-          type="text"
+        <ModalInput
           id="maintainers"
           name="config_hash"
-          class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
           placeholder="List of maintainers' addresses as G...,G..."
           required
         />
@@ -26,11 +25,9 @@ import Loading from "./utils/Loading.astro";
 
       <label class="block mb-2 text-base font-medium text-black">
         GitHub repository URL
-        <input
-          type="text"
+        <ModalInput
           id="config_url"
           name="config_hash"
-          class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
           placeholder="GitHub repository URL"
           required
         />
@@ -38,11 +35,9 @@ import Loading from "./utils/Loading.astro";
 
       <label class="block mb-2 text-base font-medium text-black">
         Information file hash
-        <input
-          type="text"
+        <ModalInput
           id="config_hash"
           name="config_hash"
-          class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
           placeholder="Information file hash"
           required
           minlength="64"
