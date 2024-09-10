@@ -47,17 +47,22 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
   import { loadedPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
-    const projectInfo = loadProjectInfo();
-
-    if (projectInfo) {
-      const connectedPublicKey = loadedPublicKey();
-
-      const isMaintainer = connectedPublicKey ? projectInfo.maintainers.includes(connectedPublicKey) : false;
-      const updateCommitSection = document.getElementById("update-commit-section");
-      if (updateCommitSection) {
-        updateCommitSection.classList.toggle("hidden", !isMaintainer);
+    function updateCommitSectionVisibility() {
+      const projectInfo = loadProjectInfo();
+      
+      if (projectInfo) {
+        const connectedPublicKey = loadedPublicKey();
+        const isMaintainer = connectedPublicKey ? projectInfo.maintainers.includes(connectedPublicKey) : false;
+        const updateCommitSection = document.getElementById("update-commit-section");
+        if (updateCommitSection) {
+          updateCommitSection.classList.toggle("hidden", !isMaintainer);
+        }
       }
     }
+
+    // Call the function when the page loads
+    updateCommitSectionVisibility();
+
     const commit_hash = document.getElementById(
       "commit_hash",
     ) as HTMLInputElement;
@@ -79,16 +84,19 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
         try {
           const commit_status = await commitHash(commit_hash.value);
 
-        wrap_loader.style.display = "none";
-        wrap_button.style.display = "block";
-        if (!commit_status) {
-          alert("Hash could not be committed! Please retry.");
-        } else {
-          wrap_button.innerHTML = "Hash committed!";
+          wrap_loader.style.display = "none";
+          wrap_button.style.display = "block";
+          if (!commit_status) {
+            alert("Hash could not be committed! Please retry.");
+          } else {
+            wrap_button.innerHTML = "Hash committed!";
+          }
+        } catch (e) {
+          console.error(e);
         }
-      } catch (e) {
-        console.error(e);
-      }
-    });
-  }});
+    })};
+
+    // Add event listener for wallet connection
+    window.addEventListener('walletConnected', updateCommitSectionVisibility);
+  });
 </script>

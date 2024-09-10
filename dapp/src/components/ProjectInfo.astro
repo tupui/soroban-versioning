@@ -178,8 +178,13 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
         if (modalConfigHash) {
           modalConfigHash.value = projectInfo.config.hash;
         }
+      }
+    }
 
-        // Check if the connected wallet is a maintainer
+    function updateUpgradeConfigButtonVisibility() {
+      const projectInfo = loadProjectInfo();
+
+      if (projectInfo) {
         const connectedPublicKey = loadedPublicKey();
         const isMaintainer = connectedPublicKey ? projectInfo.maintainers.includes(connectedPublicKey) : false;
         const updateConfigButton = document.getElementById("open-update-config-modal-button");
@@ -202,6 +207,7 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
   }
 
     updateProjectInfo();
+    updateUpgradeConfigButtonVisibility();
     updateProjectLatestSha();  // Call this function to update the latest SHA
 
     const button = document.querySelector(
@@ -285,16 +291,7 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
     }
 
     window.addEventListener('walletConnected', (_event: Event) => {
-      const projectInfo = loadProjectInfo();
-      
-      if (projectInfo) {
-        const connectedPublicKey = loadedPublicKey();
-        const isMaintainer = connectedPublicKey ? projectInfo.maintainers.includes(connectedPublicKey) : false;
-        const updateConfigButton = document.getElementById("open-update-config-modal-button");
-        if (updateConfigButton) {
-          updateConfigButton.classList.toggle("hidden", !isMaintainer);
-        }
-      }
+      updateUpgradeConfigButtonVisibility();
     });
   });
 </script>
