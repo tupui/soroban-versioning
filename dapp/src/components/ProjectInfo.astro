@@ -4,6 +4,7 @@ import Modal from "./utils/Modal.astro";
 import Loading from "./utils/Loading.astro";
 import CommitHistory from "./CommitHistory.jsx";
 import PrimaryButton from "./utils/PrimaryButton.astro";
+import ModalInput from "./utils/ModalInput.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row justify-between">
@@ -19,20 +20,20 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
 </div>
 
 <div
-  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-[45px]"
+  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
 >
-  <div class="row items-center py-12 px-4 md:px-20 w-full md:py-10">
+  <div class="row items-center py-8 sm:py-12 px-4 sm:px-8 md:px-20 w-full md:py-10">
     <div class="space-y-6 md:w-full">
-      <div id="project-name" class="flex items-center space-x-2">
-        <h3 class="text-lg font-semibold">Project Name:</h3>
+      <div id="project-name" class="flex items-end space-x-2">
+        <h3 class="text-base sm:text-lg font-semibold pb-1 sm:pb-0.5">Project Name:</h3>
         <p id="project-name-value" class="text-3xl font-bold"></p>
       </div>
-      <div id="project-maintainers" class="space-y-2">
-        <h3 class="text-lg font-semibold">Maintainers:</h3>
-        <ul class="list-disc list-outside pl-4"></ul>
+      <div id="project-maintainers" class="space-y-1">
+        <h3 class="text-base sm:text-lg font-semibold">Maintainers:</h3>
+        <ul class="list-disc list-outside pl-5"></ul>
       </div>
-      <div class="flex items-center space-x-4">
-        <div id="project-link" class="flex items-center space-x-2">
+      <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center sm:gap-x-4">
+        <div id="project-link" class="flex items-center space-x-2 px-2 py-1">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" />
           </svg>
@@ -45,6 +46,12 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
           </svg>
           <span id="view-commit-text">View Commit History</span>
         </div>
+        <div id="view-main-info" class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+          <span id="view-main-info-text">View Main Info</span>
+        </div>
       </div>
     </div>
     <div id="commit-history-container" class="mt-4 overflow-hidden transition-all duration-300 max-h-0">
@@ -54,15 +61,13 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
 </div>
 
 <Modal id="update-config-modal" title="Update Config">
-  <div id="modal-content" class="space-y-4 w-[600px]">
-    <h2 id="modal-project-name" class="text-3xl font-bold mb-4">Project Name</h2>
+  <div id="modal-content" class="space-y-4 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-[600px]">
+    <h2 id="modal-project-name" class="text-2xl sm:text-3xl font-bold mb-4">Project Name</h2>
 
     <label class="block mb-2 text-base font-medium text-black">
       Maintainers
-      <input
-        type="text"
+      <ModalInput
         id="modal-maintainers"
-        class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
         placeholder="List of maintainers' addresses as G...,G..."
         required
       />
@@ -70,10 +75,8 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
 
     <label class="block mb-2 text-base font-medium text-black">
       GitHub repository URL
-      <input
-        type="text"
+      <ModalInput
         id="modal-config-url"
-        class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
         placeholder="GitHub repository URL"
         required
       />
@@ -81,10 +84,8 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
 
     <label class="block mb-2 text-base font-medium text-black">
       Information file hash
-      <input
-        type="text"
+      <ModalInput
         id="modal-config-hash"
-        class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
         placeholder="Information file hash"
         required
         minlength="40"
@@ -139,7 +140,7 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
               li.appendChild(content);
 
               const popup = document.createElement("p");
-              popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black";
+              popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
               popup.textContent = maintainer;
               li.appendChild(popup);
               
@@ -193,7 +194,6 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
         }
       }
     }
-
     
     async function updateProjectLatestSha() {
       try {
