@@ -118,6 +118,10 @@ function loadedProjectId(): Buffer | undefined {
   return projectState.project_id;
 }
 
+function loadProjectName(): string | undefined {
+  return projectState.project_name;
+}
+
 function loadedProjectInfo(): Project | undefined {
   if (!projectInfo.project_maintainers || !projectInfo.project_config_url || !projectInfo.project_config_hash || !projectState.project_name) {
     return undefined;
@@ -156,4 +160,5 @@ export {
   loadProjectRepoInfo,
   setProjectLatestSha,
   loadProjectLatestSha,
+  loadProjectName, // Add this new export
 };
