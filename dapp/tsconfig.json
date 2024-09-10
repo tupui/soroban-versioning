@@ -1,4 +1,7 @@
 {
+  "compilerOptions": {
+    "jsx": "react"
+  },
   "extends": "astro/tsconfigs/strictest",
   "exclude": ["packages"]
 }

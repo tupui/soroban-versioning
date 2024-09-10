@@ -14,18 +14,28 @@
 }
 
 /* custom scrollbar */
+/* For Webkit-based browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px !important;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f1f1f1 !important;
+  border-radius: 10px !important;
+  cursor: pointer;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #000000;
+  background-color: #777 !important;
+  border-radius: 10px;
+  border: 2px solid #f1f1f1 !important;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background-color: #555 !important;
+}
+/* For Firefox */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #555 #f1f1f1 !important;
 }
