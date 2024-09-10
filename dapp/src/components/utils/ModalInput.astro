@@ -1,0 +1,25 @@
+---
+interface Props {
+  type?: string;
+  id: string;
+  placeholder?: string;
+  required?: boolean;
+  inputClass?: string;
+}
+
+const {
+  type = 'text',
+  id,
+  placeholder,
+  required = false,
+  inputClass = "",
+} = Astro.props;
+---
+
+<input
+  type={type as astroHTML.JSX.HTMLInputTypeAttribute}
+  id={id}
+  class={`block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black ${inputClass}`}
+  placeholder={placeholder}
+  required={required}
+/>
