@@ -47,11 +47,11 @@ import Loading from "./utils/Loading.astro";
 
 <script>
   import { commitHash } from "../service/ProjectService";
-  import { loadedProjectInfo } from "../service/StateService";
+  import { loadProjectInfo } from "../service/StateService";
   import { loadedPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
-    const projectInfo = loadedProjectInfo();
+    const projectInfo = loadProjectInfo();
 
     if (projectInfo) {
       const connectedPublicKey = loadedPublicKey();

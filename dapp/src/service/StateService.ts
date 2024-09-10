@@ -122,7 +122,7 @@ function loadProjectName(): string | undefined {
   return projectState.project_name;
 }
 
-function loadedProjectInfo(): Project | undefined {
+function loadProjectInfo(): Project | undefined {
   if (!projectInfo.project_maintainers || !projectInfo.project_config_url || !projectInfo.project_config_hash || !projectState.project_name) {
     return undefined;
   }
@@ -156,7 +156,7 @@ export {
   setProject,
   setProjectRepoInfo,
   loadedProjectId,
-  loadedProjectInfo,
+  loadProjectInfo,
   loadProjectRepoInfo,
   setProjectLatestSha,
   loadProjectLatestSha,

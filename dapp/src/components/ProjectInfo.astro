@@ -112,15 +112,15 @@ import CommitHistory from "./CommitHistory.jsx";
 
 <script>
   import { getProject, getProjectHash, updateConfig } from "../service/ProjectService";
-  import { initializeProjectState, loadedProjectInfo, setProject, setProjectLatestSha } from "../service/StateService";
+  import { initializeProjectState, loadProjectInfo, setProject, setProjectLatestSha } from "../service/StateService";
   import { loadedPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
     initializeProjectState();
     const modal = document.getElementById("update-config-modal") as HTMLDialogElement;
 
-    function updateProjectInfo() {
-      const projectInfo = loadedProjectInfo();
+    async function updateProjectInfo() {
+      const projectInfo = loadProjectInfo();
       if (projectInfo) {
         const projectNameElement = document.getElementById("project-name-value");
         if (projectNameElement) {
@@ -288,7 +288,7 @@ import CommitHistory from "./CommitHistory.jsx";
     }
 
     window.addEventListener('walletConnected', (_event: Event) => {
-      const projectInfo = loadedProjectInfo();
+      const projectInfo = loadProjectInfo();
       
       if (projectInfo) {
         const connectedPublicKey = loadedPublicKey();
