@@ -1,6 +1,7 @@
 ---
 import Topic from "./utils/Topic.astro";
 import LinkCard from "./utils/LinkCard.astro";
+import PrimaryButton from "./utils/PrimaryButton.astro";
 
 const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK;
 const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
@@ -27,13 +28,12 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
           maxlength="15"
         />
       </label>
-      <button
-        data-set-project
-        aria-controls="set-project"
-        class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
-      >
-        <span class="text-center text-white text-xl font-normal leading-7">Set project</span>
-      </button>
+      <PrimaryButton
+        wrapId="wrap-set-project-button"
+        dataAttr="data-set-project"
+        ariaControls="set-project"
+        buttonText="Set project"
+      />
     </div>
   </div>
   <LinkCard
