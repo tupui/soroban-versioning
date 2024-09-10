@@ -48,12 +48,22 @@ const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commit
         )}
         <div className="commit-details text-sm text-gray-600 mt-1">
           <a href={authorGithubLink} target="_blank" rel="noopener noreferrer" className="author-name font-semibold hover:underline hover:text-blue-500">{authorName}</a>
-          <span className="mx-1">committed on</span>
-          <span className="commit-date">{formatTime(date)}</span>
+          <span className="ml-1 hidden sm:inline"> committed on</span>
+          <span className="commit-date ml-1"> {formatTime(date)}</span>
         </div>
       </div>
       <div className="commit-sha flex items-center space-x-2 flex-shrink-0">
-        <a href={commitLink} target="_blank" rel="noopener noreferrer" className="sha text-sm font-mono text-gray-500 hover:bg-zinc-400 transition-colors duration-200 px-2 py-1 rounded">{sha.substring(0, 7)}</a>
+        <div className="relative group">
+          <a href={commitLink} target="_blank" rel="noopener noreferrer" className="sha text-sm font-mono text-gray-500 hover:bg-zinc-400 transition-colors duration-200 px-2 py-1 rounded">
+            {sha.substring(0, 7)}
+          </a>
+          <div className="absolute left-0 sm:-left-full bottom-full mb-2 -translate-x-1/2 hidden group-hover:block">
+            <div className="bg-black text-white text-xs py-1 px-2 rounded shadow-lg max-w-[90vw] break-words">
+              {sha}
+              <div className="absolute left-2/3 sm:left-3/4 top-full border-4 border-transparent border-t-black"></div>
+            </div>
+          </div>
+        </div>
         <button className="copy-button hover:bg-zinc-400 transition-colors duration-200 p-1 rounded" onClick={handleCopy}>
           {isCopied ? (
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 text-green-500">
