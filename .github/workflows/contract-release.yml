@@ -1,0 +1,44 @@
+name: Publish Soroban versioning contract
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_name:
+        description: 'Unique release name'
+        required: true
+        type: string
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-contract:
+    name: Compile Stellar smart contract for production
+    permissions:
+      contents: write  # in order to create releases
+    environment:
+      name: publish-contract
+
+    steps:
+      - uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@42c50612b2839ad2e9aa50b874552d6f76bac623
+        with:
+          release_name: ${{ github.event.inputs.release_name }}
+          release_description: 'Tansu contract release'
+        secrets:
+          release_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate artifact attestation for build
+        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c
+        with:
+          subject-path: "target/wasm32-unknown-unknown/release/versioning.wasm"
+
+      - name: Verify artifact attestation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          for artifact in target/wasm32-unknown-unknown/release/*; do
+              echo "# ${artifact}"
+              gh attestation verify "${artifact}" --repo ${{ github.repository }}
+          done
