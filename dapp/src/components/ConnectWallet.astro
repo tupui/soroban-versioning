@@ -1,16 +1,6 @@
-<div id="connect-wrap" class="wrap" aria-live="polite">
-  <button data-connect aria-controls="connect-wrap">Connect</button>
+<div id="connect-wrap" aria-live="polite">
+  <button data-connect aria-controls="connect-wrap" class="text-center text-sm sm:text-base max-w-28 sm:max-w-36 md:max-w-44 truncate">Connect</button>
 </div>
-
-<style>
-  .wrap {
-    text-align: center;
-    max-width: 12rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-</style>
 
 <script>
   import { kit, loadedPublicKey, setPublicKey } from "./stellar-wallets-kit";
@@ -21,7 +11,7 @@
     ) as HTMLButtonElement;
 
     async function setLoggedIn(publicKey: string) {
-      button.textContent = `Signed in as ${publicKey}`;
+      button.textContent = `${publicKey}`;
     }
 
     const connectedPublicKey = loadedPublicKey();
