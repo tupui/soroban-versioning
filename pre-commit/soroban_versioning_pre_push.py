@@ -19,15 +19,10 @@ CONTRACT_ID = os.getenv(
     "TANSU_CONTRACT_ID", "CAP52ERGUZ65UNPHP36CQBHYUPEUG2TT4NPVEV7CREWRT7UCPD7PRWEE"
 )
 PROJECT_KEY = os.getenv("TANSU_PROJECT_KEY")
-if PROJECT_KEY is None:
-    raise ValueError("'TANSU_PROJECT_KEY' is missing from the environment")
-
 BRANCH = os.getenv("TANSU_BRANCH", "main")
 
 
 def main():
-    project_key = bytes.fromhex(PROJECT_KEY)
-
     branch = (
         subprocess.run(["git", "branch", "--show-current"], capture_output=True)
         .stdout.decode()
@@ -35,6 +30,11 @@ def main():
     )
     if branch != BRANCH:
         exit(0)
+
+    if PROJECT_KEY is None:
+        raise ValueError("'TANSU_PROJECT_KEY' is missing from the environment")
+
+    project_key = bytes.fromhex(PROJECT_KEY)
 
     commit_hash = (
         subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True)
