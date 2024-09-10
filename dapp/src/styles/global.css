@@ -14,9 +14,8 @@
 }
 
 /* custom scrollbar */
-/* For Webkit-based browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
-  width: 8px !important;
+  width: 10px !important;
 }
 
 ::-webkit-scrollbar-track {
@@ -33,9 +32,4 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background-color: #555 !important;
-}
-/* For Firefox */
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #555 #f1f1f1 !important;
 }
