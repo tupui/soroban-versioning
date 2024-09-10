@@ -57,8 +57,8 @@ const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commit
           <a href={commitLink} target="_blank" rel="noopener noreferrer" className="sha text-sm font-mono text-gray-500 hover:bg-zinc-400 transition-colors duration-200 px-2 py-1 rounded">
             {sha.substring(0, 7)}
           </a>
-          <div className="absolute left-0 sm:-left-full bottom-full mb-2 -translate-x-1/2 hidden group-hover:block">
-            <div className="bg-black text-white text-xs py-1 px-2 rounded shadow-lg max-w-[90vw] break-words">
+          <div className="absolute -left-1/4 sm:-left-full bottom-full mb-2 -translate-x-1/2 hidden group-hover:block">
+            <div className="bg-black text-white text-xs py-1 px-2 rounded shadow-lg max-w-[54vw] sm:max-w-[90vw] break-words">
               {sha}
               <div className="absolute left-2/3 sm:left-3/4 top-full border-4 border-transparent border-t-black"></div>
             </div>
