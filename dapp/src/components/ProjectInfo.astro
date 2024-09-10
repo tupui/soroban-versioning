@@ -3,20 +3,18 @@ import Topic from "./utils/Topic.astro";
 import Modal from "./utils/Modal.astro";
 import Loading from "./utils/Loading.astro";
 import CommitHistory from "./CommitHistory.jsx";
+import PrimaryButton from "./utils/PrimaryButton.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row justify-between">
   <Topic title="Project" description="Details about the project" id="project-name-topic"/>
   <div id="open-update-config-modal-button" class="mb-1.5 mt-12 pr-3 hidden">
-    <button
-      update-config
-      aria-controls="update-config-modal"
-      class="w-full p-3 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
-    >
-      <span class="text-center text-white text-xl font-normal leading-7">
-        Update Config
-      </span>
-    </button>
+    <PrimaryButton
+      wrapId="wrap-update-config"
+      dataAttr="data-update-config"
+      ariaControls="update-config-modal"
+      buttonText="Update Config"
+    />
   </div>
 </div>
 
@@ -208,7 +206,7 @@ import CommitHistory from "./CommitHistory.jsx";
     updateProjectLatestSha();  // Call this function to update the latest SHA
 
     const button = document.querySelector(
-      "[update-config]",
+      "[data-update-config]",
     ) as HTMLButtonElement; 
     if (button) {
       button.addEventListener("click", async () => {

@@ -1,6 +1,7 @@
 ---
 import Topic from "./utils/Topic.astro";
 import Loading from "./utils/Loading.astro";
+import PrimaryButton from "./utils/PrimaryButton.astro";
 ---
 
 <div id="update-commit-section" class="hidden">
@@ -11,7 +12,7 @@ import Loading from "./utils/Loading.astro";
   <div
     class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-[45px]"
   >
-    <div class="row items-center py-12 px-4 md:px-20 md:w-8/12 md:py-10">
+    <div class="row items-center py-12 px-6 sm:px-12 md:px-20 w-full md:w-8/12 md:py-10">
       <div class="space-y-8 md:w-full">
         <label class="block mb-2 text-base font-medium text-black">
           Commit hash
@@ -26,17 +27,12 @@ import Loading from "./utils/Loading.astro";
             maxlength="40"
           />
         </label>
-        <div id="wrap-commit-button">
-          <button
-            data-commit-hash
-            aria-controls="commit-hash"
-            class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
-          >
-            <span class="text-center text-white text-xl font-normal leading-7"
-              >Commit on-chain</span
-            >
-          </button>
-        </div>
+        <PrimaryButton
+          wrapId="wrap-commit-button"
+          dataAttr="data-commit-hash"
+          ariaControls="commit-hash"
+          buttonText="Commit on-chain"
+        />
       </div>
       <div id="wrap-commit-loader" class="hidden">
         <Loading />
