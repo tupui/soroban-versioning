@@ -61,22 +61,24 @@ import Loading from "./utils/Loading.astro";
       "[data-commit-hash]",
     ) as HTMLButtonElement;
 
-    button.addEventListener("click", async () => {
-      wrap_loader.style.display = "block";
-      wrap_button.style.display = "none";
-      try {
-        const commit_status = await commitHash(commit_hash.value);
+    if (button) {
+      button.addEventListener("click", async () => {
+        wrap_loader.style.display = "block";
+        wrap_button.style.display = "none";
+        try {
+          const commit_status = await commitHash(commit_hash.value);
 
-        wrap_loader.style.display = "none";
-        wrap_button.style.display = "block";
-        if (!commit_status) {
-          alert("Hash could not be committed! Please retry.");
-        } else {
-          wrap_button.innerHTML = "Hash committed!";
+          wrap_loader.style.display = "none";
+          wrap_button.style.display = "block";
+          if (!commit_status) {
+            alert("Hash could not be committed! Please retry.");
+          } else {
+            wrap_button.innerHTML = "Hash committed!";
+          }
+        } catch (e) {
+          console.error(e);
         }
-      } catch (e) {
-        console.error(e);
-      }
-    });
+      });
+    }
   });
 </script>

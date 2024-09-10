@@ -12,8 +12,7 @@ const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commit
 
   useEffect(() => {
     const highlightLatestCommit = () => {
-      const latestSha = 'cb2e487eb72e836d5ef9f00b52997416a56173dd';
-      setIsLatestCommit(sha === latestSha);
+      setIsLatestCommit(sha === loadProjectLatestSha);
     };
     highlightLatestCommit();
   }, [sha]);

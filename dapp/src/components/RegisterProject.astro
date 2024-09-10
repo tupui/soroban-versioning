@@ -25,13 +25,13 @@ import Loading from "./utils/Loading.astro";
       </label>
 
       <label class="block mb-2 text-base font-medium text-black">
-        URL
+        GitHub repository URL
         <input
           type="text"
           id="config_url"
           name="config_hash"
           class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
-          placeholder="Information file URL"
+          placeholder="GitHub repository URL"
           required
         />
       </label>
@@ -95,24 +95,26 @@ import Loading from "./utils/Loading.astro";
       "[data-register-project]",
     ) as HTMLButtonElement;
 
-    button.addEventListener("click", async () => {
-      wrap_loader.style.display = "block";
-      wrap_button.style.display = "none";
+    if (button) {
+      button.addEventListener("click", async () => {
+        wrap_loader.style.display = "block";
+        wrap_button.style.display = "none";
 
-      const register_status = await registerProject(
-        maintainers.value,
-        config_url.value,
-        config_hash.value,
-        SOROBAN_DOMAIN_CONTRACT_ID,
-      );
+        const register_status = await registerProject(
+          maintainers.value,
+          config_url.value,
+          config_hash.value,
+          SOROBAN_DOMAIN_CONTRACT_ID,
+        );
 
-      wrap_loader.style.display = "none";
-      wrap_button.style.display = "block";
-      if (!register_status) {
-        alert("Project could not be registered! Please retry.");
-      } else {
-        navigate("/commit");
-      }
-    });
+        wrap_loader.style.display = "none";
+        wrap_button.style.display = "block";
+        if (!register_status) {
+          alert("Project could not be registered! Please retry.");
+        } else {
+          navigate("/commit");
+        }
+      });
+    }
   });
 </script>
