@@ -195,16 +195,16 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
     }
 
     
-  async function updateProjectLatestSha() {
-    try {
-      const latestSha = await getProjectHash();
-      if (latestSha) {
-        setProjectLatestSha(latestSha);
+    async function updateProjectLatestSha() {
+      try {
+        const latestSha = await getProjectHash();
+        if (latestSha) {
+          setProjectLatestSha(latestSha);
+        }
+      } catch (error) {
+        console.error("Error updating project latest SHA:", error);
       }
-    } catch (error) {
-      console.error("Error updating project latest SHA:", error);
     }
-  }
 
     updateProjectInfo();
     updateUpgradeConfigButtonVisibility();
