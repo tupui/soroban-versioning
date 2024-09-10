@@ -1,11 +1,9 @@
 ---
-import Container from "./Container.astro";
-
 const year = new Date().getFullYear();
 ---
 
 <footer class="bg-lime bg-fixed bg-bottom text-black">
-  <Container>
+  <div class="max-w-screen-xl mx-auto px-6 md:px-14 xl:px-14">
     <div class="py-6">
       <div class="flex flex-col items-center">
         <div class="flex mt-4 md:m-0">
@@ -16,5 +14,5 @@ const year = new Date().getFullYear();
         </div>
       </div>
     </div>
-  </Container>
+  </div>
 </footer>

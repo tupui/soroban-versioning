@@ -1,14 +1,13 @@
 ---
-import Container from "../layout/Container.astro";
 import ConnectWallet from "../ConnectWallet.astro";
 ---
 
 <header class="mt-32">
   <nav class="w-full top-0 left-0 z-50 fixed bg-white">
-    <Container>
+    <div class="max-w-screen-xl mx-auto px-6 md:px-14 xl:px-14">
       <div class="flex flex-wrap items-center justify-between mx-auto py-3">
         <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src="/logo.svg" class="h-8" alt="Logo" />
+          <img src="/logo.svg" class="h-8 sm:h-10 md:h-11" alt="Logo" />
         </a>
         <div
           class="hidden w-full md:block md:w-auto font-medium"
@@ -22,12 +21,12 @@ import ConnectWallet from "../ConnectWallet.astro";
         </div>
         <div class="md:block md:w-auto" id="navbar-default">
           <div
-            class="px-9 py-2 rounded-2xl border border-zinc-900 bg-white hover:bg-black text-black hover:text-white inline-flex"
+            class="px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-2xl border border-zinc-900 bg-white hover:bg-black text-black hover:text-white inline-flex"
           >
             <ConnectWallet />
           </div>
         </div>
       </div>
-    </Container>
+    </div>
   </nav>
 </header>
