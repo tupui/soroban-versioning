@@ -21,7 +21,7 @@ jobs:
       name: publish-contract
 
     steps:
-      - uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@main
+      - uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@42c50612b2839ad2e9aa50b874552d6f76bac623
         with:
           release_name: ${{ github.event.inputs.release_name }}
           release_description: 'Tansu contract release'
