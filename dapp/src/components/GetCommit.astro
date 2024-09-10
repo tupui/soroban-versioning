@@ -42,18 +42,20 @@ import Loading from "./utils/Loading.astro";
       "[data-project-get-hash]",
     ) as HTMLButtonElement;
 
-    button.addEventListener("click", async () => {
-      wrap_loader.style.display = "block";
-      wrap_button.style.display = "none";
-      try {
-        const project_hash = await getProjectHash();
+    if (button) {
+      button.addEventListener("click", async () => {
+        wrap_loader.style.display = "block";
+        wrap_button.style.display = "none";
+        try {
+          const project_hash = await getProjectHash();
 
-        wrap_loader.style.display = "none";
-        wrap_button.style.display = "block";
-        wrap_button.innerHTML = `${project_hash}`;
-      } catch (e) {
-        console.error(e);
-      }
-    });
+          wrap_loader.style.display = "none";
+          wrap_button.style.display = "block";
+          wrap_button.innerHTML = `${project_hash}`;
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    }
   });
 </script>
