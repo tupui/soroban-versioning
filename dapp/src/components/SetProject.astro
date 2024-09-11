@@ -44,9 +44,10 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 
 <script>
   import { getProject } from "../service/ProjectService";
-  import { setProjectId, setProject, setProjectRepoInfo } from "../service/StateService";
+  import { setProjectId, setProject, setProjectRepoInfo, setConfigData } from "../service/StateService";
   import { navigate } from "astro:transitions/client";
   import { getAuthorRepo } from "../service/utils";
+  import { fetchTOMLFromConfigUrl } from "../service/GithubService";
 
   document.addEventListener("astro:page-load", () => {
     const project_name = document.getElementById(
@@ -66,6 +67,30 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
           const { username, repoName } = getAuthorRepo(project.config.url);
           if (username && repoName) {
             setProjectRepoInfo(username, repoName);
+          }
+          const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+          if (tomlData) {
+            const configData = {
+              projectName: project.name,
+              logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
+              thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
+              description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
+              companyName: tomlData.DOCUMENTATION?.ORG_NAME || "",
+              officials: {
+                websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
+                githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
+              },
+              socialLinks: {
+                twitter: "",
+                telegram: "",
+                discord: "",
+                instagram: "",
+              },
+              version: tomlData.VERSION || "",
+              authorGithubNames: tomlData.PRINCIPALS?.map((p: { github: any; }) => p.github) || [],
+              maintainersAddresses: tomlData.ACCOUNTS || [],
+            };
+            setConfigData(configData);
           }
           navigate("/commit");
         } else {
