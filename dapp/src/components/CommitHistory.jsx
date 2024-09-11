@@ -12,7 +12,6 @@ const CommitHistory = () => {
       const projectRepoInfo = loadProjectRepoInfo();
       if (projectRepoInfo?.author && projectRepoInfo?.repository) {
         const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository);
-        console.log("history:", history);
         setCommitHistory(history);
       }
     };
