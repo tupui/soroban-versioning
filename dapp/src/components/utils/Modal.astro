@@ -6,7 +6,7 @@ interface Props {
 
 const { id, title } = Astro.props;
 ---
-<dialog id={id} class="modal px-3 sm:px-6 pt-3 pb-6 rounded-lg shadow-xl relative">
+<dialog id={id} class="modal px-3 sm:px-6 pt-3 pb-4 rounded-lg shadow-xl relative">
   <div class="flex justify-between items-center mb-4">
     <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">
       {title && <span class="bg-lime px-2 py-1 rounded-lg inline-block">{title}</span>}

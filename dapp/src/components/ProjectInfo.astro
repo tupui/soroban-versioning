@@ -46,11 +46,11 @@ import ModalInput from "./utils/ModalInput.astro";
           </svg>
           <span id="view-commit-text">View Commit History</span>
         </div>
-        <div id="view-main-info" class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1">
+        <div id="view-project-info" class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
           </svg>
-          <span id="view-main-info-text">View Main Info</span>
+          <span>View Project Info</span>
         </div>
       </div>
     </div>
@@ -62,7 +62,7 @@ import ModalInput from "./utils/ModalInput.astro";
 
 <Modal id="update-config-modal" title="Update Config">
   <div id="modal-content" class="space-y-4 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-[600px]">
-    <h2 id="modal-project-name" class="text-2xl sm:text-3xl font-bold mb-4">Project Name</h2>
+    <h2 id="update-modal-project-name" class="text-2xl sm:text-3xl font-bold mb-4">Project Name</h2>
 
     <label class="block mb-2 text-base font-medium text-black">
       Maintainers
@@ -108,11 +108,43 @@ import ModalInput from "./utils/ModalInput.astro";
   </div>
 </Modal>
 
-<script>
-  import { getProject, getProjectHash, updateConfig } from "../service/ProjectService";
-  import { initializeProjectState, loadProjectInfo, setProject, setProjectLatestSha } from "../service/StateService";
-  import { loadedPublicKey } from "./stellar-wallets-kit";
+<Modal id="project-info-modal" title="">
+  <div class="space-y-6 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-full md:max-w-[800px]">
+    <div class="flex items-center space-x-4">
+      <img id="project-logo" src="" alt="Project Logo" class="w-12 h-12 object-contain">
+      <h2 id="view-modal-project-name" class="text-2xl sm:text-3xl font-bold"></h2>
+    </div>
+    
+    <div class="flex flex-col md:flex-row gap-6">
+      <img id="project-thumbnail" src="/fallback-image.jpg" alt="Project Thumbnail" class="w-full md:w-[40%] object-cover rounded-lg">
+      <div class="flex-1 pt-2">
+        <p id="project-description" class="flex-1"></p>
+      </div>
+    </div>
+    
+    <div class="space-y-2">
+      <div class="flex flex-col">
+        <h3 class="font-semibold mb-2">Official Links</h3>
+        <div id="official-links" class="flex flex-wrap gap-2"></div>
+      </div>
+      
+      <div class="flex flex-col">
+        <h3 class="font-semibold mb-2">Social</h3>
+        <div id="social-links" class="flex flex-wrap gap-2"></div>
+      </div>
+    </div>
+    <div class="flex justify-between items-start gap-6">
+      <p id="company-name" class=""></p>
+      <p id="project-version" class="text-sm"></p>
+    </div>
+  </div>
+</Modal>
 
+<script>
+  import { loadedPublicKey } from "./stellar-wallets-kit";
+  import { getProject, getProjectHash, updateConfig } from "../service/ProjectService";
+  import { initializeProjectState, loadConfigData, loadProjectInfo, setProject, setProjectLatestSha } from "../service/StateService";
+  import type { ConfigData } from "../types/projectConfig";
   document.addEventListener("astro:page-load", () => {
     initializeProjectState();
     const modal = document.getElementById("update-config-modal") as HTMLDialogElement;
@@ -162,7 +194,7 @@ import ModalInput from "./utils/ModalInput.astro";
         }
 
         // Update modal content
-        const modalProjectName = document.getElementById("modal-project-name");
+        const modalProjectName = document.getElementById("update-modal-project-name");
         if (modalProjectName) {
           modalProjectName.textContent = projectInfo.name;
         }
@@ -293,5 +325,109 @@ import ModalInput from "./utils/ModalInput.astro";
     window.addEventListener('walletConnected', (_event: Event) => {
       updateUpgradeConfigButtonVisibility();
     });
+
+    const viewProjectInfo = document.getElementById("view-project-info");
+    const projectInfoModal = document.getElementById("project-info-modal") as HTMLDialogElement;
+
+    if (viewProjectInfo && projectInfoModal) {
+      viewProjectInfo.addEventListener("click", async () => {
+        const projectInfo = loadProjectInfo();
+        if (projectInfo) {
+          const configData = loadConfigData();
+          if (configData) {
+            updateProjectInfoModal(projectInfo, configData);
+            projectInfoModal.showModal();
+          } else {
+            alert("Can not read config data.");
+          }
+        } else {
+          console.error("Failed to load project info");
+        }
+      });
+    }
+
+    function updateProjectInfoModal(projectInfo: any, configData: ConfigData) {
+      const modalProjectName = document.getElementById("view-modal-project-name");
+      const projectLogo = document.getElementById("project-logo") as HTMLImageElement;
+      const projectThumbnail = document.getElementById("project-thumbnail") as HTMLImageElement;
+      const projectDescription = document.getElementById("project-description");
+      const officialLinks = document.getElementById("official-links");
+      const socialLinks = document.getElementById("social-links");
+      const companyName = document.getElementById("company-name");
+      const projectVersion = document.getElementById("project-version");
+
+      if (modalProjectName) modalProjectName.textContent = projectInfo.name;
+      if (projectLogo) {
+        if (configData.logoImageLink) {
+          projectLogo.src = configData.logoImageLink;
+          projectLogo.style.display = 'block';
+        } else {
+          projectLogo.src = '/logo.svg';
+          projectLogo.style.display = 'block';
+          // projectLogo.style.display = 'none';
+        }
+      }
+      if (projectThumbnail) projectThumbnail.src = configData.thumbnailImageLink || '/fallback-image.jpg';
+      if (projectDescription) projectDescription.textContent = configData.description || '';
+      if (companyName) companyName.innerHTML = `Developed by   <strong class="font-extrabold"> ${configData.companyName || ''}</strong>`;
+      if (projectVersion) projectVersion.textContent = `Version: ${configData.version || ''}`;
+
+      // Official Links
+      if (officialLinks) {
+        officialLinks.innerHTML = '';
+        if (configData.officials.websiteLink) {
+          addLinkButton(officialLinks, 'Website', configData.officials.websiteLink, 'web');
+        }
+        if (configData.officials.githubLink) {
+          addLinkButton(officialLinks, 'GitHub', configData.officials.githubLink, 'github');
+        }
+      }
+
+      // Social Links (example, add more as needed)
+      if (socialLinks) {
+        socialLinks.innerHTML = '';
+        if (configData.socialLinks.twitter) {
+          addLinkButton(socialLinks, 'Twitter', configData.socialLinks.twitter, 'twitter');
+        }
+        if (configData.socialLinks.telegram) {
+          addLinkButton(socialLinks, 'Telegram', configData.socialLinks.telegram, 'telegram');
+        }
+        if (configData.socialLinks.instagram) {
+          addLinkButton(socialLinks, 'Instagram', configData.socialLinks.instagram, 'instagram');
+        }
+        if (configData.socialLinks.discord) {
+          addLinkButton(socialLinks, 'Discord', configData.socialLinks.discord, 'discord');
+        }
+      }
+    }
+
+    function addLinkButton(container: HTMLElement, title: string, url: string, iconName: string) {
+      const button = document.createElement('a');
+      button.href = url;
+      button.target = '_blank';
+      button.rel = 'noopener noreferrer';
+      button.className = 'flex items-center space-x-1 bg-zinc-200 hover:bg-zinc-300 rounded-lg px-3 py-1 text-sm';
+      
+      const icon = document.createElement('span');
+      icon.innerHTML = getIconSVG(iconName);
+      icon.className = 'w-4 h-4';
+      
+      const text = document.createElement('span');
+      text.textContent = title;
+      
+      button.appendChild(icon);
+      button.appendChild(text);
+      container.appendChild(button);
+    }
+
+    function getIconSVG(iconName: string) {
+      const icons: { [key: string]: string } = {
+        web: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>',
+        github: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>',
+        twitter: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>',
+        telegram: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M23.91 3.79L20.3 20.84c-.25 1.21-.98 1.5-2 .94l-5.5-4.07-2.66 2.57c-.3.3-.55.56-1.1.56-.72 0-.6-.27-.84-.95L6.3 13.7l-5.45-1.7c-1.18-.35-1.19-1.16.26-1.75l21.26-8.2c.97-.43 1.9.24 1.53 1.73z"/></svg>'
+      };
+      return icons[iconName] || '';
+    }
   });
 </script>
