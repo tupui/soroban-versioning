@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { formatTime } from '../service/utils';
 import { loadProjectLatestSha } from '../service/StateService';
 
-const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commitLink }) => {
+const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commitLink, isMaintainer }) => {
   const [isCopied, setIsCopied] = useState(false);
   const [isLatestCommit, setIsLatestCommit] = useState(false);
   const formattedMessage = message.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
@@ -28,10 +28,19 @@ const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commit
   };
 
   return (
-    <div className={`commit-record relative bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-start ${isLatestCommit ? 'border-2 border-blue-300 bg-zinc-300' : ''}`} data-sha={sha} id={isLatestCommit ? 'latest-commit-record' : undefined}>
-      {isLatestCommit && (
-        <div className="absolute top-0.5 left-1 text-xs font-bold tracking-tighter leading-3 bg-lime rounded-sm p-0.5">
-          latest commit
+    <div className={`commit-record relative bg-white pt-5 pb-3 px-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-start ${isLatestCommit ? 'border-2 border-blue-300 bg-zinc-300' : ''}`} data-sha={sha} id={isLatestCommit ? 'latest-commit-record' : undefined}>
+      {(isLatestCommit || isMaintainer) && (
+        <div className="absolute top-0.5 left-1 flex space-x-1">
+          {isLatestCommit && (
+            <div className="text-xs font-bold tracking-tighter leading-3 bg-lime rounded-sm p-0.5">
+              latest commit
+            </div>
+          )}
+          {isMaintainer && (
+            <div className="text-xs font-bold tracking-tighter leading-3 bg-blue-200 rounded-sm p-0.5">
+              by maintainer
+            </div>
+          )}
         </div>
       )}
       <div className="commit-info flex-grow overflow-hidden mr-4">

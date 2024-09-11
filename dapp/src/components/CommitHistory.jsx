@@ -1,13 +1,15 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import { getCommitHistory } from '../service/GithubService';
 import CommitRecord from './CommitRecord.jsx';
 import { formatDate } from '../service/utils';
-import { loadProjectRepoInfo } from '../service/StateService';
+import { loadProjectRepoInfo, loadConfigData } from '../service/StateService';
 
 const CommitHistory = () => {
-  const [commitHistory, setCommitHistory] = React.useState([]);
+  const [commitHistory, setCommitHistory] = useState([]);
+  const [authors, setAuthors] = useState([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchCommitHistory = async () => {
       const projectRepoInfo = loadProjectRepoInfo();
       if (projectRepoInfo?.author && projectRepoInfo?.repository) {
@@ -15,7 +17,19 @@ const CommitHistory = () => {
         setCommitHistory(history);
       }
     };
+    
+    const addMaintainerBadge = () => {
+      const configData = loadConfigData();
+      if (configData) {
+        const authors = configData.authorGithubNames.map(name => name.toLowerCase());
+        setAuthors(authors);
+      } else {
+        console.log("Can not read config data.");
+      }
+    }
+
     fetchCommitHistory();
+    addMaintainerBadge();
   }, []);
 
   return (
@@ -36,6 +50,7 @@ const CommitHistory = () => {
                   authorGithubLink={commit.author.html_url}
                   sha={commit.sha}
                   commitLink={commit.html_url}
+                  isMaintainer={authors ? authors.includes(commit.author.name.toLowerCase()) : false}
                 />
               </div>
             ))}
