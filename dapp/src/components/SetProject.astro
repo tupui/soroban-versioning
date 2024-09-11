@@ -59,7 +59,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
     // Function to handle project setting
     const handleSetProject = async () => {
       try {
-        setProjectId(project_name.value);
+        setProjectId(project_name.value.toLowerCase());
         const project = await getProject();
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
