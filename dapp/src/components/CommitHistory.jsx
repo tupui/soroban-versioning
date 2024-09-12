@@ -4,7 +4,7 @@ import { getCommitHistory } from '../service/GithubService';
 import CommitRecord from './CommitRecord.jsx';
 import { formatDate } from '../service/utils';
 import { loadProjectRepoInfo, loadConfigData } from '../service/StateService';
-import { projectInfoLoaded } from '../utils/store.js';
+import { projectInfoLoaded, latestCommit } from '../utils/store.js';
 import { useStore } from '@nanostores/react';
 
 const CommitHistory = () => {
@@ -17,6 +17,11 @@ const CommitHistory = () => {
     if (projectRepoInfo?.author && projectRepoInfo?.repository) {
       const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository);
       setCommitHistory(history);
+      
+      // Set the latest commit
+      if (history.length > 0 && history[0].commits.length > 0) {
+        latestCommit.set(history[0].commits[0].sha);
+      }
     }
   };
   

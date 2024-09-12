@@ -45,6 +45,7 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
   import { commitHash } from "../service/WriteContractService";
   import { loadProjectInfo } from "../service/StateService";
   import { loadedPublicKey } from "./stellar-wallets-kit";
+  import { latestCommit } from "../utils/store";
 
   document.addEventListener("astro:page-load", () => {
     function updateCommitSectionVisibility() {
@@ -67,6 +68,13 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
       "commit_hash",
     ) as HTMLInputElement;
 
+    // Subscribe to latestCommit changes
+    latestCommit.subscribe((value) => {
+      if (commit_hash) {
+        commit_hash.value = value;
+      }
+    });
+
     const wrap_loader = document.getElementById(
       "wrap-commit-loader",
     ) as HTMLDivElement;
@@ -77,24 +85,36 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
       "[data-commit-hash]",
     ) as HTMLButtonElement;
 
-    if (button) {
-      button.addEventListener("click", async () => {
-        wrap_loader.style.display = "block";
-        wrap_button.style.display = "none";
-        try {
-          const commit_status = await commitHash(commit_hash.value);
+    async function handleCommit() {
+      wrap_loader.style.display = "block";
+      wrap_button.style.display = "none";
+      try {
+        const commit_status = await commitHash(commit_hash.value);
 
-          wrap_loader.style.display = "none";
-          wrap_button.style.display = "block";
-          if (!commit_status) {
-            alert("Hash could not be committed! Please retry.");
-          } else {
-            wrap_button.innerHTML = "Hash committed!";
-          }
-        } catch (e) {
-          console.error(e);
+        wrap_loader.style.display = "none";
+        wrap_button.style.display = "block";
+        if (!commit_status) {
+          alert("Hash could not be committed! Please retry.");
+        } else {
+          wrap_button.innerHTML = "Hash committed!";
         }
-    })};
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    if (button) {
+      button.addEventListener("click", handleCommit);
+    }
+
+    if (commit_hash) {
+      commit_hash.addEventListener("keypress", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          handleCommit();
+        }
+      });
+    }
 
     // Add event listener for wallet connection
     window.addEventListener('walletConnected', updateCommitSectionVisibility);
