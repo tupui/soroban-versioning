@@ -3,6 +3,7 @@ import Layout from "../layouts/Layout.astro";
 
 import SetProject from "../components/SetProject.astro";
 import Container from "../components/layout/Container.astro";
+import ProjectList from "../components/ProjectList.jsx";
 ---
 
 <script is:inline>
@@ -12,6 +13,7 @@ import Container from "../components/layout/Container.astro";
   <main class="space-y-20">
     <Container>
       <SetProject />
+      <ProjectList client:load />
     </Container>
   </main>
 </Layout>
