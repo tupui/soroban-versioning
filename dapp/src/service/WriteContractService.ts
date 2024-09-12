@@ -71,7 +71,7 @@ async function registerProject(
     hash: config_hash,
     domain_contract_id: domain_contract_id,
   });
-  console.log("tx:", tx);
+
   try {
     await tx.signAndSend({
       signTransaction: async (xdr) => {

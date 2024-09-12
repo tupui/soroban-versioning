@@ -14,7 +14,6 @@ const CommitHistory = () => {
 
   const fetchCommitHistory = async () => {
     const projectRepoInfo = loadProjectRepoInfo();
-    console.log("projectInfo:", projectRepoInfo);
     if (projectRepoInfo?.author && projectRepoInfo?.repository) {
       const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository);
       setCommitHistory(history);
@@ -23,7 +22,6 @@ const CommitHistory = () => {
   
   const addMaintainerBadge = () => {
     const configData = loadConfigData();
-    console.log("configData:", configData);
     if (configData) {
       const authors = configData.authorGithubNames.map(name => name.toLowerCase());
       setAuthors(authors);
