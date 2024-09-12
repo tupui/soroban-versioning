@@ -44,7 +44,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 
 <script>
   import { getProject } from "../service/ProjectService";
-  import { setProjectId, setProject, setProjectRepoInfo, setConfigData } from "../service/StateService";
+  import { setProjectId, setProject, setProjectRepoInfo, setConfigData, refreshLocalStorage } from "../service/StateService";
   import { navigate } from "astro:transitions/client";
   import { getAuthorRepo } from "../service/utils";
   import { fetchTOMLFromConfigUrl } from "../service/GithubService";
@@ -59,6 +59,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 
     // Function to handle project setting
     const handleSetProject = async () => {
+      refreshLocalStorage();
       try {
         setProjectId(project_name.value.toLowerCase());
         const project = await getProject();
@@ -90,10 +91,12 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
               maintainersAddresses: tomlData.ACCOUNTS || [],
             };
             setConfigData(configData);
+          } else {
+            setConfigData({});
           }
           navigate("/commit");
         } else {
-          navigate("/register")
+          navigate("/register");
         }
       } catch (e) {
         console.error(e);

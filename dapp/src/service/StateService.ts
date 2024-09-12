@@ -81,6 +81,28 @@ function initializeProjectState() {
   }
 }
 
+function refreshLocalStorage(): void {
+  if (typeof window !== 'undefined') {
+
+    localStorage.removeItem('projectState');
+    localStorage.removeItem('projectInfo');
+    localStorage.removeItem('projectRepoInfo');
+    localStorage.removeItem('projectLatestSha');
+    localStorage.removeItem('configData');
+
+    projectState.project_name = undefined;
+    projectState.project_id = undefined;
+    projectInfo.project_maintainers = undefined;
+    projectInfo.project_config_url = undefined;
+    projectInfo.project_config_hash = undefined;
+    projectRepoInfo.project_author = undefined;
+    projectRepoInfo.project_repository = undefined;
+    projectLatestSha.sha = undefined;
+    configData = undefined;
+
+  }
+}
+
 function setProjectId(project_name: string): void {
   projectState.project_name = project_name;
   projectState.project_id = Buffer.from(
@@ -191,7 +213,8 @@ export {
   loadProjectRepoInfo,
   setProjectLatestSha,
   loadProjectLatestSha,
-  loadProjectName, // Add this new export
+  loadProjectName,
   setConfigData,
   loadConfigData,
+  refreshLocalStorage,
 };
