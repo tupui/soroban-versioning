@@ -86,7 +86,6 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
                 discord: "",
                 instagram: "",
               },
-              version: tomlData.VERSION || "",
               authorGithubNames: tomlData.PRINCIPALS?.map((p: { github: any; }) => p.github) || [],
               maintainersAddresses: tomlData.ACCOUNTS || [],
             };

@@ -135,7 +135,6 @@ import ModalInput from "./utils/ModalInput.astro";
     </div>
     <div class="flex justify-between items-start gap-6">
       <p id="company-name" class=""></p>
-      <p id="project-version" class="text-sm"></p>
     </div>
   </div>
 </Modal>
@@ -354,7 +353,6 @@ import ModalInput from "./utils/ModalInput.astro";
       const officialLinks = document.getElementById("official-links");
       const socialLinks = document.getElementById("social-links");
       const companyName = document.getElementById("company-name");
-      const projectVersion = document.getElementById("project-version");
 
       if (modalProjectName) modalProjectName.textContent = projectInfo.name;
       if (projectLogo) {
@@ -370,7 +368,6 @@ import ModalInput from "./utils/ModalInput.astro";
       if (projectThumbnail) projectThumbnail.src = configData.thumbnailImageLink || '/fallback-image.jpg';
       if (projectDescription) projectDescription.textContent = configData.description || '';
       if (companyName) companyName.innerHTML = `Developed by   <strong class="font-extrabold"> ${configData.companyName || ''}</strong>`;
-      if (projectVersion) projectVersion.textContent = `Version: ${configData.version || ''}`;
 
       // Official Links
       if (officialLinks) {

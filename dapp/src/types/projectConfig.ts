@@ -14,7 +14,6 @@ export interface ConfigData {
     discord: string;
     instagram: string;
   };
-  version: string;
   authorGithubNames: string[];
   maintainersAddresses: string[];
 };
