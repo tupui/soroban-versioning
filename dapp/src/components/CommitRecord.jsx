@@ -33,12 +33,12 @@ const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commit
         <div className="absolute top-0.5 left-1 flex space-x-1">
           {isLatestCommit && (
             <div className="text-xs font-bold tracking-tighter leading-3 bg-lime rounded-sm p-0.5">
-              latest commit
+              verified commit
             </div>
           )}
           {isMaintainer && (
             <div className="text-xs font-bold tracking-tighter leading-3 bg-blue-200 rounded-sm p-0.5">
-              by maintainer
+              verified maintainer
             </div>
           )}
         </div>
