@@ -365,9 +365,7 @@ import ModalInput from "./utils/ModalInput.astro";
           projectLogo.src = configData.logoImageLink;
           projectLogo.style.display = 'block';
         } else {
-          projectLogo.src = '/logo.svg';
-          projectLogo.style.display = 'block';
-          // projectLogo.style.display = 'none';
+          projectLogo.style.display = 'none';
         }
       }
       if (projectThumbnail) projectThumbnail.src = configData.thumbnailImageLink || '/fallback-image.jpg';
