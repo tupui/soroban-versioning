@@ -1,18 +1,63 @@
 import React from 'react';
+import { getProject } from "../service/ReadContractService";
+import { setProjectId, setProject, setProjectRepoInfo, setConfigData, refreshLocalStorage } from "../service/StateService";
+import { getAuthorRepo } from "../service/utils";
+import { fetchTOMLFromConfigUrl } from "../service/GithubService";
 
 const ProjectCard = ({ config }) => {
-  const handleCardClick = () => {
-    // Implement card click functionality here
-    console.log(`Clicked on ${config.projectName}`);
+
+  const handleCardClick = async () => {
+    refreshLocalStorage();
+    try {
+      setProjectId(config.projectName.toLowerCase());
+      const project = await getProject();
+      if (project && project.name && project.config && project.maintainers) {
+        setProject(project);
+        const { username, repoName } = getAuthorRepo(project.config.url);
+        if (username && repoName) {
+          setProjectRepoInfo(username, repoName);
+        }
+        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+        if (tomlData) {
+          const configData = {
+            projectName: project.name,
+            logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
+            thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
+            description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
+            companyName: tomlData.DOCUMENTATION?.ORG_NAME || "",
+            officials: {
+              websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
+              githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
+            },
+            socialLinks: {
+              twitter: "",
+              telegram: "",
+              discord: "",
+              instagram: "",
+            },
+            authorGithubNames: tomlData.PRINCIPALS?.map((p) => p.github) || [],
+            maintainersAddresses: tomlData.ACCOUNTS || [],
+          };
+          setConfigData(configData);
+        } else {
+          setConfigData({});
+        }
+        window.location.href = '/commit';
+      } else {
+        alert(`There is not such project: ${config.projectName}`);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
-    <div className="project-card max-w-[400px] w-full border border-zinc-400 rounded-lg" onClick={handleCardClick}>
-      <div className="rounded-lg overflow-hidden">
+    <div className="project-card max-w-[400px] w-full border border-zinc-400 rounded-lg">
+      <div className="rounded-lg overflow-hidden cursor-pointer group" onClick={handleCardClick}>
         <img
           src={config.thumbnailImageLink || '/fallback-image.jpg'}
           alt={config.projectName}
-          className="thumbnail w-full aspect-[3/2] object-cover"
+          className="thumbnail w-full aspect-[3/2] object-cover transition-transform duration-300 ease-in-out group-hover:scale-125"
         />
       </div>
       <div className="px-2 pb-2">
