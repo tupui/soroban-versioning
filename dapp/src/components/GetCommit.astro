@@ -1,7 +1,6 @@
 ---
 import Topic from "./utils/Topic.astro";
 import Loading from "./utils/Loading.astro";
-import PrimaryButton from "./utils/PrimaryButton.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row">
@@ -11,13 +10,7 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
 <div
   class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
 >
-  <div class="row items-center py-8 sm:py-10 md:py-12 px-6 sm:px-10 md:px-20 w-full md:w-8/12">
-    <PrimaryButton
-      wrapId="wrap-get-hash-button"
-      dataAttr="data-project-get-hash"
-      ariaControls="get-hash"
-      buttonText="Latest hash"
-    />
+  <div id="wrap-get-hash-div" class="row items-center py-8 sm:py-10 md:py-12 px-6 sm:px-10 md:px-20 w-full md:w-8/12">
     <div id="wrap-get-hash-loader" class="hidden">
       <Loading />
     </div>
@@ -26,74 +19,75 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
 
 <script>
   import { getProjectHash } from "../service/ReadContractService";
+  import { projectInfoLoaded } from "../utils/store";
 
   document.addEventListener("astro:page-load", () => {
     const wrap_loader = document.getElementById(
       "wrap-get-hash-loader",
     ) as HTMLDivElement;
-    const wrap_button = document.getElementById(
-      "wrap-get-hash-button",
+    const wrap_div = document.getElementById(
+      "wrap-get-hash-div",
     ) as HTMLDivElement;
-    const button = document.querySelector(
-      "[data-project-get-hash]",
-    ) as HTMLButtonElement;
 
-    if (button) {
-      button.addEventListener("click", async () => {
-        wrap_loader.style.display = "block";
-        wrap_button.style.display = "none";
-        try {
-          const project_hash = await getProjectHash();
+    const loadLatestHash = async () => {
+      wrap_loader.style.display = "block";
 
-          wrap_loader.style.display = "none";
-          wrap_button.style.display = "block";
+      try {
+        const project_hash = await getProjectHash();
 
-          if (project_hash) {
-            const hashDisplay = document.createElement('div');
-            hashDisplay.className = 'max-w-[90%] relative group';
-            const content = document.createElement("p");
-            content.className = 'truncate';
-            content.textContent = project_hash;
-
-            hashDisplay.appendChild(content)
-            
-            const popup = document.createElement('div');
-            popup.textContent = project_hash;
-            popup.className = 'absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-zinc-800 text-white text-center text-sm px-2 py-1 rounded-md max-w-[90vw] break-all whitespace-normal';
-            popup.style.width = 'max-content';
-            
-            const triangle = document.createElement('div');
-            triangle.className = 'absolute left-1/2 -translate-x-1/2 -bottom-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-zinc-800';
-            
-            popup.appendChild(triangle);
-            hashDisplay.appendChild(popup);
-
-            const copyIcon = document.createElement('button');
-            copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="white" stroke="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>';
-            copyIcon.className = 'text-gray-600 hover:text-gray-800 focus:outline-none';
-            copyIcon.addEventListener('click', () => {
-              navigator.clipboard.writeText(project_hash).then(() => {
-                copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="green"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
-                setTimeout(() => {
-                  copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="white" stroke="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>';
-                }, 2000);
-              });
-            });
+        if (project_hash) {
+          const hashDisplay = document.createElement('div');
+          hashDisplay.className = 'max-w-[90%] relative group';
+          const content = document.createElement("p");
+          content.className = 'truncate';
+          content.textContent = project_hash;
   
-            const container = document.createElement('div');
-            container.className = 'flex items-center justify-around w-full max-w-[450px] rounded-md border border-zinc-400';
-            container.appendChild(hashDisplay);
-            container.appendChild(copyIcon);
-            
-            wrap_button.innerHTML = '';
-            wrap_button.appendChild(container);
-          } else {
-            wrap_button.innerHTML = '';
-          }
-        } catch (e) {
-          console.error(e);
+          hashDisplay.appendChild(content)
+          
+          const popup = document.createElement('div');
+          popup.textContent = project_hash;
+          popup.className = 'absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-zinc-800 text-white text-center text-sm px-2 py-1 rounded-md max-w-[90vw] break-all whitespace-normal';
+          popup.style.width = 'max-content';
+          
+          const triangle = document.createElement('div');
+          triangle.className = 'absolute left-1/2 -translate-x-1/2 -bottom-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-zinc-800';
+          
+          popup.appendChild(triangle);
+          hashDisplay.appendChild(popup);
+  
+          const copyIcon = document.createElement('button');
+          copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="white" stroke="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>';
+          copyIcon.className = 'text-gray-600 hover:text-gray-800 focus:outline-none';
+          copyIcon.addEventListener('click', () => {
+            navigator.clipboard.writeText(project_hash).then(() => {
+              copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="green"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+              setTimeout(() => {
+                copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="white" stroke="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>';
+              }, 2000);
+            });
+          });
+  
+          const container = document.createElement('div');
+          container.className = 'flex items-center justify-around w-full max-w-[450px] rounded-md border border-zinc-400';
+          container.appendChild(hashDisplay);
+          container.appendChild(copyIcon);
+          
+          wrap_div.innerHTML = '';
+          wrap_div.appendChild(container);
+        } else {
+          wrap_div.innerHTML = '';
         }
-      });
+      } catch (e) {
+        console.error(e);
+      }
+        
+      wrap_loader.style.display = "none";
     }
+
+    projectInfoLoaded.subscribe(loaded => {
+      if (loaded) {
+        loadLatestHash();
+      }
+    })
   });
 </script>
