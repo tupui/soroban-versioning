@@ -333,7 +333,7 @@ import ModalInput from "./utils/ModalInput.astro";
         const projectInfo = loadProjectInfo();
         if (projectInfo) {
           const configData = loadConfigData();
-          if (configData) {
+          if (configData && Object.keys(configData).length > 0) {
             updateProjectInfoModal(projectInfo, configData);
             projectInfoModal.showModal();
           } else {
