@@ -4,33 +4,44 @@ import { getCommitHistory } from '../service/GithubService';
 import CommitRecord from './CommitRecord.jsx';
 import { formatDate } from '../service/utils';
 import { loadProjectRepoInfo, loadConfigData } from '../service/StateService';
+import { projectInfoLoaded } from '../utils/store.js';
+import { useStore } from '@nanostores/react';
 
 const CommitHistory = () => {
+  const isProjectInfoLoaded = useStore(projectInfoLoaded);
   const [commitHistory, setCommitHistory] = useState([]);
   const [authors, setAuthors] = useState([]);
 
-  useEffect(() => {
-    const fetchCommitHistory = async () => {
-      const projectRepoInfo = loadProjectRepoInfo();
-      if (projectRepoInfo?.author && projectRepoInfo?.repository) {
-        const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository);
-        setCommitHistory(history);
-      }
-    };
-    
-    const addMaintainerBadge = () => {
-      const configData = loadConfigData();
-      if (configData) {
-        const authors = configData.authorGithubNames.map(name => name.toLowerCase());
-        setAuthors(authors);
-      } else {
-        console.log("Can not read config data.");
-      }
+  const fetchCommitHistory = async () => {
+    const projectRepoInfo = loadProjectRepoInfo();
+    console.log("projectInfo:", projectRepoInfo);
+    if (projectRepoInfo?.author && projectRepoInfo?.repository) {
+      const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository);
+      setCommitHistory(history);
     }
+  };
+  
+  const addMaintainerBadge = () => {
+    const configData = loadConfigData();
+    console.log("configData:", configData);
+    if (configData) {
+      const authors = configData.authorGithubNames.map(name => name.toLowerCase());
+      setAuthors(authors);
+    } else {
+      console.log("Can not read config data.");
+    }
+  }
 
-    fetchCommitHistory();
-    addMaintainerBadge();
-  }, []);
+  const loadCommitInfo = () => {
+    if (isProjectInfoLoaded) {
+      fetchCommitHistory();
+      addMaintainerBadge();
+    }
+  }
+
+  useEffect(() => {
+    loadCommitInfo();
+  }, [isProjectInfoLoaded]);
 
   return (
     <div className="commit-history-container max-h-[560px] overflow-auto relative pl-8">
