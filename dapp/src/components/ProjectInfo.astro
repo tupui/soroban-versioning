@@ -141,7 +141,7 @@ import ModalInput from "./utils/ModalInput.astro";
 
 <script>
   import { loadedPublicKey } from "./stellar-wallets-kit";
-  import { updateConfig } from "../service/ProjectService";
+  import { updateConfig } from "../service/WriteContractService";
   import { getProject, getProjectHash } from "../service/ReadContractService";
   import { initializeProjectState, loadConfigData, loadProjectInfo, setProject, setProjectLatestSha } from "../service/StateService";
   import type { ConfigData } from "../types/projectConfig";

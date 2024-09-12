@@ -1,21 +1,7 @@
 import { kit, loadedPublicKey } from "../components/stellar-wallets-kit";
 import Versioning from "../contracts/soroban_versioning";
-import type { Project } from "soroban_versioning";
 
 import {loadedProjectId, loadProjectName} from "./StateService";
-
-async function getProjectHash(): Promise<string | void> {
-  const projectId = loadedProjectId();
-
-  if (projectId === undefined) {
-    alert("No project defined");
-    return;
-  }
-  const res = await Versioning.get_commit({
-    project_key: projectId,
-  });
-  return res.result;
-}
 
 async function commitHash(commit_hash: string): Promise<boolean> {
   const projectId = loadedProjectId();
@@ -100,19 +86,6 @@ async function registerProject(
   }
 }
 
-async function getProject(): Promise<Project | void> {
-  const projectId = loadedProjectId();
-
-  if (projectId === undefined) {
-    alert("No project defined");
-    return;
-  }
-  const res = await Versioning.get_project({
-    project_key: projectId,
-  });
-  return res.result;
-}
-
 async function updateConfig(
   maintainers: string,
   config_url: string,
@@ -158,8 +131,6 @@ async function updateConfig(
 
 export {
   commitHash,
-  getProject,
-  getProjectHash,
   registerProject,
   updateConfig,
 };
