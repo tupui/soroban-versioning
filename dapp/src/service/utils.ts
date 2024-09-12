@@ -22,6 +22,15 @@ export function formatDate(dateString: string): string {
   return date.toLocaleDateString(undefined, dateOptions);
 }
 
+export function truncateMiddle(str: string, maxLength: number): string {
+  if (str.length <= maxLength) return str;
+  const ellipsis = '...';
+  const charsToShow = maxLength - ellipsis.length;
+  const frontChars = Math.ceil(charsToShow / 2);
+  const backChars = Math.floor(charsToShow / 2);
+  return str.substr(0, frontChars) + ellipsis + str.substr(str.length - backChars);
+}
+
 export function getGithubContentUrl(username: string, repoName: string, filePath: string): string {
   return `https://raw.githubusercontent.com/${username}/${repoName}/${filePath}`;
 }

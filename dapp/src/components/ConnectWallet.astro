@@ -1,8 +1,9 @@
 <div id="connect-wrap" aria-live="polite">
-  <button data-connect aria-controls="connect-wrap" class="text-center text-sm sm:text-base max-w-28 sm:max-w-36 md:max-w-44 truncate">Connect</button>
+  <button data-connect aria-controls="connect-wrap" class="text-center text-sm sm:text-base max-w-28 sm:max-w-36 md:max-w-44">Connect</button>
 </div>
 
 <script>
+  import { truncateMiddle } from "../service/utils";
   import { kit, loadedPublicKey, setPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
@@ -10,8 +11,11 @@
       "[data-connect]",
     ) as HTMLButtonElement;
 
+
     async function setLoggedIn(publicKey: string) {
-      button.textContent = `${publicKey}`;
+      const truncatedKey = truncateMiddle(publicKey, 13);
+      button.textContent = truncatedKey;
+      button.title = publicKey;
     }
 
     const connectedPublicKey = loadedPublicKey();
