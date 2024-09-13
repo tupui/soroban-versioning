@@ -4,7 +4,7 @@ import Loading from "./utils/Loading.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row">
-  <Topic title="Latest hash" description="Get the latest hash on-chain" />
+  <Topic title="Latest hash" description="" />
 </div>
 
 <div
@@ -76,7 +76,7 @@ import Loading from "./utils/Loading.astro";
             wrap_div.innerHTML = '';
             wrap_div.appendChild(container);
           } else {
-            wrap_div.innerHTML = 'Get the Latest Sha ...';
+            wrap_div.innerHTML = 'There is no hash on-chain for this project';
           }
         } catch (e) {
           console.error(e);
