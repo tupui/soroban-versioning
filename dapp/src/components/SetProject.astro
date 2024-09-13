@@ -43,11 +43,12 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 </div>
 
 <script>
-  import { getProject } from "../service/ReadContractService";
-  import { setProjectId, setProject, setProjectRepoInfo, setConfigData, refreshLocalStorage } from "../service/StateService";
+  import { getProject, getProjectHash } from "../service/ReadContractService";
+  import { setProjectId, setProject, setProjectRepoInfo, setConfigData, refreshLocalStorage, setProjectLatestSha } from "../service/StateService";
   import { navigate } from "astro:transitions/client";
   import { getAuthorRepo } from "../service/utils";
   import { fetchTOMLFromConfigUrl } from "../service/GithubService";
+  import { showToast } from "../utils/toast";
 
   document.addEventListener("astro:page-load", () => {
     const project_name = document.getElementById(
@@ -59,6 +60,12 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 
     // Function to handle project setting
     const handleSetProject = async () => {
+      if (!project_name.value) {
+        console.log("project name error.");
+        showToast.error("you didn't set the project name.");
+        return;
+      }
+
       refreshLocalStorage();
       try {
         setProjectId(project_name.value.toLowerCase());
@@ -94,6 +101,11 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
           } else {
             setConfigData({});
           }
+          
+          const latestSha = await getProjectHash();
+          if (typeof latestSha === 'string' && latestSha.match(/^[a-f0-9]{40}$/)) {
+            setProjectLatestSha(latestSha);
+          } else setProjectLatestSha("");
           navigate("/commit");
         } else {
           navigate("/register");

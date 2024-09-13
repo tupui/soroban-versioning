@@ -142,8 +142,8 @@ import ModalInput from "./utils/ModalInput.astro";
 <script>
   import { loadedPublicKey } from "./stellar-wallets-kit";
   import { updateConfig } from "../service/WriteContractService";
-  import { getProject, getProjectHash } from "../service/ReadContractService";
-  import { initializeProjectState, loadConfigData, loadProjectInfo, setProject, setProjectLatestSha } from "../service/StateService";
+  import { getProject } from "../service/ReadContractService";
+  import { initializeProjectState, loadConfigData, loadProjectInfo, setProject } from "../service/StateService";
   import type { ConfigData } from "../types/projectConfig";
   import { projectInfoLoaded } from "../utils/store";
 
@@ -230,21 +230,9 @@ import ModalInput from "./utils/ModalInput.astro";
         }
       }
     }
-    
-    async function updateProjectLatestSha() {
-      try {
-        const latestSha = await getProjectHash();
-        if (latestSha) {
-          setProjectLatestSha(latestSha);
-        }
-      } catch (error) {
-        console.error("Error updating project latest SHA:", error);
-      }
-    }
 
     updateProjectInfo();
     updateUpgradeConfigButtonVisibility();
-    updateProjectLatestSha();  // Call this function to update the latest SHA
 
     const button = document.querySelector(
       "[data-update-config]",

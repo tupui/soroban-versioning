@@ -1,6 +1,6 @@
 import React from 'react';
-import { getProject } from "../service/ReadContractService";
-import { setProjectId, setProject, setProjectRepoInfo, setConfigData, refreshLocalStorage } from "../service/StateService";
+import { getProject, getProjectHash } from "../service/ReadContractService";
+import { setProjectId, setProject, setProjectRepoInfo, setConfigData, setProjectLatestSha, refreshLocalStorage } from "../service/StateService";
 import { getAuthorRepo } from "../service/utils";
 import { fetchTOMLFromConfigUrl } from "../service/GithubService";
 
@@ -42,6 +42,12 @@ const ProjectCard = ({ config }) => {
         } else {
           setConfigData({});
         }
+
+        const latestSha = await getProjectHash();
+        if (typeof latestSha === 'string' && latestSha.match(/^[a-f0-9]{40}$/)) {
+          setProjectLatestSha(latestSha);
+        } else setProjectLatestSha("");
+
         window.location.href = '/commit';
       } else {
         alert(`There is not such project: ${config.projectName}`);
