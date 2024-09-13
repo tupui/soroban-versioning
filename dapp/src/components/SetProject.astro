@@ -48,7 +48,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
   import { navigate } from "astro:transitions/client";
   import { getAuthorRepo } from "../utils/editLinkFunctions";
   import { fetchTOMLFromConfigUrl } from "../service/GithubService";
-  import { showToast } from "../utils/toast";
+  // import { showToast } from "../utils/toast";
 
   document.addEventListener("astro:page-load", () => {
     const project_name = document.getElementById(
@@ -62,7 +62,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
     const handleSetProject = async () => {
       if (!project_name.value) {
         console.log("project name error.");
-        showToast.error("you didn't set the project name.");
+        // showToast.error("you didn't set the project name.");
         return;
       }
 
