@@ -52,6 +52,12 @@ import ModalInput from "./utils/ModalInput.astro";
           </svg>
           <span>View Project Info</span>
         </div>
+        <div id="jump-to-latest-commit" class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+          </svg>
+          <span>Jump to Latest Verified Commit</span>
+        </div>
       </div>
     </div>
     <div id="commit-history-container" class="mt-4 overflow-hidden transition-all duration-300 max-h-0">
@@ -311,6 +317,7 @@ import ModalInput from "./utils/ModalInput.astro";
     }
 
     const viewCommitHistory = document.getElementById("view-commit-history");
+    const jumpToLatestCommit = document.getElementById("jump-to-latest-commit");
     const viewCommitText = document.getElementById("view-commit-text");
     const commitHistoryContainer = document.getElementById("commit-history-container");
     const commitIconUp = document.getElementById("commit-icon-up");
@@ -342,6 +349,19 @@ import ModalInput from "./utils/ModalInput.astro";
           }, 1000);
         }
       });
+    }
+
+    if (jumpToLatestCommit && commitHistoryContainer) {
+      jumpToLatestCommit.addEventListener("click", () => {
+        if (commitHistoryContainer.style.maxHeight !== "0px") {
+          setTimeout(() => {
+            const latestCommit = document.getElementById('latest-commit-record');
+            if (latestCommit) {
+              latestCommit.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 1000);
+        }
+      })
     }
 
     window.addEventListener('walletConnected', (_event: Event) => {
