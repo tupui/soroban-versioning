@@ -27,7 +27,7 @@ const CommitHistory = () => {
   
   const addMaintainerBadge = () => {
     const configData = loadConfigData();
-    if (configData) {
+    if (configData.authorGithubNames && configData.authorGithubNames.length > 0) {
       const authors = configData.authorGithubNames.map(name => name.toLowerCase());
       setAuthors(authors);
     } else {
