@@ -146,6 +146,7 @@ import ModalInput from "./utils/ModalInput.astro";
   import { initializeProjectState, loadConfigData, loadProjectInfo, setProject } from "../service/StateService";
   import type { ConfigData } from "../types/projectConfig";
   import { projectInfoLoaded } from "../utils/store";
+  import { convertGitHubLink } from "../utils/editLinkFunctions";
 
   document.addEventListener("astro:page-load", () => {
     initializeProjectState();
@@ -350,7 +351,7 @@ import ModalInput from "./utils/ModalInput.astro";
       if (modalProjectName) modalProjectName.textContent = projectInfo.name;
       if (projectLogo) {
         if (configData.logoImageLink) {
-          projectLogo.src = configData.logoImageLink;
+          projectLogo.src = convertGitHubLink(configData.logoImageLink);
           projectLogo.style.display = 'block';
         } else {
           projectLogo.style.display = 'none';
