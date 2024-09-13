@@ -17,7 +17,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
   }, []);
 
   const handleDetailClick = () => {
-    window.location.href = '/commit';
+    window.location.href = '/project';
   };
 
   return (

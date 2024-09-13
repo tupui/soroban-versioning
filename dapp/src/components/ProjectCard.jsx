@@ -50,7 +50,6 @@ const ProjectCard = ({ config }) => {
         } else setProjectLatestSha("");
 
         projectCardModalOpen.set(true);
-        // window.location.href = '/commit';
       } else {
         alert(`There is not such project: ${config.projectName}`);
       }
