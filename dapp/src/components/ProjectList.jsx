@@ -18,12 +18,12 @@ const ProjectList = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [projectInfo, setProjectInfo] = useState(null);
 
-  const options = [
-    { label: 'All', value: 'all' },
-    { label: 'Web', value: 'web' },
-    { label: 'Mobile', value: 'mobile' },
-    { label: 'Desktop', value: 'desktop' },
-  ];
+  // const options = [
+  //   { label: 'All', value: 'all' },
+  //   { label: 'Web', value: 'web' },
+  //   { label: 'Mobile', value: 'mobile' },
+  //   { label: 'Desktop', value: 'desktop' },
+  // ];
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -72,12 +72,12 @@ const ProjectList = () => {
   return (
     <div className="project-list-container">
       <div className="filters flex items-center gap-2 sm:gap-4 mb-4">
-        <Dropdown options={options} onSelect={(e) => setCategory(e.target.value)} />
-        <div className="search-container relative">
+        {/* <Dropdown options={options} onSelect={(e) => setCategory(e.target.value)} /> */}
+        <div className="search-container relative w-full">
           <input
             type="text"
             placeholder="Search projects..."
-            className="w-36 sm:w-48 border rounded-2xl pl-3 sm:pl-4 pr-6 sm:pr-8 py-1"
+            className="w-full border rounded-2xl pl-3 sm:pl-4 pr-6 sm:pr-8 py-1 sm:py-2"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
