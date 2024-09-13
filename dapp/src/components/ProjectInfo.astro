@@ -111,7 +111,7 @@ import ModalInput from "./utils/ModalInput.astro";
 <Modal id="project-info-modal" title="">
   <div class="space-y-6 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-full md:max-w-[800px]">
     <div class="flex items-center space-x-4">
-      <img id="project-logo" src="" alt="Project Logo" class="w-12 h-12 object-contain">
+      <!-- <img id="project-logo" src="" alt="Project Logo" class="w-12 h-12 object-contain"> -->
       <h2 id="view-modal-project-name" class="text-2xl sm:text-3xl font-bold"></h2>
     </div>
     
@@ -357,7 +357,8 @@ import ModalInput from "./utils/ModalInput.astro";
           projectLogo.style.display = 'none';
         }
       }
-      if (projectThumbnail) projectThumbnail.src = configData.thumbnailImageLink || '/fallback-image.jpg';
+      // if (projectThumbnail) projectThumbnail.src = configData.thumbnailImageLink || '/fallback-image.jpg';
+      if (projectThumbnail) projectThumbnail.src = convertGitHubLink(configData.logoImageLink) || '/fallback-image.jpg';
       if (projectDescription) projectDescription.textContent = configData.description || '';
       if (companyName) companyName.innerHTML = `Developed by   <strong class="font-extrabold"> ${configData.companyName || ''}</strong>`;
 

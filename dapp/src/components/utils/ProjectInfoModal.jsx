@@ -26,13 +26,14 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
         {projectInfo && Object.keys(projectInfo).length > 0 ? (
           <>
             <div className="flex items-center space-x-4">
-              {projectInfo.logoImageLink &&
+              {/* {projectInfo.logoImageLink &&
                 <img id="project-logo" src={projectInfo.logoImageLink} alt="Project Logo" className="w-12 h-12 object-contain" />
-              }
+              } */}
               <h2 id="view-modal-project-name" className="text-2xl sm:text-3xl font-bold">{projectInfo.projectName || "No project name"}</h2>
             </div>
             <div className="flex flex-col md:flex-row gap-6">
-              <img id="project-thumbnail" src={projectInfo?.thumbnailImageLink || "/fallback-image.jpg"} alt="Project Thumbnail" className="w-full md:w-[40%] object-cover rounded-lg" />
+              {/* <img id="project-thumbnail" src={projectInfo?.thumbnailImageLink || "/fallback-image.jpg"} alt="Project Thumbnail" className="w-full md:w-[40%] object-cover rounded-lg" /> */}
+              <img id="project-thumbnail" src={projectInfo?.logoImageLink || "/fallback-image.jpg"} alt="Project Thumbnail" className="w-full md:w-[40%] object-cover rounded-lg" />
               <div className="flex-1 pt-2">
                 <p id="project-description" className="flex-1">{projectInfo?.description || "No description"}</p>
               </div>
