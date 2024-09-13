@@ -90,7 +90,9 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
         ) : (
           <div className="space-y-4">
             <h2 id="view-modal-project-name" className="text-2xl sm:text-3xl font-bold">{projectName || "No project name"}</h2>
-            <p>This project is missing a tansu.toml configuration file.</p>
+            <div className="h-40 flex items-center px-4 sm:px-8 pb-4">
+              <p className="text-lg text-center">This project is missing a tansu.toml configuration file.</p>
+            </div>
             <div className="flex justify-end">
               <button 
                 className="bg-zinc-800 text-white px-4 py-2 rounded-lg flex items-center"
