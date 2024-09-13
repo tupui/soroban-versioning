@@ -88,14 +88,6 @@ const ProjectList = () => {
             <img src='/icons/search.svg' width={20} height={20} className='icon-search'/>
           </div>
           </div>
-          {filteredProjects.length === 0 && (
-            <button 
-              className="register-btn mr-2 px-2 sm:px-3 py-1 bg-black text-white text-base sm:text-lg rounded-lg"
-              onClick={handleRegister}
-            >
-              Register
-            </button>
-          )}
       </div>
       
       {filteredProjects.length > 0 ? (
@@ -105,9 +97,15 @@ const ProjectList = () => {
           ))}
         </div>
       ) : (
-        <div className="no-projects h-40 flex justify-center items-center text-center py-4">
-          <p className="px-3 py-1 text-base sm:text-lg font-semibold border-2 border-zinc-700 rounded-lg">No projects found</p>
-        </div>
+        <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
+          {/* <p className="px-3 py-1 text-base sm:text-lg font-semibold border-2 border-zinc-700 rounded-lg">No projects found</p> */}
+          <button 
+            className="register-btn mr-2 px-3 sm:px-4 py-2 bg-black text-white text-2xl sm:text-3xl rounded-lg"
+            onClick={handleRegister}
+          >
+            Register
+          </button>
+      </div>
       )}
 
       {isModalOpen && 
