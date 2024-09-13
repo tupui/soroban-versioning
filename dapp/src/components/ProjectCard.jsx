@@ -3,6 +3,7 @@ import { getProject, getProjectHash } from "../service/ReadContractService";
 import { setProjectId, setProject, setProjectRepoInfo, setConfigData, setProjectLatestSha, refreshLocalStorage } from "../service/StateService";
 import { getAuthorRepo } from "../utils/editLinkFunctions";
 import { fetchTOMLFromConfigUrl } from "../service/GithubService";
+import { projectCardModalOpen } from '../utils/store';
 
 const ProjectCard = ({ config }) => {
 
@@ -48,7 +49,8 @@ const ProjectCard = ({ config }) => {
           setProjectLatestSha(latestSha);
         } else setProjectLatestSha("");
 
-        window.location.href = '/commit';
+        projectCardModalOpen.set(true);
+        // window.location.href = '/commit';
       } else {
         alert(`There is not such project: ${config.projectName}`);
       }

@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useStore } from '@nanostores/react';
 import ProjectCard from './ProjectCard.jsx';
-import { getDemoConfigData } from '../constants/demoConfigData.js';
 import Dropdown  from './utils/DropDown.jsx';
-import { refreshLocalStorage, setProjectId } from '../service/StateService';
+import ProjectInfoModal from './utils/ProjectInfoModal.jsx';
+import { getDemoConfigData } from '../constants/demoConfigData';
+import { refreshLocalStorage, setProjectId, loadConfigData } from '../service/StateService';
+import { projectCardModalOpen } from '../utils/store.js';
+import { convertGitHubLink } from '../utils/editLinkFunctions';
 
 const ProjectList = () => {
+  const isProjectInfoModalOpen = useStore(projectCardModalOpen);
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
+
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [projectInfo, setProjectInfo] = useState(null);
 
   const options = [
     { label: 'All', value: 'all' },
@@ -35,6 +43,21 @@ const ProjectList = () => {
     );
     setFilteredProjects(filtered);
   }, [searchTerm, category, projects]);
+
+  useEffect(() => {
+    setModalOpen(isProjectInfoModalOpen);
+    if (isProjectInfoModalOpen) {
+      const configData = loadConfigData();
+      if (configData?.logoImageLink) {
+        setProjectInfo({
+          ...configData,
+          logoImageLink: convertGitHubLink(configData.logoImageLink)
+        });
+      } else {
+        setProjectInfo(configData);
+      }
+    }
+  }, [isProjectInfoModalOpen]);
 
   const handleSearch = () => {
     console.log('Search function activated');
@@ -86,6 +109,10 @@ const ProjectList = () => {
           <p className="px-3 py-1 text-base sm:text-lg font-semibold border-2 border-zinc-700 rounded-lg">No projects found</p>
         </div>
       )}
+
+      {isModalOpen && 
+        <ProjectInfoModal id="project-info-modal" projectInfo={projectInfo} onClose={() => projectCardModalOpen.set(false)}/>
+      } 
     </div>
   );
 };
