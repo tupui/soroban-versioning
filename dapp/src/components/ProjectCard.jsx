@@ -1,7 +1,7 @@
 import React from 'react';
 import { getProject, getProjectHash } from "../service/ReadContractService";
 import { setProjectId, setProject, setProjectRepoInfo, setConfigData, setProjectLatestSha, refreshLocalStorage } from "../service/StateService";
-import { getAuthorRepo } from "../service/utils";
+import { getAuthorRepo } from "../utils/editLinkFunctions";
 import { fetchTOMLFromConfigUrl } from "../service/GithubService";
 
 const ProjectCard = ({ config }) => {

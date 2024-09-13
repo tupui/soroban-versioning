@@ -2,7 +2,7 @@ import axios from 'axios';
 import toml from 'toml';
 
 import type { FormattedCommit } from '../types/github';
-import { getGithubContentUrl, getGithubContentUrlFromConfigUrl } from './utils';
+import { getGithubContentUrl, getGithubContentUrlFromConfigUrl } from '../utils/editLinkFunctions';
 
 async function getCommitHistory(username: string, repo: string, perPage: number = 30, page: number = 1): Promise<{ date: string; commits: FormattedCommit[] }[]> {
   try {

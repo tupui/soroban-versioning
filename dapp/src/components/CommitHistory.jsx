@@ -2,7 +2,7 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import { getCommitHistory } from '../service/GithubService';
 import CommitRecord from './CommitRecord.jsx';
-import { formatDate } from '../service/utils';
+import { formatDate } from '../utils/formatTimeFunctions.ts';
 import { loadProjectRepoInfo, loadConfigData } from '../service/StateService';
 import { projectInfoLoaded, latestCommit } from '../utils/store.js';
 import { useStore } from '@nanostores/react';

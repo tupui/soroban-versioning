@@ -46,7 +46,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
   import { getProject, getProjectHash } from "../service/ReadContractService";
   import { setProjectId, setProject, setProjectRepoInfo, setConfigData, refreshLocalStorage, setProjectLatestSha } from "../service/StateService";
   import { navigate } from "astro:transitions/client";
-  import { getAuthorRepo } from "../service/utils";
+  import { getAuthorRepo } from "../utils/editLinkFunctions";
   import { fetchTOMLFromConfigUrl } from "../service/GithubService";
   import { showToast } from "../utils/toast";
 
