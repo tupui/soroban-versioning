@@ -1,0 +1,32 @@
+---
+interface Props {
+  wrapId: string;
+  buttonId?: string;
+  buttonClass?: string;
+  ariaControls?: string;
+  dataAttr: string;
+  buttonText: string;
+}
+
+const {
+  wrapId,
+  buttonId,
+  buttonClass = "",
+  ariaControls,
+  dataAttr,
+  buttonText
+} = Astro.props;
+---
+
+<div id={wrapId}>
+  <button
+    id={buttonId}
+    class={`w-full px-5 py-4 sm:py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex ${buttonClass}`}
+    aria-controls={ariaControls}
+    {...dataAttr && { [dataAttr]: "" }}
+  >
+    <span class="text-center text-white text-xl font-normal leading-7">
+      {buttonText}
+    </span>
+  </button>
+</div>

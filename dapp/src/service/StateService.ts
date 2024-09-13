@@ -3,6 +3,7 @@ import * as pkg from "js-sha3";
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import type { Project } from "soroban_versioning";
+import type { ConfigData } from "../types/projectConfig";
 
 const projectState: {
   project_name: string | undefined;
@@ -36,6 +37,12 @@ const projectLatestSha: {
   sha: undefined,
 };
 
+// Add this new type definition
+
+
+// Add this new state variable
+let configData: ConfigData | undefined = undefined;
+
 function initializeProjectState() {
   if (typeof window !== 'undefined') {
     const storedState = localStorage.getItem('projectState');
@@ -65,6 +72,34 @@ function initializeProjectState() {
       const parsedLatestSha = JSON.parse(storedLatestSha);
       projectLatestSha.sha = parsedLatestSha.sha;
     }
+
+    // Add this new initialization
+    const storedConfigData = localStorage.getItem('configData');
+    if (storedConfigData) {
+      configData = JSON.parse(storedConfigData);
+    }
+  }
+}
+
+function refreshLocalStorage(): void {
+  if (typeof window !== 'undefined') {
+
+    localStorage.removeItem('projectState');
+    localStorage.removeItem('projectInfo');
+    localStorage.removeItem('projectRepoInfo');
+    localStorage.removeItem('projectLatestSha');
+    localStorage.removeItem('configData');
+
+    projectState.project_name = undefined;
+    projectState.project_id = undefined;
+    projectInfo.project_maintainers = undefined;
+    projectInfo.project_config_url = undefined;
+    projectInfo.project_config_hash = undefined;
+    projectRepoInfo.project_author = undefined;
+    projectRepoInfo.project_repository = undefined;
+    projectLatestSha.sha = undefined;
+    configData = undefined;
+
   }
 }
 
@@ -114,6 +149,20 @@ function setProjectLatestSha(sha: string): void {
   }
 }
 
+function setConfigData(data: Partial<ConfigData>): void {
+  if (!configData) {
+    configData = data as ConfigData;
+  } else {
+    configData = {
+      ...configData,
+      ...data
+    };
+  }
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('configData', JSON.stringify(configData));
+  }
+}
+
 function loadedProjectId(): Buffer | undefined {
   return projectState.project_id;
 }
@@ -150,6 +199,10 @@ function loadProjectLatestSha(): string | undefined {
   return projectLatestSha.sha;
 }
 
+function loadConfigData(): ConfigData | undefined {
+  return configData;
+}
+
 export {
   initializeProjectState,
   setProjectId,
@@ -160,5 +213,8 @@ export {
   loadProjectRepoInfo,
   setProjectLatestSha,
   loadProjectLatestSha,
-  loadProjectName, // Add this new export
+  loadProjectName,
+  setConfigData,
+  loadConfigData,
+  refreshLocalStorage,
 };

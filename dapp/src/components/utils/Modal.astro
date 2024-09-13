@@ -6,12 +6,12 @@ interface Props {
 
 const { id, title } = Astro.props;
 ---
-<dialog id={id} class="modal p-6 rounded-lg shadow-xl relative">
+<dialog id={id} class="modal px-3 sm:px-6 pt-3 pb-4 rounded-lg shadow-xl relative">
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-2xl font-bold">
-      <span class="bg-lime px-2 py-1 rounded-lg inline-block">{title}</span>
+    <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">
+      {title && <span class="bg-lime px-2 py-1 rounded-lg inline-block">{title}</span>}
     </h2>
-    <button class="text-gray-600 hover:text-gray-800" onclick="this.closest('dialog').close()">
+    <button class="text-zinc-700 hover:text-zinc-800 hover:bg-zinc-300 rounded-md" onclick="this.closest('dialog').close()">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
       </svg>

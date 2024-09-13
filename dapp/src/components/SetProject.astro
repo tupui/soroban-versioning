@@ -1,6 +1,7 @@
 ---
 import Topic from "./utils/Topic.astro";
 import LinkCard from "./utils/LinkCard.astro";
+import PrimaryButton from "./utils/PrimaryButton.astro";
 
 const SOROBAN_NETWORK = import.meta.env.SOROBAN_NETWORK;
 const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
@@ -11,9 +12,9 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 </div>
 
 <div
-  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-[45px]"
+  class="relative flex flex-col justify-start md:justify-between items-center md:flex-row my-6 px-4 md:px-16 bg-zinc-100 rounded-[45px]"
 >
-  <div class="row items-center py-12 px-4 md:px-20 md:w-8/12 md:py-10">
+  <div class="row items-center py-8 md:py-10 md:w-6/12">
     <div class="space-y-8 md:w-full">
       <label class="block mb-2 text-base font-medium text-black">
         Project Name
@@ -27,13 +28,12 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
           maxlength="15"
         />
       </label>
-      <button
-        data-set-project
-        aria-controls="set-project"
-        class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
-      >
-        <span class="text-center text-white text-xl font-normal leading-7">Set project</span>
-      </button>
+      <PrimaryButton
+        wrapId="wrap-set-project-button"
+        dataAttr="data-set-project"
+        ariaControls="set-project"
+        buttonText="Set project"
+      />
     </div>
   </div>
   <LinkCard
@@ -43,10 +43,12 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 </div>
 
 <script>
-  import { getProject } from "../service/ProjectService";
-  import { setProjectId, setProject, setProjectRepoInfo } from "../service/StateService";
+  import { getProject, getProjectHash } from "../service/ReadContractService";
+  import { setProjectId, setProject, setProjectRepoInfo, setConfigData, refreshLocalStorage, setProjectLatestSha } from "../service/StateService";
   import { navigate } from "astro:transitions/client";
-  import { getAuthorRepo } from "../service/utils";
+  import { getAuthorRepo } from "../utils/editLinkFunctions";
+  import { fetchTOMLFromConfigUrl } from "../service/GithubService";
+  // import { showToast } from "../utils/toast";
 
   document.addEventListener("astro:page-load", () => {
     const project_name = document.getElementById(
@@ -56,23 +58,73 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
       "[data-set-project]",
     ) as HTMLButtonElement;
 
-    if (button) {
-      button.addEventListener("click", async () => {
-        try {
-          setProjectId(project_name.value);
-          const project = await getProject();
-          if (project && project.name && project.config && project.maintainers) {
-            setProject(project);
-            const { username, repoName } = getAuthorRepo(project.config.url);
-            if (username && repoName) {
-              setProjectRepoInfo(username, repoName);
-            }
-            navigate("/commit");
-          } else {
-            navigate("/register")
+    // Function to handle project setting
+    const handleSetProject = async () => {
+      if (!project_name.value) {
+        console.log("project name error.");
+        // showToast.error("you didn't set the project name.");
+        return;
+      }
+
+      refreshLocalStorage();
+      try {
+        setProjectId(project_name.value.toLowerCase());
+        const project = await getProject();
+        if (project && project.name && project.config && project.maintainers) {
+          setProject(project);
+          const { username, repoName } = getAuthorRepo(project.config.url);
+          if (username && repoName) {
+            setProjectRepoInfo(username, repoName);
           }
-        } catch (e) {
-          console.error(e);
+          const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+          if (tomlData) {
+            const configData = {
+              projectName: project.name,
+              logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
+              thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
+              description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
+              companyName: tomlData.DOCUMENTATION?.ORG_NAME || "",
+              officials: {
+                websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
+                githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
+              },
+              socialLinks: {
+                twitter: "",
+                telegram: "",
+                discord: "",
+                instagram: "",
+              },
+              authorGithubNames: tomlData.PRINCIPALS?.map((p: { github: any; }) => p.github) || [],
+              maintainersAddresses: tomlData.ACCOUNTS || [],
+            };
+            setConfigData(configData);
+          } else {
+            setConfigData({});
+          }
+          
+          const latestSha = await getProjectHash();
+          if (typeof latestSha === 'string' && latestSha.match(/^[a-f0-9]{40}$/)) {
+            setProjectLatestSha(latestSha);
+          } else setProjectLatestSha("");
+          navigate("/commit");
+        } else {
+          navigate("/register");
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    if (button) {
+      button.addEventListener("click", handleSetProject);
+    }
+
+    // Add event listener for Enter key press
+    if (project_name) {
+      project_name.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          handleSetProject();
         }
       });
     }

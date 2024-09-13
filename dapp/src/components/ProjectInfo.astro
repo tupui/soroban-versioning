@@ -3,38 +3,37 @@ import Topic from "./utils/Topic.astro";
 import Modal from "./utils/Modal.astro";
 import Loading from "./utils/Loading.astro";
 import CommitHistory from "./CommitHistory.jsx";
+import PrimaryButton from "./utils/PrimaryButton.astro";
+import ModalInput from "./utils/ModalInput.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row justify-between">
   <Topic title="Project" description="Details about the project" id="project-name-topic"/>
   <div id="open-update-config-modal-button" class="mb-1.5 mt-12 pr-3 hidden">
-    <button
-      update-config
-      aria-controls="update-config-modal"
-      class="w-full p-3 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
-    >
-      <span class="text-center text-white text-xl font-normal leading-7">
-        Update Config
-      </span>
-    </button>
+    <PrimaryButton
+      wrapId="wrap-update-config"
+      dataAttr="data-update-config"
+      ariaControls="update-config-modal"
+      buttonText="Update Config"
+    />
   </div>
 </div>
 
 <div
-  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-[45px]"
+  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
 >
-  <div class="row items-center py-12 px-4 md:px-20 w-full md:py-10">
+  <div class="row items-center py-8 sm:py-12 px-4 sm:px-8 md:px-20 w-full md:py-10">
     <div class="space-y-6 md:w-full">
-      <div id="project-name" class="flex items-center space-x-2">
-        <h3 class="text-lg font-semibold">Project Name:</h3>
+      <div id="project-name" class="flex items-end space-x-2">
+        <h3 class="text-base sm:text-lg font-semibold pb-1 sm:pb-0.5">Project Name:</h3>
         <p id="project-name-value" class="text-3xl font-bold"></p>
       </div>
-      <div id="project-maintainers" class="space-y-2">
-        <h3 class="text-lg font-semibold">Maintainers:</h3>
-        <ul class="list-disc list-outside pl-4"></ul>
+      <div id="project-maintainers" class="space-y-1">
+        <h3 class="text-base sm:text-lg font-semibold">Maintainers:</h3>
+        <ul class="list-disc list-outside pl-5"></ul>
       </div>
-      <div class="flex items-center space-x-4">
-        <div id="project-link" class="flex items-center space-x-2">
+      <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center sm:gap-x-4">
+        <div id="project-link" class="flex items-center space-x-2 px-2 py-1">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd" />
           </svg>
@@ -47,6 +46,12 @@ import CommitHistory from "./CommitHistory.jsx";
           </svg>
           <span id="view-commit-text">View Commit History</span>
         </div>
+        <div id="view-project-info" class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+          </svg>
+          <span>View Project Info</span>
+        </div>
       </div>
     </div>
     <div id="commit-history-container" class="mt-4 overflow-hidden transition-all duration-300 max-h-0">
@@ -56,15 +61,13 @@ import CommitHistory from "./CommitHistory.jsx";
 </div>
 
 <Modal id="update-config-modal" title="Update Config">
-  <div id="modal-content" class="space-y-4 w-[600px]">
-    <h2 id="modal-project-name" class="text-3xl font-bold mb-4">Project Name</h2>
+  <div id="modal-content" class="space-y-4 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-[600px]">
+    <h2 id="update-modal-project-name" class="text-2xl sm:text-3xl font-bold mb-4">Project Name</h2>
 
     <label class="block mb-2 text-base font-medium text-black">
       Maintainers
-      <input
-        type="text"
+      <ModalInput
         id="modal-maintainers"
-        class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
         placeholder="List of maintainers' addresses as G...,G..."
         required
       />
@@ -72,10 +75,8 @@ import CommitHistory from "./CommitHistory.jsx";
 
     <label class="block mb-2 text-base font-medium text-black">
       GitHub repository URL
-      <input
-        type="text"
+      <ModalInput
         id="modal-config-url"
-        class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
         placeholder="GitHub repository URL"
         required
       />
@@ -83,26 +84,23 @@ import CommitHistory from "./CommitHistory.jsx";
 
     <label class="block mb-2 text-base font-medium text-black">
       Information file hash
-      <input
-        type="text"
+      <ModalInput
         id="modal-config-hash"
-        class="block p-3 w-full text-base text-black bg-white rounded-lg border shadow-sm focus:ring-black focus:border-black"
         placeholder="Information file hash"
         required
-        minlength="40"
-        maxlength="40"
+        minlength="64"
+        maxlength="64"
       />
     </label>
 
     <div id="wrap-update-button" class="relative">
-      <button
-        id="update-config-button"
-        class="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5"
-      >
-        <span class="text-center text-white text-xl font-normal leading-7">
-          Update Config
-        </span>
-      </button>
+      <PrimaryButton
+        wrapId="wrap-update-config-button"
+        dataAttr="update-config-button"
+        buttonId="update-config-button"
+        ariaControls="update-config-button"
+        buttonText="Update Config"
+      />
       <div id="update-config-loader" class="absolute top-0 left-0 w-full h-full bg-zinc-900 rounded-[14px] justify-center items-center hidden">
         <Loading theme="dark" />
       </div>
@@ -110,13 +108,50 @@ import CommitHistory from "./CommitHistory.jsx";
   </div>
 </Modal>
 
+<Modal id="project-info-modal" title="">
+  <div class="space-y-6 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-full md:max-w-[800px]">
+    <div class="flex items-center space-x-4">
+      <img id="project-logo" src="" alt="Project Logo" class="w-12 h-12 object-contain">
+      <h2 id="view-modal-project-name" class="text-2xl sm:text-3xl font-bold"></h2>
+    </div>
+    
+    <div class="flex flex-col md:flex-row gap-6">
+      <img id="project-thumbnail" src="/fallback-image.jpg" alt="Project Thumbnail" class="w-full md:w-[40%] object-cover rounded-lg">
+      <div class="flex-1 pt-2">
+        <p id="project-description" class="flex-1"></p>
+      </div>
+    </div>
+    
+    <div class="space-y-2">
+      <div class="flex flex-col">
+        <h3 class="font-semibold mb-2">Official Links</h3>
+        <div id="official-links" class="flex flex-wrap gap-2"></div>
+      </div>
+      
+      <div class="flex flex-col">
+        <h3 class="font-semibold mb-2">Social</h3>
+        <div id="social-links" class="flex flex-wrap gap-2"></div>
+      </div>
+    </div>
+    <div class="flex justify-between items-start gap-6">
+      <p id="company-name" class=""></p>
+    </div>
+  </div>
+</Modal>
+
 <script>
-  import { getProject, getProjectHash, updateConfig } from "../service/ProjectService";
-  import { initializeProjectState, loadProjectInfo, setProject, setProjectLatestSha } from "../service/StateService";
   import { loadedPublicKey } from "./stellar-wallets-kit";
+  import { updateConfig } from "../service/WriteContractService";
+  import { getProject } from "../service/ReadContractService";
+  import { initializeProjectState, loadConfigData, loadProjectInfo, setProject } from "../service/StateService";
+  import type { ConfigData } from "../types/projectConfig";
+  import { projectInfoLoaded } from "../utils/store";
+  import { convertGitHubLink } from "../utils/editLinkFunctions";
 
   document.addEventListener("astro:page-load", () => {
     initializeProjectState();
+    projectInfoLoaded.set(true);
+
     const modal = document.getElementById("update-config-modal") as HTMLDialogElement;
 
     async function updateProjectInfo() {
@@ -142,7 +177,7 @@ import CommitHistory from "./CommitHistory.jsx";
               li.appendChild(content);
 
               const popup = document.createElement("p");
-              popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black";
+              popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
               popup.textContent = maintainer;
               li.appendChild(popup);
               
@@ -164,7 +199,7 @@ import CommitHistory from "./CommitHistory.jsx";
         }
 
         // Update modal content
-        const modalProjectName = document.getElementById("modal-project-name");
+        const modalProjectName = document.getElementById("update-modal-project-name");
         if (modalProjectName) {
           modalProjectName.textContent = projectInfo.name;
         }
@@ -181,8 +216,13 @@ import CommitHistory from "./CommitHistory.jsx";
         if (modalConfigHash) {
           modalConfigHash.value = projectInfo.config.hash;
         }
+      }
+    }
 
-        // Check if the connected wallet is a maintainer
+    function updateUpgradeConfigButtonVisibility() {
+      const projectInfo = loadProjectInfo();
+
+      if (projectInfo) {
         const connectedPublicKey = loadedPublicKey();
         const isMaintainer = connectedPublicKey ? projectInfo.maintainers.includes(connectedPublicKey) : false;
         const updateConfigButton = document.getElementById("open-update-config-modal-button");
@@ -192,23 +232,11 @@ import CommitHistory from "./CommitHistory.jsx";
       }
     }
 
-    
-  async function updateProjectLatestSha() {
-    try {
-      const latestSha = await getProjectHash();
-      if (latestSha) {
-        setProjectLatestSha(latestSha);
-      }
-    } catch (error) {
-      console.error("Error updating project latest SHA:", error);
-    }
-  }
-
     updateProjectInfo();
-    updateProjectLatestSha();  // Call this function to update the latest SHA
+    updateUpgradeConfigButtonVisibility();
 
     const button = document.querySelector(
-      "[update-config]",
+      "[data-update-config]",
     ) as HTMLButtonElement; 
     if (button) {
       button.addEventListener("click", async () => {
@@ -288,16 +316,111 @@ import CommitHistory from "./CommitHistory.jsx";
     }
 
     window.addEventListener('walletConnected', (_event: Event) => {
-      const projectInfo = loadProjectInfo();
-      
-      if (projectInfo) {
-        const connectedPublicKey = loadedPublicKey();
-        const isMaintainer = connectedPublicKey ? projectInfo.maintainers.includes(connectedPublicKey) : false;
-        const updateConfigButton = document.getElementById("open-update-config-modal-button");
-        if (updateConfigButton) {
-          updateConfigButton.classList.toggle("hidden", !isMaintainer);
+      updateUpgradeConfigButtonVisibility();
+    });
+
+    const viewProjectInfo = document.getElementById("view-project-info");
+    const projectInfoModal = document.getElementById("project-info-modal") as HTMLDialogElement;
+
+    if (viewProjectInfo && projectInfoModal) {
+      viewProjectInfo.addEventListener("click", async () => {
+        const projectInfo = loadProjectInfo();
+        if (projectInfo) {
+          const configData = loadConfigData();
+          if (configData && Object.keys(configData).length > 0) {
+            updateProjectInfoModal(projectInfo, configData);
+            projectInfoModal.showModal();
+          } else {
+            alert("Can not read config data.");
+          }
+        } else {
+          console.error("Failed to load project info");
+        }
+      });
+    }
+
+    function updateProjectInfoModal(projectInfo: any, configData: ConfigData) {
+      const modalProjectName = document.getElementById("view-modal-project-name");
+      const projectLogo = document.getElementById("project-logo") as HTMLImageElement;
+      const projectThumbnail = document.getElementById("project-thumbnail") as HTMLImageElement;
+      const projectDescription = document.getElementById("project-description");
+      const officialLinks = document.getElementById("official-links");
+      const socialLinks = document.getElementById("social-links");
+      const companyName = document.getElementById("company-name");
+
+      if (modalProjectName) modalProjectName.textContent = projectInfo.name;
+      if (projectLogo) {
+        if (configData.logoImageLink) {
+          projectLogo.src = convertGitHubLink(configData.logoImageLink);
+          projectLogo.style.display = 'block';
+        } else {
+          projectLogo.style.display = 'none';
         }
       }
-    });
+      if (projectThumbnail) projectThumbnail.src = configData.thumbnailImageLink || '/fallback-image.jpg';
+      if (projectDescription) projectDescription.textContent = configData.description || '';
+      if (companyName) companyName.innerHTML = `Developed by   <strong class="font-extrabold"> ${configData.companyName || ''}</strong>`;
+
+      // Official Links
+      if (officialLinks) {
+        officialLinks.innerHTML = '';
+        if (configData.officials.websiteLink) {
+          addLinkButton(officialLinks, 'Website', configData.officials.websiteLink, 'web');
+        }
+        if (configData.officials.githubLink) {
+          addLinkButton(officialLinks, 'GitHub', configData.officials.githubLink, 'github');
+        }
+      }
+
+      // Social Links (example, add more as needed)
+      if (socialLinks) {
+        socialLinks.innerHTML = '';
+        if (configData.socialLinks.twitter) {
+          addLinkButton(socialLinks, 'Twitter', configData.socialLinks.twitter, 'twitter');
+        }
+        if (configData.socialLinks.telegram) {
+          addLinkButton(socialLinks, 'Telegram', configData.socialLinks.telegram, 'telegram');
+        }
+        if (configData.socialLinks.instagram) {
+          addLinkButton(socialLinks, 'Instagram', configData.socialLinks.instagram, 'instagram');
+        }
+        if (configData.socialLinks.discord) {
+          addLinkButton(socialLinks, 'Discord', configData.socialLinks.discord, 'discord');
+        }
+      }
+    }
+
+    function addLinkButton(container: HTMLElement, title: string, url: string, iconName: string) {
+      const button = document.createElement('a');
+      button.href = url;
+      button.target = '_blank';
+      button.rel = 'noopener noreferrer';
+      button.className = 'flex items-center space-x-1 bg-zinc-200 hover:bg-zinc-300 rounded-lg px-3 py-1 text-sm';
+      
+      const icon = document.createElement('span');
+      icon.innerHTML = getIconSVG(iconName);
+      icon.className = 'w-4 h-4';
+      
+      const text = document.createElement('span');
+      text.textContent = title;
+      
+      button.appendChild(icon);
+      button.appendChild(text);
+      container.appendChild(button);
+    }
+
+    function getIconSVG(iconName: string) {
+      const icons: { [key: string]: string } = {
+        web: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>',
+        github: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>',
+        twitter: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>',
+        telegram: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M23.91 3.79L20.3 20.84c-.25 1.21-.98 1.5-2 .94l-5.5-4.07-2.66 2.57c-.3.3-.55.56-1.1.56-.72 0-.6-.27-.84-.95L6.3 13.7l-5.45-1.7c-1.18-.35-1.19-1.16.26-1.75l21.26-8.2c.97-.43 1.9.24 1.53 1.73z"/></svg>',
+        instagram: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>',
+        facebook: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg>',
+        discord: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>',
+        reddit: '<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>'
+      };
+      return icons[iconName] || '';
+    }
   });
 </script>

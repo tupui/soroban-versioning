@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { formatTime } from '../service/utils';
+import { formatTime } from '../utils/formatTimeFunctions';
 import { loadProjectLatestSha } from '../service/StateService';
 
-const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commitLink }) => {
+const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commitLink, isMaintainer }) => {
   const [isCopied, setIsCopied] = useState(false);
   const [isLatestCommit, setIsLatestCommit] = useState(false);
   const formattedMessage = message.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
@@ -28,10 +28,19 @@ const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commit
   };
 
   return (
-    <div className={`commit-record relative bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-start ${isLatestCommit ? 'border-2 border-blue-300 bg-zinc-300' : ''}`} data-sha={sha} id={isLatestCommit ? 'latest-commit-record' : undefined}>
-      {isLatestCommit && (
-        <div className="absolute top-0.5 left-1 text-xs font-bold tracking-tighter leading-3 bg-lime rounded-sm p-0.5">
-          latest commit
+    <div className={`commit-record relative bg-white pt-5 pb-3 px-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-start ${isLatestCommit ? 'border-2 border-blue-300 bg-zinc-300' : ''}`} data-sha={sha} id={isLatestCommit ? 'latest-commit-record' : undefined}>
+      {(isLatestCommit || isMaintainer) && (
+        <div className="absolute top-0.5 left-1 flex space-x-1">
+          {isLatestCommit && (
+            <div className="text-xs font-bold tracking-tighter leading-3 bg-lime rounded-sm p-0.5">
+              verified commit
+            </div>
+          )}
+          {isMaintainer && (
+            <div className="text-xs font-bold tracking-tighter leading-3 bg-blue-200 rounded-sm p-0.5">
+              verified maintainer
+            </div>
+          )}
         </div>
       )}
       <div className="commit-info flex-grow overflow-hidden mr-4">
@@ -48,12 +57,22 @@ const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commit
         )}
         <div className="commit-details text-sm text-gray-600 mt-1">
           <a href={authorGithubLink} target="_blank" rel="noopener noreferrer" className="author-name font-semibold hover:underline hover:text-blue-500">{authorName}</a>
-          <span className="mx-1">committed on</span>
-          <span className="commit-date">{formatTime(date)}</span>
+          <span className="ml-1 hidden sm:inline"> committed on</span>
+          <span className="commit-date ml-1"> {formatTime(date)}</span>
         </div>
       </div>
       <div className="commit-sha flex items-center space-x-2 flex-shrink-0">
-        <a href={commitLink} target="_blank" rel="noopener noreferrer" className="sha text-sm font-mono text-gray-500 hover:bg-zinc-400 transition-colors duration-200 px-2 py-1 rounded">{sha.substring(0, 7)}</a>
+        <div className="relative group">
+          <a href={commitLink} target="_blank" rel="noopener noreferrer" className="sha text-sm font-mono text-gray-500 hover:bg-zinc-400 transition-colors duration-200 px-2 py-1 rounded">
+            {sha.substring(0, 7)}
+          </a>
+          <div className="absolute -left-1/4 sm:-left-full bottom-full mb-2 -translate-x-1/2 hidden group-hover:block">
+            <div className="bg-black text-white text-xs py-1 px-2 rounded shadow-lg max-w-[54vw] sm:max-w-[90vw] break-words">
+              {sha}
+              <div className="absolute left-2/3 sm:left-3/4 top-full border-4 border-transparent border-t-black"></div>
+            </div>
+          </div>
+        </div>
         <button className="copy-button hover:bg-zinc-400 transition-colors duration-200 p-1 rounded" onClick={handleCopy}>
           {isCopied ? (
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5 text-green-500">

@@ -1,23 +1,50 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import { getCommitHistory } from '../service/GithubService';
 import CommitRecord from './CommitRecord.jsx';
-import { formatDate } from '../service/utils';
-import { loadProjectRepoInfo } from '../service/StateService';
+import { formatDate } from '../utils/formatTimeFunctions.ts';
+import { loadProjectRepoInfo, loadConfigData } from '../service/StateService';
+import { projectInfoLoaded, latestCommit } from '../utils/store.js';
+import { useStore } from '@nanostores/react';
 
 const CommitHistory = () => {
-  const [commitHistory, setCommitHistory] = React.useState([]);
+  const isProjectInfoLoaded = useStore(projectInfoLoaded);
+  const [commitHistory, setCommitHistory] = useState([]);
+  const [authors, setAuthors] = useState([]);
 
-  React.useEffect(() => {
-    const fetchCommitHistory = async () => {
-      const projectRepoInfo = loadProjectRepoInfo();
-      if (projectRepoInfo?.author && projectRepoInfo?.repository) {
-        const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository);
-        console.log("history:", history);
-        setCommitHistory(history);
+  const fetchCommitHistory = async () => {
+    const projectRepoInfo = loadProjectRepoInfo();
+    if (projectRepoInfo?.author && projectRepoInfo?.repository) {
+      const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository);
+      setCommitHistory(history);
+      
+      // Set the latest commit
+      if (history.length > 0 && history[0].commits.length > 0) {
+        latestCommit.set(history[0].commits[0].sha);
       }
-    };
-    fetchCommitHistory();
-  }, []);
+    }
+  };
+  
+  const addMaintainerBadge = () => {
+    const configData = loadConfigData();
+    if (configData.authorGithubNames && configData.authorGithubNames.length > 0) {
+      const authors = configData.authorGithubNames.map(name => name.toLowerCase());
+      setAuthors(authors);
+    } else {
+      console.log("Can not read config data.");
+    }
+  }
+
+  const loadCommitInfo = () => {
+    if (isProjectInfoLoaded) {
+      fetchCommitHistory();
+      addMaintainerBadge();
+    }
+  }
+
+  useEffect(() => {
+    loadCommitInfo();
+  }, [isProjectInfoLoaded]);
 
   return (
     <div className="commit-history-container max-h-[560px] overflow-auto relative pl-8">
@@ -37,6 +64,7 @@ const CommitHistory = () => {
                   authorGithubLink={commit.author.html_url}
                   sha={commit.sha}
                   commitLink={commit.html_url}
+                  isMaintainer={authors ? authors.includes(commit.author.name.toLowerCase()) : false}
                 />
               </div>
             ))}
