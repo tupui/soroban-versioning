@@ -166,31 +166,60 @@ import ModalInput from "./utils/ModalInput.astro";
           const ul = maintainersList.querySelector("ul");
           if (ul) {
             ul.innerHTML = '';
-            projectInfo.maintainers.forEach((maintainer: string) => {
-              const li = document.createElement("li");
-              li.className = "relative";
+            const configData = loadConfigData();
+            if (configData && configData.authorGithubNames && configData.maintainersAddresses) {
+              configData.authorGithubNames.forEach((authorName: string, index: number) => {
+                const li = document.createElement("li");
+                li.className = "relative";
 
-              const content = document.createElement("p");
-              content.className = "truncate";
-              content.textContent = maintainer;
+                const content = document.createElement("p");
+                content.className = "truncate";
+                content.textContent = authorName;
 
-              li.appendChild(content);
+                li.appendChild(content);
 
-              const popup = document.createElement("p");
-              popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
-              popup.textContent = maintainer;
-              li.appendChild(popup);
-              
-              li.addEventListener("mouseenter", () => {
-                popup.classList.remove("hidden");
+                const popup = document.createElement("p");
+                popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-5 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
+                popup.textContent = configData.maintainersAddresses[index] || '';
+                li.appendChild(popup);
+                
+                li.addEventListener("mouseenter", () => {
+                  popup.classList.remove("hidden");
+                });
+                
+                li.addEventListener("mouseleave", () => {
+                  popup.classList.add("hidden");
+                });
+                
+                ul.appendChild(li);
               });
-              
-              li.addEventListener("mouseleave", () => {
-                popup.classList.add("hidden");
+            } else {
+              projectInfo.maintainers.forEach((maintainer: string) => {
+                const li = document.createElement("li");
+                li.className = "relative";
+
+                const content = document.createElement("p");
+                content.className = "truncate";
+                content.textContent = maintainer;
+
+                li.appendChild(content);
+
+                const popup = document.createElement("p");
+                popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
+                popup.textContent = maintainer;
+                li.appendChild(popup);
+                
+                li.addEventListener("mouseenter", () => {
+                  popup.classList.remove("hidden");
+                });
+                
+                li.addEventListener("mouseleave", () => {
+                  popup.classList.add("hidden");
+                });
+                
+                ul.appendChild(li);
               });
-              
-              ul.appendChild(li);
-            });
+            }
           }
         }
         const githubLink = document.getElementById("github-link") as HTMLAnchorElement;
