@@ -1,6 +1,7 @@
 export const demoConfigData = [
   {
     projectName: "tansu",
+    logoImageLink: "https://github.com/tupui/soroban-versioning/blob/main/website/static/img/logo.svg",
     description: "Bringing Git hashes onto Stellar’s blockchain",
     companyName: "Consulting Manao GmbH",
     officials: {
