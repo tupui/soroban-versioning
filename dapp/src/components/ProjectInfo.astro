@@ -384,7 +384,7 @@ import ModalInput from "./utils/ModalInput.astro";
             updateProjectInfoModal(projectInfo, configData);
             projectInfoModal.showModal();
           } else {
-            alert("Can not read config data.");
+            alert("This project is missing a tansu.toml configuration file.");
           }
         } else {
           console.error("Failed to load project info");
