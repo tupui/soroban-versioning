@@ -3,6 +3,8 @@ import { getProject, getProjectHash } from "../service/ReadContractService";
 import { setProjectId, setProject, setProjectRepoInfo, setConfigData, setProjectLatestSha, refreshLocalStorage } from "../service/StateService";
 import { getAuthorRepo } from "../utils/editLinkFunctions";
 import { fetchTOMLFromConfigUrl } from "../service/GithubService";
+import { projectCardModalOpen } from '../utils/store';
+import { convertGitHubLink } from '../utils/editLinkFunctions';
 
 const ProjectCard = ({ config }) => {
 
@@ -48,7 +50,7 @@ const ProjectCard = ({ config }) => {
           setProjectLatestSha(latestSha);
         } else setProjectLatestSha("");
 
-        window.location.href = '/commit';
+        projectCardModalOpen.set(true);
       } else {
         alert(`There is not such project: ${config.projectName}`);
       }
@@ -61,9 +63,9 @@ const ProjectCard = ({ config }) => {
     <div className="project-card max-w-[400px] w-full border border-zinc-400 rounded-lg">
       <div className="rounded-lg overflow-hidden cursor-pointer group" onClick={handleCardClick}>
         <img
-          src={config.thumbnailImageLink || '/fallback-image.jpg'}
+          src={config.logoImageLink !== undefined ? convertGitHubLink(config.logoImageLink) : '/fallback-image.jpg'}
           alt={config.projectName}
-          className="thumbnail w-full aspect-[3/2] object-cover transition-transform duration-300 ease-in-out group-hover:scale-125"
+          className="thumbnail w-full aspect-[3/2] object-fill transition-transform duration-300 ease-in-out group-hover:scale-125"
         />
       </div>
       <div className="px-2 pb-2">

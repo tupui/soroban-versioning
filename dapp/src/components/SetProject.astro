@@ -93,6 +93,8 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
                 telegram: "",
                 discord: "",
                 instagram: "",
+                facebook: "",
+                reddit: "",
               },
               authorGithubNames: tomlData.PRINCIPALS?.map((p: { github: any; }) => p.github) || [],
               maintainersAddresses: tomlData.ACCOUNTS || [],
@@ -106,7 +108,7 @@ const TANSU_CONTRACT_ID = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
           if (typeof latestSha === 'string' && latestSha.match(/^[a-f0-9]{40}$/)) {
             setProjectLatestSha(latestSha);
           } else setProjectLatestSha("");
-          navigate("/commit");
+          navigate("/project");
         } else {
           navigate("/register");
         }

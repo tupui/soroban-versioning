@@ -13,6 +13,8 @@ export interface ConfigData {
     telegram: string;
     discord: string;
     instagram: string;
+    facebook: string;
+    reddit: string;
   };
   authorGithubNames: string[];
   maintainersAddresses: string[];

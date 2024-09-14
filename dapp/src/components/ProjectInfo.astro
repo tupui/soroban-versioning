@@ -52,6 +52,12 @@ import ModalInput from "./utils/ModalInput.astro";
           </svg>
           <span>View Project Info</span>
         </div>
+        <div id="jump-to-latest-commit" class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd" />
+          </svg>
+          <span>Jump to Latest Verified Commit</span>
+        </div>
       </div>
     </div>
     <div id="commit-history-container" class="mt-4 overflow-hidden transition-all duration-300 max-h-0">
@@ -111,7 +117,7 @@ import ModalInput from "./utils/ModalInput.astro";
 <Modal id="project-info-modal" title="">
   <div class="space-y-6 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-full md:max-w-[800px]">
     <div class="flex items-center space-x-4">
-      <img id="project-logo" src="" alt="Project Logo" class="w-12 h-12 object-contain">
+      <!-- <img id="project-logo" src="" alt="Project Logo" class="w-12 h-12 object-contain"> -->
       <h2 id="view-modal-project-name" class="text-2xl sm:text-3xl font-bold"></h2>
     </div>
     
@@ -166,31 +172,60 @@ import ModalInput from "./utils/ModalInput.astro";
           const ul = maintainersList.querySelector("ul");
           if (ul) {
             ul.innerHTML = '';
-            projectInfo.maintainers.forEach((maintainer: string) => {
-              const li = document.createElement("li");
-              li.className = "relative";
+            const configData = loadConfigData();
+            if (configData && configData.authorGithubNames && configData.maintainersAddresses) {
+              configData.authorGithubNames.forEach((authorName: string, index: number) => {
+                const li = document.createElement("li");
+                li.className = "relative";
 
-              const content = document.createElement("p");
-              content.className = "truncate";
-              content.textContent = maintainer;
+                const content = document.createElement("p");
+                content.className = "truncate";
+                content.textContent = authorName;
 
-              li.appendChild(content);
+                li.appendChild(content);
 
-              const popup = document.createElement("p");
-              popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
-              popup.textContent = maintainer;
-              li.appendChild(popup);
-              
-              li.addEventListener("mouseenter", () => {
-                popup.classList.remove("hidden");
+                const popup = document.createElement("p");
+                popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-5 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
+                popup.textContent = configData.maintainersAddresses[index] || '';
+                li.appendChild(popup);
+                
+                li.addEventListener("mouseenter", () => {
+                  popup.classList.remove("hidden");
+                });
+                
+                li.addEventListener("mouseleave", () => {
+                  popup.classList.add("hidden");
+                });
+                
+                ul.appendChild(li);
               });
-              
-              li.addEventListener("mouseleave", () => {
-                popup.classList.add("hidden");
+            } else {
+              projectInfo.maintainers.forEach((maintainer: string) => {
+                const li = document.createElement("li");
+                li.className = "relative";
+
+                const content = document.createElement("p");
+                content.className = "truncate";
+                content.textContent = maintainer;
+
+                li.appendChild(content);
+
+                const popup = document.createElement("p");
+                popup.className = "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
+                popup.textContent = maintainer;
+                li.appendChild(popup);
+                
+                li.addEventListener("mouseenter", () => {
+                  popup.classList.remove("hidden");
+                });
+                
+                li.addEventListener("mouseleave", () => {
+                  popup.classList.add("hidden");
+                });
+                
+                ul.appendChild(li);
               });
-              
-              ul.appendChild(li);
-            });
+            }
           }
         }
         const githubLink = document.getElementById("github-link") as HTMLAnchorElement;
@@ -282,12 +317,13 @@ import ModalInput from "./utils/ModalInput.astro";
     }
 
     const viewCommitHistory = document.getElementById("view-commit-history");
+    const jumpToLatestCommit = document.getElementById("jump-to-latest-commit");
     const viewCommitText = document.getElementById("view-commit-text");
     const commitHistoryContainer = document.getElementById("commit-history-container");
     const commitIconUp = document.getElementById("commit-icon-up");
     const commitIconDown = document.getElementById("commit-icon-down");
 
-    if (viewCommitHistory && viewCommitText && commitHistoryContainer && commitIconUp && commitIconDown) {
+    if (viewCommitHistory && commitHistoryContainer) {
       viewCommitHistory.addEventListener("click", () => {
         if (commitHistoryContainer.style.maxHeight === "0px" || !commitHistoryContainer.style.maxHeight) {
           commitHistoryContainer.style.maxHeight = `${commitHistoryContainer.scrollHeight}px`;
@@ -295,7 +331,24 @@ import ModalInput from "./utils/ModalInput.astro";
           commitHistoryContainer.style.maxHeight = "0px";
         }
       });
-
+    }
+      
+    if (jumpToLatestCommit && commitHistoryContainer) {
+      jumpToLatestCommit.addEventListener("click", () => {
+        if (commitHistoryContainer.style.maxHeight === "0px" || !commitHistoryContainer.style.maxHeight) {
+          commitHistoryContainer.style.maxHeight = `${commitHistoryContainer.scrollHeight}px`;
+        } else {
+          setTimeout(() => {
+            const latestCommit = document.getElementById('latest-commit-record');
+            if (latestCommit) {
+              latestCommit.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 10);
+        }
+      })
+    }
+    
+    if (viewCommitText && commitHistoryContainer && commitIconUp && commitIconDown) {
       commitHistoryContainer.addEventListener("transitionend", () => {
         if (commitHistoryContainer.style.maxHeight === "0px") {
           viewCommitText.textContent = "View Commit History";
@@ -310,7 +363,7 @@ import ModalInput from "./utils/ModalInput.astro";
             if (latestCommit) {
               latestCommit.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-          }, 1000);
+          }, 10);
         }
       });
     }
@@ -357,7 +410,8 @@ import ModalInput from "./utils/ModalInput.astro";
           projectLogo.style.display = 'none';
         }
       }
-      if (projectThumbnail) projectThumbnail.src = configData.thumbnailImageLink || '/fallback-image.jpg';
+      // if (projectThumbnail) projectThumbnail.src = configData.thumbnailImageLink || '/fallback-image.jpg';
+      if (projectThumbnail) projectThumbnail.src = convertGitHubLink(configData.logoImageLink) || '/fallback-image.jpg';
       if (projectDescription) projectDescription.textContent = configData.description || '';
       if (companyName) companyName.innerHTML = `Developed by   <strong class="font-extrabold"> ${configData.companyName || ''}</strong>`;
 

@@ -32,13 +32,29 @@ const CommitRecord = ({ message, date, authorName, authorGithubLink, sha, commit
       {(isLatestCommit || isMaintainer) && (
         <div className="absolute top-0.5 left-1 flex space-x-1">
           {isLatestCommit && (
-            <div className="text-xs font-bold tracking-tighter leading-3 bg-lime rounded-sm p-0.5">
-              verified commit
+            <div className="relative group">
+              <div className="text-xs font-bold tracking-tighter leading-3 bg-lime rounded-sm p-0.5">
+                verified commit
+              </div>
+              <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block">
+                <div className="bg-black text-white text-xs py-1 px-2 rounded shadow-lg w-max max-w-[60vw] break-words">
+                  This commit was verified on-chain by a maintainer
+                  <div className="absolute left-4 top-full border-4 border-transparent border-t-black"></div>
+                </div>
+              </div>
             </div>
           )}
           {isMaintainer && (
-            <div className="text-xs font-bold tracking-tighter leading-3 bg-blue-200 rounded-sm p-0.5">
-              verified maintainer
+            <div className="relative group">
+              <div className="text-xs font-bold tracking-tighter leading-3 bg-blue-200 rounded-sm p-0.5">
+                verified maintainer
+              </div>
+              <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block">
+                <div className="bg-black text-white text-xs py-1 px-2 rounded shadow-lg w-max max-w-[60vw] break-words">
+                  This maintainer is allowed to register new commit hash on-chain
+                  <div className="absolute left-4 top-full border-4 border-transparent border-t-black"></div>
+                </div>
+              </div>
             </div>
           )}
         </div>
