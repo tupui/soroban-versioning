@@ -10,8 +10,8 @@ import { convertGitHubLink } from '../utils/editLinkFunctions';
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);
-  const [projects, setProjects] = useState([]);
-  const [filteredProjects, setFilteredProjects] = useState([]);
+  const [projects, setProjects] = useState(undefined);
+  const [filteredProjects, setFilteredProjects] = useState(undefined);
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('all');
 
@@ -37,11 +37,13 @@ const ProjectList = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = projects.filter(project =>
-      project?.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (category === 'all')
-    );
-    setFilteredProjects(filtered);
+    if (projects) {
+      const filtered = projects.filter(project =>
+        project?.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (category === 'all')
+      );
+      setFilteredProjects(filtered);
+    }
   }, [searchTerm, category, projects]);
 
   useEffect(() => {
@@ -90,22 +92,24 @@ const ProjectList = () => {
           </div>
       </div>
       
-      {filteredProjects.length > 0 ? (
-        <div className="project-list py-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
-          {filteredProjects.map((project, index) => (
-            <ProjectCard key={index} config={project} />
-          ))}
-        </div>
-      ) : (
-        <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
-          {/* <p className="px-3 py-1 text-base sm:text-lg font-semibold border-2 border-zinc-700 rounded-lg">No projects found</p> */}
-          <button 
-            className="register-btn mr-2 px-3 sm:px-4 py-2 bg-black text-white text-2xl sm:text-3xl rounded-lg"
-            onClick={handleRegister}
-          >
-            Register
-          </button>
-      </div>
+      {filteredProjects !== undefined && (
+        filteredProjects.length > 0 ? (
+          <div className="project-list py-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
+            {filteredProjects.map((project, index) => (
+              <ProjectCard key={index} config={project} />
+            ))}
+          </div>
+        ) : (
+          <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
+            {/* <p className="px-3 py-1 text-base sm:text-lg font-semibold border-2 border-zinc-700 rounded-lg">No projects found</p> */}
+            <button 
+              className="register-btn mr-2 px-3 sm:px-4 py-2 bg-black text-white text-2xl sm:text-3xl rounded-lg"
+              onClick={handleRegister}
+            >
+              Register
+            </button>
+          </div>
+        )
       )}
 
       {isModalOpen && 
