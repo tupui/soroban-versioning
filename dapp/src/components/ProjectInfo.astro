@@ -323,7 +323,7 @@ import ModalInput from "./utils/ModalInput.astro";
     const commitIconUp = document.getElementById("commit-icon-up");
     const commitIconDown = document.getElementById("commit-icon-down");
 
-    if (viewCommitHistory && viewCommitText && commitHistoryContainer && commitIconUp && commitIconDown) {
+    if (viewCommitHistory && commitHistoryContainer) {
       viewCommitHistory.addEventListener("click", () => {
         if (commitHistoryContainer.style.maxHeight === "0px" || !commitHistoryContainer.style.maxHeight) {
           commitHistoryContainer.style.maxHeight = `${commitHistoryContainer.scrollHeight}px`;
@@ -331,7 +331,24 @@ import ModalInput from "./utils/ModalInput.astro";
           commitHistoryContainer.style.maxHeight = "0px";
         }
       });
-
+    }
+      
+    if (jumpToLatestCommit && commitHistoryContainer) {
+      jumpToLatestCommit.addEventListener("click", () => {
+        if (commitHistoryContainer.style.maxHeight === "0px" || !commitHistoryContainer.style.maxHeight) {
+          commitHistoryContainer.style.maxHeight = `${commitHistoryContainer.scrollHeight}px`;
+        } else {
+          setTimeout(() => {
+            const latestCommit = document.getElementById('latest-commit-record');
+            if (latestCommit) {
+              latestCommit.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }, 10);
+        }
+      })
+    }
+    
+    if (viewCommitText && commitHistoryContainer && commitIconUp && commitIconDown) {
       commitHistoryContainer.addEventListener("transitionend", () => {
         if (commitHistoryContainer.style.maxHeight === "0px") {
           viewCommitText.textContent = "View Commit History";
@@ -346,22 +363,9 @@ import ModalInput from "./utils/ModalInput.astro";
             if (latestCommit) {
               latestCommit.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-          }, 1000);
+          }, 10);
         }
       });
-    }
-
-    if (jumpToLatestCommit && commitHistoryContainer) {
-      jumpToLatestCommit.addEventListener("click", () => {
-        if (commitHistoryContainer.style.maxHeight !== "0px") {
-          setTimeout(() => {
-            const latestCommit = document.getElementById('latest-commit-record');
-            if (latestCommit) {
-              latestCommit.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-          }, 1000);
-        }
-      })
     }
 
     window.addEventListener('walletConnected', (_event: Event) => {
