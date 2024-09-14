@@ -65,7 +65,7 @@ const ProjectCard = ({ config }) => {
         <img
           src={config.logoImageLink !== undefined ? convertGitHubLink(config.logoImageLink) : '/fallback-image.jpg'}
           alt={config.projectName}
-          className="thumbnail w-full aspect-[3/2] object-contain transition-transform duration-300 ease-in-out group-hover:scale-125"
+          className="thumbnail w-full aspect-[3/2] object-fill transition-transform duration-300 ease-in-out group-hover:scale-125"
         />
       </div>
       <div className="px-2 pb-2">

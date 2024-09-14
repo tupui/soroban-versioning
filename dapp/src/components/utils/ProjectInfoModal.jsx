@@ -72,15 +72,14 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-between items-start gap-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-x-4">
               {projectInfo?.companyName ? (
-                <p id="company-name" className="">Developed by <span className="font-extrabold">{projectInfo.companyName}</span></p>
+                <p id="company-name" className="w-full sm:w-auto text-left">Developed by <span className="font-extrabold">{projectInfo.companyName}</span></p>
               ) : (
-                <p id="company-name" className="">No company name</p>
-              )
-              }
+                <p id="company-name" className="w-full sm:w-auto text-left">No company name</p>
+              )}
               <button 
-                className="bg-zinc-800 text-white px-4 py-2 rounded-lg flex items-center"
+                className="bg-zinc-800 text-white px-4 py-2 rounded-lg flex items-center self-end sm:self-auto"
                 onClick={handleDetailClick}
               >
                 Detail
