@@ -4,9 +4,10 @@
 
 <script>
   import { truncateMiddle } from "../utils/utils";
-  import { kit, loadedPublicKey, setPublicKey } from "./stellar-wallets-kit";
+  import { initializeConnection, kit, loadedPublicKey, setPublicKey } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
+    initializeConnection();
     const button = document.querySelector(
       "[data-connect]",
     ) as HTMLButtonElement;

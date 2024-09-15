@@ -21,6 +21,14 @@ function loadedPublicKey(): string | undefined {
 
 function setPublicKey(data: string): void {
   connectionState.publicKey = data;
+  localStorage.setItem('publicKey', data);
 }
 
-export { kit, loadedPublicKey, setPublicKey };
+function initializeConnection(): void {
+  const storedPublicKey = localStorage.getItem('publicKey');
+  if (storedPublicKey) {
+    setPublicKey(storedPublicKey);
+  }
+}
+
+export { kit, loadedPublicKey, setPublicKey, initializeConnection };
