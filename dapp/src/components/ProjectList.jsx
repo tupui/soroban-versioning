@@ -146,9 +146,9 @@ const ProjectList = () => {
 
   return (
     <div className="project-list-container">
-      <div className="filters flex items-center gap-2 sm:gap-4 mb-4">
+      <div className="filters flex gap-2 justify-center sm:gap-4 mb-4">
         {/* <Dropdown options={options} onSelect={(e) => setCategory(e.target.value)} /> */}
-        <div className="search-container relative w-full">
+        <div className="search-container relative w-1/2">
           <input
             type="text"
             placeholder="Search projects..."
@@ -164,13 +164,22 @@ const ProjectList = () => {
           </div>
         </div>
       </div>
-      
+
       {filteredProjects !== undefined && (
         filteredProjects.length > 0 ? (
-          <div className="project-list py-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
-            {filteredProjects.map((project, index) => (
-              <ProjectCard key={index} config={project} />
-            ))}
+          <div >
+            <div id="featured-projects-topic" class="grid place-items-center gap-8 mb-1.5 mt-12 md:flex">
+              <span class="text-2xl sm:text-4xl text-nowrap px-1.5 font-medium bg-lime rounded-md">
+                Featured Projects
+              </span>
+              <p class="text-2xl font-normal text-center md:text-start">
+              </p>
+            </div>
+            <div className="project-list py-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
+              {filteredProjects.map((project, index) => (
+                <ProjectCard key={index} config={project} />
+              ))}
+            </div>
           </div>
         ) : (
           isLoading ? (
