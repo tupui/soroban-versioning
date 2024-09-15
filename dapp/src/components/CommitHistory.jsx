@@ -11,20 +11,22 @@ const CommitHistory = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
   const [commitHistory, setCommitHistory] = useState([]);
   const [authors, setAuthors] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const fetchCommitHistory = async () => {
+  const fetchCommitHistory = async (page = 1) => {
     const projectRepoInfo = loadProjectRepoInfo();
     if (projectRepoInfo?.author && projectRepoInfo?.repository) {
-      const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository);
+      const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository, page);
       setCommitHistory(history);
-      
+      setCurrentPage(page);
+
       // Set the latest commit
       if (history.length > 0 && history[0].commits.length > 0) {
         latestCommit.set(history[0].commits[0].sha);
       }
     }
   };
-  
+
   const addMaintainerBadge = () => {
     const configData = loadConfigData();
     if (configData.authorGithubNames && configData.authorGithubNames.length > 0) {
@@ -71,6 +73,44 @@ const CommitHistory = () => {
           </div>
         </div>
       ))}
+      
+      {/* Pagination  */}
+      <div className="flex justify-center items-center mt-4 space-x-2">
+        <button
+          onClick={() => fetchCommitHistory(Math.max(1, currentPage - 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 border border-zinc-300 rounded disabled:opacity-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 flex items-center"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Previous
+        </button>
+        <button
+          onClick={() => fetchCommitHistory(1)}
+          className={`px-3 py-1 border rounded hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 ${
+            currentPage === 1 ? 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600 active:bg-blue-700' : 'border-zinc-300'
+          }`}
+        >
+          1
+        </button>
+        {currentPage > 2 && <span>...</span>}
+        {currentPage !== 1 && (
+          <button className="px-3 py-1 border border-blue-500 bg-blue-500 text-white rounded">
+            {currentPage}
+          </button>
+        )}
+        <button
+          onClick={() => fetchCommitHistory(currentPage + 1)}
+          disabled={false}
+          className="px-3 py-1 border border-zinc-300 rounded disabled:opacity-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 flex items-center"
+        >
+          Next
+          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 };
