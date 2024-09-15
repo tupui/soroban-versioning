@@ -4,7 +4,7 @@ import toml from 'toml';
 import type { FormattedCommit } from '../types/github';
 import { getGithubContentUrl, getGithubContentUrlFromConfigUrl } from '../utils/editLinkFunctions';
 
-async function getCommitHistory(username: string, repo: string, perPage: number = 30, page: number = 1): Promise<{ date: string; commits: FormattedCommit[] }[]> {
+async function getCommitHistory(username: string, repo: string, page: number = 1, perPage: number = 30): Promise<{ date: string; commits: FormattedCommit[] }[]> {
   try {
     const response = await axios.get(
       `https://api.github.com/repos/${username}/${repo}/commits`,
