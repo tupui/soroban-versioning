@@ -1,10 +1,10 @@
 ---
 interface Props {
-  theme?: 'dark' | 'light';
+  theme?: "dark" | "light";
 }
 
-const { theme = 'light' } = Astro.props;
-const bgColor = theme === 'dark' ? 'bg-white' : 'bg-black';
+const { theme = "light" } = Astro.props;
+const bgColor = theme === "dark" ? "bg-white" : "bg-black";
 ---
 
 <div class="flex space-y-4 space-x-2 justify-center items-center dark:invert">

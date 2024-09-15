@@ -15,9 +15,15 @@ const { line1, link } = Astro.props;
           <div class="text-base md:text-xl font-medium">{line1}</div>
         </div>
       </div>
-      <a class="justify-start items-center gap-2 sm:gap-2 md:gap-2.5 inline-flex" href={link}>
+      <a
+        class="justify-start items-center gap-2 sm:gap-2 md:gap-2.5 inline-flex"
+        href={link}
+      >
         <div class="w-6 sm:w-8 md:w-9 h-6 sm:h-8 md:h-9 relative">
-          <img class="w-6 sm:w-8 md:w-9 h-6 sm:h-8 md:h-9 left-0 top-0 absolute" src="./ag.svg" />
+          <img
+            class="w-6 sm:w-8 md:w-9 h-6 sm:h-8 md:h-9 left-0 top-0 absolute"
+            src="./ag.svg"
+          />
         </div>
         <div class="text-base sm:text-lg font-normal leading-7">Explore</div>
       </a>

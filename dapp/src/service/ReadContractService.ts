@@ -5,7 +5,7 @@ import * as pkg from "js-sha3";
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 
-import {loadedProjectId} from "./StateService";
+import { loadedProjectId } from "./StateService";
 
 async function getProjectHash(): Promise<string | void> {
   const projectId = loadedProjectId();
@@ -33,7 +33,9 @@ async function getProject(): Promise<Project | void> {
   return res.result;
 }
 
-async function getProjectFromName(projectName: string): Promise<Project | void> {
+async function getProjectFromName(
+  projectName: string,
+): Promise<Project | void> {
   const projectId = Buffer.from(
     keccak256.create().update(projectName).digest(),
   );
@@ -48,8 +50,4 @@ async function getProjectFromName(projectName: string): Promise<Project | void> 
   return res.result;
 }
 
-export {
-  getProject,
-  getProjectHash,
-  getProjectFromName,
-};
+export { getProject, getProjectHash, getProjectFromName };

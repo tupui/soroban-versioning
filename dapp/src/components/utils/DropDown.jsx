@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const Dropdown = ({ options, onSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,10 +18,10 @@ const Dropdown = ({ options, onSelect }) => {
         onClick={toggleDropdown}
         className="w-full bg-lime text-sm sm:text-base text-black py-2 px-1 sm:px-3 rounded-lg flex justify-between items-center"
       >
-        {selectedOption ? selectedOption.label : 'All'}
+        {selectedOption ? selectedOption.label : "All"}
         <svg
           className={`w-4 h-4 ml-1 sm:ml-2 transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
+            isOpen ? "rotate-180" : ""
           }`}
           fill="none"
           stroke="currentColor"

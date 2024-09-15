@@ -10,7 +10,10 @@ import Loading from "./utils/Loading.astro";
 <div
   class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
 >
-  <div id="wrap-get-hash-div" class="row items-center py-8 sm:py-10 md:py-12 px-6 sm:px-10 md:px-20 w-full md:w-8/12">
+  <div
+    id="wrap-get-hash-div"
+    class="row items-center py-8 sm:py-10 md:py-12 px-6 sm:px-10 md:px-20 w-full md:w-8/12"
+  >
     <div id="wrap-get-hash-loader" class="hidden">
       <Loading />
     </div>
@@ -32,64 +35,71 @@ import Loading from "./utils/Loading.astro";
     const loadLatestHash = async () => {
       if (wrap_loader && wrap_div) {
         wrap_loader.style.display = "block";
-  
+
         try {
           const latestSha = loadProjectLatestSha();
-  
+
           if (latestSha) {
-            const hashDisplay = document.createElement('div');
-            hashDisplay.className = 'max-w-[90%] relative group';
+            const hashDisplay = document.createElement("div");
+            hashDisplay.className = "max-w-[90%] relative group";
             const content = document.createElement("p");
-            content.className = 'truncate';
+            content.className = "truncate";
             content.textContent = latestSha;
-    
-            hashDisplay.appendChild(content)
-            
-            const popup = document.createElement('div');
+
+            hashDisplay.appendChild(content);
+
+            const popup = document.createElement("div");
             popup.textContent = latestSha;
-            popup.className = 'absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-zinc-800 text-white text-center text-sm px-2 py-1 rounded-md max-w-[90vw] break-all whitespace-normal';
-            popup.style.width = 'max-content';
-            
-            const triangle = document.createElement('div');
-            triangle.className = 'absolute left-1/2 -translate-x-1/2 -bottom-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-zinc-800';
-            
+            popup.className =
+              "absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block bg-zinc-800 text-white text-center text-sm px-2 py-1 rounded-md max-w-[90vw] break-all whitespace-normal";
+            popup.style.width = "max-content";
+
+            const triangle = document.createElement("div");
+            triangle.className =
+              "absolute left-1/2 -translate-x-1/2 -bottom-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-zinc-800";
+
             popup.appendChild(triangle);
             hashDisplay.appendChild(popup);
-    
-            const copyIcon = document.createElement('button');
-            copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="white" stroke="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>';
-            copyIcon.className = 'text-gray-600 hover:text-gray-800 focus:outline-none';
-            copyIcon.addEventListener('click', () => {
+
+            const copyIcon = document.createElement("button");
+            copyIcon.innerHTML =
+              '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="white" stroke="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>';
+            copyIcon.className =
+              "text-gray-600 hover:text-gray-800 focus:outline-none";
+            copyIcon.addEventListener("click", () => {
               navigator.clipboard.writeText(latestSha).then(() => {
-                copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="green"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
+                copyIcon.innerHTML =
+                  '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="green"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>';
                 setTimeout(() => {
-                  copyIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="white" stroke="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>';
+                  copyIcon.innerHTML =
+                    '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="white" stroke="currentColor"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/></svg>';
                 }, 2000);
               });
             });
-    
-            const container = document.createElement('div');
-            container.className = 'flex items-center justify-around w-full max-w-[450px] rounded-md border border-zinc-400';
+
+            const container = document.createElement("div");
+            container.className =
+              "flex items-center justify-around w-full max-w-[450px] rounded-md border border-zinc-400";
             container.appendChild(hashDisplay);
             container.appendChild(copyIcon);
-            
-            wrap_div.innerHTML = '';
+
+            wrap_div.innerHTML = "";
             wrap_div.appendChild(container);
           } else {
-            wrap_div.innerHTML = 'There is no hash on-chain for this project';
+            wrap_div.innerHTML = "There is no hash on-chain for this project";
           }
         } catch (e) {
           console.error(e);
         }
-          
+
         wrap_loader.style.display = "none";
       }
-    }
+    };
 
-    projectInfoLoaded.subscribe(loaded => {
+    projectInfoLoaded.subscribe((loaded) => {
       if (loaded) {
         loadLatestHash();
       }
-    })
+    });
   });
 </script>

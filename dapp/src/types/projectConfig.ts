@@ -18,4 +18,4 @@ export interface ConfigData {
   };
   authorGithubNames: string[];
   maintainersAddresses: string[];
-};
+}

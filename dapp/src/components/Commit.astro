@@ -8,11 +8,13 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
   <div class="relative flex flex-col items-center md:flex-row">
     <Topic title="Commit" description="Update hash on-chain" />
   </div>
-  
+
   <div
     class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
   >
-    <div class="row items-center py-8 sm:py-12 px-6 sm:px-12 md:px-20 w-full md:w-8/12 md:py-10">
+    <div
+      class="row items-center py-8 sm:py-12 px-6 sm:px-12 md:px-20 w-full md:w-8/12 md:py-10"
+    >
       <div class="space-y-8 md:w-full">
         <label class="block mb-2 text-base font-medium text-black">
           Commit hash
@@ -50,11 +52,15 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
   document.addEventListener("astro:page-load", () => {
     function updateCommitSectionVisibility() {
       const projectInfo = loadProjectInfo();
-      
+
       if (projectInfo) {
         const connectedPublicKey = loadedPublicKey();
-        const isMaintainer = connectedPublicKey ? projectInfo.maintainers.includes(connectedPublicKey) : false;
-        const updateCommitSection = document.getElementById("update-commit-section");
+        const isMaintainer = connectedPublicKey
+          ? projectInfo.maintainers.includes(connectedPublicKey)
+          : false;
+        const updateCommitSection = document.getElementById(
+          "update-commit-section",
+        );
         if (updateCommitSection) {
           updateCommitSection.classList.toggle("hidden", !isMaintainer);
         }
@@ -117,6 +123,6 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
     }
 
     // Add event listener for wallet connection
-    window.addEventListener('walletConnected', updateCommitSectionVisibility);
+    window.addEventListener("walletConnected", updateCommitSectionVisibility);
   });
 </script>

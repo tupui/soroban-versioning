@@ -1,17 +1,26 @@
 <div id="connect-wrap" aria-live="polite">
-  <button data-connect aria-controls="connect-wrap" class="text-center text-sm sm:text-base max-w-28 sm:max-w-36 md:max-w-44">Connect</button>
+  <button
+    data-connect
+    aria-controls="connect-wrap"
+    class="text-center text-sm sm:text-base max-w-28 sm:max-w-36 md:max-w-44"
+    >Connect</button
+  >
 </div>
 
 <script>
   import { truncateMiddle } from "../utils/utils";
-  import { initializeConnection, kit, loadedPublicKey, setPublicKey } from "./stellar-wallets-kit";
+  import {
+    initializeConnection,
+    kit,
+    loadedPublicKey,
+    setPublicKey,
+  } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
     const button = document.querySelector(
       "[data-connect]",
     ) as HTMLButtonElement;
-
 
     async function setLoggedIn(publicKey: string) {
       const truncatedKey = truncateMiddle(publicKey, 13);
@@ -34,7 +43,9 @@
                 const { address } = await kit.getAddress();
                 setPublicKey(address);
                 await setLoggedIn(address);
-                window.dispatchEvent(new CustomEvent('walletConnected', { detail: address }));
+                window.dispatchEvent(
+                  new CustomEvent("walletConnected", { detail: address }),
+                );
               } catch (e) {
                 console.error(e);
               }

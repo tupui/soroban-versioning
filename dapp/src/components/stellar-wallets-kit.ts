@@ -21,11 +21,11 @@ function loadedPublicKey(): string | undefined {
 
 function setPublicKey(data: string): void {
   connectionState.publicKey = data;
-  localStorage.setItem('publicKey', data);
+  localStorage.setItem("publicKey", data);
 }
 
 function initializeConnection(): void {
-  const storedPublicKey = localStorage.getItem('publicKey');
+  const storedPublicKey = localStorage.getItem("publicKey");
   if (storedPublicKey) {
     setPublicKey(storedPublicKey);
   }

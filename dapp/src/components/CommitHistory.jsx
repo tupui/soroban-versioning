@@ -1,11 +1,11 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { getCommitHistory } from '../service/GithubService';
-import CommitRecord from './CommitRecord.jsx';
-import { formatDate } from '../utils/formatTimeFunctions.ts';
-import { loadProjectRepoInfo, loadConfigData } from '../service/StateService';
-import { projectInfoLoaded, latestCommit } from '../utils/store.js';
-import { useStore } from '@nanostores/react';
+import React from "react";
+import { useState, useEffect } from "react";
+import { getCommitHistory } from "../service/GithubService";
+import CommitRecord from "./CommitRecord.jsx";
+import { formatDate } from "../utils/formatTimeFunctions.ts";
+import { loadProjectRepoInfo, loadConfigData } from "../service/StateService";
+import { projectInfoLoaded, latestCommit } from "../utils/store.js";
+import { useStore } from "@nanostores/react";
 
 const CommitHistory = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
@@ -16,7 +16,11 @@ const CommitHistory = () => {
   const fetchCommitHistory = async (page = 1) => {
     const projectRepoInfo = loadProjectRepoInfo();
     if (projectRepoInfo?.author && projectRepoInfo?.repository) {
-      const history = await getCommitHistory(projectRepoInfo.author, projectRepoInfo.repository, page);
+      const history = await getCommitHistory(
+        projectRepoInfo.author,
+        projectRepoInfo.repository,
+        page,
+      );
       setCommitHistory(history);
       setCurrentPage(page);
 
@@ -29,20 +33,25 @@ const CommitHistory = () => {
 
   const addMaintainerBadge = () => {
     const configData = loadConfigData();
-    if (configData.authorGithubNames && configData.authorGithubNames.length > 0) {
-      const authors = configData.authorGithubNames.map(name => name.toLowerCase());
+    if (
+      configData.authorGithubNames &&
+      configData.authorGithubNames.length > 0
+    ) {
+      const authors = configData.authorGithubNames.map((name) =>
+        name.toLowerCase(),
+      );
       setAuthors(authors);
     } else {
       console.log("Can not read config data.");
     }
-  }
+  };
 
   const loadCommitInfo = () => {
     if (isProjectInfoLoaded) {
       fetchCommitHistory();
       addMaintainerBadge();
     }
-  }
+  };
 
   useEffect(() => {
     loadCommitInfo();
@@ -67,7 +76,11 @@ const CommitHistory = () => {
                     authorGithubLink={commit.author.html_url}
                     sha={commit.sha}
                     commitLink={commit.html_url}
-                    isMaintainer={authors ? authors.includes(commit.author.name.toLowerCase()) : false}
+                    isMaintainer={
+                      authors
+                        ? authors.includes(commit.author.name.toLowerCase())
+                        : false
+                    }
                   />
                 </div>
               ))}
@@ -75,7 +88,7 @@ const CommitHistory = () => {
           </div>
         ))}
       </div>
-      
+
       {/* Pagination  */}
       <div className="flex justify-center items-center mt-4 space-x-2">
         <button
@@ -83,15 +96,28 @@ const CommitHistory = () => {
           disabled={currentPage === 1}
           className="px-3 py-1 border border-zinc-300 rounded disabled:opacity-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 flex items-center"
         >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          <svg
+            className="w-4 h-4 mr-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Previous
         </button>
         <button
           onClick={() => fetchCommitHistory(1)}
           className={`px-3 py-1 border rounded hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 ${
-            currentPage === 1 ? 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600 active:bg-blue-700' : 'border-zinc-300'
+            currentPage === 1
+              ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600 active:bg-blue-700"
+              : "border-zinc-300"
           }`}
         >
           1
@@ -108,8 +134,19 @@ const CommitHistory = () => {
           className="px-3 py-1 border border-zinc-300 rounded disabled:opacity-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 flex items-center"
         >
           Next
-          <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          <svg
+            className="w-4 h-4 ml-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 5l7 7-7 7"
+            />
           </svg>
         </button>
       </div>

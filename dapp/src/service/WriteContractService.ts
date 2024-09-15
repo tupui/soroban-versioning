@@ -123,8 +123,4 @@ async function updateConfig(
   }
 }
 
-export {
-  commitHash,
-  registerProject,
-  updateConfig,
-};
+export { commitHash, registerProject, updateConfig };
