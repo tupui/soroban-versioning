@@ -1,7 +1,7 @@
 import { kit, loadedPublicKey } from "../components/stellar-wallets-kit";
 import Versioning from "../contracts/soroban_versioning";
 
-import {loadedProjectId, loadProjectName} from "./StateService";
+import { loadedProjectId } from "./StateService";
 
 async function commitHash(commit_hash: string): Promise<boolean> {
   const projectId = loadedProjectId();
@@ -39,18 +39,12 @@ async function commitHash(commit_hash: string): Promise<boolean> {
 }
 
 async function registerProject(
+  project_name: string,
   maintainers: string,
   config_url: string,
   config_hash: string,
   domain_contract_id: string,
 ): Promise<boolean> {
-  const projectId = loadedProjectId();
-  const projectName = loadProjectName();
-
-  if (!projectId || !projectName) {
-    alert("No project defined");
-    return false;
-  }
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
@@ -64,7 +58,7 @@ async function registerProject(
 
   const tx = await Versioning.register({
     // @ts-ignore
-    name: projectName,
+    name: project_name,
     maintainer: publicKey,
     maintainers: maintainers_,
     url: config_url,

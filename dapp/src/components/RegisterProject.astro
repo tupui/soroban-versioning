@@ -14,10 +14,19 @@ import ModalInput from "./utils/ModalInput.astro";
   <div class="row items-center py-12 px-4 md:px-20 md:w-8/12 md:py-10">
     <div class="space-y-8 md:w-full">
       <label class="block mb-2 text-base font-medium text-black">
+        Project
+        <ModalInput
+          id="project_name"
+          name="project_name"
+          placeholder="Project name"
+          required
+        />
+      </label>
+      <label class="block mb-2 text-base font-medium text-black">
         Maintainers
         <ModalInput
           id="maintainers"
-          name="config_hash"
+          name="maintainers"
           placeholder="List of maintainers' addresses as G...,G..."
           required
         />
@@ -27,7 +36,7 @@ import ModalInput from "./utils/ModalInput.astro";
         GitHub repository URL
         <ModalInput
           id="config_url"
-          name="config_hash"
+          name="config_url"
           placeholder="GitHub repository URL"
           required
         />
@@ -69,6 +78,10 @@ import ModalInput from "./utils/ModalInput.astro";
   const SOROBAN_DOMAIN_CONTRACT_ID = `${import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID}`;
 
   document.addEventListener("astro:page-load", () => {
+    const project_name = document.getElementById(
+      "project_name",
+    ) as HTMLInputElement;
+
     const maintainers = document.getElementById(
       "maintainers",
     ) as HTMLInputElement;
@@ -96,6 +109,7 @@ import ModalInput from "./utils/ModalInput.astro";
         wrap_button.style.display = "none";
 
         const register_status = await registerProject(
+          project_name.value,
           maintainers.value,
           config_url.value,
           config_hash.value,
