@@ -93,8 +93,46 @@ async function fetchTOMLFromConfigUrl(configUrl: string) {
   }
 }
 
+async function getTOMLFileHash(configUrl: string) {
+  try {
+    const url = getGithubContentUrlFromConfigUrl(configUrl);
+
+    if (url) {
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch the file: ${response.statusText}`);
+      }
+  
+      let tomlText = await response.text();
+    
+      tomlText = tomlText.replace(/\r?\n/g, '\r\n'); 
+      
+      const encoder = new TextEncoder();
+      const tomlBytes = encoder.encode(tomlText);
+      
+      const hashBuffer = await crypto.subtle.digest('SHA-256', tomlBytes);
+      
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+      
+      return hashHex;
+    }
+
+    return undefined;
+
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error('An unknown error occurred');
+    }
+  }
+}
+
 export {
   getCommitHistory,
   fetchTOML,
   fetchTOMLFromConfigUrl,
+  getTOMLFileHash,
 };

@@ -6,14 +6,19 @@ import ProjectInfoModal from './utils/ProjectInfoModal.jsx';
 import { getDemoConfigData } from '../constants/demoConfigData';
 import { refreshLocalStorage, setProjectId, loadConfigData } from '../service/StateService';
 import { projectCardModalOpen } from '../utils/store.js';
-import { convertGitHubLink } from '../utils/editLinkFunctions';
+import { convertGitHubLink, getAuthorRepo } from '../utils/editLinkFunctions';
+import { getProjectFromName } from '../service/ReadContractService';
+import { fetchTOMLFromConfigUrl } from '../service/GithubService';
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);
   const [projects, setProjects] = useState(undefined);
   const [filteredProjects, setFilteredProjects] = useState(undefined);
   const [searchTerm, setSearchTerm] = useState('');
-  const [category, setCategory] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInOnChain, setIsInOnChain] = useState(false);
+  const [configInfo, setConfigInfo] = useState();
+  const [registerButtonVisible, setRegisterButtonVisible] = useState(false);
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [projectInfo, setProjectInfo] = useState(null);
@@ -38,13 +43,22 @@ const ProjectList = () => {
 
   useEffect(() => {
     if (projects) {
+      setRegisterButtonVisible(false);
       const filtered = projects.filter(project =>
-        project?.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (category === 'all')
+        project?.projectName.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredProjects(filtered);
+
+      if (searchTerm && filtered.length === 0) {
+        const timer = setTimeout(() => {
+          checkProjectOnChain(searchTerm);
+          setRegisterButtonVisible(true);
+        }, 1000);
+
+        return () => clearTimeout(timer);
+      }
     }
-  }, [searchTerm, category, projects]);
+  }, [searchTerm, projects]);
 
   useEffect(() => {
     setModalOpen(isProjectInfoModalOpen);
@@ -71,6 +85,65 @@ const ProjectList = () => {
     window.location.href = '/register';
   }
 
+  const checkProjectOnChain = async (projectName) => {
+    console.log("search:", projectName);
+    setIsLoading(true);
+    try {
+      const project = await getProjectFromName(projectName);
+      if (project && project.name && project.config && project.maintainers) {
+        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+        if (tomlData) {
+          const configData = {
+            projectName: project.name,
+            logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
+            thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
+            description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
+            companyName: tomlData.DOCUMENTATION?.ORG_NAME || "",
+            officials: {
+              websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
+              githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
+            },
+            socialLinks: {
+              ...(tomlData.DOCUMENTATION?.ORG_TWITTER && { twitter: tomlData.DOCUMENTATION.ORG_TWITTER }),
+              ...(tomlData.DOCUMENTATION?.ORG_TELEGRAM && { telegram: tomlData.DOCUMENTATION.ORG_TELEGRAM }),
+              ...(tomlData.DOCUMENTATION?.ORG_DISCORD && { discord: tomlData.DOCUMENTATION.ORG_DISCORD }),
+              ...(tomlData.DOCUMENTATION?.ORG_INSTAGRAM && { instagram: tomlData.DOCUMENTATION.ORG_INSTAGRAM }),
+              ...(tomlData.DOCUMENTATION?.ORG_FACEBOOK && { facebook: tomlData.DOCUMENTATION.ORG_FACEBOOK }),
+              ...(tomlData.DOCUMENTATION?.ORG_REDDIT && { reddit: tomlData.DOCUMENTATION.ORG_REDDIT }),
+            },
+            authorGithubNames: tomlData.PRINCIPALS?.map((p) => p.github) || [],
+            maintainersAddresses: tomlData.ACCOUNTS || [],
+          };
+          setConfigInfo(configData);
+        } else {
+          // alert("Can not read config data.");
+          const configData = {
+            projectName: project.name,
+            logoImageLink: undefined,
+            thumbnailImageLink: "",
+            description: "",
+            companyName: "",
+            officials: {
+              githubLink: project.config.url,
+            },
+            socialLinks: {
+            },
+            authorGithubNames: [],
+            maintainersAddresses: project.maintainers,
+          };
+          setConfigInfo(configData);
+        }
+        setIsInOnChain(true);
+      } else {
+        setIsInOnChain(false);
+      }
+    } catch (error) {
+      console.error('Error checking project on-chain:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="project-list-container">
       <div className="filters flex items-center gap-2 sm:gap-4 mb-4">
@@ -89,7 +162,7 @@ const ProjectList = () => {
           >
             <img src='/icons/search.svg' width={20} height={20} className='icon-search'/>
           </div>
-          </div>
+        </div>
       </div>
       
       {filteredProjects !== undefined && (
@@ -100,15 +173,26 @@ const ProjectList = () => {
             ))}
           </div>
         ) : (
-          <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
-            {/* <p className="px-3 py-1 text-base sm:text-lg font-semibold border-2 border-zinc-700 rounded-lg">No projects found</p> */}
-            <button 
-              className="register-btn mr-2 px-3 sm:px-4 py-2 bg-black text-white text-2xl sm:text-3xl rounded-lg"
-              onClick={handleRegister}
-            >
-              Register
-            </button>
-          </div>
+          isLoading ? (
+            <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
+              <p className="px-3 py-1 text-base sm:text-lg font-semibold border-2 border-zinc-700 rounded-lg"> looking if the project is registered on chain...</p>
+            </div>
+          ) : (
+            isInOnChain ? (
+              <ProjectCard key={1} config={configInfo} />
+            ) : (
+              registerButtonVisible && (
+                <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
+                  <button 
+                    className="register-btn mr-2 px-3 sm:px-4 py-2 bg-black text-white text-2xl sm:text-3xl rounded-lg"
+                    onClick={handleRegister}
+                  >
+                    Register
+                  </button>
+                </div>
+              )
+            )
+          )
         )
       )}
 

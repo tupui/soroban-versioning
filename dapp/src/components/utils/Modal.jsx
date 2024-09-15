@@ -2,9 +2,20 @@ import React from 'react';
 
 const Modal = ({ id, title, children, onClose }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div id={id} className="modal px-3 sm:px-6 pt-3 pb-4 rounded-lg shadow-xl bg-white">
-        <div className="flex justify-between items-center mb-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[9999]"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        id={id} 
+        className="modal px-3 sm:px-6 pt-3 pb-4 rounded-lg shadow-xl bg-white my-4 max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-2 md:mb-4">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
             {title && <span className="bg-lime px-2 py-1 rounded-lg inline-block">{title}</span>}
           </h2>

@@ -22,7 +22,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
 
   return (
     <Modal id={id} title="" onClose={onClose}>
-      <div className="space-y-6 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-full md:max-w-[800px]">
+      <div className="space-y-4 sm:space-y-6 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-full md:max-w-[800px]">
         {projectInfo && Object.keys(projectInfo).length > 0 ? (
           <>
             <div className="flex items-center space-x-4">
@@ -31,10 +31,10 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
               } */}
               <h2 id="view-modal-project-name" className="text-2xl sm:text-3xl font-bold">{projectInfo.projectName || "No project name"}</h2>
             </div>
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-6">
               {/* <img id="project-thumbnail" src={projectInfo?.thumbnailImageLink || "/fallback-image.jpg"} alt="Project Thumbnail" className="w-full md:w-[40%] object-cover rounded-lg" /> */}
-              <img id="project-thumbnail" src={projectInfo?.logoImageLink || "/fallback-image.jpg"} alt="Project Thumbnail" className="w-full md:w-[40%] object-cover rounded-lg" />
-              <div className="flex-1 pt-2">
+              <img id="project-thumbnail" src={projectInfo?.logoImageLink || "/fallback-image.jpg"} alt="Project Thumbnail" className="w-64 sm:w-[40%] object-cover rounded-lg" />
+              <div className="flex-1 pt-2 w-full">
                 <p id="project-description" className="flex-1">{projectInfo?.description || "No description"}</p>
               </div>
             </div>
