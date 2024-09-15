@@ -54,6 +54,22 @@ export const demoConfigData = [
       "GDQP2KPQGKIHYJGXNUIYOMHARUARCA7DJT5FO2FFOOKY3B2WSQHG4W37"
     ],
   },
+  {
+    projectName: "fff",
+    logoImageLink: "https://github.com/0xExp-po/soroban-versioning/blob/main/website/static/img/logo.svg",
+    description: "Bringing Git hashes onto Stellar’s blockchain",
+    companyName: "Consulting Manao GmbH",
+    officials: {
+      websiteLink: "https://tansu.dev",
+      githubLink: "https://github.com/0xExp-po/soroban-versioning",
+    },
+    socialLinks: {
+    },
+    authorGithubNames: ["0xExp-po"],
+    maintainersAddresses: [
+      "GALDGLKIXR52A5EZTIRZ2IWEZ5PWN55IY2TLA7ORFPG2VVSFVV5PYNOB",
+    ],
+  },
 ];
 
 export function getDemoConfigData() {
