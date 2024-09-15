@@ -32,10 +32,12 @@ const ProjectCard = ({ config }) => {
               githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
             },
             socialLinks: {
-              twitter: "",
-              telegram: "",
-              discord: "",
-              instagram: "",
+              ...(tomlData.DOCUMENTATION?.ORG_TWITTER && { twitter: tomlData.DOCUMENTATION.ORG_TWITTER }),
+              ...(tomlData.DOCUMENTATION?.ORG_TELEGRAM && { telegram: tomlData.DOCUMENTATION.ORG_TELEGRAM }),
+              ...(tomlData.DOCUMENTATION?.ORG_DISCORD && { discord: tomlData.DOCUMENTATION.ORG_DISCORD }),
+              ...(tomlData.DOCUMENTATION?.ORG_INSTAGRAM && { instagram: tomlData.DOCUMENTATION.ORG_INSTAGRAM }),
+              ...(tomlData.DOCUMENTATION?.ORG_FACEBOOK && { facebook: tomlData.DOCUMENTATION.ORG_FACEBOOK }),
+              ...(tomlData.DOCUMENTATION?.ORG_REDDIT && { reddit: tomlData.DOCUMENTATION.ORG_REDDIT }),
             },
             authorGithubNames: tomlData.PRINCIPALS?.map((p) => p.github) || [],
             maintainersAddresses: tomlData.ACCOUNTS || [],
@@ -69,8 +71,8 @@ const ProjectCard = ({ config }) => {
         />
       </div>
       <div className="px-2 pb-2">
-        <h3 className="project-name text-xl font-bold mt-2 mb-1">{config.projectName}</h3>
-        <p className="description text-sm line-clamp-2 h-10">{config.description}</p>
+        <h3 className="project-name text-xl font-bold mt-2 mb-1">{config.projectName || "No project name"}</h3>
+        <p className="description text-sm line-clamp-2 h-10">{config.description || "No description"}</p>
         <div className="links mt-4 ml-2 flex gap-2 items-center">
           {config.officials.websiteLink && (
             <a href={config.officials.websiteLink} target="_blank" rel="noopener noreferrer">
@@ -90,7 +92,11 @@ const ProjectCard = ({ config }) => {
             )
           ))}
         </div>
-        <p className="company-name mt-3 text-right">by <span className="font-bold">{config.companyName}</span></p>
+        {config.companyName ? (
+          <p className="company-name mt-3 text-right">by <span className="font-bold">{config.companyName}</span></p>
+        ) : (
+          <p className="company-name mt-3 text-right">No company name</p>
+        )}
       </div>
     </div>
   );
