@@ -13,8 +13,8 @@
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
     "typecheck": "tsc",
-    "format:mdx": "prettier --write \"{docs,src/pages}/**/*.{md,mdx}\"",
-    "check:mdx": "prettier -c \"{docs,src/pages}/**/*.{md,mdx}\""
+    "format:mdx": "prettier --write \"{blog,docs,src/pages}/**/*.{md,mdx}\"",
+    "check:mdx": "prettier -c \"{blog,docs,src/pages}/**/*.{md,mdx}\""
   },
   "dependencies": {
     "@docusaurus/core": "3.5.2",

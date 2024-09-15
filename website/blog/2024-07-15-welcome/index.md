@@ -52,5 +52,3 @@ In order to facilitate the use of the Soroban Versioning smart contract, we will
 Maintainers will be able to register and administer many aspects of their projects. From adjusting the list of maintainers to update the last hash. Anyone will be able to view the projects, their configurations and the Git history.
 
 This will be achieved through a backend infrastructure by linking on-chain data with what is available on GitHub.
-
-

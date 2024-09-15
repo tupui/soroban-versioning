@@ -1,7 +1,7 @@
 soroban:
   label: soroban
   permalink: /soroban
-  description: Soroban Smart Contract
+  description: Stellar Smart Contract
 
 scf:
   label: scf

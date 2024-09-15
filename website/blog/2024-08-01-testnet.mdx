@@ -1,0 +1,37 @@
+---
+slug: testnet
+title: testnet
+authors: pamphile
+tags: [soroban, scf]
+---
+
+A quick update 😃 The project is progressing very well and the contract is on testnet!
+
+<!-- truncate -->
+
+## Contract
+
+The new address is https://stellar.expert/explorer/testnet/contract/CAP52ERGUZ65UNPHP36CQBHYUPEUG2TT4NPVEV7CREWRT7UCPD7PRWEE if you want to have a look.
+
+## Register a new project
+
+- Automatically check for an existing Soroban Domain (was actually not part of the deliverable but I thought it was necessary 🤘) and create one with the project name. Still figuring things out, but I think that it is a fairly good anti-abuse measure as people need to put collateral for a domain to register a project on Tansu.
+- Push a new hash
+- Get hash
+- All these trigger events
+
+## Backend
+
+- Pre-commit hook machinery working. I am actually using it everytime I push. This allows us to monitor things like fees and general behaviour of the system. Get a feel for it.
+- Event handling: DB setup and event ingestion, consumption and listeners parts are there.
+- Small Python library for event handling helpers, tansu on PyPi.
+
+## Next up
+
+- POC of dApp is on the way (hopefully I can share news next week).
+- Backend FastAPI for events and CRUD endpoints for the dApp
+- Deploy the DB (we have a domain name, but nothing to show yet. Remember, design is my passion 😅 )
+- Work on the config file
+- Lot of small things, and cool stuff like continuous deployment for the contract (already there for the Python part.) Oh and I participated in the effort to improve the online doc of Soroban. Thanks to the knowledge I am getting while building this project, I was able to make 2 contributions (events and SAC testing). Maybe another one incoming.
+
+If you want to follow a bit closely what we do, you can check out our project board https://github.com/users/tupui/projects/1 and please ask us questions and we are more than happy to get feedbacks 🙂 Thanks everyone for following us 🚀
