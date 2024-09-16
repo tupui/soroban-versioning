@@ -1,8 +1,8 @@
 import axios from "axios";
 import toml from "toml";
 
-import type { CommitData, FormattedCommit } from '../types/github';
-import { getGithubContentUrl, getGithubContentUrlFromConfigUrl } from '../utils/editLinkFunctions';
+import type { FormattedCommit } from '../types/github';
+import { getAuthorRepo, getGithubContentUrl, getGithubContentUrlFromConfigUrl } from '../utils/editLinkFunctions';
 
 async function getCommitHistory(
   username: string,
@@ -138,7 +138,7 @@ async function getTOMLFileHash(configUrl: string) {
   }
 }
 
-async function getCommitDataFromSha(owner: string, repo: string, sha: string): Promise<CommitData> {
+async function getCommitDataFromSha(owner: string, repo: string, sha: string): Promise<any> {
   const url = `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`;
   const response = await fetch(url);
   
@@ -147,13 +147,16 @@ async function getCommitDataFromSha(owner: string, repo: string, sha: string): P
   }
 
   const data = await response.json();
-  return {
-    sha: data.sha,
-    message: data.commit.message,
-    author: data.commit.author.name,
-    date: new Date(data.commit.author.date),
-    url: data.html_url
-  };
+  return data;
+}
+
+async function getLatestCommitData(configUrl: string, sha: string): Promise<any> {
+  const { username, repoName } = getAuthorRepo(configUrl);
+  if (!username || !repoName) {
+    return;
+  }
+
+  return getCommitDataFromSha(username, repoName, sha);
 }
 
 export {
@@ -162,4 +165,5 @@ export {
   fetchTOMLFromConfigUrl,
   getTOMLFileHash,
   getCommitDataFromSha,
+  getLatestCommitData,
 };
