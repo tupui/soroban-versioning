@@ -117,8 +117,6 @@ async function getTOMLFileHash(configUrl: string) {
 
       let tomlText = await response.text();
 
-      tomlText = tomlText.replace(/\r?\n/g, "\r\n");
-
       const encoder = new TextEncoder();
       const tomlBytes = encoder.encode(tomlText);
 
