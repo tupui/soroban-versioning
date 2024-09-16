@@ -483,68 +483,57 @@ import ModalInput from "./utils/ModalInput.astro";
           let tomlFileHash;
           try {
             tomlFileHash = await getTOMLFileHash(projectInfo.config.url);
-          } catch (error) {
-            const failedBadge = document.createElement("div");
-            failedBadge.className =
-              "flex items-center space-x-2 px-3 py-1 rounded-full bg-red-200";
+          } catch (error) {}
 
-            const icon = document.createElement("img");
-            icon.className = "w-5 h-5";
+          const configComponent = document.createElement("div");
+          configComponent.className =
+            "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
+
+          const icon = document.createElement("img");
+          icon.className = "w-5 h-5";
+
+          const text = document.createElement("span");
+          text.className = "text-sm sm:text-base";
+          text.textContent = "Configuration";
+
+          if (tomlFileHash && projectConfigHash === tomlFileHash) {
+            configComponent.classList.add("bg-lime");
+            icon.src = "/icons/check.svg";
+            icon.alt = "Check";
+          } else if (tomlFileHash) {
+            configComponent.classList.add("bg-orange-200");
             icon.src = "/icons/failed.svg";
             icon.alt = "Failed";
-
-            const text = document.createElement("span");
-            text.textContent = "Configuration";
-
-            failedBadge.appendChild(icon);
-            failedBadge.appendChild(text);
-            syncStatusContainer.appendChild(failedBadge);
+          } else {
+            configComponent.classList.add("bg-red-200");
+            icon.src = "/icons/failed.svg";
+            icon.alt = "Failed";
           }
 
-          if (tomlFileHash) {
-            const configComponent = document.createElement("div");
-            configComponent.className =
-              "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
-
-            const icon = document.createElement("img");
-            icon.className = "w-5 h-5";
-
-            const text = document.createElement("span");
-            text.className = "text-sm sm:text-base";
-            text.textContent = "Configuration";
-
-            if (projectConfigHash === tomlFileHash) {
-              configComponent.classList.add("bg-lime");
-              icon.src = "/icons/check.svg";
-              icon.alt = "Check";
-            } else {
-              configComponent.classList.add("bg-orange-200");
-              icon.src = "/icons/failed.svg";
-              icon.alt = "Failed";
-            }
-
-            const popup = document.createElement("div");
-            popup.className =
-              "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
-            if (projectConfigHash === tomlFileHash) {
-              popup.innerHTML =
-                '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> on-chain hash matches the hash of the file on GitHub</p>';
-            } else {
-              popup.innerHTML =
-                '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> on-chain hash does not match the hash of the file on GitHub</p>';
-            }
-
-            const triangle = document.createElement("div");
-            triangle.className =
-              "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
-            popup.appendChild(triangle);
-
-            configComponent.appendChild(icon);
-            configComponent.appendChild(text);
-            configComponent.appendChild(popup);
-
-            syncStatusContainer.appendChild(configComponent);
+          const popup = document.createElement("div");
+          popup.className =
+            "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
+          if (tomlFileHash && projectConfigHash === tomlFileHash) {
+            popup.innerHTML =
+              '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> on-chain hash matches the hash of the file on GitHub</p>';
+          } else if (tomlFileHash) {
+            popup.innerHTML =
+              '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> on-chain hash does not match the hash of the file on GitHub</p>';
+          } else {
+            popup.innerHTML =
+              '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> not found on GitHub</p>';
           }
+
+          const triangle = document.createElement("div");
+          triangle.className =
+            "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
+          popup.appendChild(triangle);
+
+          configComponent.appendChild(icon);
+          configComponent.appendChild(text);
+          configComponent.appendChild(popup);
+
+          syncStatusContainer.appendChild(configComponent);
 
           // Add commit badge
           const latestSha = loadProjectLatestSha();
