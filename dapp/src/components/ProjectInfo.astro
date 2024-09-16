@@ -501,9 +501,9 @@ import ModalInput from "./utils/ModalInput.astro";
             const popup = document.createElement("div");
             popup.className = "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
             if (projectConfigHash === tomlFileHash) {
-              popup.innerHTML = '<p class="text-sm w-36 sm:w-max"><a href="/docs" target="_blank" class="underline text-blue-400">tansu.toml</a> file of github is valid with on-chain hash</p>';
+              popup.innerHTML = '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> file of github is valid with on-chain hash</p>';
             } else {
-              popup.innerHTML = '<p class="text-sm w-36 sm:w-max"><a href="/docs" target="_blank" class="underline text-blue-400">tansu.toml</a> file is invalid with on-chain hash or there isn\'t in github</p>';
+              popup.innerHTML = '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> file is invalid with on-chain hash or there isn\'t in github</p>';
             }
             
             const triangle = document.createElement("div");
