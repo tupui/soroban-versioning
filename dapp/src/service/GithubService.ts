@@ -1,11 +1,8 @@
 import axios from "axios";
 import toml from "toml";
 
-import type { FormattedCommit } from "../types/github";
-import {
-  getGithubContentUrl,
-  getGithubContentUrlFromConfigUrl,
-} from "../utils/editLinkFunctions";
+import type { CommitData, FormattedCommit } from '../types/github';
+import { getGithubContentUrl, getGithubContentUrlFromConfigUrl } from '../utils/editLinkFunctions';
 
 async function getCommitHistory(
   username: string,
@@ -141,4 +138,28 @@ async function getTOMLFileHash(configUrl: string) {
   }
 }
 
-export { getCommitHistory, fetchTOML, fetchTOMLFromConfigUrl, getTOMLFileHash };
+async function getCommitDataFromSha(owner: string, repo: string, sha: string): Promise<CommitData> {
+  const url = `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`;
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    throw new Error(`GitHub API request failed: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return {
+    sha: data.sha,
+    message: data.commit.message,
+    author: data.commit.author.name,
+    date: new Date(data.commit.author.date),
+    url: data.html_url
+  };
+}
+
+export {
+  getCommitHistory,
+  fetchTOML,
+  fetchTOMLFromConfigUrl,
+  getTOMLFileHash,
+  getCommitDataFromSha,
+};
