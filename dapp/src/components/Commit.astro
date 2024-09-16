@@ -47,17 +47,17 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
   import { commitHash } from "../service/WriteContractService";
   import { loadProjectInfo } from "../service/StateService";
   import { loadedPublicKey } from "./stellar-wallets-kit";
-  import { latestCommit } from "../utils/store";
+  import { latestCommit, projectInfoLoaded } from "../utils/store";
 
   document.addEventListener("astro:page-load", () => {
     function updateCommitSectionVisibility() {
       const projectInfo = loadProjectInfo();
-
+      
       if (projectInfo) {
         const connectedPublicKey = loadedPublicKey();
         const isMaintainer = connectedPublicKey
-          ? projectInfo.maintainers.includes(connectedPublicKey)
-          : false;
+        ? projectInfo.maintainers.includes(connectedPublicKey)
+        : false;
         const updateCommitSection = document.getElementById(
           "update-commit-section",
         );
@@ -66,9 +66,13 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
         }
       }
     }
-
+    
     // Call the function when the page loads
-    updateCommitSectionVisibility();
+    projectInfoLoaded.subscribe((loaded) => {
+      if (loaded) {
+        updateCommitSectionVisibility();
+      }
+    });
 
     const commit_hash = document.getElementById(
       "commit_hash",

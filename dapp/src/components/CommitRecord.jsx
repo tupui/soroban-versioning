@@ -40,7 +40,7 @@ const CommitRecord = ({
 
   return (
     <div
-      className={`commit-record relative bg-white pt-5 pb-3 px-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-start ${isLatestCommit ? "border-2 border-blue-300 bg-zinc-300" : ""}`}
+      className={`commit-record relative bg-white pt-5 pb-3 px-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-start ${isLatestCommit ? "border-2 border-lime bg-zinc-300" : ""}`}
       data-sha={sha}
       id={isLatestCommit ? "latest-commit-record" : undefined}
     >

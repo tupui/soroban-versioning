@@ -31,95 +31,99 @@ import ModalInput from "./utils/ModalInput.astro";
   >
     <div class="space-y-6 md:w-full">
       <div id="project-name" class="flex items-end space-x-2">
-        <h3 class="text-base sm:text-lg font-semibold pb-1 sm:pb-0.5">
-          Project Name:
-        </h3>
-        <p id="project-name-value" class="text-3xl font-bold"></p>
+        <p id="project-name-value" class="text-2xl sm:text-4xl font-bold"></p>
       </div>
-      <div id="project-maintainers" class="space-y-1">
-        <h3 class="text-base sm:text-lg font-semibold">Maintainers:</h3>
-        <ul class="list-disc list-outside pl-5"></ul>
+
+      <div class="flex flex-col md:flex-row gap-6">
+        <img
+          id="project-thumbnail"
+          src="/fallback-image.jpg"
+          alt="Project Thumbnail"
+          class="w-full md:w-[40%] object-cover rounded-lg"
+        />
+        <div class="flex-1 pt-2">
+          <p id="project-description" class="flex-1 text-base sm:text-lg">description</p>
+        </div>
       </div>
-      <div
-        class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center sm:gap-x-4"
-      >
-        <div id="project-link" class="flex items-center space-x-2 px-2 py-1">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"
-              clip-rule="evenodd"></path>
-          </svg>
-          <a
-            href="#"
-            id="github-link"
-            class="text-blue-600 hover:underline"
-            target="_blank"
-            rel="noopener noreferrer">Link to GitHub</a
-          >
+
+      <div class="grid grid-cols-1 sm:grid-cols-2">
+        <div id="project-maintainers" class="space-y-1">
+          <h3 class="text-base sm:text-lg md:text-2xl font-semibold">Maintainers</h3>
+          <ul class="list-disc list-outside pl-5"></ul>
         </div>
-        <div
-          id="view-commit-history"
-          class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              id="commit-icon-up"
-              fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
-              clip-rule="evenodd"></path>
-            <path
-              id="commit-icon-down"
-              class="hidden"
-              fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
-              clip-rule="evenodd"></path>
-          </svg>
-          <span id="view-commit-text">View Commit History</span>
+        <div id="project-organization" class="space-y-1">
+          <h3 class="text-base sm:text-lg md:text-2xl font-semibold">Organization</h3>
+          <p id="project-organization-name" class=""></p>
         </div>
-        <div
-          id="view-project-info"
-          class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-              clip-rule="evenodd"></path>
-          </svg>
-          <span>View Project Info</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2">
+        <div id="project-links">
+          <div class="hidden sm:block space-y-2">
+            <div class="flex flex-col">
+              <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">Official Links</h3>
+              <div id="official-links" class="flex flex-wrap gap-x-2 min-h-7"></div>
+            </div>
+      
+            <div class="flex flex-col">
+              <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">Social</h3>
+              <div id="social-links" class="flex flex-wrap gap-x-2 min-h-7"></div>
+            </div>
+          </div>
+          <div id="links" class="sm:hidden mb-4 flex gap-2 items-center"></div>
         </div>
-        <div
-          id="jump-to-latest-commit"
-          class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
-              clip-rule="evenodd"></path>
-          </svg>
-          <span>Jump to Latest Verified Commit</span>
+
+        <div>
+          <div class="flex flex-col">
+            <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">Syncronize status</h3>
+            <div id="project-sync-status" class="flex flex-wrap gap-2 min-h-7"></div>
+          </div>
+          <div>
+            <div class="min-h-7"></div>
+            <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center sm:gap-x-4">
+              <div
+                id="view-commit-history"
+                class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    id="commit-icon-up"
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
+                    clip-rule="evenodd"></path>
+                  <path
+                    id="commit-icon-down"
+                    class="hidden"
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                    clip-rule="evenodd"></path>
+                </svg>
+                <span id="view-commit-text">View Commit History</span>
+              </div>
+              <div
+                id="jump-to-latest-commit"
+                class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+                    clip-rule="evenodd"></path>
+                </svg>
+                <span>Jump to Latest Commit</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -191,45 +195,6 @@ import ModalInput from "./utils/ModalInput.astro";
   </div>
 </Modal>
 
-<Modal id="project-info-modal" title="">
-  <div
-    class="space-y-6 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-full md:max-w-[800px]"
-  >
-    <div class="flex items-center space-x-4">
-      <!-- <img id="project-logo" src="" alt="Project Logo" class="w-12 h-12 object-contain"> -->
-      <h2 id="view-modal-project-name" class="text-2xl sm:text-3xl font-bold">
-      </h2>
-    </div>
-
-    <div class="flex flex-col md:flex-row gap-6">
-      <img
-        id="project-thumbnail"
-        src="/fallback-image.jpg"
-        alt="Project Thumbnail"
-        class="w-full md:w-[40%] object-cover rounded-lg"
-      />
-      <div class="flex-1 pt-2">
-        <p id="project-description" class="flex-1"></p>
-      </div>
-    </div>
-
-    <div class="space-y-2">
-      <div class="flex flex-col">
-        <h3 class="font-semibold mb-2">Official Links</h3>
-        <div id="official-links" class="flex flex-wrap gap-2"></div>
-      </div>
-
-      <div class="flex flex-col">
-        <h3 class="font-semibold mb-2">Social</h3>
-        <div id="social-links" class="flex flex-wrap gap-2"></div>
-      </div>
-    </div>
-    <div class="flex justify-between items-start gap-6">
-      <p id="company-name" class=""></p>
-    </div>
-  </div>
-</Modal>
-
 <script>
   import { loadedPublicKey } from "./stellar-wallets-kit";
   import { updateConfig } from "../service/WriteContractService";
@@ -238,11 +203,12 @@ import ModalInput from "./utils/ModalInput.astro";
     initializeProjectState,
     loadConfigData,
     loadProjectInfo,
+    loadProjectLatestSha,
     setProject,
   } from "../service/StateService";
-  import type { ConfigData } from "../types/projectConfig";
   import { projectInfoLoaded } from "../utils/store";
   import { convertGitHubLink } from "../utils/editLinkFunctions";
+  import { getLatestCommitData, getTOMLFileHash } from "../service/GithubService";
 
   document.addEventListener("astro:page-load", () => {
     initializeProjectState();
@@ -260,12 +226,33 @@ import ModalInput from "./utils/ModalInput.astro";
         if (projectNameElement) {
           projectNameElement.textContent = projectInfo.name;
         }
+        const configData = loadConfigData();
+        if (!configData || Object.keys(configData).length == 0) {
+          alert("This project is missing a tansu.toml configuration file.");
+        }
+
+        const projectThumbnail = document.getElementById(
+          "project-thumbnail",
+        ) as HTMLImageElement;
+        const projectDescription = document.getElementById("project-description");
+
+        if (projectThumbnail) {
+          if (configData && configData.logoImageLink) {
+            projectThumbnail.src = convertGitHubLink(configData.logoImageLink) || "/fallback-image.jpg";
+          } else projectThumbnail.src = "/fallback-image.jpg";
+        }
+
+        if (projectDescription) {
+          if (configData) {
+            projectDescription.textContent = configData.description || "";
+          }
+        }
+
         const maintainersList = document.getElementById("project-maintainers");
         if (maintainersList) {
           const ul = maintainersList.querySelector("ul");
           if (ul) {
             ul.innerHTML = "";
-            const configData = loadConfigData();
             if (
               configData &&
               configData.authorGithubNames &&
@@ -330,13 +317,254 @@ import ModalInput from "./utils/ModalInput.astro";
             }
           }
         }
-        const githubLink = document.getElementById(
-          "github-link",
-        ) as HTMLAnchorElement;
-        if (githubLink) {
-          githubLink.href = `${projectInfo.config.url}`;
+
+        const organizationElement = document.getElementById("project-organization-name");
+        if (organizationElement) {
+          if (configData && configData.companyName) {
+            organizationElement.textContent = configData.companyName;
+          }  
         }
 
+        const officialLinks = document.getElementById("official-links");
+        const socialLinks = document.getElementById("social-links");
+        if (officialLinks) {
+          officialLinks.innerHTML = "";
+          if (configData && configData.officials) {
+            if (configData.officials.websiteLink) {
+              addLinkButton(
+                officialLinks,
+                "Website",
+                configData.officials.websiteLink,
+                "web",
+              );
+            }
+            if (configData.officials.githubLink) {
+              addLinkButton(
+                officialLinks,
+                "GitHub",
+                configData.officials.githubLink,
+                "github",
+              );
+            }
+          }
+        }
+
+        if (socialLinks) {
+          socialLinks.innerHTML = "";
+          if (configData && configData.socialLinks) {
+            if (configData.socialLinks.twitter) {
+              addLinkButton(
+                socialLinks,
+                "Twitter",
+                configData.socialLinks.twitter,
+                "twitter",
+              );
+            }
+            if (configData.socialLinks.telegram) {
+              addLinkButton(
+                socialLinks,
+                "Telegram",
+                configData.socialLinks.telegram,
+                "telegram",
+              );
+            }
+            if (configData.socialLinks.instagram) {
+              addLinkButton(
+                socialLinks,
+                "Instagram",
+                configData.socialLinks.instagram,
+                "instagram",
+              );
+            }
+            if (configData.socialLinks.discord) {
+              addLinkButton(
+                socialLinks,
+                "Discord",
+                configData.socialLinks.discord,
+                "discord",
+              );
+            }
+          }
+        }
+
+        const links = document.getElementById("links");
+        if (links) {
+          links.innerHTML = "";
+          if (configData && configData.officials) {
+            if (configData.officials.websiteLink) {
+              const websiteLink = document.createElement("a");
+              websiteLink.href = configData.officials.websiteLink;
+              websiteLink.target = "_blank";
+              websiteLink.rel = "noopener noreferrer";
+              
+              const websiteIcon = document.createElement("img");
+              websiteIcon.src = "/icons/web.svg";
+              websiteIcon.alt = "Website";
+              websiteIcon.className = "w-6 h-6";
+              
+              websiteLink.appendChild(websiteIcon);
+              links.appendChild(websiteLink);
+            }
+
+            if (configData.officials.githubLink) {
+              const githubLink = document.createElement("a");
+              githubLink.href = configData.officials.githubLink;
+              githubLink.target = "_blank";
+              githubLink.rel = "noopener noreferrer";
+              
+              const websiteIcon = document.createElement("img");
+              websiteIcon.src = "/icons/github.svg";
+              websiteIcon.alt = "Website";
+              websiteIcon.className = "w-5 h-5";
+              
+              githubLink.appendChild(websiteIcon);
+              links.appendChild(githubLink);
+            }
+          }
+
+          if (configData && configData.socialLinks) {
+            Object.entries(configData.socialLinks).forEach(([socialName, socialLink]) => {
+              if (socialLink) {
+                const linkElement = document.createElement("a");
+                linkElement.href = socialLink;
+                linkElement.target = "_blank";
+                linkElement.rel = "noopener noreferrer";
+                
+                const iconElement = document.createElement("img");
+                iconElement.src = `/icons/${socialName}.svg`;
+                iconElement.alt = socialName;
+                iconElement.className = "w-6 h-6";
+                
+                linkElement.appendChild(iconElement);
+                links.appendChild(linkElement);
+              }
+            });
+          }
+        }
+
+        const syncStatusContainer = document.getElementById("project-sync-status");
+        if (syncStatusContainer) {
+          syncStatusContainer.innerHTML = '';
+          
+          // Add configuration badge
+          const projectConfigHash = projectInfo.config.hash;
+          if (!projectConfigHash || typeof projectConfigHash !== 'string') {
+            alert("Error: Invalid project configuration hash");
+            return;
+          }
+          
+          let tomlFileHash;
+          try {
+            tomlFileHash = await getTOMLFileHash(projectInfo.config.url);
+          } catch (error) {
+            alert("Error: Can't read tansu.toml");
+            
+            const failedBadge = document.createElement("div");
+            failedBadge.className = "flex items-center space-x-2 px-3 py-1 rounded-full bg-red-200";
+            
+            const icon = document.createElement("img");
+            icon.className = "w-5 h-5";
+            icon.src = "/icons/failed.svg";
+            icon.alt = "Failed";
+            
+            const text = document.createElement("span");
+            text.textContent = "Configuration";
+            
+            failedBadge.appendChild(icon);
+            failedBadge.appendChild(text);
+            syncStatusContainer.appendChild(failedBadge);
+          }
+          
+          if (tomlFileHash) {
+            const configComponent = document.createElement("div");
+            configComponent.className = "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
+            
+            const icon = document.createElement("img");
+            icon.className = "w-5 h-5";
+            
+            const text = document.createElement("span");
+            text.className = "text-sm sm:text-base"
+            text.textContent = "Configuration";
+            
+            if (projectConfigHash === tomlFileHash) {
+              configComponent.classList.add("bg-lime");
+              icon.src = "/icons/check.svg";
+              icon.alt = "Check";
+            } else {
+              configComponent.classList.add("bg-orange-200");
+              icon.src = "/icons/failed.svg";
+              icon.alt = "Failed";
+            }
+            
+            const popup = document.createElement("div");
+            popup.className = "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
+            if (projectConfigHash === tomlFileHash) {
+              popup.innerHTML = '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> file of github is valid with on-chain hash</p>';
+            } else {
+              popup.innerHTML = '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> file is invalid with on-chain hash or there isn\'t in github</p>';
+            }
+            
+            const triangle = document.createElement("div");
+            triangle.className = "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
+            popup.appendChild(triangle);
+            
+            configComponent.appendChild(icon);
+            configComponent.appendChild(text);
+            configComponent.appendChild(popup);
+            
+            syncStatusContainer.appendChild(configComponent);
+          }
+
+          // Add commit badge
+          const latestSha = loadProjectLatestSha();
+          if (latestSha) {
+            const commitComponent = document.createElement("div");
+            commitComponent.className = "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
+
+            const commitIcon = document.createElement("img");
+            commitIcon.className = "w-5 h-5";
+
+            const commitText = document.createElement("span");
+            commitText.className = "text-sm sm:text-base";
+            commitText.textContent = "Commit";
+
+            const commitPopup = document.createElement("div");
+            commitPopup.className = "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
+
+            const commitTriangle = document.createElement("div");
+            commitTriangle.className = "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
+
+            try {
+              const latestCommit = await getLatestCommitData(projectInfo.config.url, latestSha);
+              
+              if (latestCommit && latestCommit.sha && latestCommit.sha === latestSha) {
+                commitComponent.classList.add("bg-lime");
+                commitIcon.src = "/icons/check.svg";
+                commitIcon.alt = "Check";
+                commitPopup.innerHTML = '<p class="text-sm w-36 sm:w-max">Latest SHA is valid in GitHub</p>';
+              } else {
+                commitComponent.classList.add("bg-orange-200");
+                commitIcon.src = "/icons/failed.svg";
+                commitIcon.alt = "Failed";
+                commitPopup.innerHTML = '<p class="text-sm w-36 sm:w-max">Latest SHA is invalid in GitHub</p>';            }
+            } catch (error) {
+              commitComponent.classList.add("bg-orange-200");
+              commitIcon.src = "/icons/failed.svg";
+              commitIcon.alt = "Failed";
+              commitPopup.innerHTML = '<p class="text-sm w-36 sm:w-max">Latest SHA is invalid in GitHub</p>';
+            }
+  
+            commitPopup.appendChild(commitTriangle);
+            commitComponent.appendChild(commitIcon);
+            commitComponent.appendChild(commitText);
+            commitComponent.appendChild(commitPopup);
+    
+            syncStatusContainer.appendChild(commitComponent);
+          } else {
+            alert("Can not read latest sha.");
+          }
+        }
+        
         // Update modal content
         const modalProjectName = document.getElementById(
           "update-modal-project-name",
@@ -527,120 +755,6 @@ import ModalInput from "./utils/ModalInput.astro";
     window.addEventListener("walletConnected", (_event: Event) => {
       updateUpgradeConfigButtonVisibility();
     });
-
-    const viewProjectInfo = document.getElementById("view-project-info");
-    const projectInfoModal = document.getElementById(
-      "project-info-modal",
-    ) as HTMLDialogElement;
-
-    if (viewProjectInfo && projectInfoModal) {
-      viewProjectInfo.addEventListener("click", async () => {
-        const projectInfo = loadProjectInfo();
-        if (projectInfo) {
-          const configData = loadConfigData();
-          if (configData && Object.keys(configData).length > 0) {
-            updateProjectInfoModal(projectInfo, configData);
-            projectInfoModal.showModal();
-          } else {
-            alert("This project is missing a tansu.toml configuration file.");
-          }
-        } else {
-          console.error("Failed to load project info");
-        }
-      });
-    }
-
-    function updateProjectInfoModal(projectInfo: any, configData: ConfigData) {
-      const modalProjectName = document.getElementById(
-        "view-modal-project-name",
-      );
-      const projectLogo = document.getElementById(
-        "project-logo",
-      ) as HTMLImageElement;
-      const projectThumbnail = document.getElementById(
-        "project-thumbnail",
-      ) as HTMLImageElement;
-      const projectDescription = document.getElementById("project-description");
-      const officialLinks = document.getElementById("official-links");
-      const socialLinks = document.getElementById("social-links");
-      const companyName = document.getElementById("company-name");
-
-      if (modalProjectName) modalProjectName.textContent = projectInfo.name;
-      if (projectLogo) {
-        if (configData.logoImageLink) {
-          projectLogo.src = convertGitHubLink(configData.logoImageLink);
-          projectLogo.style.display = "block";
-        } else {
-          projectLogo.style.display = "none";
-        }
-      }
-      // if (projectThumbnail) projectThumbnail.src = configData.thumbnailImageLink || '/fallback-image.jpg';
-      if (projectThumbnail)
-        projectThumbnail.src =
-          convertGitHubLink(configData.logoImageLink) || "/fallback-image.jpg";
-      if (projectDescription)
-        projectDescription.textContent = configData.description || "";
-      if (companyName)
-        companyName.innerHTML = `Developed by   <strong class="font-extrabold"> ${configData.companyName || ""}</strong>`;
-
-      // Official Links
-      if (officialLinks) {
-        officialLinks.innerHTML = "";
-        if (configData.officials.websiteLink) {
-          addLinkButton(
-            officialLinks,
-            "Website",
-            configData.officials.websiteLink,
-            "web",
-          );
-        }
-        if (configData.officials.githubLink) {
-          addLinkButton(
-            officialLinks,
-            "GitHub",
-            configData.officials.githubLink,
-            "github",
-          );
-        }
-      }
-
-      // Social Links (example, add more as needed)
-      if (socialLinks) {
-        socialLinks.innerHTML = "";
-        if (configData.socialLinks.twitter) {
-          addLinkButton(
-            socialLinks,
-            "Twitter",
-            configData.socialLinks.twitter,
-            "twitter",
-          );
-        }
-        if (configData.socialLinks.telegram) {
-          addLinkButton(
-            socialLinks,
-            "Telegram",
-            configData.socialLinks.telegram,
-            "telegram",
-          );
-        }
-        if (configData.socialLinks.instagram) {
-          addLinkButton(
-            socialLinks,
-            "Instagram",
-            configData.socialLinks.instagram,
-            "instagram",
-          );
-        }
-        if (configData.socialLinks.discord) {
-          addLinkButton(
-            socialLinks,
-            "Discord",
-            configData.socialLinks.discord,
-            "discord",
-          );
-        }
-      }
-    }
 
     function addLinkButton(
       container: HTMLElement,

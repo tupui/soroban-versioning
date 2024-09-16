@@ -190,12 +190,12 @@ const ProjectList = () => {
           <div>
             <div
               id="featured-projects-topic"
-              class="grid place-items-center gap-8 mb-1.5 mt-12 md:flex"
+              className="grid place-items-center gap-8 mb-1.5 mt-12 md:flex"
             >
-              <span class="text-2xl sm:text-4xl text-nowrap px-1.5 font-medium bg-lime rounded-md">
+              <span className="text-2xl sm:text-4xl text-nowrap px-1.5 font-medium bg-lime rounded-md">
                 Featured Projects
               </span>
-              <p class="text-2xl font-normal text-center md:text-start"></p>
+              <p className="text-2xl font-normal text-center md:text-start"></p>
             </div>
             <div className="project-list py-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
               {filteredProjects.map((project, index) => (
