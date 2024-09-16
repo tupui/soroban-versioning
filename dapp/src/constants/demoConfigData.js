@@ -16,23 +16,19 @@ export const demoConfigData = [
     ],
   },
   {
-    projectName: "scipy",
-    description: "SciPy library main repository",
-    companyName: "SciPy",
+    projectName: "SALib",
+    logoImageLink:
+      "https://raw.githubusercontent.com/SALib/SALib/main/docs/assets/logo.png",
+    description: "Sensitivity Analysis Library in Python",
+    companyName: "SALib",
     officials: {
-      websiteLink: "https://scipy.org/",
-      githubLink: "https://github.com/scipy/scipy",
+      websiteLink: "https://salib.readthedocs.io/",
+      githubLink: "https://github.com/SALib/SALib",
     },
-    socialLinks: {
-      twitter: "https://twitter.com/",
-      telegram: "https://t.me/",
-      discord: "https://discord.gg/",
-      instagram: "https://instagram.com/",
-    },
-    authorGithubNames: ["rgommers", "pv"],
+    socialLinks: {},
+    authorGithubNames: ["tupui"],
     maintainersAddresses: [
-      "GAJCCCRIRR7OQBEMWRYSUKNXQOHQXAMCPBXJYZD3kBLy6KPWxYv3W2C",
-      "GDNSSYSCSSJ76FER5WEEXME5G4MTCUBKDRQSKOYP36KUKVDB2VCMERS6",
+      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
     ],
   },
   // {
