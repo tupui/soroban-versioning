@@ -32,7 +32,7 @@ const ProjectCard = ({ config }) => {
             logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
             thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
             description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
-            companyName: tomlData.DOCUMENTATION?.ORG_NAME || "",
+            organizationName: tomlData.DOCUMENTATION?.ORG_NAME || "",
             officials: {
               websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
               githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
@@ -153,12 +153,14 @@ const ProjectCard = ({ config }) => {
               ),
           )}
         </div>
-        {config.companyName ? (
-          <p className="company-name mt-3 text-right">
-            by <span className="font-bold">{config.companyName}</span>
+        {config.organizationName ? (
+          <p className="organization-name mt-3 text-right">
+            by <span className="font-bold">{config.organizationName}</span>
           </p>
         ) : (
-          <p className="company-name mt-3 text-right">No company name</p>
+          <p className="organization-name mt-3 text-right">
+            No organization name
+          </p>
         )}
       </div>
     </div>

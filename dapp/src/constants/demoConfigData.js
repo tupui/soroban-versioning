@@ -4,7 +4,7 @@ export const demoConfigData = [
     logoImageLink:
       "https://github.com/tupui/soroban-versioning/blob/main/website/static/img/logo.svg",
     description: "Bringing Git hashes onto Stellar’s blockchain",
-    companyName: "Consulting Manao GmbH",
+    organizationName: "Consulting Manao GmbH",
     officials: {
       websiteLink: "https://tansu.dev",
       githubLink: "https://github.com/tupui/soroban-versioning",
@@ -20,7 +20,7 @@ export const demoConfigData = [
     logoImageLink:
       "https://raw.githubusercontent.com/SALib/SALib/main/docs/assets/logo.png",
     description: "Sensitivity Analysis Library in Python",
-    companyName: "SALib",
+    organizationName: "SALib",
     officials: {
       websiteLink: "https://salib.readthedocs.io/",
       githubLink: "https://github.com/SALib/SALib",
@@ -35,7 +35,7 @@ export const demoConfigData = [
   //   projectName: "salib",
   //   logoImageLink: "https://raw.githubusercontent.com/SALib/SALib/main/docs/assets/logo.png",
   //   description: "Python implementations of commonly used sensitivity analysis methods. Useful in systems modeling to calculate the effects of model inputs or exogenous factors on outputs of interest.",
-  //   companyName: " SALib",
+  //   organizationName: " SALib",
   //   officials: {
   //     websiteLink: "http://salib.github.io/SALib/",
   //     githubLink: "https://github.com/SALib/SALib",
@@ -54,7 +54,7 @@ export const demoConfigData = [
   //   projectName: "fff",
   //   logoImageLink: "https://github.com/0xExp-po/soroban-versioning/blob/main/website/static/img/logo.svg",
   //   description: "Bringing Git hashes onto Stellar’s blockchain",
-  //   companyName: "Consulting Manao GmbH",
+  //   organizationName: "Consulting Manao GmbH",
   //   officials: {
   //     websiteLink: "https://tansu.dev",
   //     githubLink: "https://github.com/0xExp-po/soroban-versioning",

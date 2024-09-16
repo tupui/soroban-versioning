@@ -18,8 +18,11 @@ import ModalInput from "./utils/ModalInput.astro";
         <ModalInput
           id="project_name"
           name="project_name"
-          placeholder="Project name"
+          placeholder="Project name (lowercase, only chars)"
           required
+          minlength="4"
+          maxlength="15"
+          onkeyup="this.value=this.value.replace(/[^a-z]/g,'');"
         />
       </label>
       <label class="block mb-2 text-base font-medium text-black">

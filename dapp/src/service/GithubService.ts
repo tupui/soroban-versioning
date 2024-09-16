@@ -1,8 +1,12 @@
 import axios from "axios";
 import toml from "toml";
 
-import type { FormattedCommit } from '../types/github';
-import { getAuthorRepo, getGithubContentUrl, getGithubContentUrlFromConfigUrl } from '../utils/editLinkFunctions';
+import type { FormattedCommit } from "../types/github";
+import {
+  getAuthorRepo,
+  getGithubContentUrl,
+  getGithubContentUrlFromConfigUrl,
+} from "../utils/editLinkFunctions";
 
 async function getCommitHistory(
   username: string,
@@ -138,10 +142,14 @@ async function getTOMLFileHash(configUrl: string) {
   }
 }
 
-async function getCommitDataFromSha(owner: string, repo: string, sha: string): Promise<any> {
+async function getCommitDataFromSha(
+  owner: string,
+  repo: string,
+  sha: string,
+): Promise<any> {
   const url = `https://api.github.com/repos/${owner}/${repo}/commits/${sha}`;
   const response = await fetch(url);
-  
+
   if (!response.ok) {
     throw new Error(`GitHub API request failed: ${response.statusText}`);
   }
@@ -150,7 +158,10 @@ async function getCommitDataFromSha(owner: string, repo: string, sha: string): P
   return data;
 }
 
-async function getLatestCommitData(configUrl: string, sha: string): Promise<any> {
+async function getLatestCommitData(
+  configUrl: string,
+  sha: string,
+): Promise<any> {
   const { username, repoName } = getAuthorRepo(configUrl);
   if (!username || !repoName) {
     return;

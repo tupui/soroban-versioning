@@ -52,12 +52,12 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
   document.addEventListener("astro:page-load", () => {
     function updateCommitSectionVisibility() {
       const projectInfo = loadProjectInfo();
-      
+
       if (projectInfo) {
         const connectedPublicKey = loadedPublicKey();
         const isMaintainer = connectedPublicKey
-        ? projectInfo.maintainers.includes(connectedPublicKey)
-        : false;
+          ? projectInfo.maintainers.includes(connectedPublicKey)
+          : false;
         const updateCommitSection = document.getElementById(
           "update-commit-section",
         );
@@ -66,7 +66,7 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
         }
       }
     }
-    
+
     // Call the function when the page loads
     projectInfoLoaded.subscribe((loaded) => {
       if (loaded) {

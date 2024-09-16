@@ -3,7 +3,7 @@ export interface ConfigData {
   logoImageLink: string;
   thumbnailImageLink: string;
   description: string;
-  companyName: string;
+  organizationName: string;
   officials: {
     websiteLink: string;
     githubLink: string;

@@ -94,7 +94,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
               </div>
 
               <div className="flex flex-col">
-                <h3 className="font-semibold mb-2">Social</h3>
+                <h3 className="font-semibold mb-2">Socials</h3>
                 <div id="social-links" className="flex flex-wrap gap-2">
                   {projectInfo?.socialLinks &&
                     Object.entries(projectInfo.socialLinks).map(
@@ -126,16 +126,22 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-start gap-x-4">
-              {projectInfo?.companyName ? (
-                <p id="company-name" className="w-full sm:w-auto text-left">
+              {projectInfo?.organizationName ? (
+                <p
+                  id="organization-name"
+                  className="w-full sm:w-auto text-left"
+                >
                   Developed by{" "}
                   <span className="font-extrabold">
-                    {projectInfo.companyName}
+                    {projectInfo.organizationName}
                   </span>
                 </p>
               ) : (
-                <p id="company-name" className="w-full sm:w-auto text-left">
-                  No company name
+                <p
+                  id="organization-name"
+                  className="w-full sm:w-auto text-left"
+                >
+                  No organization name
                 </p>
               )}
               <button

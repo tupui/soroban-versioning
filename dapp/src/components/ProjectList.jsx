@@ -102,7 +102,7 @@ const ProjectList = () => {
             logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
             thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
             description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
-            companyName: tomlData.DOCUMENTATION?.ORG_NAME || "",
+            organizationName: tomlData.DOCUMENTATION?.ORG_NAME || "",
             officials: {
               websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
               githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
@@ -138,7 +138,7 @@ const ProjectList = () => {
             logoImageLink: undefined,
             thumbnailImageLink: "",
             description: "",
-            companyName: "",
+            organizationName: "",
             officials: {
               githubLink: project.config.url,
             },
@@ -166,7 +166,7 @@ const ProjectList = () => {
         <div className="search-container relative w-1/2">
           <input
             type="text"
-            placeholder="Search projects..."
+            placeholder="Search or register a project..."
             className="w-full border rounded-2xl pl-3 sm:pl-4 pr-6 sm:pr-8 py-1 sm:py-2"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
