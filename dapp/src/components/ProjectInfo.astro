@@ -237,9 +237,9 @@ import ModalInput from "./utils/ModalInput.astro";
         const projectDescription = document.getElementById("project-description");
 
         if (projectThumbnail) {
-          if (configData) {
+          if (configData && configData.logoImageLink) {
             projectThumbnail.src = convertGitHubLink(configData.logoImageLink) || "/fallback-image.jpg";
-          }
+          } else projectThumbnail.src = "/fallback-image.jpg";
         }
 
         if (projectDescription) {
@@ -473,8 +473,6 @@ import ModalInput from "./utils/ModalInput.astro";
             failedBadge.appendChild(icon);
             failedBadge.appendChild(text);
             syncStatusContainer.appendChild(failedBadge);
-            
-            return;
           }
           
           if (tomlFileHash) {
