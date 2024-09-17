@@ -29,7 +29,7 @@ import ModalInput from "./utils/ModalInput.astro";
   <div
     class="row items-center py-8 sm:py-12 px-4 sm:px-8 md:px-20 w-full md:py-10"
   >
-    <div class="space-y-6 md:w-full">
+    <div class="space-y-6 md:w-full sm:pl-4 md:pl-0">
       <div id="project-name" class="flex items-end space-x-2">
         <p id="project-name-value" class="text-2xl sm:text-4xl font-bold"></p>
       </div>
@@ -39,7 +39,7 @@ import ModalInput from "./utils/ModalInput.astro";
           id="project-thumbnail"
           src="/fallback-image.jpg"
           alt="Project Thumbnail"
-          class="w-full md:w-[40%] md:max-w-80 object-cover rounded-lg"
+          class="w-full md:w-[40%] max-w-40 sm:max-w-56 md:max-w-80 object-cover rounded-lg"
         />
 
         <div class="flex-1">
