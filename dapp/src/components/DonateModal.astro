@@ -1,0 +1,131 @@
+---
+---
+
+<div
+  id="donate-modal"
+  class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 hidden"
+>
+  <div
+    class="bg-white px-4 sm:px-8 md:px-12 py-8 rounded-2xl relative w-[530px] max-w-[90%]"
+  >
+    <button
+      id="close-donate-modal"
+      class="absolute top-3 right-3 text-zinc-600 hover:text-zinc-600"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="h-6 w-6"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+    
+    <div class="flex flex-col space-y-3 sm:space-y-6 md:space-y-8">
+      <div>
+        <h2 id="donate-modal-title" class="text-xl sm:text-2xl font-bold bg-lime py-1 sm:py-2 px-2 rounded-xl w-min">Contribute</h2>
+      </div>
+      
+      <div class="flex flex-col gap-1 w-full">
+        <div class="flex w-full">
+          <button class="amount-button flex-1 bg-zinc-800 border border-zinc-800 text-lg sm:text-xl md:text-2xl font-semibold text-white py-1 rounded-l-lg">10 XLM</button>
+          <button class="amount-button flex-1 bg-zinc-200 border border-zinc-300 text-lg sm:text-xl md:text-2xl font-semibold text-zinc-600 py-1">100 XLM</button>
+          <button class="amount-button flex-1 bg-zinc-200 border border-zinc-300 text-lg sm:text-xl md:text-2xl font-semibold text-zinc-600 py-1 rounded-r-lg">Other</button>
+        </div>
+        <div class="w-full h-[30px] sm:h-[38px]">
+          <div id="amount-input-container" class="hidden items-center">
+            <div class="flex items-center relative">
+              <span class="absolute left-2 sm:left-3 sm:py-0.5 pr-1 border-r-2 border-zinc-600">XLM</span>
+              <input
+                id="amount-input"
+                type="number"
+                class="w-[120px] sm:w-40 flex-1 border rounded-lg pl-12 sm:pl-14 pr-3 py-0.5 sm:py-1 text-base sm:text-lg text-right"
+                value="10"
+              />
+            </div>
+            <div class="flex w-full justify-center items-center">
+              <p class="text-sm sm:text-base">Minimum amount: 1 XLM</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      
+      <textarea placeholder="Say something nice..." rows="4" class="w-full border border-zinc-400 bg-zinc-200 rounded-xl p-2 resize-none focus:outline-none"></textarea>
+      
+      <div class="flex items-center">
+        <span class="mr-2">Platform tip:</span>
+        <span class="mr-2">0</span>
+        <span class="mr-2">XLM</span>
+        <div class="flex items-center relative">
+          <span class="absolute left-2 sm:left-3 sm:py-0.5 pr-1 border-r-2 border-zinc-600">XLM</span>
+          <input 
+            id="tip-amount-input" 
+            type="number" 
+            class="w-28 sm:w-36 flex-1 border rounded-lg pl-12 sm:pl-14 pr-3 py-0.5 sm:py-1 text-sm sm:text-base text-right" 
+            value=
+          />
+        </div>
+      </div>
+      
+      <div class="flex justify-center">
+        <button
+          id="contribute-button"
+          class="bg-zinc-800 text-white text-base sm:text-lg py-2 rounded-xl px-8 sm:px-12 w-max"
+        >
+          Contribute to <span id="project-name"></span>.xlm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const amountButtons = document.querySelectorAll('.amount-button');
+    const amountInputContainer = document.getElementById('amount-input-container');
+    const platformTipInput = document.querySelector('input[type="number"]');
+    const platformTipText = document.querySelector('span:last-of-type');
+
+    amountButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        amountButtons.forEach(btn => btn.classList.remove('bg-zinc-800', 'border-zinc-800', 'text-white'));
+        amountButtons.forEach(btn => btn.classList.add('bg-zinc-200', 'border-zinc-300', 'text-zinc-600'));
+        button.classList.remove('bg-zinc-200','border-zinc-300', 'text-zinc-600');
+        button.classList.add('bg-zinc-800','border-zinc-800', 'text-white');
+        
+        if (button.textContent?.trim() === 'Other') {
+          amountInputContainer?.classList.remove('hidden');
+          amountInputContainer?.classList.add('flex');
+        } else {
+          amountInputContainer?.classList.remove('flex');
+          amountInputContainer?.classList.add('hidden');
+        }
+      });
+    });
+
+    if (platformTipInput) {
+      platformTipInput.addEventListener('input', (e) => {
+        if (platformTipText) {
+          platformTipText.textContent = `${(e.target as HTMLInputElement).value} XLM`;
+        }
+      });
+    }
+
+    const modal = document.getElementById('donate-modal');
+    const closeButton = document.getElementById('close-donate-modal');
+
+    if (closeButton && modal) {
+      closeButton.addEventListener('click', () => {
+        modal.classList.add('hidden');
+      });
+    }
+  });
+</script>

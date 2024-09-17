@@ -5,6 +5,7 @@ import Loading from "./utils/Loading.astro";
 import CommitHistory from "./CommitHistory.jsx";
 import PrimaryButton from "./utils/PrimaryButton.astro";
 import ModalInput from "./utils/ModalInput.astro";
+import DonateModal from "./DonateModal.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row justify-between">
@@ -13,6 +14,14 @@ import ModalInput from "./utils/ModalInput.astro";
     description="Details about the project"
     id="project-name-topic"
   />
+  <div id="open-donate-modal-button" class="mb-1.5 mt-12 pr-3">
+    <PrimaryButton
+      wrapId="wrap-donate-modal"
+      dataAttr="data-donate-modal"
+      ariaControls="donate-modal"
+      buttonText="Support"
+    />
+  </div>
   <div id="open-update-config-modal-button" class="mb-1.5 mt-12 pr-3 hidden">
     <PrimaryButton
       wrapId="wrap-update-config"
@@ -215,6 +224,8 @@ import ModalInput from "./utils/ModalInput.astro";
   </div>
 </Modal>
 
+<DonateModal />
+
 <script>
   import { loadedPublicKey } from "./stellar-wallets-kit";
   import { updateConfig } from "../service/WriteContractService";
@@ -224,6 +235,7 @@ import ModalInput from "./utils/ModalInput.astro";
     loadConfigData,
     loadProjectInfo,
     loadProjectLatestSha,
+    loadProjectName,
     setProject,
   } from "../service/StateService";
   import { projectInfoLoaded } from "../utils/store.js";
@@ -648,6 +660,15 @@ import ModalInput from "./utils/ModalInput.astro";
         if (modalConfigHash) {
           modalConfigHash.value = projectInfo.config.hash;
         }
+
+        //Support modal content
+        const projectNameSpan = document.getElementById('contribute-button');
+        if (projectNameSpan) {
+          const loadedName =  loadProjectName();
+          if (loadedName) {
+            projectNameSpan.textContent = `Contribute to ${loadedName}.xlm`;
+          }
+        }
       }
     }
 
@@ -733,6 +754,17 @@ import ModalInput from "./utils/ModalInput.astro";
         }
       });
     }
+    
+    const supportButton = document.querySelector("[data-donate-modal]");
+    const donateModal = document.getElementById("donate-modal");
+
+    if (supportButton && donateModal) {
+      supportButton.addEventListener("click", () => {
+        donateModal.classList.remove("hidden");
+        donateModal.classList.add("flex");
+      });
+    }
+
 
     const viewCommitHistory = document.getElementById("view-commit-history");
     const jumpToLatestCommit = document.getElementById("jump-to-latest-commit");
