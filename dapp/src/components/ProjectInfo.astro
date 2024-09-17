@@ -453,6 +453,19 @@ import ModalInput from "./utils/ModalInput.astro";
               githubLink.appendChild(websiteIcon);
               links.appendChild(githubLink);
             }
+          } else {
+            const githubLink = document.createElement("a");
+            githubLink.href = projectInfo.config.url;
+            githubLink.target = "_blank";
+            githubLink.rel = "noopener noreferrer";
+
+            const websiteIcon = document.createElement("img");
+            websiteIcon.src = "/icons/github.svg";
+            websiteIcon.alt = "Website";
+            websiteIcon.className = "w-5 h-5";
+
+            githubLink.appendChild(websiteIcon);
+            links.appendChild(githubLink);
           }
 
           if (configData && configData.socialLinks) {
