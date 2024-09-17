@@ -662,11 +662,16 @@ import DonateModal from "./DonateModal.astro";
         }
 
         //Support modal content
-        const projectNameSpan = document.getElementById('contribute-button');
-        if (projectNameSpan) {
-          const loadedName =  loadProjectName();
-          if (loadedName) {
+        const loadedName =  loadProjectName();
+        if (loadedName) {
+          const projectNameSpan = document.getElementById('contribute-button');
+          if (projectNameSpan) {
             projectNameSpan.textContent = `Contribute to ${loadedName}.xlm`;
+          }
+          
+          const donateTipPopup = document.getElementById('donate-tip-popup');
+          if (donateTipPopup) {
+            donateTipPopup.textContent = `Help us run ${loadedName} sustainability`;
           }
         }
       }
