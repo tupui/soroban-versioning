@@ -1,15 +1,4 @@
 ---
-interface Props {
-  type?: string;
-  id: string;
-  name?: string;
-  placeholder?: string;
-  required?: boolean;
-  inputClass?: string;
-  minlength?: string;
-  maxlength?: string;
-}
-
 const {
   type = "text",
   id,
@@ -19,6 +8,7 @@ const {
   inputClass = "",
   minlength,
   maxlength,
+  onKeyUp,
   ...rest
 } = Astro.props;
 ---
@@ -32,5 +22,6 @@ const {
   required={required}
   minlength={minlength}
   maxlength={maxlength}
+  onkeyup={onKeyUp}
   {...rest}
 />
