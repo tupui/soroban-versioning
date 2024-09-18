@@ -1,5 +1,5 @@
 import { kit, loadedPublicKey } from "../components/stellar-wallets-kit";
-import StellarSdk from "@stellar/stellar-sdk";
+import * as StellarSdk from "@stellar/stellar-sdk";
 
 async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: string): Promise<boolean> {
   const senderPublicKey = loadedPublicKey();
@@ -14,7 +14,7 @@ async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: 
 
   try {
     // Fetch the sender's account details from the Stellar network
-    const server = new StellarSdk.Server(rpcUrl ?? "https://soroban-testnet.stellar.org:443");
+    const server = new StellarSdk.Horizon.Server(rpcUrl ?? "https://soroban-testnet.stellar.org:443");
     const account = await server.loadAccount(senderPublicKey);
 
     // Create the transaction
