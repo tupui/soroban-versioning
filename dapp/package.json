@@ -6,6 +6,7 @@
     "@creit.tech/sorobandomains-sdk": "^0.1.2",
     "@creit.tech/stellar-wallets-kit": "^1.0.0",
     "@nanostores/react": "^0.7.3",
+    "@stellar/stellar-sdk": "^12.3.0",
     "astro": "^4.2.4",
     "install": "^0.13.0",
     "js-sha3": "^0.9.3",
