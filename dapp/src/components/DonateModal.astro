@@ -94,6 +94,9 @@
 </div>
 
 <script>
+import { sendXLM } from "../service/PaymentService";
+import { getAddressFromDomain } from "../service/SorobanDomainContractService";
+
   document.addEventListener("astro:page-load", () => {
     const amountButtons = document.querySelectorAll('.amount-button');
     const amountInputContainer = document.getElementById('amount-input-container');
@@ -131,6 +134,24 @@
     if (closeButton && modal) {
       closeButton.addEventListener('click', () => {
         modal.classList.add('hidden');
+      });
+    }
+
+    const contributeButton = document.getElementById('contribute-button');
+    if (contributeButton) {
+      contributeButton.addEventListener('click', async () => {
+        console.log('Contribute button clicked');
+        const domainAddress = await getAddressFromDomain("tansu");
+        console.log("domainAddress:", domainAddress);
+        
+        const amountInput = document.getElementById('amount-input') as HTMLInputElement;
+        const tipAmountInput = document.getElementById('tip-amount-input') as HTMLInputElement;
+        
+        const amount = parseFloat(amountInput.value) || 0;
+        const tipAmount = parseFloat(tipAmountInput.value) || 0;
+        
+        const payment = await sendXLM(amount.toString(), tipAmount.toString(), import.meta.env.PUBLIC_TANSU_CONTRACT_ID);
+        console.log("donate:", payment);
       });
     }
   });
