@@ -43,7 +43,8 @@ export function getGithubContentUrlFromConfigUrl(
 ): string | undefined {
   const { username, repoName } = getAuthorRepo(configUrl);
   if (username && repoName) {
-    return getGithubContentUrl(username, repoName, "main/tansu.toml");
+    // use master as GitHub will do an automatic redirection to main
+    return getGithubContentUrl(username, repoName, "master/tansu.toml");
   }
   return undefined;
 }

@@ -1,11 +1,11 @@
 /// <reference types="node" resolution-mode="require"/>
-import {Buffer} from "buffer";
+import { Buffer } from "buffer";
 import {
   AssembledTransaction,
   Client as ContractClient,
   ClientOptions as ContractClientOptions,
 } from "@stellar/stellar-sdk/contract";
-import type {u32} from "@stellar/stellar-sdk/contract";
+import type { u32 } from "@stellar/stellar-sdk/contract";
 
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
@@ -45,13 +45,13 @@ export type DataKey = {
 };
 export type ProjectKey =
   | {
-  tag: "Key";
-  values: readonly [Buffer];
-}
+      tag: "Key";
+      values: readonly [Buffer];
+    }
   | {
-  tag: "LastHash";
-  values: readonly [Buffer];
-};
+      tag: "LastHash";
+      values: readonly [Buffer];
+    };
 
 export interface Config {
   hash: string;
