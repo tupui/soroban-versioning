@@ -61,14 +61,20 @@
       <textarea id="donate-message" placeholder="Say something nice..." rows="4" class="w-full border border-zinc-400 bg-zinc-200 rounded-xl p-2 resize-none focus:outline-none"></textarea>
       
       <div class="flex items-center">
-        <span class="mr-2 relative group">
+        <span class="mr-2 flex items-center">
           Platform tip:
-          <div class="absolute bottom-full -left-4 mb-2 hidden group-hover:block w-max max-w-[330px] sm:max-w-none">
-            <div id="donate-tip-popup" class="bg-zinc-800 text-white text-sm py-2 px-4 rounded-lg shadow-lg">
-              Help us run the Tansu platform sustainability
-              <div class="absolute top-full left-8 w-0 h-0 border-l-8 border-r-8 border-t-8 border-transparent border-t-zinc-800"></div>
+          <span class="relative group ml-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24">
+              <rect width="24" height="24" rx="2" fill="#3b82f6" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12.5 16h-1v-4h-1m1-4h.01M12 8v.01" stroke="white" fill="none" />
+            </svg>
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[330px] sm:max-w-none">
+              <div id="donate-tip-popup" class="bg-zinc-800 text-white text-sm py-2 px-4 rounded-lg shadow-lg relative">
+                Help us run the Tansu platform sustainability
+                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>
+              </div>
             </div>
-          </div>
+          </span>
         </span>
         <div class="flex items-center relative">
           <span class="absolute left-2 sm:left-3 sm:py-0.5 pr-1 border-r-2 border-zinc-600">XLM</span>
