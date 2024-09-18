@@ -7,7 +7,7 @@ ifndef network
 endif
 
 ifndef domain_contract_id
-	override domain_contract_id = CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7
+	override domain_contract_id = CCEYNQXUY3GQT4SM5MZOHZBYNLEOW66C36UD4YVBCZ37X5QNBOVTZO4P
 endif
 
 # Add help text after each target name starting with '\#\#'
@@ -110,7 +110,7 @@ contract_domain_init:
 		init \
 		--adm $(shell soroban keys address mando-$(network)) \
 		--node_rate 100 \
-		--col_asset $(shell soroban keys address mando-$(network)) \
+		--col_asset $(shell stellar contract id asset --asset native --network $(network) --source-account mando-$(network)) \
 		--min_duration 31536000 \
 		--allowed_tlds '[{"bytes": "786c6d"}]'
 
