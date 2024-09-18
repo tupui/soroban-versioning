@@ -7,7 +7,7 @@ ifndef network
 endif
 
 ifndef domain_contract_id
-	override domain_contract_id = CDODLZIO3OY5ZBCNYQALDZWLW2NN533WIDZUDNW2NRWJGLTWSABGSMH7
+	override domain_contract_id = $(shell cat .soroban/soroban_domain_id)
 endif
 
 # Add help text after each target name starting with '\#\#'
@@ -84,6 +84,14 @@ contract_deploy: contract_test contract_build-release  ## Deploy Soroban contrac
   		> .soroban/soroban_versioning_id && \
   	cat .soroban/soroban_versioning_id
 
+contract_domain_deploy:
+	stellar contract deploy \
+  		--wasm contracts/domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm \
+  		--source-account mando-$(network) \
+  		--network $(network) \
+  		> .soroban/soroban_domain_id && \
+  	cat .soroban/soroban_domain_id
+
 contract_init:
 	stellar contract invoke \
     	--source-account mando-$(network) \
@@ -92,6 +100,19 @@ contract_init:
     	-- \
     	init \
     	--admin $(shell soroban keys address mando-$(network))
+
+contract_domain_init:
+	stellar contract invoke \
+		--source-account mando-testnet \
+		--network testnet \
+		--id $(shell cat .soroban/soroban_domain_id) \
+		-- \
+		init \
+		--adm $(shell soroban keys address mando-$(network)) \
+		--node_rate 100 \
+		--col_asset $(shell stellar contract id asset --asset native --network $(network) --source-account mando-$(network)) \
+		--min_duration 31536000 \
+		--allowed_tlds '[{"bytes": "786c6d"}]'
 
 contract_upgrade: contract_build-release
 	stellar contract invoke \
@@ -129,9 +150,9 @@ contract_register:
     	register \
     	--maintainer $(shell soroban keys address mando-$(network)) \
     	--name tansu \
-    	--maintainers '[$(shell soroban keys address mando-$(network)),$(shell soroban keys address grogu-$(network))]' \
+    	--maintainers '["$(shell soroban keys address mando-$(network))", "$(shell soroban keys address grogu-$(network))"]' \
     	--url https://github.com/tupui/soroban-versioning \
-    	--hash da76cd6fdcc71d730306d23b121f8cc67d3eedda \
+    	--hash 920b7ffed638360e7259c4b6a4691ef947cfb9bc4ab1b3d6b7f0628c71e86b25 \
     	--domain_contract_id $(domain_contract_id)
 
 contract_commit:
