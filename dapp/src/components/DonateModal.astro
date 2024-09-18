@@ -95,13 +95,14 @@
 
 <script>
 import { sendXLM } from "../service/PaymentService";
-import { getAddressFromDomain } from "../service/SorobanDomainContractService";
+// import { getAddressFromDomain } from "../service/SorobanDomainContractService";
 
   document.addEventListener("astro:page-load", () => {
     const amountButtons = document.querySelectorAll('.amount-button');
     const amountInputContainer = document.getElementById('amount-input-container');
-    const platformTipInput = document.querySelector('input[type="number"]');
-    const platformTipText = document.querySelector('span:last-of-type');
+    const amountInput = document.getElementById('amount-input') as HTMLInputElement;
+    const platformTipInput = document.getElementById('tip-amount-input') as HTMLInputElement;
+    let selectedAmount = 10; // Default amount
 
     amountButtons.forEach((button) => {
       button.addEventListener('click', () => {
@@ -110,23 +111,18 @@ import { getAddressFromDomain } from "../service/SorobanDomainContractService";
         button.classList.remove('bg-zinc-200','border-zinc-300', 'text-zinc-600');
         button.classList.add('bg-zinc-800','border-zinc-800', 'text-white');
         
-        if (button.textContent?.trim() === 'Other') {
+        const buttonText = button.textContent?.trim();
+        if (buttonText === 'Other') {
           amountInputContainer?.classList.remove('hidden');
           amountInputContainer?.classList.add('flex');
+          selectedAmount = parseFloat(amountInput.value) || 0;
         } else {
           amountInputContainer?.classList.remove('flex');
           amountInputContainer?.classList.add('hidden');
+          selectedAmount = buttonText === '100 XLM' ? 100 : 10;
         }
       });
     });
-
-    if (platformTipInput) {
-      platformTipInput.addEventListener('input', (e) => {
-        if (platformTipText) {
-          platformTipText.textContent = `${(e.target as HTMLInputElement).value} XLM`;
-        }
-      });
-    }
 
     const modal = document.getElementById('donate-modal');
     const closeButton = document.getElementById('close-donate-modal');
@@ -140,17 +136,27 @@ import { getAddressFromDomain } from "../service/SorobanDomainContractService";
     const contributeButton = document.getElementById('contribute-button');
     if (contributeButton) {
       contributeButton.addEventListener('click', async () => {
-        console.log('Contribute button clicked');
-        const domainAddress = await getAddressFromDomain("tansu");
-        console.log("domainAddress:", domainAddress);
+        const amount = amountInputContainer?.classList.contains('flex') 
+          ? parseFloat(amountInput.value) || 0 
+          : selectedAmount;
+        const tipAmount = parseFloat(platformTipInput.value) || 0;
         
-        const amountInput = document.getElementById('amount-input') as HTMLInputElement;
-        const tipAmountInput = document.getElementById('tip-amount-input') as HTMLInputElement;
+        if (amount < 1) {
+          amountInput.style.border = '2px solid red';
+          const minAmountText = document.querySelector('#amount-input-container p') as HTMLElement;
+          if (minAmountText) {
+            minAmountText.style.color = 'red';
+          }
+          setTimeout(() => {
+            amountInput.style.border = '';
+            if (minAmountText) {
+              minAmountText.style.color = '';
+            }
+          }, 2000);
+          return;
+        }
         
-        const amount = parseFloat(amountInput.value) || 0;
-        const tipAmount = parseFloat(tipAmountInput.value) || 0;
-        
-        const payment = await sendXLM(amount.toString(), tipAmount.toString(), import.meta.env.PUBLIC_TANSU_CONTRACT_ID);
+        const payment = await sendXLM(amount.toString(), import.meta.env.PUBLIC_TANSU_CONTRACT_ID, tipAmount.toString());
         console.log("donate:", payment);
       });
     }
