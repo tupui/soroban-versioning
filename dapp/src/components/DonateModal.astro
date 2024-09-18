@@ -156,7 +156,7 @@ import { sendXLM } from "../service/PaymentService";
           return;
         }
         
-        const payment = await sendXLM(amount.toString(), import.meta.env.PUBLIC_TANSU_CONTRACT_ID, tipAmount.toString());
+        const payment = await sendXLM(amount.toString(), import.meta.env.PUBLIC_TANSU_OWNER_ID, tipAmount.toString());
         console.log("donate:", payment);
       });
     }
