@@ -1,5 +1,5 @@
-import { Buffer } from "buffer";
-import { Address } from "@stellar/stellar-sdk";
+import {Buffer} from "buffer";
+import {Address} from "@stellar/stellar-sdk";
 import {
   AssembledTransaction,
   Client as ContractClient,
@@ -20,6 +20,7 @@ import type {
   Typepoint,
   Duration,
 } from "@stellar/stellar-sdk/contract";
+
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
@@ -32,24 +33,24 @@ if (typeof window !== "undefined") {
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CAP52ERGUZ65UNPHP36CQBHYUPEUG2TT4NPVEV7CREWRT7UCPD7PRWEE",
+    contractId: "CCYM5OC6RTMEUHRK2BRU5YX4G4O745DPLPU4EXVTRCUN7JRJJWXEEXAB",
   },
 } as const;
 
 export const Errors = {
-  0: { message: "UnexpectedError" },
+  0: {message: "UnexpectedError"},
 
-  1: { message: "InvalidKey" },
+  1: {message: "InvalidKey"},
 
-  2: { message: "ProjectAlreadyExist" },
+  2: {message: "ProjectAlreadyExist"},
 
-  3: { message: "UnregisteredMaintainer" },
+  3: {message: "UnregisteredMaintainer"},
 
-  4: { message: "NoHashFound" },
+  4: {message: "NoHashFound"},
 
-  5: { message: "InvalidDomainError" },
+  5: {message: "InvalidDomainError"},
 
-  6: { message: "MaintainerNotDomainOwner" },
+  6: {message: "MaintainerNotDomainOwner"},
 };
 export type DataKey = { tag: "Admin"; values: void };
 
@@ -73,7 +74,7 @@ export interface Client {
    * Construct and simulate a init transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   init: (
-    { admin }: { admin: string },
+    {admin}: { admin: string },
     options?: {
       /**
        * The fee to pay for the transaction. Default: BASE_FEE
@@ -116,7 +117,7 @@ export interface Client {
    * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   upgrade: (
-    { new_wasm_hash }: { new_wasm_hash: Buffer },
+    {new_wasm_hash}: { new_wasm_hash: Buffer },
     options?: {
       /**
        * The fee to pay for the transaction. Default: BASE_FEE
@@ -242,7 +243,7 @@ export interface Client {
    * Get the last commit hash
    */
   get_commit: (
-    { project_key }: { project_key: Buffer },
+    {project_key}: { project_key: Buffer },
     options?: {
       /**
        * The fee to pay for the transaction. Default: BASE_FEE
@@ -265,7 +266,7 @@ export interface Client {
    * Construct and simulate a get_project transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   get_project: (
-    { project_key }: { project_key: Buffer },
+    {project_key}: { project_key: Buffer },
     options?: {
       /**
        * The fee to pay for the transaction. Default: BASE_FEE
@@ -284,6 +285,7 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<Project>>;
 }
+
 export class Client extends ContractClient {
   constructor(public readonly options: ContractClientOptions) {
     super(
@@ -305,6 +307,7 @@ export class Client extends ContractClient {
       options,
     );
   }
+
   public readonly fromJSON = {
     init: this.txFromJSON<null>,
     version: this.txFromJSON<u32>,

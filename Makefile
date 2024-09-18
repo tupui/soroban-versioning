@@ -7,7 +7,7 @@ ifndef network
 endif
 
 ifndef domain_contract_id
-	override domain_contract_id = CCEYNQXUY3GQT4SM5MZOHZBYNLEOW66C36UD4YVBCZ37X5QNBOVTZO4P
+	override domain_contract_id = $(shell cat .soroban/soroban_domain_id)
 endif
 
 # Add help text after each target name starting with '\#\#'
