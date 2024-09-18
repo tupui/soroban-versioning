@@ -48,7 +48,7 @@ async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: 
       const result = await server.submitTransaction(
         StellarSdk.TransactionBuilder.fromXDR(signedTxXdr, StellarSdk.Networks.TESTNET)
       );
-      console.log("Transaction successful:", result);
+      console.log("Transaction successful:", JSON.stringify(result, null, 2));
       return true;
     } catch (error) {
       console.error("Error response from Stellar:", JSON.stringify(error, null, 2));

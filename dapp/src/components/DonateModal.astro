@@ -95,6 +95,7 @@
 
 <script>
 import { sendXLM } from "../service/PaymentService";
+import { getAddressFromDomain } from "../service/SorobanDomainContractService";
 // import { getAddressFromDomain } from "../service/SorobanDomainContractService";
 
   document.addEventListener("astro:page-load", () => {
@@ -157,8 +158,24 @@ import { sendXLM } from "../service/PaymentService";
         }
         
         const donateMessage = (document.getElementById('donate-message') as HTMLTextAreaElement).value;
-        const payment = await sendXLM(amount.toString(), import.meta.env.PUBLIC_TANSU_OWNER_ID, tipAmount.toString(), donateMessage);
-        console.log("donate:", payment);
+
+        console.log("fetching domain Info...");
+        const domainInfo = await getAddressFromDomain('tansu');
+        if (domainInfo && !domainInfo.error && typeof domainInfo.message === 'object' && 'owner' in domainInfo.message.value) {
+          const domainOwnerAddress = domainInfo.message.value.owner;
+          const payment = await sendXLM(amount.toString(), domainOwnerAddress as string, tipAmount.toString(), donateMessage);
+          if (payment) {
+            alert("You successfully donated.");
+            if (modal) {
+              modal.classList.add('hidden');
+            }
+          } else {
+            alert("Donation is failed.");
+          }
+        } else {
+          alert("Cannot read domain information.");
+        }
+
       });
     }
   });

@@ -7,7 +7,10 @@ async function getAddressFromDomain (
 ) {
   try {
     const domainRecord: Record = await sdk.searchDomain({ domain: domainName });
-    return domainRecord;
+    return {
+      "error": false,
+      "message": domainRecord,
+    }
   } catch (e) {
     if (e instanceof Error && e.name === Domain404Error.name) {
       return {
