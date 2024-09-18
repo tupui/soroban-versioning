@@ -4,7 +4,7 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: string): Promise<boolean> {
   const senderPublicKey = loadedPublicKey();
 
-  const tansuAddress = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
+  const tansuAddress = import.meta.env.PUBLIC_TANSU_OWNER_ID;
 
   if (!senderPublicKey) {
     alert("Please connect your wallet first");
