@@ -42,7 +42,7 @@ const CommitHistory = () => {
       );
       setAuthors(authors);
     } else {
-      console.log("Can not read config data.");
+      console.log("Cannot read config data.");
     }
   };
 
