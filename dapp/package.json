@@ -3,6 +3,7 @@
     "@astrojs/check": "^0.9.3",
     "@astrojs/react": "^3.6.2",
     "@astrojs/tailwind": "^5.1.0",
+    "@creit.tech/sorobandomains-sdk": "^0.1.2",
     "@creit.tech/stellar-wallets-kit": "^1.0.0",
     "@nanostores/react": "^0.7.3",
     "astro": "^4.2.4",
