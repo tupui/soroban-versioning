@@ -4,8 +4,8 @@ import StellarSdk from "@stellar/stellar-sdk";
 async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: string): Promise<boolean> {
   const senderPublicKey = loadedPublicKey();
 
-  const rpcUrl = process.env.PUBLIC_SOROBAN_RPC_URL;
-  const tansuAddress = process.env.PUBLIC_TANSU_CONTRACT_ID;
+  const rpcUrl = import.meta.env.PUBLIC_SOROBAN_RPC_URL;
+  const tansuAddress = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 
   if (!senderPublicKey) {
     alert("Please connect your wallet first");
@@ -14,7 +14,7 @@ async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: 
 
   try {
     // Fetch the sender's account details from the Stellar network
-    const server = new StellarSdk.Server(rpcUrl) || "https://soroban-testnet.stellar.org:443";
+    const server = new StellarSdk.Server(rpcUrl ?? "https://soroban-testnet.stellar.org:443");
     const account = await server.loadAccount(senderPublicKey);
 
     // Create the transaction
