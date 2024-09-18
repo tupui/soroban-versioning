@@ -1,7 +1,7 @@
 import { kit, loadedPublicKey } from "../components/stellar-wallets-kit";
 import * as StellarSdk from "@stellar/stellar-sdk";
 
-async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: string): Promise<boolean> {
+async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: string, donateMessage: string): Promise<boolean> {
   const senderPublicKey = loadedPublicKey();
 
   const tansuAddress = import.meta.env.PUBLIC_TANSU_OWNER_ID;
@@ -19,25 +19,26 @@ async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: 
     // Create the transaction
     const transactionBuilder = new StellarSdk.TransactionBuilder(account, {
       fee: StellarSdk.BASE_FEE,
-      networkPassphrase: StellarSdk.Networks.PUBLIC,
+      networkPassphrase: StellarSdk.Networks.TESTNET,
     })
     .addOperation(StellarSdk.Operation.payment({
       destination: projectAddress,
-      asset: StellarSdk.Asset.native(), // XLM is the native asset
+      asset: StellarSdk.Asset.native(),
       amount: donateAmount,
-    }));
+    }))
+    .addMemo(StellarSdk.Memo.text(donateMessage));
     
     // Add tip operation only if tipAmount is not "0"
     if (tipAmount !== "0") {
       transactionBuilder.addOperation(StellarSdk.Operation.payment({
         destination: tansuAddress,
-        asset: StellarSdk.Asset.native(), // XLM is the native asset
+        asset: StellarSdk.Asset.native(),
         amount: tipAmount,
       }));
     }
 
     const transaction = transactionBuilder
-      .setTimeout(30)
+      .setTimeout(StellarSdk.TimeoutInfinite)
       .build();
 
       // Sign and send the transaction
@@ -49,17 +50,13 @@ async function sendXLM(donateAmount: string, projectAddress: string, tipAmount: 
       );
       console.log("Transaction successful:", result);
       return true;
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Error response from Stellar:", error.message);
-      } else {
-        console.error("Unknown error occurred:", error);
-      }
+    } catch (error) {
+      console.error("Error response from Stellar:", JSON.stringify(error, null, 2));
       return false;
     }
     
-  } catch (e: unknown) {
-    console.error("Error sending XLM:", JSON.stringify(e, null, 2));
+  } catch (error) {
+    console.error("Error sending XLM:", JSON.stringify(error, null, 2));
     return false;
   }
 }

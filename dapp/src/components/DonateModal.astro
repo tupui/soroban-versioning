@@ -58,7 +58,7 @@
       </div>
       
       
-      <textarea placeholder="Say something nice..." rows="4" class="w-full border border-zinc-400 bg-zinc-200 rounded-xl p-2 resize-none focus:outline-none"></textarea>
+      <textarea id="donate-message" placeholder="Say something nice..." rows="4" class="w-full border border-zinc-400 bg-zinc-200 rounded-xl p-2 resize-none focus:outline-none"></textarea>
       
       <div class="flex items-center">
         <span class="mr-2 relative group">
@@ -156,7 +156,8 @@ import { sendXLM } from "../service/PaymentService";
           return;
         }
         
-        const payment = await sendXLM(amount.toString(), import.meta.env.PUBLIC_TANSU_OWNER_ID, tipAmount.toString());
+        const donateMessage = (document.getElementById('donate-message') as HTMLTextAreaElement).value;
+        const payment = await sendXLM(amount.toString(), import.meta.env.PUBLIC_TANSU_OWNER_ID, tipAmount.toString(), donateMessage);
         console.log("donate:", payment);
       });
     }
