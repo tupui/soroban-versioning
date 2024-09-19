@@ -6,7 +6,7 @@ const networkPassphrase = import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE;
 const contractId = import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID;
 const defaultFee = import.meta.env.PUBLIC_DEFAULT_FEE;
 const defaultTimeout = import.meta.env.PUBLIC_DEFAULT_TIMEOUT;
-const simulationAccount = import.meta.env.PUBLIC_SIMULATION_ACCOUNT;
+const simulationAccount = import.meta.env.PUBLIC_TANSU_OWNER_ID;
 
 console.log('RPC URL:', rpcUrl);
 console.log('Network Passphrase:', networkPassphrase);
