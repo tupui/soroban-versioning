@@ -167,6 +167,7 @@ import { getAddressFromDomain } from "../service/SorobanDomainContractService";
 
         console.log("fetching domain Info...");
         const domainInfo = await getAddressFromDomain('tansu');
+        console.log("domainInfo:", domainInfo);
         if (domainInfo && !domainInfo.error && typeof domainInfo.message === 'object' && 'owner' in domainInfo.message.value) {
           const domainOwnerAddress = domainInfo.message.value.owner;
           const payment = await sendXLM(amount.toString(), domainOwnerAddress as string, tipAmount.toString(), donateMessage);
