@@ -8,6 +8,13 @@ const defaultFee = import.meta.env.PUBLIC_DEFAULT_FEE;
 const defaultTimeout = import.meta.env.PUBLIC_DEFAULT_TIMEOUT;
 const simulationAccount = import.meta.env.PUBLIC_SIMULATION_ACCOUNT;
 
+console.log('RPC URL:', rpcUrl);
+console.log('Network Passphrase:', networkPassphrase);
+console.log('Contract ID:', contractId);
+console.log('Default Fee:', defaultFee);
+console.log('Default Timeout:', defaultTimeout);
+console.log('Simulation Account:', simulationAccount);
+
 const sdk: SorobanDomainsSDK = new SorobanDomainsSDK({
   stellarSDK: SDK,
   rpc: new SDK.SorobanRpc.Server(rpcUrl || 'https://soroban-testnet.stellar.org:443'),
