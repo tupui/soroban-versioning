@@ -152,6 +152,13 @@ import ModalInput from "./utils/ModalInput.astro";
         if (!maintainers.value.trim()) {
           isValid = false;
           showError(maintainers, maintainers_error, "Maintainers cannot be empty");
+        } else {
+          const addressList = maintainers.value.split(',').map(addr => addr.trim());
+          const invalidAddresses = addressList.filter(addr => !addr.startsWith('G') || addr.length !== 56);
+          if (invalidAddresses.length > 0) {
+            isValid = false;
+            showError(maintainers, maintainers_error, "Invalid maintainer address(es). Each address should start with 'G' and be 56 characters long.");
+          }
         }
 
         // Check GitHub URL
