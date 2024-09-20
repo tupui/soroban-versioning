@@ -102,7 +102,6 @@
 <script>
 import { sendXLM } from "../service/PaymentService";
 import { getAddressFromDomain } from "../service/SorobanDomainContractService";
-// import { getAddressFromDomain } from "../service/SorobanDomainContractService";
 
   document.addEventListener("astro:page-load", () => {
     const amountButtons = document.querySelectorAll('.amount-button');
@@ -133,10 +132,23 @@ import { getAddressFromDomain } from "../service/SorobanDomainContractService";
 
     const modal = document.getElementById('donate-modal');
     const closeButton = document.getElementById('close-donate-modal');
+    const modalContent = modal?.querySelector('div');
 
     if (closeButton && modal) {
       closeButton.addEventListener('click', () => {
         modal.classList.add('hidden');
+      });
+
+      // Add click event listener to the modal
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+          modal.classList.add('hidden');
+        }
+      });
+
+      // Prevent closing when clicking inside the modal content
+      modalContent?.addEventListener('click', (event) => {
+        event.stopPropagation();
       });
     }
 
