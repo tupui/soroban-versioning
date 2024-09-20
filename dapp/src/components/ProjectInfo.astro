@@ -664,9 +664,9 @@ import DonateModal from "./DonateModal.astro";
         //Support modal content
         const loadedName =  loadProjectName();
         if (loadedName) {
-          const projectNameSpan = document.getElementById('contribute-button');
+          const projectNameSpan = document.getElementById('contribute-text');
           if (projectNameSpan) {
-            projectNameSpan.textContent = `Contribute to ${loadedName}.xlm`;
+            projectNameSpan.innerHTML = `Contribute to <span id="project-name">${loadedName}</span>.xlm`;
           }
           
           const donateTipPopup = document.getElementById('donate-tip-popup');

@@ -1,4 +1,6 @@
 ---
+import Loading from "./utils/Loading.astro";
+
 ---
 
 <div
@@ -92,7 +94,10 @@
           id="contribute-button"
           class="bg-zinc-800 text-white text-base sm:text-lg py-2 rounded-xl px-8 sm:px-12 w-max"
         >
-          Contribute to <span id="project-name"></span>.xlm
+          <span id="contribute-text">Contribute to <span id="project-name"></span>.xlm</span>
+          <div id="contribute-loader" class="hidden">
+            <Loading theme="dark" />
+          </div>
         </button>
       </div>
     </div>
@@ -153,8 +158,15 @@ import { getAddressFromDomain } from "../service/SorobanDomainContractService";
     }
 
     const contributeButton = document.getElementById('contribute-button');
-    if (contributeButton) {
+    const contributeText = document.getElementById('contribute-text');
+    const contributeLoader = document.getElementById('contribute-loader');
+
+    if (contributeButton && contributeText && contributeLoader) {
       contributeButton.addEventListener('click', async () => {
+        // Show loader and hide text
+        contributeText.classList.add('hidden');
+        contributeLoader.classList.remove('hidden');
+
         const amount = amountInputContainer?.classList.contains('flex') 
           ? parseFloat(amountInput.value) || 0 
           : selectedAmount;
@@ -172,28 +184,39 @@ import { getAddressFromDomain } from "../service/SorobanDomainContractService";
               minAmountText.style.color = '';
             }
           }, 2000);
+          // Hide loader and show text again
+          contributeLoader?.classList.add('hidden');
+          contributeText?.classList.remove('hidden');
           return;
         }
         
         const donateMessage = (document.getElementById('donate-message') as HTMLTextAreaElement).value;
 
-        console.log("fetching domain Info...");
-        const domainInfo = await getAddressFromDomain('tansu');
-        if (domainInfo && !domainInfo.error && typeof domainInfo.message === 'object' && 'owner' in domainInfo.message.value) {
-          const domainOwnerAddress = domainInfo.message.value.owner;
-          const payment = await sendXLM(amount.toString(), domainOwnerAddress as string, tipAmount.toString(), donateMessage);
-          if (payment) {
-            alert("You successfully donated.");
-            if (modal) {
-              modal.classList.add('hidden');
+        try {
+          console.log("fetching domain Info...");
+          const domainInfo = await getAddressFromDomain('tansu');
+          if (domainInfo && !domainInfo.error && typeof domainInfo.message === 'object' && 'owner' in domainInfo.message.value) {
+            const domainOwnerAddress = domainInfo.message.value.owner;
+            const payment = await sendXLM(amount.toString(), domainOwnerAddress as string, tipAmount.toString(), donateMessage);
+            if (payment) {
+              alert("You successfully donated.");
+              if (modal) {
+                modal.classList.add('hidden');
+              }
+            } else {
+              alert("Donation failed.");
             }
           } else {
-            alert("Donation is failed.");
+            alert("Cannot read domain information.");
           }
-        } else {
-          alert("Cannot read domain information.");
+        } catch (error) {
+          console.error("Error during contribution:", error);
+          alert("An error occurred during the contribution process.");
+        } finally {
+          // Hide loader and show text again
+          contributeLoader?.classList.add('hidden');
+          contributeText?.classList.remove('hidden');
         }
-
       });
     }
   });
