@@ -5,6 +5,7 @@ import Loading from "./utils/Loading.astro";
 import CommitHistory from "./CommitHistory.jsx";
 import PrimaryButton from "./utils/PrimaryButton.astro";
 import ModalInput from "./utils/ModalInput.astro";
+import DonateModal from "./DonateModal.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row justify-between">
@@ -13,6 +14,14 @@ import ModalInput from "./utils/ModalInput.astro";
     description="Details about the project"
     id="project-name-topic"
   />
+  <div id="open-donate-modal-button" class="mb-1.5 mt-12 pr-3">
+    <PrimaryButton
+      wrapId="wrap-donate-modal"
+      dataAttr="data-donate-modal"
+      ariaControls="donate-modal"
+      buttonText="Support"
+    />
+  </div>
   <div id="open-update-config-modal-button" class="mb-1.5 mt-12 pr-3 hidden">
     <PrimaryButton
       wrapId="wrap-update-config"
@@ -29,32 +38,35 @@ import ModalInput from "./utils/ModalInput.astro";
   <div
     class="row items-center py-8 sm:py-12 px-4 sm:px-8 md:px-20 w-full md:py-10"
   >
-    <div class="space-y-6 md:w-full">
+    <div class="space-y-6 md:w-full sm:pl-4 md:pl-0">
       <div id="project-name" class="flex items-end space-x-2">
         <p id="project-name-value" class="text-2xl sm:text-4xl font-bold"></p>
       </div>
 
-      <div class="flex flex-col md:flex-row gap-6">
+      <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
         <img
           id="project-thumbnail"
           src="/fallback-image.jpg"
           alt="Project Thumbnail"
-          class="w-full md:w-[40%] object-cover rounded-lg"
+          class="w-full md:w-[40%] max-w-40 sm:max-w-56 md:max-w-80 object-cover rounded-lg"
         />
-        <div class="flex-1 pt-2">
-          <p id="project-description" class="flex-1 text-base sm:text-lg">
-            description
-          </p>
+
+        <div class="flex-1">
+          <h3 class="text-base sm:text-lg md:text-2xl font-semibold">
+            Description
+          </h3>
+          <p id="project-description" class="flex-1 text-base sm:text-lg"></p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2">
-        <div id="project-maintainers" class="space-y-1">
+      <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
+        <div id="project-maintainers" class="space-y-1 w-full md:w-[40%] md:max-w-80">
           <h3 class="text-base sm:text-lg md:text-2xl font-semibold">
             Maintainers
           </h3>
           <ul class="list-disc list-outside pl-5"></ul>
         </div>
+
         <div id="project-organization" class="space-y-1">
           <h3 class="text-base sm:text-lg md:text-2xl font-semibold">
             Organization
@@ -63,8 +75,8 @@ import ModalInput from "./utils/ModalInput.astro";
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2">
-        <div id="project-links">
+      <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
+        <div id="project-links" class="w-full md:w-[40%] md:max-w-80">
           <div class="hidden sm:block space-y-2">
             <div class="flex flex-col">
               <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">
@@ -85,7 +97,7 @@ import ModalInput from "./utils/ModalInput.astro";
           <div id="links" class="sm:hidden mb-4 flex gap-2 items-center"></div>
         </div>
 
-        <div>
+        <div class="md:w-[calc(60%-24px)]">
           <div class="flex flex-col">
             <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">
               Syncronize status
@@ -212,6 +224,8 @@ import ModalInput from "./utils/ModalInput.astro";
   </div>
 </Modal>
 
+<DonateModal />
+
 <script>
   import { loadedPublicKey } from "./stellar-wallets-kit";
   import { updateConfig } from "../service/WriteContractService";
@@ -221,6 +235,7 @@ import ModalInput from "./utils/ModalInput.astro";
     loadConfigData,
     loadProjectInfo,
     loadProjectLatestSha,
+    loadProjectName,
     setProject,
   } from "../service/StateService";
   import { projectInfoLoaded } from "../utils/store.js";
@@ -343,8 +358,8 @@ import ModalInput from "./utils/ModalInput.astro";
           "project-organization-name",
         );
         if (organizationElement) {
-          if (configData && configData.organizationName) {
-            organizationElement.textContent = configData.organizationName;
+          if (configData) {
+            organizationElement.textContent = configData.organizationName || "Not available";
           }
         }
 
@@ -369,6 +384,13 @@ import ModalInput from "./utils/ModalInput.astro";
                 "github",
               );
             }
+          } else {
+            addLinkButton(
+              officialLinks,
+              "GitHub",
+              projectInfo.config.url,
+              "github",
+            );
           }
         }
 
@@ -443,6 +465,19 @@ import ModalInput from "./utils/ModalInput.astro";
               githubLink.appendChild(websiteIcon);
               links.appendChild(githubLink);
             }
+          } else {
+            const githubLink = document.createElement("a");
+            githubLink.href = projectInfo.config.url;
+            githubLink.target = "_blank";
+            githubLink.rel = "noopener noreferrer";
+
+            const websiteIcon = document.createElement("img");
+            websiteIcon.src = "/icons/github.svg";
+            websiteIcon.alt = "Website";
+            websiteIcon.className = "w-5 h-5";
+
+            githubLink.appendChild(websiteIcon);
+            links.appendChild(githubLink);
           }
 
           if (configData && configData.socialLinks) {
@@ -625,6 +660,21 @@ import ModalInput from "./utils/ModalInput.astro";
         if (modalConfigHash) {
           modalConfigHash.value = projectInfo.config.hash;
         }
+
+        //Support modal content
+        const loadedName =  loadProjectName();
+        if (loadedName) {
+          const projectNameSpan = document.getElementById('contribute-text');
+          if (projectNameSpan) {
+            projectNameSpan.innerHTML = `Contribute to <span id="project-name">${loadedName}</span>.xlm`;
+          }
+          
+          const donateTipPopup = document.getElementById('donate-tip-popup');
+          if (donateTipPopup) {
+            donateTipPopup.innerHTML = `Help us run the ${loadedName} platform sustainability
+                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>`;
+          }
+        }
       }
     }
 
@@ -710,6 +760,17 @@ import ModalInput from "./utils/ModalInput.astro";
         }
       });
     }
+    
+    const supportButton = document.querySelector("[data-donate-modal]");
+    const donateModal = document.getElementById("donate-modal");
+
+    if (supportButton && donateModal) {
+      supportButton.addEventListener("click", () => {
+        donateModal.classList.remove("hidden");
+        donateModal.classList.add("flex");
+      });
+    }
+
 
     const viewCommitHistory = document.getElementById("view-commit-history");
     const jumpToLatestCommit = document.getElementById("jump-to-latest-commit");
@@ -801,7 +862,7 @@ import ModalInput from "./utils/ModalInput.astro";
       button.target = "_blank";
       button.rel = "noopener noreferrer";
       button.className =
-        "flex items-center space-x-1 bg-zinc-200 hover:bg-zinc-300 rounded-lg px-3 py-1 text-sm";
+        "flex items-center space-x-1 bg-zinc-300 hover:bg-zinc-400 rounded-lg px-3 py-1 text-sm";
 
       const icon = document.createElement("span");
       icon.innerHTML = getIconSVG(iconName);
