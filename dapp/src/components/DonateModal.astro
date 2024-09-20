@@ -219,5 +219,20 @@ import { getAddressFromDomain } from "../service/SorobanDomainContractService";
         }
       });
     }
+    
+      // Function to allow only positive integers
+      const allowOnlyPositiveIntegers = (event: KeyboardEvent) => {
+        if (!/[0-9]/.test(event.key) && event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
+          event.preventDefault();
+        }
+      };
+    
+      // Add event listeners to both input fields
+      [amountInput, platformTipInput].forEach(input => {
+        input.addEventListener('keydown', allowOnlyPositiveIntegers);
+        input.addEventListener('input', () => {
+          input.value = input.value.replace(/[^0-9]/g, '');
+        });
+      });
   });
 </script>
