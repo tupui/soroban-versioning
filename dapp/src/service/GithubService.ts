@@ -4,7 +4,6 @@ import toml from "toml";
 import type { FormattedCommit } from "../types/github";
 import {
   getAuthorRepo,
-  getGithubContentUrl,
   getGithubContentUrlFromConfigUrl,
 } from "../utils/editLinkFunctions";
 
@@ -58,26 +57,6 @@ async function getCommitHistory(
   } catch (error) {
     console.error("Error fetching commit history:", error);
     throw error;
-  }
-}
-
-async function fetchTOML(username: string, repo: string) {
-  try {
-    const url = getGithubContentUrl(username, repo, "main/tansu.toml");
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Error fetching the TOML file: ${response.statusText}`);
-    }
-
-    const tomlText = await response.text();
-
-    const parsedData = toml.parse(tomlText);
-
-    return parsedData;
-  } catch (error) {
-    console.error("Error:", error);
   }
 }
 
@@ -170,7 +149,6 @@ async function getLatestCommitData(
 
 export {
   getCommitHistory,
-  fetchTOML,
   fetchTOMLFromConfigUrl,
   getTOMLFileHash,
   getCommitDataFromSha,

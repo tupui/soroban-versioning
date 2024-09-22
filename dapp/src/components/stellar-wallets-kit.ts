@@ -2,12 +2,12 @@ import {
   allowAllModules,
   FREIGHTER_ID,
   StellarWalletsKit,
-  WalletNetwork,
 } from "@creit.tech/stellar-wallets-kit";
 
 const kit: StellarWalletsKit = new StellarWalletsKit({
   modules: allowAllModules(),
-  network: WalletNetwork.TESTNET,
+  // @ts-ignore
+  network: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
   selectedWalletId: FREIGHTER_ID,
 });
 

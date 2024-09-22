@@ -5,6 +5,6 @@ export function truncateMiddle(str: string, maxLength: number): string {
   const frontChars = Math.ceil(charsToShow / 2);
   const backChars = Math.floor(charsToShow / 2);
   return (
-    str.substr(0, frontChars) + ellipsis + str.substr(str.length - backChars)
+    str.substring(0, frontChars) + ellipsis + str.substring(str.length - backChars)
   );
 }

@@ -1,8 +1,8 @@
 import * as Client from "soroban_versioning";
-import { rpcUrl } from "./util";
 
 export default new Client.Client({
-  ...Client.networks.testnet,
-  rpcUrl,
+  networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+  contractId: import.meta.env.PUBLIC_TANSU_CONTRACT_ID,
+  rpcUrl: import.meta.env.PUBLIC_SOROBAN_RPC_URL,
   allowHttp: true,
 });
