@@ -20,14 +20,6 @@ export function getGithubContentUrl(
   return `https://raw.githubusercontent.com/${username}/${repoName}/${filePath}`;
 }
 
-export function getGithubContentLink(
-  username: string,
-  repoName: string,
-  filePath: string,
-): string {
-  return `https://github.com/${username}/${repoName}/blob/${filePath}`;
-}
-
 export function getAuthorRepo(repoUrl: string): {
   username: string | undefined;
   repoName: string | undefined;
@@ -47,11 +39,4 @@ export function getGithubContentUrlFromConfigUrl(
     return getGithubContentUrl(username, repoName, "master/tansu.toml");
   }
   return undefined;
-}
-
-export function getGithubContentLinkFromConfigUrl(
-  configUrl: string,
-  filePath: string,
-): string {
-  return `${configUrl}/blob/${filePath}`;
 }

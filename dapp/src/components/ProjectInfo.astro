@@ -519,10 +519,7 @@ import DonateModal from "./DonateModal.astro";
             return;
           }
 
-          let tomlFileHash;
-          try {
-            tomlFileHash = await getTOMLFileHash(projectInfo.config.url);
-          } catch (error) {}
+          let tomlFileHash = await getTOMLFileHash(projectInfo.config.url);
 
           const configComponent = document.createElement("div");
           configComponent.className =
@@ -576,66 +573,62 @@ import DonateModal from "./DonateModal.astro";
 
           // Add commit badge
           const latestSha = loadProjectLatestSha();
-          if (latestSha) {
-            const commitComponent = document.createElement("div");
-            commitComponent.className =
-              "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
+          const commitComponent = document.createElement("div");
+          commitComponent.className =
+            "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
 
-            const commitIcon = document.createElement("img");
-            commitIcon.className = "w-5 h-5";
+          const commitIcon = document.createElement("img");
+          commitIcon.className = "w-5 h-5";
 
-            const commitText = document.createElement("span");
-            commitText.className = "text-sm sm:text-base";
-            commitText.textContent = "Commit";
+          const commitText = document.createElement("span");
+          commitText.className = "text-sm sm:text-base";
+          commitText.textContent = "Commit";
 
-            const commitPopup = document.createElement("div");
-            commitPopup.className =
-              "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
+          const commitPopup = document.createElement("div");
+          commitPopup.className =
+            "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
 
-            const commitTriangle = document.createElement("div");
-            commitTriangle.className =
-              "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
+          const commitTriangle = document.createElement("div");
+          commitTriangle.className =
+            "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
 
-            try {
-              const latestCommit = await getLatestCommitData(
-                projectInfo.config.url,
-                latestSha,
-              );
+          try {
+            const latestCommit = await getLatestCommitData(
+              projectInfo.config.url,
+              latestSha,
+            );
 
-              if (
-                latestCommit &&
-                latestCommit.sha &&
-                latestCommit.sha === latestSha
-              ) {
-                commitComponent.classList.add("bg-lime");
-                commitIcon.src = "/icons/check.svg";
-                commitIcon.alt = "Check";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain exists on GitHub</p>';
-              } else {
-                commitComponent.classList.add("bg-orange-200");
-                commitIcon.src = "/icons/failed.svg";
-                commitIcon.alt = "Failed";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
-              }
-            } catch (error) {
+            if (
+              latestCommit &&
+              latestCommit.sha &&
+              latestCommit.sha === latestSha
+            ) {
+              commitComponent.classList.add("bg-lime");
+              commitIcon.src = "/icons/check.svg";
+              commitIcon.alt = "Check";
+              commitPopup.innerHTML =
+                '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain exists on GitHub</p>';
+            } else {
               commitComponent.classList.add("bg-orange-200");
               commitIcon.src = "/icons/failed.svg";
               commitIcon.alt = "Failed";
               commitPopup.innerHTML =
                 '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
             }
-
-            commitPopup.appendChild(commitTriangle);
-            commitComponent.appendChild(commitIcon);
-            commitComponent.appendChild(commitText);
-            commitComponent.appendChild(commitPopup);
-
-            syncStatusContainer.appendChild(commitComponent);
-          } else {
-            alert("Cannot read latest hash.");
+          } catch (error) {
+            commitComponent.classList.add("bg-orange-200");
+            commitIcon.src = "/icons/failed.svg";
+            commitIcon.alt = "Failed";
+            commitPopup.innerHTML =
+              '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
           }
+
+          commitPopup.appendChild(commitTriangle);
+          commitComponent.appendChild(commitIcon);
+          commitComponent.appendChild(commitText);
+          commitComponent.appendChild(commitPopup);
+
+          syncStatusContainer.appendChild(commitComponent);
         }
 
         // Update modal content
