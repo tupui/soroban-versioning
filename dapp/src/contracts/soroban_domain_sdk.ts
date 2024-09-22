@@ -1,5 +1,5 @@
-import * as SDK from '@stellar/stellar-sdk';
-import { SorobanDomainsSDK } from '@creit.tech/sorobandomains-sdk';
+import * as SDK from "@stellar/stellar-sdk";
+import { SorobanDomainsSDK } from "@creit.tech/sorobandomains-sdk";
 import { rpcUrl, networkPassphrase } from "./util";
 
 const contractId = import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID;

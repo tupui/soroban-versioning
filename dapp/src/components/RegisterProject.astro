@@ -11,7 +11,9 @@ import ModalInput from "./utils/ModalInput.astro";
 <div
   class="relative flex flex-col items-center lg:flex-row my-6 bg-zinc-100 rounded-[45px]"
 >
-  <div class="row items-center py-12 px-4 sm:px-12 md:px-20 md:py-10 w-full lg:w-8/12 max-w-[680px] lg:max-w-none">
+  <div
+    class="row items-center py-12 px-4 sm:px-12 md:px-20 md:py-10 w-full lg:w-8/12 max-w-[680px] lg:max-w-none"
+  >
     <div class="space-y-8 lg:w-full">
       <label class="block mb-2 text-base font-medium text-black relative">
         Project
@@ -24,7 +26,11 @@ import ModalInput from "./utils/ModalInput.astro";
           maxlength="15"
           onkeyup="this.value=this.value.replace(/[^a-z]/g,'');"
         />
-        <span id="project_name_error" class="text-orange-500 hidden absolute left-0 top-full text-sm">Invalid project name</span>
+        <span
+          id="project_name_error"
+          class="text-orange-500 hidden absolute left-0 top-full text-sm"
+          >Invalid project name</span
+        >
       </label>
       <label class="block mb-2 text-base font-medium text-black relative">
         Maintainers
@@ -34,7 +40,11 @@ import ModalInput from "./utils/ModalInput.astro";
           placeholder="List of maintainers' addresses as G...,G..."
           required
         />
-        <span id="maintainers_error" class="text-orange-500 hidden absolute left-0 top-full text-sm">Invalid maintainers</span>
+        <span
+          id="maintainers_error"
+          class="text-orange-500 hidden absolute left-0 top-full text-sm"
+          >Invalid maintainers</span
+        >
       </label>
       <label class="block mb-2 text-base font-medium text-black relative">
         GitHub repository URL
@@ -44,7 +54,11 @@ import ModalInput from "./utils/ModalInput.astro";
           placeholder="GitHub repository URL"
           required
         />
-        <span id="config_url_error" class="text-orange-500 hidden absolute left-0 top-full text-sm">Invalid GitHub URL</span>
+        <span
+          id="config_url_error"
+          class="text-orange-500 hidden absolute left-0 top-full text-sm"
+          >Invalid GitHub URL</span
+        >
       </label>
       <label class="block mb-2 text-base font-medium text-black relative">
         Information file hash
@@ -56,7 +70,11 @@ import ModalInput from "./utils/ModalInput.astro";
           minlength="64"
           maxlength="64"
         />
-        <span id="config_hash_error" class="text-orange-500 hidden absolute left-0 top-full text-sm">Invalid file hash</span>
+        <span
+          id="config_hash_error"
+          class="text-orange-500 hidden absolute left-0 top-full text-sm"
+          >Invalid file hash</span
+        >
       </label>
 
       <div id="wrap-register-button">
@@ -78,8 +96,19 @@ import ModalInput from "./utils/ModalInput.astro";
 </div>
 
 <script>
-  import { getProject, getProjectFromName, getProjectHash } from "../service/ReadContractService";
-  import { initializeProjectState, loadProjectName, setConfigData, setProject, setProjectLatestSha, setProjectRepoInfo } from "../service/StateService";
+  import {
+    getProject,
+    getProjectFromName,
+    getProjectHash,
+  } from "../service/ReadContractService";
+  import {
+    initializeProjectState,
+    loadProjectName,
+    setConfigData,
+    setProject,
+    setProjectLatestSha,
+    setProjectRepoInfo,
+  } from "../service/StateService";
   import { registerProject } from "../service/WriteContractService";
   import { navigate } from "astro:transitions/client";
   import { getAuthorRepo } from "../utils/editLinkFunctions";
@@ -115,12 +144,24 @@ import ModalInput from "./utils/ModalInput.astro";
 
     project_name.value = loadProjectName() || "";
 
-    const project_name_error = document.getElementById("project_name_error") as HTMLSpanElement;
-    const maintainers_error = document.getElementById("maintainers_error") as HTMLSpanElement;
-    const config_url_error = document.getElementById("config_url_error") as HTMLSpanElement;
-    const config_hash_error = document.getElementById("config_hash_error") as HTMLSpanElement;
+    const project_name_error = document.getElementById(
+      "project_name_error",
+    ) as HTMLSpanElement;
+    const maintainers_error = document.getElementById(
+      "maintainers_error",
+    ) as HTMLSpanElement;
+    const config_url_error = document.getElementById(
+      "config_url_error",
+    ) as HTMLSpanElement;
+    const config_hash_error = document.getElementById(
+      "config_hash_error",
+    ) as HTMLSpanElement;
 
-    function showError(input: HTMLInputElement, errorSpan: HTMLSpanElement, message: string) {
+    function showError(
+      input: HTMLInputElement,
+      errorSpan: HTMLSpanElement,
+      message: string,
+    ) {
       errorSpan.textContent = message;
       errorSpan.classList.remove("hidden");
       input.style.border = "2px solid red";
@@ -145,32 +186,56 @@ import ModalInput from "./utils/ModalInput.astro";
         const project = await getProjectFromName(project_name.value);
         if (project && project.name && project.name === project_name.value) {
           isValid = false;
-          showError(project_name, project_name_error, "Project name already registered");
+          showError(
+            project_name,
+            project_name_error,
+            "Project name already registered",
+          );
         }
 
         // Check maintainers
         if (!maintainers.value.trim()) {
           isValid = false;
-          showError(maintainers, maintainers_error, "Maintainers cannot be empty");
+          showError(
+            maintainers,
+            maintainers_error,
+            "Maintainers cannot be empty",
+          );
         } else {
-          const addressList = maintainers.value.split(',').map(addr => addr.trim());
-          const invalidAddresses = addressList.filter(addr => !addr.startsWith('G') || addr.length !== 56);
+          const addressList = maintainers.value
+            .split(",")
+            .map((addr) => addr.trim());
+          const invalidAddresses = addressList.filter(
+            (addr) => !addr.startsWith("G") || addr.length !== 56,
+          );
           if (invalidAddresses.length > 0) {
             isValid = false;
-            showError(maintainers, maintainers_error, "Invalid maintainer address(es). Each address should start with 'G' and be 56 characters long.");
+            showError(
+              maintainers,
+              maintainers_error,
+              "Invalid maintainer address(es). Each address should start with 'G' and be 56 characters long.",
+            );
           }
         }
 
         // Check GitHub URL
         if (!isValidGithubUrl(config_url.value)) {
           isValid = false;
-          showError(config_url, config_url_error, "Invalid GitHub repository URL");
+          showError(
+            config_url,
+            config_url_error,
+            "Invalid GitHub repository URL",
+          );
         }
 
         // Check file hash
         if (config_hash.value.length !== 64) {
           isValid = false;
-          showError(config_hash, config_hash_error, "File hash must be 64 characters long");
+          showError(
+            config_hash,
+            config_hash_error,
+            "File hash must be 64 characters long",
+          );
         }
 
         if (!isValid) {
@@ -187,14 +252,19 @@ import ModalInput from "./utils/ModalInput.astro";
           config_hash.value,
           SOROBAN_DOMAIN_CONTRACT_ID,
         );
-        
+
         wrap_loader.style.display = "none";
         wrap_button.style.display = "block";
         if (!register_status) {
           alert("Project could not be registered! Please retry.");
         } else {
           const project = await getProject();
-          if (project && project.name && project.config && project.maintainers) {
+          if (
+            project &&
+            project.name &&
+            project.config &&
+            project.maintainers
+          ) {
             setProject(project);
             const { username, repoName } = getAuthorRepo(project.config.url);
             if (username && repoName) {
@@ -232,22 +302,24 @@ import ModalInput from "./utils/ModalInput.astro";
                     reddit: tomlData.DOCUMENTATION.ORG_REDDIT,
                   }),
                 },
-                authorGithubNames: tomlData.PRINCIPALS?.map((p: { github: any; }) => p.github) || [],
+                authorGithubNames:
+                  tomlData.PRINCIPALS?.map((p: { github: any }) => p.github) ||
+                  [],
                 maintainersAddresses: tomlData.ACCOUNTS || [],
               };
               setConfigData(configData);
             } else {
               setConfigData({});
             }
-        
+
             const latestSha = await getProjectHash();
             if (
-              typeof latestSha === 'string' &&
+              typeof latestSha === "string" &&
               latestSha.match(/^[a-f0-9]{40}$/)
             ) {
               setProjectLatestSha(latestSha);
             } else setProjectLatestSha("");
-            
+
             navigate("/project");
           }
         }

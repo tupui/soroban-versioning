@@ -1,6 +1,5 @@
 ---
 import Loading from "./utils/Loading.astro";
-
 ---
 
 <div
@@ -25,26 +24,42 @@ import Loading from "./utils/Loading.astro";
           stroke-linecap="round"
           stroke-linejoin="round"
           stroke-width="2"
-          d="M6 18L18 6M6 6l12 12"
-        />
+          d="M6 18L18 6M6 6l12 12"></path>
       </svg>
     </button>
-    
+
     <div class="flex flex-col space-y-3 sm:space-y-6 md:space-y-8">
       <div>
-        <h2 id="donate-modal-title" class="text-xl sm:text-2xl font-bold bg-lime py-1 sm:py-2 px-2 rounded-xl w-min">Contribute</h2>
+        <h2
+          id="donate-modal-title"
+          class="text-xl sm:text-2xl font-bold bg-lime py-1 sm:py-2 px-2 rounded-xl w-min"
+        >
+          Contribute
+        </h2>
       </div>
-      
+
       <div class="flex flex-col gap-3 w-full">
         <div class="flex w-full">
-          <button class="amount-button flex-1 bg-zinc-800 border border-zinc-800 text-lg sm:text-xl md:text-2xl font-semibold text-white py-1 rounded-l-lg">10 XLM</button>
-          <button class="amount-button flex-1 bg-zinc-200 border border-zinc-300 text-lg sm:text-xl md:text-2xl font-semibold text-zinc-600 py-1">100 XLM</button>
-          <button class="amount-button flex-1 bg-zinc-200 border border-zinc-300 text-lg sm:text-xl md:text-2xl font-semibold text-zinc-600 py-1 rounded-r-lg">Other</button>
+          <button
+            class="amount-button flex-1 bg-zinc-800 border border-zinc-800 text-lg sm:text-xl md:text-2xl font-semibold text-white py-1 rounded-l-lg"
+            >10 XLM</button
+          >
+          <button
+            class="amount-button flex-1 bg-zinc-200 border border-zinc-300 text-lg sm:text-xl md:text-2xl font-semibold text-zinc-600 py-1"
+            >100 XLM</button
+          >
+          <button
+            class="amount-button flex-1 bg-zinc-200 border border-zinc-300 text-lg sm:text-xl md:text-2xl font-semibold text-zinc-600 py-1 rounded-r-lg"
+            >Other</button
+          >
         </div>
         <div class="w-full h-[30px] sm:h-[38px]">
           <div id="amount-input-container" class="hidden items-center">
             <div class="flex items-center relative">
-              <span class="absolute left-2 sm:left-3 sm:py-0.5 pr-1 border-r-2 border-zinc-600">XLM</span>
+              <span
+                class="absolute left-2 sm:left-3 sm:py-0.5 pr-1 border-r-2 border-zinc-600"
+                >XLM</span
+              >
               <input
                 id="amount-input"
                 type="number"
@@ -58,43 +73,70 @@ import Loading from "./utils/Loading.astro";
           </div>
         </div>
       </div>
-      
-      
-      <textarea id="donate-message" placeholder="Say something nice..." rows="4" class="w-full border border-zinc-400 bg-zinc-200 rounded-xl p-2 resize-none focus:outline-none"></textarea>
-      
+
+      <textarea
+        id="donate-message"
+        placeholder="Say something nice..."
+        rows="4"
+        class="w-full border border-zinc-400 bg-zinc-200 rounded-xl p-2 resize-none focus:outline-none"
+      ></textarea>
+
       <div class="flex items-center">
         <span class="mr-2 flex items-center">
           Platform tip:
           <span class="relative group ml-1">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24">
-              <rect width="24" height="24" rx="2" fill="#3b82f6" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12.5 16h-1v-4h-1m1-4h.01M12 8v.01" stroke="white" fill="none" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              viewBox="0 0 24 24"
+            >
+              <rect width="24" height="24" rx="2" fill="#3b82f6"></rect>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+                d="M12.5 16h-1v-4h-1m1-4h.01M12 8v.01"
+                stroke="white"
+                fill="none"></path>
             </svg>
-            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[330px] sm:max-w-none">
-              <div id="donate-tip-popup" class="bg-zinc-800 text-white text-sm py-2 px-4 rounded-lg shadow-lg relative">
+            <div
+              class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[330px] sm:max-w-none"
+            >
+              <div
+                id="donate-tip-popup"
+                class="bg-zinc-800 text-white text-sm py-2 px-4 rounded-lg shadow-lg relative"
+              >
                 Help us run the Tansu platform sustainability
-                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>
+                <div
+                  class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"
+                >
+                </div>
               </div>
             </div>
           </span>
         </span>
         <div class="flex items-center relative">
-          <span class="absolute left-2 sm:left-3 sm:py-0.5 pr-1 border-r-2 border-zinc-600">XLM</span>
-          <input 
-            id="tip-amount-input" 
-            type="number" 
-            class="w-28 sm:w-36 flex-1 border rounded-lg pl-12 sm:pl-14 pr-3 py-0.5 sm:py-1 text-sm sm:text-base text-right" 
-            value=0
+          <span
+            class="absolute left-2 sm:left-3 sm:py-0.5 pr-1 border-r-2 border-zinc-600"
+            >XLM</span
+          >
+          <input
+            id="tip-amount-input"
+            type="number"
+            class="w-28 sm:w-36 flex-1 border rounded-lg pl-12 sm:pl-14 pr-3 py-0.5 sm:py-1 text-sm sm:text-base text-right"
+            value="0"
           />
         </div>
       </div>
-      
+
       <div class="flex justify-center">
         <button
           id="contribute-button"
           class="bg-zinc-800 text-white text-base sm:text-lg py-2 rounded-xl px-8 sm:px-12 w-max"
         >
-          <span id="contribute-text">Contribute to <span id="project-name"></span>.xlm</span>
+          <span id="contribute-text"
+            >Contribute to <span id="project-name"></span>.xlm</span
+          >
           <div id="contribute-loader" class="hidden">
             <Loading theme="dark" />
           </div>
@@ -105,103 +147,131 @@ import Loading from "./utils/Loading.astro";
 </div>
 
 <script>
-import { sendXLM } from "../service/PaymentService";
-import { getAddressFromDomain } from "../service/SorobanDomainContractService";
+  import { sendXLM } from "../service/PaymentService";
+  import { getAddressFromDomain } from "../service/SorobanDomainContractService";
 
   document.addEventListener("astro:page-load", () => {
-    const amountButtons = document.querySelectorAll('.amount-button');
-    const amountInputContainer = document.getElementById('amount-input-container');
-    const amountInput = document.getElementById('amount-input') as HTMLInputElement;
-    const platformTipInput = document.getElementById('tip-amount-input') as HTMLInputElement;
+    const amountButtons = document.querySelectorAll(".amount-button");
+    const amountInputContainer = document.getElementById(
+      "amount-input-container",
+    );
+    const amountInput = document.getElementById(
+      "amount-input",
+    ) as HTMLInputElement;
+    const platformTipInput = document.getElementById(
+      "tip-amount-input",
+    ) as HTMLInputElement;
     let selectedAmount = 10; // Default amount
 
     amountButtons.forEach((button) => {
-      button.addEventListener('click', () => {
-        amountButtons.forEach(btn => btn.classList.remove('bg-zinc-800', 'border-zinc-800', 'text-white'));
-        amountButtons.forEach(btn => btn.classList.add('bg-zinc-200', 'border-zinc-300', 'text-zinc-600'));
-        button.classList.remove('bg-zinc-200','border-zinc-300', 'text-zinc-600');
-        button.classList.add('bg-zinc-800','border-zinc-800', 'text-white');
-        
+      button.addEventListener("click", () => {
+        amountButtons.forEach((btn) =>
+          btn.classList.remove("bg-zinc-800", "border-zinc-800", "text-white"),
+        );
+        amountButtons.forEach((btn) =>
+          btn.classList.add("bg-zinc-200", "border-zinc-300", "text-zinc-600"),
+        );
+        button.classList.remove(
+          "bg-zinc-200",
+          "border-zinc-300",
+          "text-zinc-600",
+        );
+        button.classList.add("bg-zinc-800", "border-zinc-800", "text-white");
+
         const buttonText = button.textContent?.trim();
-        if (buttonText === 'Other') {
-          amountInputContainer?.classList.remove('hidden');
-          amountInputContainer?.classList.add('flex');
+        if (buttonText === "Other") {
+          amountInputContainer?.classList.remove("hidden");
+          amountInputContainer?.classList.add("flex");
           selectedAmount = parseFloat(amountInput.value) || 0;
         } else {
-          amountInputContainer?.classList.remove('flex');
-          amountInputContainer?.classList.add('hidden');
-          selectedAmount = buttonText === '100 XLM' ? 100 : 10;
+          amountInputContainer?.classList.remove("flex");
+          amountInputContainer?.classList.add("hidden");
+          selectedAmount = buttonText === "100 XLM" ? 100 : 10;
         }
       });
     });
 
-    const modal = document.getElementById('donate-modal');
-    const closeButton = document.getElementById('close-donate-modal');
-    const modalContent = modal?.querySelector('div');
+    const modal = document.getElementById("donate-modal");
+    const closeButton = document.getElementById("close-donate-modal");
+    const modalContent = modal?.querySelector("div");
 
     if (closeButton && modal) {
-      closeButton.addEventListener('click', () => {
-        modal.classList.add('hidden');
+      closeButton.addEventListener("click", () => {
+        modal.classList.add("hidden");
       });
 
       // Add click event listener to the modal
-      modal.addEventListener('click', (event) => {
+      modal.addEventListener("click", (event) => {
         if (event.target === modal) {
-          modal.classList.add('hidden');
+          modal.classList.add("hidden");
         }
       });
 
       // Prevent closing when clicking inside the modal content
-      modalContent?.addEventListener('click', (event) => {
+      modalContent?.addEventListener("click", (event) => {
         event.stopPropagation();
       });
     }
 
-    const contributeButton = document.getElementById('contribute-button');
-    const contributeText = document.getElementById('contribute-text');
-    const contributeLoader = document.getElementById('contribute-loader');
+    const contributeButton = document.getElementById("contribute-button");
+    const contributeText = document.getElementById("contribute-text");
+    const contributeLoader = document.getElementById("contribute-loader");
 
     if (contributeButton && contributeText && contributeLoader) {
-      contributeButton.addEventListener('click', async () => {
+      contributeButton.addEventListener("click", async () => {
         // Show loader and hide text
-        contributeText.classList.add('hidden');
-        contributeLoader.classList.remove('hidden');
+        contributeText.classList.add("hidden");
+        contributeLoader.classList.remove("hidden");
 
-        const amount = amountInputContainer?.classList.contains('flex') 
-          ? parseFloat(amountInput.value) || 0 
+        const amount = amountInputContainer?.classList.contains("flex")
+          ? parseFloat(amountInput.value) || 0
           : selectedAmount;
         const tipAmount = parseFloat(platformTipInput.value) || 0;
-        
+
         if (amount < 1) {
-          amountInput.style.border = '2px solid red';
-          const minAmountText = document.querySelector('#amount-input-container p') as HTMLElement;
+          amountInput.style.border = "2px solid red";
+          const minAmountText = document.querySelector(
+            "#amount-input-container p",
+          ) as HTMLElement;
           if (minAmountText) {
-            minAmountText.style.color = 'red';
+            minAmountText.style.color = "red";
           }
           setTimeout(() => {
-            amountInput.style.border = '';
+            amountInput.style.border = "";
             if (minAmountText) {
-              minAmountText.style.color = '';
+              minAmountText.style.color = "";
             }
           }, 2000);
           // Hide loader and show text again
-          contributeLoader?.classList.add('hidden');
-          contributeText?.classList.remove('hidden');
+          contributeLoader?.classList.add("hidden");
+          contributeText?.classList.remove("hidden");
           return;
         }
-        
-        const donateMessage = (document.getElementById('donate-message') as HTMLTextAreaElement).value;
+
+        const donateMessage = (
+          document.getElementById("donate-message") as HTMLTextAreaElement
+        ).value;
 
         try {
           console.log("fetching domain Info...");
-          const domainInfo = await getAddressFromDomain('tansu');
-          if (domainInfo && !domainInfo.error && typeof domainInfo.message === 'object' && 'owner' in domainInfo.message.value) {
+          const domainInfo = await getAddressFromDomain("tansu");
+          if (
+            domainInfo &&
+            !domainInfo.error &&
+            typeof domainInfo.message === "object" &&
+            "owner" in domainInfo.message.value
+          ) {
             const domainOwnerAddress = domainInfo.message.value.owner;
-            const payment = await sendXLM(amount.toString(), domainOwnerAddress as string, tipAmount.toString(), donateMessage);
+            const payment = await sendXLM(
+              amount.toString(),
+              domainOwnerAddress as string,
+              tipAmount.toString(),
+              donateMessage,
+            );
             if (payment) {
               alert("You successfully donated.");
               if (modal) {
-                modal.classList.add('hidden');
+                modal.classList.add("hidden");
               }
             } else {
               alert("Donation failed.");
@@ -214,25 +284,31 @@ import { getAddressFromDomain } from "../service/SorobanDomainContractService";
           alert("An error occurred during the contribution process.");
         } finally {
           // Hide loader and show text again
-          contributeLoader?.classList.add('hidden');
-          contributeText?.classList.remove('hidden');
+          contributeLoader?.classList.add("hidden");
+          contributeText?.classList.remove("hidden");
         }
       });
     }
-    
-      // Function to allow only positive integers
-      const allowOnlyPositiveIntegers = (event: KeyboardEvent) => {
-        if (!/[0-9]/.test(event.key) && event.key !== 'Backspace' && event.key !== 'Delete' && event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
-          event.preventDefault();
-        }
-      };
-    
-      // Add event listeners to both input fields
-      [amountInput, platformTipInput].forEach(input => {
-        input.addEventListener('keydown', allowOnlyPositiveIntegers);
-        input.addEventListener('input', () => {
-          input.value = input.value.replace(/[^0-9]/g, '');
-        });
+
+    // Function to allow only positive integers
+    const allowOnlyPositiveIntegers = (event: KeyboardEvent) => {
+      if (
+        !/[0-9]/.test(event.key) &&
+        event.key !== "Backspace" &&
+        event.key !== "Delete" &&
+        event.key !== "ArrowLeft" &&
+        event.key !== "ArrowRight"
+      ) {
+        event.preventDefault();
+      }
+    };
+
+    // Add event listeners to both input fields
+    [amountInput, platformTipInput].forEach((input) => {
+      input.addEventListener("keydown", allowOnlyPositiveIntegers);
+      input.addEventListener("input", () => {
+        input.value = input.value.replace(/[^0-9]/g, "");
       });
+    });
   });
 </script>
