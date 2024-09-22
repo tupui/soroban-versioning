@@ -253,7 +253,6 @@ import Loading from "./utils/Loading.astro";
         ).value;
 
         try {
-          console.log("fetching domain Info...");
           const domainInfo = await getAddressFromDomain("tansu");
           if (
             domainInfo &&
