@@ -11,9 +11,6 @@ interface ImportMetaEnv {
 
   readonly PUBLIC_DEFAULT_FEE: string;
   readonly PUBLIC_DEFAULT_TIMEOUT: number;
-
-  readonly SOROBAN_ACCOUNT: string;
-  readonly SOROBAN_NETWORK: string;
 }
 
 interface ImportMeta {

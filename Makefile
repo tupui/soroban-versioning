@@ -43,6 +43,8 @@ rust-lint:
 	cargo fmt -- --emit files
 
 clean:
+	rm target/wasm32-unknown-unknown/release/*.wasm
+	rm target/wasm32-unknown-unknown/release/*.d
 	cargo clean
 
 # --------- Events --------- #
@@ -61,7 +63,7 @@ contract_build:
 	stellar contract build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
-contract_test: contract_build
+contract_test:
 	cargo test
 
 contract_build-release: contract_build
@@ -76,21 +78,13 @@ contract_bindings: contract_build-release
 		--output-dir dapp/packages/soroban_versioning \
 		--overwrite
 
-contract_deploy: contract_test contract_build-release  ## Deploy Soroban contract to testnet
+contract_deploy: contract_test contract_bindings contract_build-release  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
   		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
   		--source-account mando-$(network) \
   		--network $(network) \
   		> .soroban/soroban_versioning_id && \
   	cat .soroban/soroban_versioning_id
-
-contract_domain_deploy:
-	stellar contract deploy \
-  		--wasm contracts/domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm \
-  		--source-account mando-$(network) \
-  		--network $(network) \
-  		> .soroban/soroban_domain_id && \
-  	cat .soroban/soroban_domain_id
 
 contract_init:
 	stellar contract invoke \
@@ -100,6 +94,25 @@ contract_init:
     	-- \
     	init \
     	--admin $(shell soroban keys address mando-$(network))
+
+contract_upgrade: contract_build-release
+	stellar contract invoke \
+    	--source-account mando-$(network) \
+    	--network $(network) \
+    	--id $(shell cat .soroban/soroban_versioning_id) \
+    	-- \
+    	upgrade \
+		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm)
+
+# --------- Soroban Domains --------- #
+
+contract_domain_deploy:
+	stellar contract deploy \
+  		--wasm contracts/domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm \
+  		--source-account mando-$(network) \
+  		--network $(network) \
+  		> .soroban/soroban_domain_id && \
+  	cat .soroban/soroban_domain_id
 
 contract_domain_init:
 	stellar contract invoke \
@@ -114,16 +127,7 @@ contract_domain_init:
 		--min_duration 31536000 \
 		--allowed_tlds '[{"bytes": "786c6d"}]'
 
-contract_upgrade: contract_build-release
-	stellar contract invoke \
-    	--source-account mando-$(network) \
-    	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
-    	-- \
-    	upgrade \
-		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm)
-
-# --------- CONTRACT USAGE --------- #
+# --------- CONTRACT USAGE EXAMPLES --------- #
 
 contract_help:
 	stellar contract invoke \
