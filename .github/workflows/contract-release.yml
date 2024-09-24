@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_name:
-        description: 'Unique release name'
+        description: "Unique release name"
         required: true
         type: string
 
@@ -16,14 +16,13 @@ jobs:
   release-contract:
     name: Compile Stellar smart contract for production and create release
     permissions:
-      contents: write  # in order to create releases
+      contents: write # in order to create releases
     uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@4d0117fd348fb90cc36e2cd8c774f822802752af
     with:
       release_name: ${{ github.event.inputs.release_name }}
-      release_description: 'Tansu contract release'
+      release_description: "Tansu contract release"
     secrets:
       release_token: ${{ secrets.GITHUB_TOKEN }}
-
 #  attestation-contract:
 #    needs: release-contract
 #    runs-on: ubuntu-latest

@@ -1,6 +1,6 @@
 # Tansu - Soroban Versioning
 
-*- or SVN if you want to make some people angry*
+_- or SVN if you want to make some people angry_
 
 https://tansu.dev
 

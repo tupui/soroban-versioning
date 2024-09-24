@@ -4,17 +4,17 @@ Welcome to our community! Thank you for taking the time to read the following.
 
 ## TL;DR
 
-* All code should have tests.
-* All code should be documented.
-* No changes are ever committed without review and approval.
+- All code should have tests.
+- All code should be documented.
+- No changes are ever committed without review and approval.
 
 ## Project management
 
-* *github* is used for the code base.
-* For a PR to be integrated, it must be approved at least by one core team member.
-* Development discussions happen on Discord but any request **must** be formalized in *github*. This ensures a common
+- _github_ is used for the code base.
+- For a PR to be integrated, it must be approved at least by one core team member.
+- Development discussions happen on Discord but any request **must** be formalized in _github_. This ensures a common
   history.
-* Continuous Integration is provided by *Github actions* and configuration is located at ``.github/workflows``.
+- Continuous Integration is provided by _Github actions_ and configuration is located at `.github/workflows`.
 
 ## Code
 
@@ -27,7 +27,7 @@ After cloning the repository, see the various Makefiles.
 Testing your code is paramount. Without continuous integration, we **cannot**
 guaranty the quality of the code. Some minor modification on a function can
 have unexpected implications. With a single commit, everything can go south!
-The ``main`` branch is always on a passing state: CI is green, working code,
+The `main` branch is always on a passing state: CI is green, working code,
 and an installable Python package.
 
 > Tests will be automatically launched when you will push your branch to
@@ -65,15 +65,15 @@ pre-commit run --all-files
 ```
 
 When you try to commit your changes, it will launch the pre-commit hooks
-(``.pre-commit-config.yaml``)
+(`.pre-commit-config.yaml`)
 and modify the files if there are any changes to be made for the commit to be
 accepted. If you don't use this feature and your changes are not compliant
 (linter), CI will fail.
 
 ### Recipe for new feature
 
-If you want to add a modification, create a new branch branching off ``main``.
-Then you can create a merge request on *github*. From here, the fun begins.
+If you want to add a modification, create a new branch branching off `main`.
+Then you can create a merge request on _github_. From here, the fun begins.
 
 > For every commit you push, the linter and tests are launched.
 
@@ -100,7 +100,7 @@ Commit messages should be clear and follow a few basic rules. Example:
 Describing the motivation for a change, the nature of a bug for bug fixes or
 some details on what an enhancement does are also good to include in a commit
 message. Messages should be understandable without looking at the code
-changes. A commit message like ``fixed another one`` is an example of
+changes. A commit message like `fixed another one` is an example of
 what not to do; the reader has to go look for context elsewhere.
 
 ### Squash, rebase and merge

@@ -5,7 +5,7 @@ permissions:
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
 
   workflow_dispatch:
@@ -19,9 +19,9 @@ concurrency:
 jobs:
   tests:
     env:
-      DOCKER_BUILDKIT: '1'
-      COMPOSE_DOCKER_CLI_BUILD: '1'
-      COMPOSE_PROJECT_NAME: 'tansu'
+      DOCKER_BUILDKIT: "1"
+      COMPOSE_DOCKER_CLI_BUILD: "1"
+      COMPOSE_PROJECT_NAME: "tansu"
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -54,4 +54,4 @@ jobs:
         env:
           VOLUME_BASE_PATH: ${{ github.workspace }}
         run: |
-          make events_test 
+          make events_test
