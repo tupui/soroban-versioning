@@ -1,8 +1,11 @@
 import axios from "axios";
 import toml from "toml";
 
-import type {FormattedCommit} from "../types/github";
-import {getAuthorRepo, getGithubContentUrlFromConfigUrl,} from "../utils/editLinkFunctions";
+import type { FormattedCommit } from "../types/github";
+import {
+  getAuthorRepo,
+  getGithubContentUrlFromConfigUrl,
+} from "../utils/editLinkFunctions";
 
 async function getCommitHistory(
   username: string,
@@ -88,9 +91,7 @@ async function getTOMLFileHash(configUrl: string) {
     const hashBuffer = await crypto.subtle.digest("SHA-256", tomlBytes);
 
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray
-      .map((byte) => byte.toString(16).padStart(2, "0"))
-      .join("");
+    return hashArray.map((byte) => byte.toString(16).padStart(2, "0")).join("");
   }
 
   return undefined;

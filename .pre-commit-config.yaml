@@ -22,16 +22,20 @@ repos:
         language: rust
         pass_filenames: false
         entry: cargo fmt --all --check
-      #      - id: dapp
-      #        name: dApp prettier
-      #        language: node
-      #        pass_filenames: false
-      #        entry: bun prettier . --write
-      #      - id: website
-      #        name: website prettier
-      #        language: node
-      #        pass_filenames: false
-      #        entry: yarn format:mdx
+      - id: dapp
+        name: dApp prettier
+        additional_dependencies:
+          - prettier
+        language: node
+        pass_filenames: false
+        entry: prettier --write dapp
+      - id: website
+        name: website prettier
+        additional_dependencies:
+          - prettier
+        language: node
+        pass_filenames: false
+        entry: prettier --write "website/{blog,docs,src/pages}/**/*.{md,mdx}"
 
       # our custom action
       - id: soroban-versioning
