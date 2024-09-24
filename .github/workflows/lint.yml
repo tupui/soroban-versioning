@@ -6,7 +6,7 @@ permissions:
 on:
   # TODO adjust once we do PR
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
 
 concurrency:
@@ -37,11 +37,20 @@ jobs:
           cache: "npm"
           cache-dependency-path: "website/package-lock.json"
 
-      - name: Install App Dependencies
+      - name: Install website dependencies
         run: cd website && npm install
 
       - name: Check MDX
         run: cd website && npm run check:mdx
 
-      - name: Build app
+      - name: Build website
         run: cd website && npm run build
+
+      - name: Install App dependencies
+        run: cd dapp && npm install
+
+      - name: Linter
+        run: cd dapp && npm run linter
+
+      - name: Build app
+        run: cd dapp && npm run build
