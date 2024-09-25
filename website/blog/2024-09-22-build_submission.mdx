@@ -1,0 +1,103 @@
+---
+slug: build_submission
+title: Application submitted!
+authors: pamphile
+tags: [scf]
+---
+
+I am happy to let you know that I filled out our application for the SCF Build! I am sharing here what we have planned. I really hope we get the opportunity to build all that for the community 😻 Don't forget to vote 🤗
+
+<!-- truncate -->
+
+After a successful POC phase. Tansu is starting to show our vision and can be played with on Testnet. We have an ambitious proposal for the Build award. Besides the road to mainnet and real adoption, we have two objectives:
+
+- Offer a decentralized platform for developers to maintain and interact with projects;
+- Add an emphasis on people behind projects through the use of reputation badges.
+
+## Decentralized organization
+
+Projects will have access to their own Decentralized Autonomous Organization (DAO). The community of a project will be able to vote on new features or organizational changes. There are several SCF open source projects we might be able to leverage.
+
+The project will have a wallet and the DAO will be used to control the funds allocation. There are going to be mainly two pools. The first pool is dedicated to developers. Funds will be automatically distributed to active maintainers based on specific criteria. The rest of the funds would be managed by the DAO for other purposes such as compensating non-developers, infrastructure costs, or even organizing events. The use of a complex system of redistributions typically used in web3 projects, such as Quadratic Funding (QF), will be evaluated.
+
+The first building block is being built as of writing. We are adding a support button which would allow projects to collect funds. The funds will be routed to the domain address of the project, then projects can either use the DAO to manage it or do otherwise.
+
+Release process on-chain. From triggering the release to registering it.
+
+Add a level of trust per hash. Combining time based rules with additional factors such as voting from maintainers, to mark specific hashes as more trusted: this introduces a finality concept and enables consumers of the contract to use specific trust levels depending on their own risk profile. We will evaluate the possibility to combine this concept with an automatic update of the hash. This would allow a fully trustless mode of operation. Linked to that, we will add tools to reject a hash. As maintainers can get compromised, it is important to have means to indicate that a project and person is compromised.
+
+## The people behind the code
+
+Behind projects, we have people. We want to add profiles for people registered on-chain and recognise their contributions. We will leverage the solution from Trustful, and doing so, build yet another sustainable partnership between SCF projects.
+
+Badges are not vanity tokens. They will play an essential role in defining permissions on the protocol. Linked to the DAO, badges will reflect the level of trust the community has in someone. This integration will require extensive work both on the contract and the dApp side.
+
+Tools will be implemented to add/remove maintainers programmatically based on the on-chain status of the project and trust level.
+
+Other personas will be added on-chain as to give other responsibilities. This will further increase projects' transparency and give all participants some visibility.
+
+Finally, users will be able to subscribe to projects to get news about new trusted releases, security related issues and DAO events.
+
+## Roadmap - Tranches
+
+The planning outlined below, and in the other tranches, assumes an average level of effort of 15h per week per person for a total duration of 6 months making it sustainable in terms of development engagement for all parties.
+
+For simplicity, the start of the tranche is represented as W1-for Week 1. While the developers have some affinity, backend/frontend/contract, all developers will be involved on all aspects of the proposal.
+
+### MVP
+
+1. Decentralized organization backend;
+   - Create a decentralized organization when a project register,
+   - Create a new project and see that a DAO is created on-chain.
+   - W1 to W5
+2. Decentralized organization frontend;
+   - Frontend for the DAO with different flow for project's collaborators and users,
+   - We can create a DAO, make proposals and trigger flows from the dApp (team priviledges, release and flag commits).
+   - W3 to W8
+3. Maintenance before Testnet tranche;
+   - Stabilize the project: code cleanup and maintainability efforts,
+   - Upon specific actions such as making commits, receive a badge on-chain.
+   - W1 to W2 and W6 to W8
+
+### Testnet
+
+1. Add reputation badges backend;
+   - Projects get a set of badges to define the level of contribution,
+   - Upon specific actions such as making commits, receive a badge on-chain.
+   - W1 to W5
+2. Add reputation badges frontend;
+   - Projects get a set of badges to define the level of contribution,
+   - See the Tansu reputation of a user registered on Tansu.
+   - W3 to W8
+3. Backend infrastructure;
+   - Deploy the backend on GCP and connect the frontend,
+   - The app will be more reactive and do far less contract calls.
+   - W1 to W8
+
+### Mainnet
+
+1. UI testing;
+   - Add a full suite of UI tests with Playwright,
+   - All scenarios are fully covered.
+   - W1 to W4
+2. Contract testing;
+   - Harden the testing of the contract and prepare for the audit,
+   - Fuzzy testing can be done with confidence and the audit passes.
+   - W1 to W2
+3. Event subscription;
+   - Add the possibility to subscribe to a project to get updates,
+   - Get informed about specifics on a project (new commit, incidents, DAO proposals, releases).
+   - W4 to W7
+4. Documentation;
+   - Write guides and walk through,
+   - Guides are published on our main website and blog.
+   - W5 to W8
+5. Community feedback;
+   - Based on community feedback, make changes,
+   - W1 to W8.
+
+As a public good project, we don't yet have concrete monetization plans. At that point we are more interested in providing monetization tools to support the projects on our platform. The Support button will allow people to show their support in XLM to a project and if they wish, give a tip to the platform. Monthly options will also be made available and could generate a constant revenue stream both for the projects and our platform.
+
+As we add new features, driven by community feedback, we might add more enterprise oriented features. At that point we are thinking about adding some fees to specific contract calls and features in the dApp itself.
+
+Regardless of a hypothetical monetization, we have a strong commitment toward open-source and our code will remain public. We will ensure that there is great documentation so that anyone can freely Quickstart our infrastructure and build on top of it as they wish.
