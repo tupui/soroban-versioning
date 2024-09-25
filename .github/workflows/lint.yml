@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
       - uses: pre-commit/action@v3.0.1
 
-  website:
+  website-dapp:
     runs-on: ubuntu-latest
 
     steps:
