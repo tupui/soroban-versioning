@@ -26,6 +26,7 @@ repos:
         name: dApp prettier
         additional_dependencies:
           - prettier
+          - prettier-plugin-astro
         language: node
         pass_filenames: false
         entry: prettier --write dapp
