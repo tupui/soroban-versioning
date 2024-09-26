@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'Tansu - Soroban Versioning',
-  tagline: 'Bringing Git hashes onto Stellar’s blockchain',
+  tagline: 'Bringing open source software development onto the Stellar blockchain',
   favicon: 'img/logo.svg',
 
   // Set the production url of your site here
@@ -15,8 +15,8 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'tansu', // Usually your GitHub org/user name.
-  projectName: 'soroban-versioning', // Usually your repo name.
+  // organizationName: 'tansu', // Usually your GitHub org/user name.
+  // projectName: 'soroban-versioning', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -113,7 +113,7 @@ const config: Config = {
       //     ],
       //   },
       // ],
-      copyright: `Copyright © ${new Date().getFullYear()} Tansu. Made by Consulting Manao GmbH.`,
+      copyright: `<p>Copyright © ${new Date().getFullYear()} Tansu. Made by <a href="https://consulting-manao.com">Consulting Manao GmbH</a></p>`,
     },
     prism: {
       theme: prismThemes.github,
