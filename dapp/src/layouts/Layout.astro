@@ -3,6 +3,7 @@ import "../styles/global.css";
 import Navbar from "../components/layout/Navbar.astro";
 import Footer from "../components/layout/Footer.astro";
 import { ViewTransitions } from "astro:transitions";
+import { SEO } from "astro-seo";
 
 interface Props {
   title: string;
@@ -15,19 +16,50 @@ const { title } = Astro.props;
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="description"
-      content="Bringing open source software development onto the Stellar blockchain"
-    />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>{title}</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
       rel="stylesheet"
     />
     <ViewTransitions />
+
+    <SEO
+      title={title}
+      description="Bringing open source software development onto the Stellar blockchain"
+      nofollow="true"
+      openGraph={{
+        basic: {
+          title: { title },
+          type: "website",
+          image:
+            "https://github.com/tupui/soroban-versioning/blob/3c747e0fc4584559abbb7e77495fcc392ca0c16f/dapp/public/logo.svg",
+        },
+      }}
+      twitter={{
+        creator: "@PamphileRoy",
+        card: "summary_large_image",
+      }}
+      extend={{
+        // extending the default link tags
+        link: [{ rel: "icon", href: "/logo.svg" }],
+        // extending the default meta tags
+        meta: [
+          {
+            name: "twitter:image",
+            content:
+              "https://github.com/tupui/soroban-versioning/blob/3c747e0fc4584559abbb7e77495fcc392ca0c16f/dapp/public/logo.svg",
+          },
+          { name: "twitter:title", content: "Tansu" },
+          {
+            name: "twitter:description",
+            content:
+              "Bringing open source software development onto the Stellar blockchain",
+          },
+        ],
+      }}
+    />
   </head>
   <body class="bg-white font-SpaceGrotesk">
     <Navbar />
