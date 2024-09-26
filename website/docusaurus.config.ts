@@ -56,7 +56,7 @@ const config: Config = {
 
   themeConfig: {
     // Replace with your project's social card
-    image: 'img/tansu-social-card.png',
+    image: 'https://tansu.dev/img/tansu-social-card.png',
     navbar: {
       title: 'Tansu',
       logo: {
