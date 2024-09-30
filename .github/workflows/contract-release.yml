@@ -23,7 +23,6 @@ jobs:
       release_description: "Tansu contract release"
       relative_path: '["contracts/versioning"]'
       package: 'versioning'
-      make_target: 'build'
     secrets:
       release_token: ${{ secrets.GITHUB_TOKEN }}
 #  attestation-contract:
