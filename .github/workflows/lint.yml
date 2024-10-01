@@ -37,7 +37,7 @@ jobs:
         run: cd website && bun linter
 
       - name: Build website
-        run: cd website && bun build
+        run: cd website && bun run build
 
       - name: Install App dependencies
         run: cd dapp && bun install
@@ -46,4 +46,4 @@ jobs:
         run: cd dapp && bun linter
 
       - name: Build app
-        run: cd dapp && bun build
+        run: cd dapp && bun run build
