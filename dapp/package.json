@@ -30,7 +30,8 @@
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "astro dev",
-    "linter": "prettier --write ."
+    "formatter": "prettier --write .",
+    "linter": "prettier -c ."
   },
   "type": "module",
   "version": "0.0.1",

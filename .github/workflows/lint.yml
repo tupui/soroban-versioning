@@ -27,30 +27,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout App Repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: "website/package-lock.json"
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
 
       - name: Install website dependencies
-        run: cd website && npm install
+        run: cd website && bun install
 
       - name: Check MDX
-        run: cd website && npm run check:mdx
+        run: cd website && bun linter
 
       - name: Build website
-        run: cd website && npm run build
+        run: cd website && bun build
 
       - name: Install App dependencies
-        run: cd dapp && npm install
+        run: cd dapp && bun install
 
       - name: Linter
-        run: cd dapp && npm run linter
+        run: cd dapp && bun linter
 
       - name: Build app
-        run: cd dapp && npm run build
+        run: cd dapp && bun build
