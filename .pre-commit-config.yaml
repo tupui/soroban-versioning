@@ -34,6 +34,7 @@ repos:
         name: website prettier
         additional_dependencies:
           - prettier
+          - "@stellar/prettier-config"
         language: node
         pass_filenames: false
         entry: prettier --write "website/{blog,docs,src/pages}/**/*.{md,mdx}"

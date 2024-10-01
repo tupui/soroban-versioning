@@ -22,16 +22,20 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      - uses: oven-sh/setup-bun@v1
-
-      - name: Install deps
-        run: bun install --global prettier @stellar/prettier-config prettier-plugin-astro
+      #      - uses: oven-sh/setup-bun@v1
+      #
+      #      - name: Install deps
+      #        run: bun install --global prettier @stellar/prettier-config prettier-plugin-astro
 
       - name: Install pre-commit
         run: python -m pip install pre-commit
 
       - name: Run pre-commit
-        run: pre-commit run --show-diff-on-failure --color=always --all
+        run: |
+          pre-commit run --show-diff-on-failure --color=always ruff
+          pre-commit run --show-diff-on-failure --color=always ruff-format
+          pre-commit run --show-diff-on-failure --color=always clippy
+          pre-commit run --show-diff-on-failure --color=always rustfmt
 
   website-dapp:
     runs-on: ubuntu-latest
