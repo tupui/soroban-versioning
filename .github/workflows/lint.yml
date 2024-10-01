@@ -25,7 +25,7 @@ jobs:
       - uses: oven-sh/setup-bun@v1
 
       - name: Install deps
-        run: bun install --global prettier stellar/prettier-config prettier-plugin-astro
+        run: bun install --global stellar/prettier-config prettier-plugin-astro
 
       - name: Install pre-commit
         run: python -m pip install pre-commit
