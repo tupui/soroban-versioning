@@ -25,7 +25,7 @@ jobs:
       - uses: oven-sh/setup-bun@v1
 
       - name: Install deps
-        run: cd dapp && bun install && cd ../website && bun install
+        run: cd dapp && bun install --global && cd ../website && bun install --global
 
       - name: Install pre-commit
         run: python -m pip install pre-commit
