@@ -21,12 +21,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
       - uses: oven-sh/setup-bun@v1
 
       - name: Install deps
         run: cd dapp && bun install && cd ../website && bun install
 
-      - uses: pre-commit/action@v3.0.1
+      - name: Install pre-commit
+        run: python -m pip install pre-commit
+
+      - name: Run pre-commit
+        run: pre-commit run --show-diff-on-failure --color=always --all
 
   website-dapp:
     runs-on: ubuntu-latest
