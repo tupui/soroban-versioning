@@ -25,15 +25,19 @@ repos:
       - id: dapp
         name: dApp prettier
         additional_dependencies:
-          - prettier
-          - prettier-plugin-astro
+          [
+            prettier,
+            prettier-plugin-astro,
+          ]
         language: node
         pass_filenames: false
         entry: prettier --write dapp
       - id: website
         name: website prettier
         additional_dependencies:
-          - prettier
+          [
+            prettier
+          ]
         language: node
         pass_filenames: false
         entry: prettier --write "website/{blog,docs,src/pages}/**/*.{md,mdx}"
