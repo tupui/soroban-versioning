@@ -23,8 +23,8 @@ jobs:
           python-version: "3.12"
       - uses: oven-sh/setup-bun@v1
 
-      - name: Install prettier
-        run: bun install prettier prettier-plugin-astro
+      - name: Install deps
+        run: cd dapp && bun install && cd ../website && bun install
 
       - uses: pre-commit/action@v3.0.1
 
