@@ -320,7 +320,7 @@ import ModalInput from "./utils/ModalInput.astro";
               setProjectLatestSha(latestSha);
             } else setProjectLatestSha("");
 
-            navigate("/project");
+            navigate(`/project/${project.name}`);
           }
         }
       });
