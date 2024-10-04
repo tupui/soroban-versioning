@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@astrojs/check": "^0.9.3",
+    "@astrojs/netlify": "5.5.3",
     "@astrojs/react": "^3.6.2",
     "@astrojs/tailwind": "^5.1.1",
     "@creit.tech/sorobandomains-sdk": "^0.1.2",
