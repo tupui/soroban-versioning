@@ -7,14 +7,14 @@ import Container from "../../components/layout/Container.astro";
 import ProjectInfo from "../../components/ProjectInfo.astro";
 
 const { project } = Astro.params; 
-console.log("project:", project);
 ---
 
 <script is:inline>
   var global = global || window;
 </script>
+
 <Layout title="Tansu">
-  <main class="space-y-20">
+  <main class="space-y-20" data-project={project}>
     <Container>
       <ProjectInfo />
       <GetCommit />
@@ -22,3 +22,79 @@ console.log("project:", project);
     </Container>
   </main>
 </Layout>
+
+<script>
+  import { fetchTOMLFromConfigUrl } from "../../service/GithubService";
+  import { getProject, getProjectHash } from "../../service/ReadContractService";
+  import { setConfigData, setProject, setProjectId, setProjectLatestSha, setProjectRepoInfo } from "../../service/StateService";
+  import { getAuthorRepo } from "../../utils/editLinkFunctions";
+  document.addEventListener("astro:page-load", async () => {
+    const projectElement = document.querySelector('main') as HTMLElement;
+    const projectName = projectElement?.dataset.project;
+    if (projectName) {
+      setProjectId(projectName);
+      const project = await getProject();
+      if (
+        project &&
+        project.name &&
+        project.config &&
+        project.maintainers
+      ) {
+        setProject(project);
+        const { username, repoName } = getAuthorRepo(project.config.url);
+        if (username && repoName) {
+          setProjectRepoInfo(username, repoName);
+        }
+        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+        if (tomlData) {
+          const configData = {
+            projectName: project.name,
+            logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
+            thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
+            description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
+            companyName: tomlData.DOCUMENTATION?.ORG_NAME || "",
+            officials: {
+              websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
+              githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
+            },
+            socialLinks: {
+              ...(tomlData.DOCUMENTATION?.ORG_TWITTER && {
+                twitter: tomlData.DOCUMENTATION.ORG_TWITTER,
+              }),
+              ...(tomlData.DOCUMENTATION?.ORG_TELEGRAM && {
+                telegram: tomlData.DOCUMENTATION.ORG_TELEGRAM,
+              }),
+              ...(tomlData.DOCUMENTATION?.ORG_DISCORD && {
+                discord: tomlData.DOCUMENTATION.ORG_DISCORD,
+              }),
+              ...(tomlData.DOCUMENTATION?.ORG_INSTAGRAM && {
+                instagram: tomlData.DOCUMENTATION.ORG_INSTAGRAM,
+              }),
+              ...(tomlData.DOCUMENTATION?.ORG_FACEBOOK && {
+                facebook: tomlData.DOCUMENTATION.ORG_FACEBOOK,
+              }),
+              ...(tomlData.DOCUMENTATION?.ORG_REDDIT && {
+                reddit: tomlData.DOCUMENTATION.ORG_REDDIT,
+              }),
+            },
+            authorGithubNames:
+              tomlData.PRINCIPALS?.map((p: { github: any }) => p.github) ||
+              [],
+            maintainersAddresses: tomlData.ACCOUNTS || [],
+          };
+          setConfigData(configData);
+        } else {
+          setConfigData({});
+        }
+
+        const latestSha = await getProjectHash();
+        if (
+          typeof latestSha === "string" &&
+          latestSha.match(/^[a-f0-9]{40}$/)
+        ) {
+          setProjectLatestSha(latestSha);
+        } else setProjectLatestSha("");
+      }
+    }
+  });
+</script>

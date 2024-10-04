@@ -593,27 +593,29 @@ import DonateModal from "./DonateModal.astro";
             "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
 
           try {
-            const latestCommit = await getLatestCommitData(
-              projectInfo.config.url,
-              latestSha,
-            );
+            if (projectInfo.config.url && latestSha) {
+              const latestCommit = await getLatestCommitData(
+                projectInfo.config.url,
+                latestSha,
+              );
 
-            if (
-              latestCommit &&
-              latestCommit.sha &&
-              latestCommit.sha === latestSha
-            ) {
-              commitComponent.classList.add("bg-lime");
-              commitIcon.src = "/icons/check.svg";
-              commitIcon.alt = "Check";
-              commitPopup.innerHTML =
-                '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain exists on GitHub</p>';
-            } else {
-              commitComponent.classList.add("bg-orange-200");
-              commitIcon.src = "/icons/failed.svg";
-              commitIcon.alt = "Failed";
-              commitPopup.innerHTML =
-                '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
+              if (
+                latestCommit &&
+                latestCommit.sha &&
+                latestCommit.sha === latestSha
+              ) {
+                commitComponent.classList.add("bg-lime");
+                commitIcon.src = "/icons/check.svg";
+                commitIcon.alt = "Check";
+                commitPopup.innerHTML =
+                  '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain exists on GitHub</p>';
+              } else {
+                commitComponent.classList.add("bg-orange-200");
+                commitIcon.src = "/icons/failed.svg";
+                commitIcon.alt = "Failed";
+                commitPopup.innerHTML =
+                  '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
+              }
             }
           } catch (error) {
             commitComponent.classList.add("bg-orange-200");
