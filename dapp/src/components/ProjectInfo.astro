@@ -234,7 +234,6 @@ import DonateModal from "./DonateModal.astro";
   import { updateConfig } from "../service/WriteContractService";
   import { getProject } from "../service/ReadContractService";
   import {
-    initializeProjectState,
     loadConfigData,
     loadProjectInfo,
     loadProjectLatestSha,
@@ -249,9 +248,6 @@ import DonateModal from "./DonateModal.astro";
   } from "../service/GithubService";
 
   document.addEventListener("astro:page-load", () => {
-    initializeProjectState();
-    projectInfoLoaded.set(true);
-
     const modal = document.getElementById(
       "update-config-modal",
     ) as HTMLDialogElement;
@@ -694,8 +690,12 @@ import DonateModal from "./DonateModal.astro";
       }
     }
 
-    updateProjectInfo();
-    updateUpgradeConfigButtonVisibility();
+    projectInfoLoaded.subscribe((loaded) => {
+      if (loaded) {
+        updateProjectInfo();
+        updateUpgradeConfigButtonVisibility();
+      }
+    });
 
     const button = document.querySelector(
       "[data-update-config]",
