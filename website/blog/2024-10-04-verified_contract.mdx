@@ -1,0 +1,24 @@
+---
+slug: verified_contract
+title: Contract provenance
+authors: pamphile
+tags: [soroban]
+---
+
+Tansu's goal is to provide a way to validate projects with on-chain data. This can only work if Tansu's contract is actually what you think it is. This is why we are happy to share that we added support for [stellar.expert](https://stellar.expert/explorer/public)'s contract validation mechanism.
+
+<!-- truncate -->
+
+There are many aspects to consider when looking at securing the software supply-chain. Anything from the source code production to a user interaction is susceptible to vulnerabilities being introduced. [SLSA](https://slsa.dev), short for Supply-chain Levels for Software Artifacts, is a framework, set of standards, helping secure all aspects of a software's life cycle.
+
+![Supply Chain points of attack from SLSA's website](/assets/blog/supply_chain.png)
+
+Tansu fits in this framework as it provides a way to check that the code is original (and more to come!) But if Tansu's deployment on-chain is compromised, malicious data will end-up on-chain. To ensure that the version of Tansu running on-chain is legitimate and corresponds to what is actually in our code repository, we can use SLSA attestations. With an attestation, you can prove the link between the code and artifacts-such as compiled contracts.
+
+The chain explorer stellar.expert provides a [GitHub action](https://stellar.expert/explorer/public/contract/validation) which compiles the contract and signs artifacts. The action sends the hash to stellar.expert which in turn can use it to validate the contract on the explorer. Note that this is a mechanism inherent to the explorer, but soon the GitHub action will also provide SLSA attestations.
+
+Tansu is now making use of this action, which means that stellar.expert can verify that the contract's hash is valid and indicate its origin!
+
+![Contract provenance verification](/assets/blog/verified_contract.png)
+
+Security is a complex topic and securing the supply chain implies tackling all of its components and Tansu is here to help in that quest.
