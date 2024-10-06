@@ -26,7 +26,7 @@ const project = Astro.url.searchParams.get('name') || '';
 <script>
   import { fetchTOMLFromConfigUrl } from "../../service/GithubService";
   import { getProject, getProjectHash } from "../../service/ReadContractService";
-  import { initializeProjectState, setConfigData, setProject, setProjectId, setProjectLatestSha, setProjectRepoInfo } from "../../service/StateService";
+  import { initializeProjectState, refreshLocalStorage, setConfigData, setProject, setProjectId, setProjectLatestSha, setProjectRepoInfo } from "../../service/StateService";
   import { getAuthorRepo } from "../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../utils/store";
   document.addEventListener("astro:page-load", async () => {
@@ -95,9 +95,13 @@ const project = Astro.url.searchParams.get('name') || '';
         ) {
           setProjectLatestSha(latestSha);
         } else setProjectLatestSha("");
+        initializeProjectState();
+        projectInfoLoaded.set(true);
+      } else {
+        refreshLocalStorage();
+        alert("There isn't such Project.");
+        window.location.href = '/';
       }
-      initializeProjectState();
-      projectInfoLoaded.set(true);
     }
   });
 </script>
