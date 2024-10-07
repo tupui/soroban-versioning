@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      #      - uses: oven-sh/setup-bun@v1
+      #      - uses: oven-sh/setup-bun@v2
       #
       #      - name: Install deps
       #        run: bun install --global prettier @stellar/prettier-config prettier-plugin-astro
@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
 
       - name: Install website dependencies
         run: cd website && bun install
