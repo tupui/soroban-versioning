@@ -1,12 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-
 import GetCommit from "../../components/GetCommit.astro";
 import CommitComponent from "../../components/Commit.astro";
 import Container from "../../components/layout/Container.astro";
 import ProjectInfo from "../../components/ProjectInfo.astro";
-
-const project = Astro.url.searchParams.get('name') || '';
 ---
 
 <script is:inline>
@@ -14,7 +11,7 @@ const project = Astro.url.searchParams.get('name') || '';
 </script>
 
 <Layout title="Tansu">
-  <main class="space-y-20" data-project={project}>
+  <main class="space-y-20">
     <Container>
       <ProjectInfo />
       <GetCommit />
@@ -29,10 +26,13 @@ const project = Astro.url.searchParams.get('name') || '';
   import { initializeProjectState, refreshLocalStorage, setConfigData, setProject, setProjectId, setProjectLatestSha, setProjectRepoInfo } from "../../service/StateService";
   import { getAuthorRepo } from "../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../utils/store";
+
   document.addEventListener("astro:page-load", async () => {
-    const projectElement = document.querySelector('main') as HTMLElement;
-    const projectName = projectElement?.dataset.project;
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectName = urlParams.get('name') || '';
+    console.log("projectName:", projectName);
     if (projectName) {
+      console.log("project info loading...");
       setProjectId(projectName);
       const project = await getProject();
       if (
