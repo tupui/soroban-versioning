@@ -104,7 +104,7 @@ import ProjectInfo from "../../components/ProjectInfo.astro";
         projectInfoLoaded.set(true);
       } else {
         refreshLocalStorage();
-        alert("There isn't such Project.");
+        alert("The project you are trying to access does not exist.");
         window.location.href = "/";
       }
     }
