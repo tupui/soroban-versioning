@@ -42,7 +42,8 @@ export function extractConfigData(tomlData: any, projectName: string) {
         reddit: tomlData.DOCUMENTATION.ORG_REDDIT,
       }),
     },
-    authorGithubNames: tomlData.PRINCIPALS?.map((p: { github: string }) => p.github) || [],
+    authorGithubNames:
+      tomlData.PRINCIPALS?.map((p: { github: string }) => p.github) || [],
     maintainersAddresses: tomlData.ACCOUNTS || [],
   };
 }
