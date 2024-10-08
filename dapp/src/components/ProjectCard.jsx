@@ -12,6 +12,7 @@ import { getAuthorRepo } from "../utils/editLinkFunctions";
 import { fetchTOMLFromConfigUrl } from "../service/GithubService";
 import { projectCardModalOpen } from "../utils/store";
 import { convertGitHubLink } from "../utils/editLinkFunctions";
+import { extractConfigData } from "../utils/utils";
 
 const ProjectCard = ({ config }) => {
   const handleCardClick = async () => {
@@ -27,39 +28,7 @@ const ProjectCard = ({ config }) => {
         }
         const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
         if (tomlData) {
-          const configData = {
-            projectName: project.name,
-            logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
-            thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
-            description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
-            organizationName: tomlData.DOCUMENTATION?.ORG_NAME || "",
-            officials: {
-              websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
-              githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
-            },
-            socialLinks: {
-              ...(tomlData.DOCUMENTATION?.ORG_TWITTER && {
-                twitter: tomlData.DOCUMENTATION.ORG_TWITTER,
-              }),
-              ...(tomlData.DOCUMENTATION?.ORG_TELEGRAM && {
-                telegram: tomlData.DOCUMENTATION.ORG_TELEGRAM,
-              }),
-              ...(tomlData.DOCUMENTATION?.ORG_DISCORD && {
-                discord: tomlData.DOCUMENTATION.ORG_DISCORD,
-              }),
-              ...(tomlData.DOCUMENTATION?.ORG_INSTAGRAM && {
-                instagram: tomlData.DOCUMENTATION.ORG_INSTAGRAM,
-              }),
-              ...(tomlData.DOCUMENTATION?.ORG_FACEBOOK && {
-                facebook: tomlData.DOCUMENTATION.ORG_FACEBOOK,
-              }),
-              ...(tomlData.DOCUMENTATION?.ORG_REDDIT && {
-                reddit: tomlData.DOCUMENTATION.ORG_REDDIT,
-              }),
-            },
-            authorGithubNames: tomlData.PRINCIPALS?.map((p) => p.github) || [],
-            maintainersAddresses: tomlData.ACCOUNTS || [],
-          };
+          const configData = extractConfigData(tomlData, project.name);
           setConfigData(configData);
         } else {
           setConfigData({});

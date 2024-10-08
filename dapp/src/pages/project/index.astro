@@ -1,0 +1,80 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import GetCommit from "../../components/GetCommit.astro";
+import CommitComponent from "../../components/Commit.astro";
+import Container from "../../components/layout/Container.astro";
+import ProjectInfo from "../../components/ProjectInfo.astro";
+---
+
+<script is:inline>
+  var global = global || window;
+</script>
+
+<Layout title="Tansu">
+  <main class="space-y-20">
+    <Container>
+      <ProjectInfo />
+      <GetCommit />
+      <CommitComponent />
+    </Container>
+  </main>
+</Layout>
+
+<script>
+  import { fetchTOMLFromConfigUrl } from "../../service/GithubService";
+  import {
+    getProject,
+    getProjectHash,
+  } from "../../service/ReadContractService";
+  import {
+    initializeProjectState,
+    refreshLocalStorage,
+    setConfigData,
+    setProject,
+    setProjectId,
+    setProjectLatestSha,
+    setProjectRepoInfo,
+  } from "../../service/StateService";
+  import { getAuthorRepo } from "../../utils/editLinkFunctions";
+  import { projectInfoLoaded } from "../../utils/store";
+  import { extractConfigData } from "../../utils/utils";
+
+  document.addEventListener("astro:page-load", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectName = urlParams.get("name") || "";
+    console.log("projectName:", projectName);
+    if (projectName) {
+      console.log("project info loading...");
+      setProjectId(projectName);
+      const project = await getProject();
+      if (project && project.name && project.config && project.maintainers) {
+        setProject(project);
+        const { username, repoName } = getAuthorRepo(project.config.url);
+        if (username && repoName) {
+          setProjectRepoInfo(username, repoName);
+        }
+        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+        if (tomlData) {
+          const configData = extractConfigData(tomlData, project.name);
+          setConfigData(configData);
+        } else {
+          setConfigData({});
+        }
+
+        const latestSha = await getProjectHash();
+        if (
+          typeof latestSha === "string" &&
+          latestSha.match(/^[a-f0-9]{40}$/)
+        ) {
+          setProjectLatestSha(latestSha);
+        } else setProjectLatestSha("");
+        initializeProjectState();
+        projectInfoLoaded.set(true);
+      } else {
+        refreshLocalStorage();
+        alert("The project you are trying to access does not exist.");
+        window.location.href = "/";
+      }
+    }
+  });
+</script>
