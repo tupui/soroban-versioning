@@ -113,6 +113,7 @@ import ModalInput from "./utils/ModalInput.astro";
   import { navigate } from "astro:transitions/client";
   import { getAuthorRepo } from "../utils/editLinkFunctions";
   import { fetchTOMLFromConfigUrl } from "../service/GithubService";
+  import { extractConfigData } from "../utils/utils";
   const SOROBAN_DOMAIN_CONTRACT_ID = `${import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID}`;
 
   document.addEventListener("astro:page-load", () => {
@@ -272,41 +273,7 @@ import ModalInput from "./utils/ModalInput.astro";
             }
             const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
             if (tomlData) {
-              const configData = {
-                projectName: project.name,
-                logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
-                thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
-                description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
-                companyName: tomlData.DOCUMENTATION?.ORG_NAME || "",
-                officials: {
-                  websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
-                  githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
-                },
-                socialLinks: {
-                  ...(tomlData.DOCUMENTATION?.ORG_TWITTER && {
-                    twitter: tomlData.DOCUMENTATION.ORG_TWITTER,
-                  }),
-                  ...(tomlData.DOCUMENTATION?.ORG_TELEGRAM && {
-                    telegram: tomlData.DOCUMENTATION.ORG_TELEGRAM,
-                  }),
-                  ...(tomlData.DOCUMENTATION?.ORG_DISCORD && {
-                    discord: tomlData.DOCUMENTATION.ORG_DISCORD,
-                  }),
-                  ...(tomlData.DOCUMENTATION?.ORG_INSTAGRAM && {
-                    instagram: tomlData.DOCUMENTATION.ORG_INSTAGRAM,
-                  }),
-                  ...(tomlData.DOCUMENTATION?.ORG_FACEBOOK && {
-                    facebook: tomlData.DOCUMENTATION.ORG_FACEBOOK,
-                  }),
-                  ...(tomlData.DOCUMENTATION?.ORG_REDDIT && {
-                    reddit: tomlData.DOCUMENTATION.ORG_REDDIT,
-                  }),
-                },
-                authorGithubNames:
-                  tomlData.PRINCIPALS?.map((p: { github: any }) => p.github) ||
-                  [],
-                maintainersAddresses: tomlData.ACCOUNTS || [],
-              };
+              const configData = extractConfigData(tomlData, project.name);
               setConfigData(configData);
             } else {
               setConfigData({});
