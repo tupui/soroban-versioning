@@ -13,7 +13,7 @@
     "js-sha3": "^0.9.3",
     "nanostores": "^0.11.3",
     "tailwindcss": "^3.4.13",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
