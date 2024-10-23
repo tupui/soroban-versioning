@@ -19,6 +19,9 @@ jobs:
   ipds:
     name: Publish dApp on IPFS
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
     environment:
       name: dapp-ipfs
     defaults:
