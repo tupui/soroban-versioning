@@ -20,8 +20,7 @@
     "dotenv": "^16.4.5",
     "glob": "^11.0.0",
     "prettier": "^3.3.3",
-    "prettier-plugin-astro": "^0.14.1",
-    "w3name": "^1.0.8"
+    "prettier-plugin-astro": "^0.14.1"
   },
   "name": "dapp",
   "scripts": {
