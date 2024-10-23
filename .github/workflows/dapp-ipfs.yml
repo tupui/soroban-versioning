@@ -48,7 +48,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          for artifact in ./dapp/dist/*; do
+          for artifact in dist/*; do
               echo "# ${artifact}"
               gh attestation verify "${artifact}" --repo ${{ github.repository }}
           done
