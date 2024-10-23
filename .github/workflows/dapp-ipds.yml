@@ -44,7 +44,7 @@ jobs:
           secret_key: ${{ secrets.W3_PRINCIPAL }}
 
       - name: CID
-        run: echo ${{ steps.w3up.outputs.cid }}
+        run: echo "CID=${{ steps.w3up.outputs.cid }}" >> "$GITHUB_OUTPUT"
 
       - name: URL
-        run: echo ${{ steps.w3up.outputs.url }}
+        run: echo "URL=${{ steps.w3up.outputs.url }}" >> "$GITHUB_OUTPUT"
