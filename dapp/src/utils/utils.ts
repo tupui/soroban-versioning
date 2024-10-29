@@ -32,9 +32,6 @@ export function extractConfigData(tomlData: any, projectName: string) {
       ...(tomlData.DOCUMENTATION?.ORG_DISCORD && {
         discord: tomlData.DOCUMENTATION.ORG_DISCORD,
       }),
-      ...(tomlData.DOCUMENTATION?.ORG_INSTAGRAM && {
-        instagram: tomlData.DOCUMENTATION.ORG_INSTAGRAM,
-      }),
     },
     authorGithubNames:
       tomlData.PRINCIPALS?.map((p: { github: string }) => p.github) || [],
