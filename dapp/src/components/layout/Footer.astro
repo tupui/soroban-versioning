@@ -1,17 +1,49 @@
 ---
 const year = new Date().getFullYear();
+const network = import.meta.env.SOROBAN_NETWORK;
+const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 ---
 
 <footer class="bg-lime bg-fixed bg-bottom text-black">
   <div class="max-w-screen-xl mx-auto px-6 md:px-14 xl:px-14">
-    <div class="py-6">
-      <div class="flex flex-col items-center">
-        <div class="flex mt-4 md:m-0">
-          <div class="-mx-4 text-sm sm:text-base text-center">
-            Copyright © <span id="currentYear">{year}</span> Tansu. Made by <a
+    <div class="py-8">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2 sm:gap-4 max-w-[calc(100%-82px)]">
+          <a href="https://tansu.dev">
+            <img src="/icons/logos/tansu.svg" alt="(//)" class="w-7 md:w-8" />
+          </a>
+          <div class="text-sm sm:text-base text-center max-w-[calc(100%-36px)]">
+            © <span id="currentYear">{year}</span> Tansu, <a
               href="https://consulting-manao.com">Consulting Manao GmbH</a
             >
           </div>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3 md:gap-4">
+          <a href="https://github.com/tupui/soroban-versioning">
+            <img
+              src="/icons/logos/github.svg"
+              alt="github"
+              class="w-5 sm:w-6 md:w-7 h-5 sm:h-6 md:h-7"
+            />
+          </a>
+          <a
+            href={`https://stellar.expert/explorer/${network}/contract/${contractId}`}
+          >
+            <img
+              src="/icons/logos/stellar-expert.svg"
+              alt="stellar explorer"
+              class="w-5 sm:w-6 md:w-7"
+            />
+          </a>
+          <a
+            href="https://discord.com/channels/897514728459468821/1262501866915237908"
+          >
+            <img
+              src="/icons/logos/discord.svg"
+              alt="stellar explorer"
+              class="w-5 sm:w-6 md:w-7"
+            />
+          </a>
         </div>
       </div>
     </div>

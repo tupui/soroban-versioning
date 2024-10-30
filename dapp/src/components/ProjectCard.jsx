@@ -82,7 +82,7 @@ const ProjectCard = ({ config }) => {
               rel="noopener noreferrer"
             >
               <img
-                src="/icons/web.svg"
+                src="/icons/logos/web.svg"
                 width={19}
                 height={19}
                 className="icon-website"
@@ -96,7 +96,7 @@ const ProjectCard = ({ config }) => {
               rel="noopener noreferrer"
             >
               <img
-                src="/icons/github.svg"
+                src="/icons/logos/github.svg"
                 width={16}
                 height={16}
                 className="icon-github"
@@ -113,7 +113,7 @@ const ProjectCard = ({ config }) => {
                   rel="noopener noreferrer"
                 >
                   <img
-                    src={`/icons/${platform}.svg`}
+                    src={`/icons/logos/${platform}.svg`}
                     width={16}
                     height={16}
                     className={`icon-${platform}`}

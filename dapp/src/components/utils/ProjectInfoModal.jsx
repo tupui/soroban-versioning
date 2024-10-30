@@ -70,9 +70,9 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                               <img
                                 src={
                                   platform === "websiteLink"
-                                    ? "/icons/web.svg"
+                                    ? "/icons/logos/web.svg"
                                     : platform === "githubLink"
-                                      ? "/icons/github.svg"
+                                      ? "/icons/logos/github.svg"
                                       : ""
                                 }
                                 width={16}
@@ -109,7 +109,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                           >
                             <span className="w-4 h-4">
                               <img
-                                src={`/icons/${platform}.svg`}
+                                src={`/icons/logos/${platform}.svg`}
                                 width={16}
                                 height={16}
                                 className={`icon-${platform}`}

@@ -12,9 +12,6 @@ export interface ConfigData {
     twitter: string;
     telegram: string;
     discord: string;
-    instagram: string;
-    facebook: string;
-    reddit: string;
   };
   authorGithubNames: string[];
   maintainersAddresses: string[];
