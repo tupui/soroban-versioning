@@ -5,7 +5,7 @@ import * as pkg from "js-sha3";
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 
-import { loadedProjectId } from "./StateService";
+import { loadedProjectId } from "./stateService";
 
 async function getProjectHash(): Promise<string | void> {
   const projectId = loadedProjectId();

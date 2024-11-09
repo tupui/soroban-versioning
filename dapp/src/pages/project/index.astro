@@ -1,9 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import GetCommit from "../../components/GetCommit.astro";
-import CommitComponent from "../../components/Commit.astro";
 import Container from "../../components/layout/Container.astro";
-import ProjectInfo from "../../components/ProjectInfo.astro";
+import GetCommit from "../../components/page/project/GetCommit.astro";
+import CommitComponent from "../../components/page/project/Commit.astro";
+import ProjectInfo from "../../components/page/project/ProjectInfo.astro";
 ---
 
 <script is:inline>
@@ -21,11 +21,11 @@ import ProjectInfo from "../../components/ProjectInfo.astro";
 </Layout>
 
 <script>
-  import { fetchTOMLFromConfigUrl } from "../../service/GithubService";
+  import { fetchTOMLFromConfigUrl } from "../../service/githubService";
   import {
     getProject,
     getProjectHash,
-  } from "../../service/ReadContractService";
+  } from "../../service/readContractService";
   import {
     initializeProjectState,
     refreshLocalStorage,
@@ -34,7 +34,7 @@ import ProjectInfo from "../../components/ProjectInfo.astro";
     setProjectId,
     setProjectLatestSha,
     setProjectRepoInfo,
-  } from "../../service/StateService";
+  } from "../../service/stateService";
   import { getAuthorRepo } from "../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../utils/store";
   import { extractConfigData } from "../../utils/utils";

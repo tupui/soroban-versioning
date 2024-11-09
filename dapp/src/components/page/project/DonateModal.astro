@@ -1,5 +1,5 @@
 ---
-import Loading from "./utils/Loading.astro";
+import Loading from "../../utils/Loading.astro";
 ---
 
 <div
@@ -147,8 +147,8 @@ import Loading from "./utils/Loading.astro";
 </div>
 
 <script>
-  import { sendXLM } from "../service/PaymentService";
-  import { getAddressFromDomain } from "../service/SorobanDomainContractService";
+  import { sendXLM } from "../../../service/paymentService";
+  import { getAddressFromDomain } from "../../../service/sorobanDomainContractService";
 
   document.addEventListener("astro:page-load", () => {
     const amountButtons = document.querySelectorAll(".amount-button");

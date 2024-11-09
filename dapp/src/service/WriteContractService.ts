@@ -1,7 +1,7 @@
 import { kit, loadedPublicKey } from "../components/stellar-wallets-kit";
 import Versioning from "../contracts/soroban_versioning";
 
-import { loadedProjectId } from "./StateService";
+import { loadedProjectId } from "./stateService";
 
 async function commitHash(commit_hash: string): Promise<boolean> {
   const projectId = loadedProjectId();

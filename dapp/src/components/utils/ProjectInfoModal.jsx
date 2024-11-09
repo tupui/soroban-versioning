@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
-import { loadProjectName } from "../../service/StateService";
+import { loadProjectName } from "../../service/stateService";
 
 const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
   const [projectName, setProjectName] = useState("");

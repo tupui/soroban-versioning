@@ -1,10 +1,10 @@
 ---
-import Topic from "./utils/Topic.astro";
-import Modal from "./utils/Modal.astro";
-import Loading from "./utils/Loading.astro";
+import Topic from "../../utils/Topic.astro";
+import Modal from "../../utils/Modal.astro";
+import Loading from "../../utils/Loading.astro";
+import PrimaryButton from "../../utils/PrimaryButton.astro";
+import ModalInput from "../../utils/ModalInput.astro";
 import CommitHistory from "./CommitHistory.jsx";
-import PrimaryButton from "./utils/PrimaryButton.astro";
-import ModalInput from "./utils/ModalInput.astro";
 import DonateModal from "./DonateModal.astro";
 ---
 
@@ -245,22 +245,22 @@ import DonateModal from "./DonateModal.astro";
 <DonateModal />
 
 <script>
-  import { loadedPublicKey } from "./stellar-wallets-kit";
-  import { updateConfig } from "../service/WriteContractService";
-  import { getProject } from "../service/ReadContractService";
+  import { loadedPublicKey } from "../../stellar-wallets-kit";
+  import { updateConfig } from "../../../service/writeContractService";
+  import { getProject } from "../../../service/readContractService";
   import {
     loadConfigData,
     loadProjectInfo,
     loadProjectLatestSha,
     loadProjectName,
     setProject,
-  } from "../service/StateService";
-  import { projectInfoLoaded } from "../utils/store.js";
-  import { convertGitHubLink } from "../utils/editLinkFunctions";
+  } from "../../../service/stateService";
+  import { projectInfoLoaded } from "../../../utils/store";
+  import { convertGitHubLink } from "../../../utils/editLinkFunctions";
   import {
     getLatestCommitData,
     getTOMLFileHash,
-  } from "../service/GithubService";
+  } from "../../../service/githubService";
 
   document.addEventListener("astro:page-load", () => {
     const modal = document.getElementById(
