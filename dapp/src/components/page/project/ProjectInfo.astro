@@ -158,15 +158,15 @@ import DonateModal from "./DonateModal.astro";
               </div>
               <div
                 id="copy-repo-link"
-                class="w-[141px] sm:w-[155px] flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
+                class="w-[157px] sm:w-[173px] flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
               >
                 <img
-                  src="/icons/logos/github.svg"
+                  src="/icons/logos/git.svg"
                   alt="GitHub Icon"
                   class="h-4 w-4 m-0.5"
                 />
                 <span id="copy-repo-text" class="text-sm sm:text-base"
-                  >Copy repo link</span
+                  >Clone repository</span
                 >
               </div>
             </div>
@@ -498,7 +498,7 @@ import DonateModal from "./DonateModal.astro";
                 await navigator.clipboard.writeText(repositoryUrl);
                 copyRepoText.textContent = "Copied";
                 setTimeout(() => {
-                  copyRepoText.textContent = "Copy repo link";
+                  copyRepoText.textContent = "Clone repository";
                 }, 2000);
               } catch (error) {
                 console.error("Failed to copy: ", error);
