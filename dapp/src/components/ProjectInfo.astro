@@ -135,7 +135,9 @@ import DonateModal from "./DonateModal.astro";
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
                     clip-rule="evenodd"></path>
                 </svg>
-                <span id="view-commit-text">View Commit History</span>
+                <span id="view-commit-text" class="text-sm sm:text-base"
+                  >View Commit History</span
+                >
               </div>
               <div
                 id="jump-to-latest-commit"
@@ -152,7 +154,20 @@ import DonateModal from "./DonateModal.astro";
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
                     clip-rule="evenodd"></path>
                 </svg>
-                <span>Jump to Latest Commit</span>
+                <span class="text-sm sm:text-base">Jump to Latest Commit</span>
+              </div>
+              <div
+                id="copy-repo-link"
+                class="w-[141px] sm:w-[155px] flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
+              >
+                <img
+                  src="/icons/logos/github.svg"
+                  alt="GitHub Icon"
+                  class="h-4 w-4 m-0.5"
+                />
+                <span id="copy-repo-text" class="text-sm sm:text-base"
+                  >Copy repo link</span
+                >
               </div>
             </div>
           </div>
@@ -449,12 +464,12 @@ import DonateModal from "./DonateModal.astro";
               githubLink.target = "_blank";
               githubLink.rel = "noopener noreferrer";
 
-              const websiteIcon = document.createElement("img");
-              websiteIcon.src = "/icons/logos/github.svg";
-              websiteIcon.alt = "Website";
-              websiteIcon.className = "w-5 h-5";
+              const githubIcon = document.createElement("img");
+              githubIcon.src = "/icons/logos/github.svg";
+              githubIcon.alt = "Website";
+              githubIcon.className = "w-5 h-5";
 
-              githubLink.appendChild(websiteIcon);
+              githubLink.appendChild(githubIcon);
               links.appendChild(githubLink);
             }
           } else {
@@ -463,13 +478,32 @@ import DonateModal from "./DonateModal.astro";
             githubLink.target = "_blank";
             githubLink.rel = "noopener noreferrer";
 
-            const websiteIcon = document.createElement("img");
-            websiteIcon.src = "/icons/logos/github.svg";
-            websiteIcon.alt = "Website";
-            websiteIcon.className = "w-5 h-5";
+            const githubIcon = document.createElement("img");
+            githubIcon.src = "/icons/logos/github.svg";
+            githubIcon.alt = "Website";
+            githubIcon.className = "w-5 h-5";
 
-            githubLink.appendChild(websiteIcon);
+            githubLink.appendChild(githubIcon);
             links.appendChild(githubLink);
+          }
+
+          // Add copy repo link button
+          const copyRepoLink = document.getElementById("copy-repo-link");
+          const copyRepoText = document.getElementById("copy-repo-text");
+          const repositoryUrl = projectInfo.config.url;
+
+          if (copyRepoLink && copyRepoText) {
+            copyRepoLink.addEventListener("click", async () => {
+              try {
+                await navigator.clipboard.writeText(repositoryUrl);
+                copyRepoText.textContent = "Copied";
+                setTimeout(() => {
+                  copyRepoText.textContent = "Copy repo link";
+                }, 2000);
+              } catch (error) {
+                console.error("Failed to copy: ", error);
+              }
+            });
           }
 
           if (configData && configData.socialLinks) {
