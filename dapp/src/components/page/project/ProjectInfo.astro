@@ -156,19 +156,6 @@ import DonateModal from "./DonateModal.astro";
                 </svg>
                 <span class="text-sm sm:text-base">Jump to Latest Commit</span>
               </div>
-              <div
-                id="copy-repo-link"
-                class="w-[157px] sm:w-[173px] flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
-              >
-                <img
-                  src="/icons/logos/git.svg"
-                  alt="GitHub Icon"
-                  class="h-4 w-4 m-0.5"
-                />
-                <span id="copy-repo-text" class="text-sm sm:text-base"
-                  >Clone repository</span
-                >
-              </div>
             </div>
           </div>
         </div>
@@ -485,25 +472,6 @@ import DonateModal from "./DonateModal.astro";
 
             githubLink.appendChild(githubIcon);
             links.appendChild(githubLink);
-          }
-
-          // Add copy repo link button
-          const copyRepoLink = document.getElementById("copy-repo-link");
-          const copyRepoText = document.getElementById("copy-repo-text");
-          const repositoryUrl = projectInfo.config.url;
-
-          if (copyRepoLink && copyRepoText) {
-            copyRepoLink.addEventListener("click", async () => {
-              try {
-                await navigator.clipboard.writeText(repositoryUrl);
-                copyRepoText.textContent = "Copied";
-                setTimeout(() => {
-                  copyRepoText.textContent = "Clone repository";
-                }, 2000);
-              } catch (error) {
-                console.error("Failed to copy: ", error);
-              }
-            });
           }
 
           if (configData && configData.socialLinks) {

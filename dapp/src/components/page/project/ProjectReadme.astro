@@ -1,0 +1,85 @@
+---
+import ReadmeViewer from "./ReadmeViewer.tsx";
+---
+
+<div
+  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
+>
+  <div
+    class="row items-center pb-8 sm:pb-10 md:pb-14 px-4 sm:px-8 md:px-20 w-full"
+  >
+    <div class="w-full h-10 sm:h-14 md:h-18 flex items-center">
+      <div
+        id="copy-repo-link"
+        class="group w-[157px] sm:w-[173px] flex items-center space-x-2 cursor-pointer rounded-lg px-2 py-1"
+      >
+        <img
+          src="/icons/logos/git.svg"
+          alt="GitHub Icon"
+          class="h-4 w-4 m-0.5"
+        />
+        <span id="copy-repo-text" class="text-sm sm:text-base group-hover:text-blue-600"
+          >Clone repository</span
+        >
+      </div>
+      <div
+        id="move-to-releases"
+        class="group w-[157px] sm:w-[173px] flex items-center space-x-2 cursor-pointer rounded-lg px-2 py-1"
+      >
+        <img
+          src="/icons/release.svg"
+          alt="GitHub Icon"
+          class="h-4 w-4 m-0.5"
+        />
+        <span id="copy-repo-text" class="text-sm sm:text-base group-hover:text-blue-600"
+          >Go to releases</span
+        >
+      </div>
+    </div>
+    <ReadmeViewer client:load />
+  </div>
+</div>
+
+<script>
+  import { loadProjectInfo } from "../../../service/stateService";
+  import { projectInfoLoaded } from "../../../utils/store";
+  document.addEventListener("astro:page-load", () => {
+
+    async function updateProjectInfo() {
+      const projectInfo = loadProjectInfo();
+      if (projectInfo) {
+        const repositoryUrl = projectInfo.config.url;
+        const copyRepoLink = document.getElementById("copy-repo-link");
+        const copyRepoText = document.getElementById("copy-repo-text");
+
+        if (copyRepoLink && copyRepoText) {
+          copyRepoLink.addEventListener("click", async () => {
+            try {
+              await navigator.clipboard.writeText(repositoryUrl);
+              copyRepoText.textContent = "Copied";
+              setTimeout(() => {
+                copyRepoText.textContent = "Clone repository";
+              }, 2000);
+            } catch (error) {
+              console.error("Failed to copy: ", error);
+            }
+          });
+        }
+
+        const moveToReleases = document.getElementById("move-to-releases");
+        if (moveToReleases) {
+          moveToReleases.addEventListener("click", () => {
+            const releasesUrl = `${repositoryUrl}/releases`;
+            window.open(releasesUrl, '_blank');
+          });
+        }
+      }
+    }
+
+    projectInfoLoaded.subscribe((loaded) => {
+      if (loaded) {
+        updateProjectInfo();
+      }
+    });
+  });
+</script>

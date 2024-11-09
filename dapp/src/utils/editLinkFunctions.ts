@@ -40,3 +40,14 @@ export function getGithubContentUrlFromConfigUrl(
   }
   return undefined;
 }
+
+export function getGithubContentUrlFromReadmeUrl(
+  configUrl: string,
+): string | undefined {
+  const { username, repoName } = getAuthorRepo(configUrl);
+  if (username && repoName) {
+    // use master as GitHub will do an automatic redirection to main
+    return getGithubContentUrl(username, repoName, "master/README.md");
+  }
+  return undefined;
+}

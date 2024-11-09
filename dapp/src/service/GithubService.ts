@@ -5,6 +5,7 @@ import type { FormattedCommit } from "../types/github";
 import {
   getAuthorRepo,
   getGithubContentUrlFromConfigUrl,
+  getGithubContentUrlFromReadmeUrl,
 } from "../utils/editLinkFunctions";
 
 async function getCommitHistory(
@@ -124,9 +125,28 @@ async function getLatestCommitData(
   return await getCommitDataFromSha(username, repoName, sha);
 }
 
+async function fetchReadmeContentFromConfigUrl(configUrl: string) {
+  const url = getGithubContentUrlFromReadmeUrl(configUrl);
+
+  if (url) {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return undefined;
+    }
+
+    const tomlText = await response.text();
+
+    return tomlText;
+  }
+
+  return undefined;
+}
+
 export {
   getCommitHistory,
   fetchTOMLFromConfigUrl,
+  fetchReadmeContentFromConfigUrl,
   getTOMLFileHash,
   getLatestCommitData,
 };

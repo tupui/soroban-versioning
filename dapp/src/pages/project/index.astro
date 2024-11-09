@@ -4,6 +4,7 @@ import Container from "../../components/layout/Container.astro";
 import GetCommit from "../../components/page/project/GetCommit.astro";
 import CommitComponent from "../../components/page/project/Commit.astro";
 import ProjectInfo from "../../components/page/project/ProjectInfo.astro";
+import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
 ---
 
 <script is:inline>
@@ -14,6 +15,7 @@ import ProjectInfo from "../../components/page/project/ProjectInfo.astro";
   <main class="space-y-20">
     <Container>
       <ProjectInfo />
+      <ProjectReadme />
       <GetCommit />
       <CommitComponent />
     </Container>
