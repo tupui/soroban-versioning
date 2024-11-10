@@ -18,7 +18,9 @@ import ReadmeViewer from "./ReadmeViewer.tsx";
           alt="GitHub Icon"
           class="h-4 w-4 m-0.5"
         />
-        <span id="copy-repo-text" class="text-sm sm:text-base group-hover:text-blue-600"
+        <span
+          id="copy-repo-text"
+          class="text-sm sm:text-base group-hover:text-blue-600"
           >Clone repository</span
         >
       </div>
@@ -26,12 +28,10 @@ import ReadmeViewer from "./ReadmeViewer.tsx";
         id="move-to-releases"
         class="group w-[157px] sm:w-[173px] flex items-center space-x-2 cursor-pointer rounded-lg px-2 py-1"
       >
-        <img
-          src="/icons/release.svg"
-          alt="GitHub Icon"
-          class="h-4 w-4 m-0.5"
-        />
-        <span id="copy-repo-text" class="text-sm sm:text-base group-hover:text-blue-600"
+        <img src="/icons/release.svg" alt="GitHub Icon" class="h-4 w-4 m-0.5" />
+        <span
+          id="copy-repo-text"
+          class="text-sm sm:text-base group-hover:text-blue-600"
           >Go to releases</span
         >
       </div>
@@ -44,7 +44,6 @@ import ReadmeViewer from "./ReadmeViewer.tsx";
   import { loadProjectInfo } from "../../../service/stateService";
   import { projectInfoLoaded } from "../../../utils/store";
   document.addEventListener("astro:page-load", () => {
-
     async function updateProjectInfo() {
       const projectInfo = loadProjectInfo();
       if (projectInfo) {
@@ -70,7 +69,7 @@ import ReadmeViewer from "./ReadmeViewer.tsx";
         if (moveToReleases) {
           moveToReleases.addEventListener("click", () => {
             const releasesUrl = `${repositoryUrl}/releases`;
-            window.open(releasesUrl, '_blank');
+            window.open(releasesUrl, "_blank");
           });
         }
       }

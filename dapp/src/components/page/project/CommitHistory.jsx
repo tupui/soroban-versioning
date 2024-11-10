@@ -3,7 +3,10 @@ import { useState, useEffect } from "react";
 import CommitRecord from "./CommitRecord.jsx";
 import { formatDate } from "../../../utils/formatTimeFunctions.ts";
 import { projectInfoLoaded, latestCommit } from "../../../utils/store.js";
-import { loadProjectRepoInfo, loadConfigData } from "../../../service/stateService.ts";
+import {
+  loadProjectRepoInfo,
+  loadConfigData,
+} from "../../../service/stateService.ts";
 import { getCommitHistory } from "../../../service/githubService.ts";
 import { useStore } from "@nanostores/react";
 

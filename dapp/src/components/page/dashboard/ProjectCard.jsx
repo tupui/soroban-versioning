@@ -1,5 +1,8 @@
 import React from "react";
-import { getProject, getProjectHash } from "../../../service/readContractService";
+import {
+  getProject,
+  getProjectHash,
+} from "../../../service/readContractService";
 import {
   setProjectId,
   setProject,
