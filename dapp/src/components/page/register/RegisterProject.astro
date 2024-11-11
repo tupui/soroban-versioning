@@ -100,7 +100,7 @@ import ModalInput from "../../utils/ModalInput.astro";
     getProject,
     getProjectFromName,
     getProjectHash,
-  } from "../../../service/ReadContractService";
+  } from "@service/ReadContractService";
   import {
     initializeProjectState,
     loadProjectName,
@@ -108,10 +108,10 @@ import ModalInput from "../../utils/ModalInput.astro";
     setProject,
     setProjectLatestSha,
     setProjectRepoInfo,
-  } from "../../../service/StateService";
-  import { registerProject } from "../../../service/writeContractService";
+  } from "@service/StateService";
+  import { registerProject } from "@service/writeContractService";
   import { getAuthorRepo } from "../../../utils/editLinkFunctions";
-  import { fetchTOMLFromConfigUrl } from "../../../service/githubService";
+  import { fetchTOMLFromConfigUrl } from "@service/githubService";
   import { extractConfigData } from "../../../utils/utils";
   import { navigate } from "astro:transitions/client";
 
