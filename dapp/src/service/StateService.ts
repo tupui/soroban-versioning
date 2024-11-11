@@ -3,7 +3,7 @@ import * as pkg from "js-sha3";
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import type { Project } from "soroban_versioning";
-import type { ConfigData } from "@types/projectConfig";
+import type { ConfigData } from "../types/projectConfig";
 
 const projectState: {
   project_name: string | undefined;
