@@ -10,7 +10,7 @@ import {
   setConfigData,
   setProjectLatestSha,
   refreshLocalStorage,
-} from "../../../service/stateService";
+} from "../../../service/StateService";
 import { getAuthorRepo } from "../../../utils/editLinkFunctions";
 import { fetchTOMLFromConfigUrl } from "../../../service/githubService";
 import { projectCardModalOpen } from "../../../utils/store";

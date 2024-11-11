@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useStore } from "@nanostores/react";
 import Markdown from "markdown-to-jsx";
 import { projectInfoLoaded } from "../../../utils/store";
-import { loadProjectInfo } from "../../../service/stateService";
+import { loadProjectInfo } from "../../../service/StateService";
 import { fetchReadmeContentFromConfigUrl } from "../../../service/githubService";
 import "github-markdown-css";
 

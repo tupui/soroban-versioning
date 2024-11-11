@@ -6,7 +6,7 @@ import { projectInfoLoaded, latestCommit } from "../../../utils/store.js";
 import {
   loadProjectRepoInfo,
   loadConfigData,
-} from "../../../service/stateService.ts";
+} from "../../../service/StateService.ts";
 import { getCommitHistory } from "../../../service/githubService.ts";
 import { useStore } from "@nanostores/react";
 
