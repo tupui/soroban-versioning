@@ -4,13 +4,13 @@ import ProjectCard from "./ProjectCard.jsx";
 import ProjectInfoModal from "../../utils/ProjectInfoModal.jsx";
 import { getDemoConfigData } from "../../../constants/demoConfigData";
 import { projectCardModalOpen } from "../../../utils/store";
-import { getProjectFromName } from "../../../service/readContractService";
+import { getProjectFromName } from "../../../service/readContractService.ts";
 import {
   refreshLocalStorage,
   setProjectId,
   loadConfigData,
-} from "../../../service/stateService";
-import { fetchTOMLFromConfigUrl } from "../../../service/githubService";
+} from "../../../service/stateService.ts";
+import { fetchTOMLFromConfigUrl } from "../../../service/githubService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
 import { extractConfigData } from "../../../utils/utils";
 
