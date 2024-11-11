@@ -1,13 +1,13 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import CommitRecord from "./CommitRecord.jsx";
-import { formatDate } from "@utils/formatTimeFunctions";
-import { projectInfoLoaded, latestCommit } from "@utils/store";
+import { formatDate } from "../../../utils/formatTimeFunctions.ts";
+import { projectInfoLoaded, latestCommit } from "../../../utils/store.js";
 import {
   loadProjectRepoInfo,
   loadConfigData,
-} from "@service/StateService.ts";
-import { getCommitHistory } from "@service/GithubService.ts";
+} from "../../../service/StateService.ts";
+import { getCommitHistory } from "../../../service/GithubService.ts";
 import { useStore } from "@nanostores/react";
 
 const CommitHistory = () => {

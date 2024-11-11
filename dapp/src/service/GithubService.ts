@@ -6,7 +6,7 @@ import {
   getAuthorRepo,
   getGithubContentUrlFromConfigUrl,
   getGithubContentUrlFromReadmeUrl,
-} from "@utils/editLinkFunctions";
+} from "../utils/editLinkFunctions";
 
 async function getCommitHistory(
   username: string,

@@ -1,4 +1,4 @@
-import { kit, loadedPublicKey } from "@components/stellar-wallets-kit";
+import { kit, loadedPublicKey } from "../components/stellar-wallets-kit";
 import * as StellarSdk from "@stellar/stellar-sdk";
 
 async function sendXLM(

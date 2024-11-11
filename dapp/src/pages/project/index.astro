@@ -1,10 +1,10 @@
 ---
-import Layout from "@layouts/Layout.astro";
-import Container from "@components/layout/Container.astro";
-import GetCommit from "@components/page/project/GetCommit.astro";
-import CommitComponent from "@components/page/project/Commit.astro";
-import ProjectInfo from "@components/page/project/ProjectInfo.astro";
-import ProjectReadme from "@components/page/project/ProjectReadme.astro";
+import Layout from "../../layouts/Layout.astro";
+import Container from "../../components/layout/Container.astro";
+import GetCommit from "../../components/page/project/GetCommit.astro";
+import CommitComponent from "../../components/page/project/Commit.astro";
+import ProjectInfo from "../../components/page/project/ProjectInfo.astro";
+import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
 ---
 
 <script is:inline>
@@ -23,11 +23,11 @@ import ProjectReadme from "@components/page/project/ProjectReadme.astro";
 </Layout>
 
 <script>
-  import { fetchTOMLFromConfigUrl } from "@service/GithubService";
+  import { fetchTOMLFromConfigUrl } from "../../service/GithubService";
   import {
     getProject,
     getProjectHash,
-  } from "@service/ReadContractService";
+  } from "../../service/ReadContractService";
   import {
     initializeProjectState,
     refreshLocalStorage,
@@ -36,10 +36,10 @@ import ProjectReadme from "@components/page/project/ProjectReadme.astro";
     setProjectId,
     setProjectLatestSha,
     setProjectRepoInfo,
-  } from "@service/StateService";
-  import { getAuthorRepo } from "@utils/editLinkFunctions";
-  import { projectInfoLoaded } from "@utils/store";
-  import { extractConfigData } from "@utils/utils";
+  } from "../../service/StateService";
+  import { getAuthorRepo } from "../../utils/editLinkFunctions";
+  import { projectInfoLoaded } from "../../utils/store";
+  import { extractConfigData } from "../../utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
     const urlParams = new URLSearchParams(window.location.search);
