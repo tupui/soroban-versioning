@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "jsx": "react"
+    "jsx": "react",
+    "baseUrl": "src",
+    "paths": {
+      "@service/*": ["service/*"]
+    }
   },
   "extends": "astro/tsconfigs/strictest",
   "exclude": ["packages"]

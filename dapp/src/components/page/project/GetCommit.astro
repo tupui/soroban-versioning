@@ -1,6 +1,6 @@
 ---
-import Topic from "./utils/Topic.astro";
-import Loading from "./utils/Loading.astro";
+import Topic from "../../utils/Topic.astro";
+import Loading from "../../utils/Loading.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row">
@@ -21,8 +21,8 @@ import Loading from "./utils/Loading.astro";
 </div>
 
 <script>
-  import { loadProjectLatestSha } from "../service/StateService";
-  import { projectInfoLoaded } from "../utils/store";
+  import { loadProjectLatestSha } from "../../../service/StateService";
+  import { projectInfoLoaded } from "../../../utils/store";
 
   document.addEventListener("astro:page-load", () => {
     const wrap_loader = document.getElementById(

@@ -1,7 +1,7 @@
 ---
-import Topic from "./utils/Topic.astro";
-import Loading from "./utils/Loading.astro";
-import ModalInput from "./utils/ModalInput.astro";
+import Topic from "../../utils/Topic.astro";
+import Loading from "../../utils/Loading.astro";
+import ModalInput from "../../utils/ModalInput.astro";
 ---
 
 <div class="relative flex flex-col items-center md:flex-row">
@@ -100,7 +100,7 @@ import ModalInput from "./utils/ModalInput.astro";
     getProject,
     getProjectFromName,
     getProjectHash,
-  } from "../service/ReadContractService";
+  } from "@service/ReadContractService";
   import {
     initializeProjectState,
     loadProjectName,
@@ -108,12 +108,13 @@ import ModalInput from "./utils/ModalInput.astro";
     setProject,
     setProjectLatestSha,
     setProjectRepoInfo,
-  } from "../service/StateService";
-  import { registerProject } from "../service/WriteContractService";
+  } from "@service/StateService";
+  import { registerProject } from "@service/WriteContractService";
+  import { getAuthorRepo } from "../../../utils/editLinkFunctions";
+  import { fetchTOMLFromConfigUrl } from "@service/GithubService";
+  import { extractConfigData } from "../../../utils/utils";
   import { navigate } from "astro:transitions/client";
-  import { getAuthorRepo } from "../utils/editLinkFunctions";
-  import { fetchTOMLFromConfigUrl } from "../service/GithubService";
-  import { extractConfigData } from "../utils/utils";
+
   const SOROBAN_DOMAIN_CONTRACT_ID = `${import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID}`;
 
   document.addEventListener("astro:page-load", () => {

@@ -1,7 +1,7 @@
 ---
-import Topic from "./utils/Topic.astro";
-import Loading from "./utils/Loading.astro";
-import PrimaryButton from "./utils/PrimaryButton.astro";
+import Topic from "../../utils/Topic.astro";
+import Loading from "../../utils/Loading.astro";
+import PrimaryButton from "../../utils/PrimaryButton.astro";
 ---
 
 <div id="update-commit-section" class="hidden">
@@ -44,10 +44,10 @@ import PrimaryButton from "./utils/PrimaryButton.astro";
 </div>
 
 <script>
-  import { commitHash } from "../service/WriteContractService";
-  import { loadProjectInfo } from "../service/StateService";
-  import { loadedPublicKey } from "./stellar-wallets-kit";
-  import { latestCommit, projectInfoLoaded } from "../utils/store";
+  import { commitHash } from "../../../service/WriteContractService";
+  import { loadProjectInfo } from "../../../service/StateService";
+  import { loadedPublicKey } from "../../stellar-wallets-kit";
+  import { latestCommit, projectInfoLoaded } from "../../../utils/store";
 
   document.addEventListener("astro:page-load", () => {
     function updateCommitSectionVisibility() {
