@@ -21,7 +21,7 @@ import Loading from "../../utils/Loading.astro";
 </div>
 
 <script>
-  import { loadProjectLatestSha } from "@service/StateService";
+  import { loadProjectLatestSha } from "../../../service/StateService";
   import { projectInfoLoaded } from "../../../utils/store";
 
   document.addEventListener("astro:page-load", () => {

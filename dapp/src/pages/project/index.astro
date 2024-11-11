@@ -23,11 +23,11 @@ import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
 </Layout>
 
 <script>
-  import { fetchTOMLFromConfigUrl } from "@service/GithubService";
+  import { fetchTOMLFromConfigUrl } from "../../service/GithubService";
   import {
     getProject,
     getProjectHash,
-  } from "@service/ReadContractService";
+  } from "../../service/ReadContractService";
   import {
     initializeProjectState,
     refreshLocalStorage,
@@ -36,7 +36,7 @@ import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
     setProjectId,
     setProjectLatestSha,
     setProjectRepoInfo,
-  } from "@service/StateService";
+  } from "../../service/StateService";
   import { getAuthorRepo } from "../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../utils/store";
   import { extractConfigData } from "../../utils/utils";
