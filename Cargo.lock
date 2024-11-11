@@ -1064,9 +1064,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-ledger-snapshot"
-version = "21.7.6"
+version = "21.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "43793d5deb5fc27c3e14e036e24cb3afcf7d1e2a172d9166e37f3d174b928749"
+checksum = "e6edf92749fd8399b417192d301c11f710b9cdce15789a3d157785ea971576fa"
 dependencies = [
  "serde",
  "serde_json",
@@ -1078,13 +1078,14 @@ dependencies = [
 
 [[package]]
 name = "soroban-sdk"
-version = "21.7.6"
+version = "21.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "25c539fecb2862ce0c1f49880134660a855e2d35889692e01d1e8d8a1e53f98e"
+checksum = "7dcdf04484af7cc731a7a48ad1d9f5f940370edeea84734434ceaf398a6b862e"
 dependencies = [
  "arbitrary",
  "bytes-lit",
  "ctor",
+ "derive_arbitrary",
  "ed25519-dalek",
  "rand",
  "rustc_version",
@@ -1099,9 +1100,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-sdk-macros"
-version = "21.7.6"
+version = "21.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9ad528a770ec7adb524635d855b424ae2fd4fef04fb702bb0ab466a4c354d78"
+checksum = "0974e413731aeff2443f2305b344578b3f1ffd18335a7ba0f0b5d2eb4e94c9ce"
 dependencies = [
  "crate-git-revision",
  "darling",
@@ -1119,9 +1120,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-spec"
-version = "21.7.6"
+version = "21.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b262c82d840552f71ee9254f2e928622fd803bd4df4815e65f73f73efc2fa9c"
+checksum = "c2c70b20e68cae3ef700b8fa3ae29db1c6a294b311fba66918f90cb8f9fd0a1a"
 dependencies = [
  "base64 0.13.1",
  "stellar-xdr",
@@ -1131,9 +1132,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-spec-rust"
-version = "21.7.6"
+version = "21.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85a061820c2dd0bd3ece9411e0dd3aeb6ed9ca2b7d64270eda9e798c3b6dec5f"
+checksum = "a2dafbde981b141b191c6c036abc86097070ddd6eaaa33b273701449501e43d3"
 dependencies = [
  "prettyplease",
  "proc-macro2",
