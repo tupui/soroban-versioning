@@ -2,7 +2,7 @@ import React from "react";
 import {
   getProject,
   getProjectHash,
-} from "../../../service/ReadContractService";
+} from "@service/ReadContractService.ts";
 import {
   setProjectId,
   setProject,
@@ -10,12 +10,14 @@ import {
   setConfigData,
   setProjectLatestSha,
   refreshLocalStorage,
-} from "../../../service/StateService";
-import { getAuthorRepo } from "../../../utils/editLinkFunctions";
-import { fetchTOMLFromConfigUrl } from "../../../service/GithubService";
-import { projectCardModalOpen } from "../../../utils/store";
-import { convertGitHubLink } from "../../../utils/editLinkFunctions";
-import { extractConfigData } from "../../../utils/utils";
+} from "@service/StateService";
+import { 
+  getAuthorRepo,
+  convertGitHubLink,
+} from "@utils/editLinkFunctions.ts";
+import { fetchTOMLFromConfigUrl } from "@service/GithubService.ts";
+import { projectCardModalOpen } from "@utils/store.js";
+import { extractConfigData } from "@utils/utils.ts";
 
 const ProjectCard = ({ config }) => {
   const handleCardClick = async () => {

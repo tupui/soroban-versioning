@@ -1,4 +1,4 @@
-import { kit, loadedPublicKey } from "../components/stellar-wallets-kit";
+import { kit, loadedPublicKey } from "@components/stellar-wallets-kit";
 import Versioning from "../contracts/soroban_versioning";
 
 import { loadedProjectId } from "./StateService";

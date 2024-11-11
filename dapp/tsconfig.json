@@ -3,7 +3,11 @@
     "jsx": "react",
     "baseUrl": "src",
     "paths": {
-      "@service/*": ["service/*"]
+      "@components/*": ["components/*"],
+      "@layouts/*": ["layouts/*"],
+      "@service/*": ["service/*"],
+      "@types/*": ["types/*"],
+      "@utils/*": ["utils/*"],
     }
   },
   "extends": "astro/tsconfigs/strictest",

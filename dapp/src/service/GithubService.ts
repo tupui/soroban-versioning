@@ -1,12 +1,12 @@
 import axios from "axios";
 import toml from "toml";
 
-import type { FormattedCommit } from "../types/github";
+import type { FormattedCommit } from "@types/github";
 import {
   getAuthorRepo,
   getGithubContentUrlFromConfigUrl,
   getGithubContentUrlFromReadmeUrl,
-} from "../utils/editLinkFunctions";
+} from "@utils/editLinkFunctions";
 
 async function getCommitHistory(
   username: string,
