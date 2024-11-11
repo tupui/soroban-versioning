@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useStore } from "@nanostores/react";
 import ProjectCard from "./ProjectCard.jsx";
 import ProjectInfoModal from "../../utils/ProjectInfoModal.jsx";
-import { getDemoConfigData } from "../../../constants/demoConfigData.js";
-import { projectCardModalOpen } from "@utils/store.js";
+import { getDemoConfigData } from "../../../constants/demoConfigData";
+import { projectCardModalOpen } from "@utils/store";
 import { getProjectFromName } from "@service/ReadContractService.ts";
 import {
   refreshLocalStorage,
@@ -11,8 +11,8 @@ import {
   loadConfigData,
 } from "@service/StateService.ts";
 import { fetchTOMLFromConfigUrl } from "@service/GithubService.ts";
-import { convertGitHubLink } from "@utils/editLinkFunctions.ts";
-import { extractConfigData } from "@utils/utils.ts";
+import { convertGitHubLink } from "@utils/editLinkFunctions";
+import { extractConfigData } from "@utils/utils";
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);

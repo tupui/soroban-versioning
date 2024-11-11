@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { formatTime } from "@utils/formatTimeFunctions.ts";
+import { formatTime } from "@utils/formatTimeFunctions";
 import { loadProjectLatestSha } from "@service/StateService.ts";
 
 const CommitRecord = ({

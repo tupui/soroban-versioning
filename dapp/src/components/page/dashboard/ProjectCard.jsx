@@ -10,14 +10,14 @@ import {
   setConfigData,
   setProjectLatestSha,
   refreshLocalStorage,
-} from "@service/StateService";
+} from "@service/StateService.ts";
 import { 
   getAuthorRepo,
   convertGitHubLink,
-} from "@utils/editLinkFunctions.ts";
+} from "@utils/editLinkFunctions";
 import { fetchTOMLFromConfigUrl } from "@service/GithubService.ts";
-import { projectCardModalOpen } from "@utils/store.js";
-import { extractConfigData } from "@utils/utils.ts";
+import { projectCardModalOpen } from "@utils/store";
+import { extractConfigData } from "@utils/utils";
 
 const ProjectCard = ({ config }) => {
   const handleCardClick = async () => {

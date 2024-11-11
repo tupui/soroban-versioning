@@ -1,8 +1,8 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import CommitRecord from "./CommitRecord.jsx";
-import { formatDate } from "@utils/formatTimeFunctions.ts";
-import { projectInfoLoaded, latestCommit } from "@utils/store.js";
+import { formatDate } from "@utils/formatTimeFunctions";
+import { projectInfoLoaded, latestCommit } from "@utils/store";
 import {
   loadProjectRepoInfo,
   loadConfigData,
