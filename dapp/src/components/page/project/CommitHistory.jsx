@@ -6,8 +6,8 @@ import { projectInfoLoaded, latestCommit } from "../../../utils/store.js";
 import {
   loadProjectRepoInfo,
   loadConfigData,
-} from "../../../service/StateService.ts";
-import { getCommitHistory } from "../../../service/GithubService.ts";
+} from "@service/StateService";
+import { getCommitHistory } from "@service/GithubService";
 import { useStore } from "@nanostores/react";
 
 const CommitHistory = () => {

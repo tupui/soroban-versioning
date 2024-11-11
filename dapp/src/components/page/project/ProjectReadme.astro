@@ -41,7 +41,7 @@ import ReadmeViewer from "./ReadmeViewer.tsx";
 </div>
 
 <script>
-  import { loadProjectInfo } from "../../../service/StateService";
+  import { loadProjectInfo } from "@service/StateService";
   import { projectInfoLoaded } from "../../../utils/store";
   document.addEventListener("astro:page-load", () => {
     async function updateProjectInfo() {

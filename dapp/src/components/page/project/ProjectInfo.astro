@@ -233,21 +233,21 @@ import DonateModal from "./DonateModal.astro";
 
 <script>
   import { loadedPublicKey } from "../../stellar-wallets-kit";
-  import { updateConfig } from "../../../service/WriteContractService";
-  import { getProject } from "../../../service/ReadContractService";
+  import { updateConfig } from "@service/WriteContractService";
+  import { getProject } from "@service/ReadContractService";
   import {
     loadConfigData,
     loadProjectInfo,
     loadProjectLatestSha,
     loadProjectName,
     setProject,
-  } from "../../../service/StateService";
+  } from "@service/StateService";
   import { projectInfoLoaded } from "../../../utils/store";
   import { convertGitHubLink } from "../../../utils/editLinkFunctions";
   import {
     getLatestCommitData,
     getTOMLFileHash,
-  } from "../../../service/GithubService";
+  } from "@service/GithubService";
 
   document.addEventListener("astro:page-load", () => {
     const modal = document.getElementById(
