@@ -4,7 +4,7 @@ import ProjectCard from "./ProjectCard.jsx";
 import ProjectInfoModal from "../../utils/ProjectInfoModal.jsx";
 import { getDemoConfigData } from "../../../constants/demoConfigData";
 import { projectCardModalOpen } from "../../../utils/store";
-import { getProjectFromName } from "../../../service/readContractService.ts";
+import { getProjectFromName } from "../../../service/ReadContractService.ts";
 import {
   refreshLocalStorage,
   setProjectId,

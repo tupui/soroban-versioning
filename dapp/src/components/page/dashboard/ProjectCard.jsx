@@ -2,7 +2,7 @@ import React from "react";
 import {
   getProject,
   getProjectHash,
-} from "../../../service/readContractService";
+} from "../../../service/ReadContractService";
 import {
   setProjectId,
   setProject,
