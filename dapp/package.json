@@ -7,7 +7,7 @@
     "@creit.tech/stellar-wallets-kit": "^1.2.3",
     "@nanostores/react": "^0.8.0",
     "@stellar/stellar-sdk": "^12.3.0",
-    "astro": "4.16.8",
+    "astro": "4.16.10",
     "astro-seo": "^0.8.4",
     "install": "^0.13.0",
     "js-sha3": "^0.9.3",
