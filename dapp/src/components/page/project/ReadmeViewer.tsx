@@ -3,7 +3,7 @@ import { useStore } from "@nanostores/react";
 import Markdown from "markdown-to-jsx";
 import { projectInfoLoaded } from "../../../utils/store";
 import { loadProjectInfo } from "../../../service/StateService";
-import { fetchReadmeContentFromConfigUrl } from "../../../service/githubService";
+import { fetchReadmeContentFromConfigUrl } from "../../../service/GithubService";
 import "github-markdown-css";
 
 const ReadmeViewer = () => {

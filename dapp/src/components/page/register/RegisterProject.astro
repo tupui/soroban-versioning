@@ -109,9 +109,9 @@ import ModalInput from "../../utils/ModalInput.astro";
     setProjectLatestSha,
     setProjectRepoInfo,
   } from "@service/StateService";
-  import { registerProject } from "@service/writeContractService";
+  import { registerProject } from "@service/WriteContractService";
   import { getAuthorRepo } from "../../../utils/editLinkFunctions";
-  import { fetchTOMLFromConfigUrl } from "@service/githubService";
+  import { fetchTOMLFromConfigUrl } from "@service/GithubService";
   import { extractConfigData } from "../../../utils/utils";
   import { navigate } from "astro:transitions/client";
 

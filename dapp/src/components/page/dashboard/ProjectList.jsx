@@ -10,7 +10,7 @@ import {
   setProjectId,
   loadConfigData,
 } from "../../../service/StateService.ts";
-import { fetchTOMLFromConfigUrl } from "../../../service/githubService.ts";
+import { fetchTOMLFromConfigUrl } from "../../../service/GithubService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
 import { extractConfigData } from "../../../utils/utils";
 

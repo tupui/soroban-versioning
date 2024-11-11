@@ -12,7 +12,7 @@ import {
   refreshLocalStorage,
 } from "../../../service/StateService";
 import { getAuthorRepo } from "../../../utils/editLinkFunctions";
-import { fetchTOMLFromConfigUrl } from "../../../service/githubService";
+import { fetchTOMLFromConfigUrl } from "../../../service/GithubService";
 import { projectCardModalOpen } from "../../../utils/store";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
 import { extractConfigData } from "../../../utils/utils";
