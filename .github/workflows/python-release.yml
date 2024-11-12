@@ -35,22 +35,5 @@ jobs:
       - name: Build
         run: cd tansu && hatch build && mv dist ../.
 
-      - name: Generate artifact attestation for sdist and wheels
-        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c
-        with:
-          subject-path: "dist/tansu*"
-
-      - name: Verify artifact attestation
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          for artifact in dist/*; do
-              echo "# ${artifact}"
-              gh attestation verify "${artifact}" --repo ${{ github.repository }}
-          done
-
       - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@fb13cb306901256ace3dab689990e13a5550ffaa
-        with:
-          print-hash: true
+        uses: pypa/gh-action-pypi-publish@15c56dba361d8335944d31a2ecd17d700fc7bcbc

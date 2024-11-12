@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: tansu_test
       POSTGRES_DB: tansu_test
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "tansu_test", "-d", "tansu_test"]
+      test: [ "CMD", "pg_isready", "-U", "tansu_test", "-d", "tansu_test" ]
       interval: 3s
       timeout: 10s
       retries: 5
@@ -17,11 +17,11 @@ services:
   testnet:
     image: stellar/quickstart:latest
     command: [
-        "--local",
-        "--limits",
-        "testnet", # unlimited
-        "--enable-soroban-rpc",
-        "--enable-soroban-diagnostic-events",
-      ]
+      "--local",
+      "--limits",
+      "testnet", # unlimited
+      "--enable-soroban-rpc",
+      "--enable-soroban-diagnostic-events",
+    ]
     ports:
       - "8000:8000"
