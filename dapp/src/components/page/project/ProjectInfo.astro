@@ -8,13 +8,13 @@ import CommitHistory from "./CommitHistory.jsx";
 import DonateModal from "./DonateModal.astro";
 ---
 
-<div class="relative flex flex-col items-center md:flex-row justify-between">
+<div class="relative flex flex-col items-center md:flex-row justify-between mb-1.5 mt-4 sm:mt-8 md:mt-12 gap-y-4">
   <Topic
     title="Project"
     description="Details about the project"
     id="project-name-topic"
   />
-  <div id="open-donate-modal-button" class="mb-1.5 mt-12 pr-3">
+  <div id="open-donate-modal-button" class="pr-3">
     <PrimaryButton
       wrapId="wrap-donate-modal"
       dataAttr="data-donate-modal"
@@ -22,7 +22,7 @@ import DonateModal from "./DonateModal.astro";
       buttonText="♥ Support"
     />
   </div>
-  <div id="open-update-config-modal-button" class="mb-1.5 mt-12 pr-3 hidden">
+  <div id="open-update-config-modal-button" class="pr-3 hidden">
     <PrimaryButton
       wrapId="wrap-update-config"
       dataAttr="data-update-config"
