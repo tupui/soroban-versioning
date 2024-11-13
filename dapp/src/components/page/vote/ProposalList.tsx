@@ -10,7 +10,7 @@ const ProposalList: React.FC = () => {
       <div className="flex flex-col gap-2 sm:gap-3 md:gap-5"></div>
       <div>
         <Pagination
-          currentPage={1}
+          currentPage={currentPage}
           onPageChange={(page: number) => setCurrentPage(page)}
         />
       </div>

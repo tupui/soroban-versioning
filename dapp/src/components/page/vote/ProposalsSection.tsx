@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import ProposalTypeButton from "./ProposalTypeButton";
+import ProposalList from "./ProposalList";
 
 const ProposalsSection: React.FC = () => {
   const [proposalType, setProposalType] = useState("proposal");
@@ -23,7 +24,9 @@ const ProposalsSection: React.FC = () => {
           onClick={(proposalType: string) => setProposalType(proposalType)}
         />
       </div>
-      <div className="w-full"></div>
+      <div className="w-full">
+        <ProposalList />
+      </div>
     </div>
   );
 };
