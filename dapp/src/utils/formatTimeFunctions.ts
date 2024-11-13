@@ -32,3 +32,19 @@ export function formatDate(dateString: string): string {
   };
   return date.toLocaleDateString(undefined, dateOptions);
 }
+
+export function calculateDateDifference(dateString: string): string | null {
+  const inputDate = new Date(dateString + "T00:00:00");
+  const now = new Date();
+
+  const timeDiff = inputDate.getTime() - now.getTime();
+  const dayDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+  if (dayDiff < 1) {
+    return null;
+  } else if (dayDiff < 2) {
+    return `${dayDiff} day`;
+  } else {
+    return `${dayDiff} days`;
+  }
+}

@@ -7,7 +7,7 @@ const ProposalsSection: React.FC = () => {
   const [proposalType, setProposalType] = useState("proposal");
 
   return (
-    <div>
+    <div className="my-6 sm:my-12 md:my-14">
       <div className="flex items-center">
         <ProposalTypeButton
           proposalTypeStatus={proposalType}
