@@ -9,6 +9,7 @@ import {
 } from "../../../service/StateService.ts";
 import { getCommitHistory } from "../../../service/GithubService.ts";
 import { useStore } from "@nanostores/react";
+import Pagination from "components/utils/Pagination.tsx";
 
 const CommitHistory = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
@@ -92,67 +93,10 @@ const CommitHistory = () => {
         ))}
       </div>
 
-      {/* Pagination  */}
-      <div className="flex justify-center items-center mt-4 space-x-2">
-        <button
-          onClick={() => fetchCommitHistory(Math.max(1, currentPage - 1))}
-          disabled={currentPage === 1}
-          className="px-3 py-1 border border-zinc-300 rounded disabled:opacity-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 flex items-center"
-        >
-          <svg
-            className="w-4 h-4 mr-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Previous
-        </button>
-        <button
-          onClick={() => fetchCommitHistory(1)}
-          className={`px-3 py-1 border rounded hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 ${
-            currentPage === 1
-              ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600 active:bg-blue-700"
-              : "border-zinc-300"
-          }`}
-        >
-          1
-        </button>
-        {currentPage > 2 && <span>...</span>}
-        {currentPage !== 1 && (
-          <button className="px-3 py-1 border border-blue-500 bg-blue-500 text-white rounded">
-            {currentPage}
-          </button>
-        )}
-        <button
-          onClick={() => fetchCommitHistory(currentPage + 1)}
-          disabled={false}
-          className="px-3 py-1 border border-zinc-300 rounded disabled:opacity-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 flex items-center"
-        >
-          Next
-          <svg
-            className="w-4 h-4 ml-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
-        </button>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        onPageChange={(page) => fetchCommitHistory(page)}
+      />
     </>
   );
 };

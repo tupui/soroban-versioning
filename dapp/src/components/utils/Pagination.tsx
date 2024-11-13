@@ -36,7 +36,7 @@ const Pagination: React.FC<PaginationProps> = ({
         onClick={() => onPageChange(1)}
         className={`px-3 py-1 border rounded hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 ${
           currentPage === 1
-            ? "bg-blue-500 text-white border-blue-500 hover:bg-blue-600 active:bg-blue-700"
+            ? "bg-lime border-lime"
             : "border-zinc-300"
         }`}
       >
@@ -44,7 +44,7 @@ const Pagination: React.FC<PaginationProps> = ({
       </button>
       {currentPage > 2 && <span>...</span>}
       {currentPage !== 1 && (
-        <button className="px-3 py-1 border border-blue-500 bg-blue-500 text-white rounded">
+        <button className="px-3 py-1 border border-lime bg-lime rounded">
           {currentPage}
         </button>
       )}
