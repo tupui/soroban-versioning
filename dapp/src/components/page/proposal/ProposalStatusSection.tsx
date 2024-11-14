@@ -10,7 +10,7 @@ interface Props {
 
 const ProposalStatusSection: React.FC<Props> = ({ status, endDate }) => {
   return (
-    <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+    <div className="flex items-center mt-3 sm:mt-5 md:mt-8 gap-2 sm:gap-3 md:gap-4">
       <div className="">
         <ProposalStatusDiv proposalStatus={status} />
       </div>
