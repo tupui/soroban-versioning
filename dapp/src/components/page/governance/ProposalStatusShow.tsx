@@ -18,7 +18,7 @@ const ProposalStatusShow: React.FC<ProposalStatusShowProps> = ({
       break;
     case "rejected":
       title = "Rejected";
-      backgroundColorClass = "bg-red";
+      backgroundColorClass = "bg-conflict";
       break;
     case "cancelled":
       title = "Cancelled";
