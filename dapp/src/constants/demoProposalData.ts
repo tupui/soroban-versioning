@@ -67,7 +67,10 @@ export const demoProposalData: Proposal[] = [
   {
     id: 1,
     title: "Issue Bounty: Add DAO system to the project - $3000",
-    description: "This is next step of Tansu Project.",
+    ipfsLink:
+      "https://bafybeidsfg2rfmpgtisfnmk6lur5dmy6j4kwjblh2rhme6nrsvjcaci4jq.ipfs.w3s.link/",
+    description:
+      "https://bafybeidsfg2rfmpgtisfnmk6lur5dmy6j4kwjblh2rhme6nrsvjcaci4jq.ipfs.w3s.link/proposal.md",
     outcome: "",
     status: "active",
     voteStatus: {

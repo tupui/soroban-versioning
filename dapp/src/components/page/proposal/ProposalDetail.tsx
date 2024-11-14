@@ -1,4 +1,6 @@
 import React from "react";
+import Markdown from "markdown-to-jsx";
+import "github-markdown-css";
 
 interface ProposalDetailProps {
   description: string;
@@ -17,7 +19,9 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
             Proposal Description
           </div>
           <div className="w-full mt-4 sm:mt-5 md:mt-7 min-h-24 sm:min-h-32">
-            <div>{description}</div>
+            <div className="markdown-body w-full px-4 sm:px-6 md:px-8 py-6">
+              <Markdown>{description}</Markdown>
+            </div>
           </div>
         </div>
         <div className="">

@@ -3,6 +3,7 @@ export type ProposalStatus = "active" | "rejected" | "cancelled" | "approved";
 export interface Proposal {
   id: number;
   title: string;
+  ipfsLink: string;
   description: string;
   outcome: string;
   status: ProposalStatus;
