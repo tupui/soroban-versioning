@@ -16,21 +16,39 @@ import DonateModal from "./DonateModal.astro";
     description="Details about the project"
     id="project-name-topic"
   />
-  <div id="open-donate-modal-button" class="pr-3">
-    <PrimaryButton
-      wrapId="wrap-donate-modal"
-      dataAttr="data-donate-modal"
-      ariaControls="donate-modal"
-      buttonText="♥ Support"
-    />
-  </div>
-  <div id="open-update-config-modal-button" class="pr-3 hidden">
-    <PrimaryButton
-      wrapId="wrap-update-config"
-      dataAttr="data-update-config"
-      ariaControls="update-config-modal"
-      buttonText="Update Config"
-    />
+  <div class="flex gap-2 items-center">
+    <button
+      id="go-to-proposals-button"
+      class="px-2 sm:px-4 py-1.5 sm:py-3 bg-zinc-900 rounded-[14px] justify-center items-center gap-2.5 inline-flex"
+    >
+      <span
+        class="text-center text-white text-base sm:text-xl font-normal leading-7"
+      >
+        Governance
+      </span>
+      <img
+        id="right-arrow-icon"
+        src="/icons/arrow.svg"
+        alt="->"
+        class="w-7 h-5 object-contain"
+      />
+    </button>
+    <div id="open-donate-modal-button" class="pr-3">
+      <PrimaryButton
+        wrapId="wrap-donate-modal"
+        dataAttr="data-donate-modal"
+        ariaControls="donate-modal"
+        buttonText="♥ Support"
+      />
+    </div>
+    <div id="open-update-config-modal-button" class="pr-3 hidden">
+      <PrimaryButton
+        wrapId="wrap-update-config"
+        dataAttr="data-update-config"
+        ariaControls="update-config-modal"
+        buttonText="Update Config"
+      />
+    </div>
   </div>
 </div>
 
@@ -43,18 +61,6 @@ import DonateModal from "./DonateModal.astro";
     <div class="space-y-6 md:w-full sm:pl-4 md:pl-0">
       <div id="project-name" class="flex justify-between items-end space-x-2">
         <p id="project-name-value" class="text-2xl sm:text-4xl font-bold"></p>
-        <button
-          id="go-to-proposals-button"
-          class="bg-zinc-800 text-white px-4 py-2 rounded-lg flex items-center self-end sm:self-auto"
-        >
-          Proposals
-          <img
-            id="right-arrow-icon"
-            src="/icons/arrow.svg"
-            alt="->"
-            class="w-7 h-5 object-contain"
-          />
-        </button>
       </div>
 
       <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
