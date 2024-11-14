@@ -38,3 +38,8 @@ export function extractConfigData(tomlData: any, projectName: string) {
     maintainersAddresses: tomlData.ACCOUNTS || [],
   };
 }
+
+export function capitalizeFirstLetter(str: string): string {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
