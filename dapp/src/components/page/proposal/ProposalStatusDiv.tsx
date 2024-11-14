@@ -35,7 +35,7 @@ const ProposalStatusDiv: React.FC<ProposalStatusDivProps> = ({
 
   return (
     <div
-      className={`${backgroundColorClass} text-sm sm:text-base md:text-xl font-bold text-white px-1 sm:px-2 md:px-3 py-0.5 rounded-lg`}
+      className={`${backgroundColorClass} text-sm sm:text-base md:text-xl font-bold text-white px-1 sm:px-2 md:px-3 py-0.5 sm:py-1 rounded-lg`}
     >
       <h1 className="text-white">{title}</h1>
     </div>

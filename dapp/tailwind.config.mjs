@@ -19,6 +19,9 @@ export default {
         blue: "#0B32F6",
         red: "#E70C0C",
         yellow: "#E0D911",
+        interest: "#A9EE72",
+        conflict: "#FF8383",
+        abstain: "#C2C2C2",
         zinc: {
           100: "#F3F3F3",
           200: "#F0F0F0",
