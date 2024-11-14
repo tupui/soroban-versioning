@@ -1,4 +1,4 @@
-import type { ProposalCardProps } from "types/proposal";
+import type { Proposal, ProposalCardProps } from "types/proposal";
 
 export const demoProposalCardData: ProposalCardProps[] = [
   {
@@ -60,5 +60,83 @@ export const demoProposalCardData: ProposalCardProps[] = [
     proposalTitle: "Proposal One",
     proposalStatus: "rejected",
     endDate: "2023-6-01",
+  },
+];
+
+export const demoProposalData: Proposal[] = [
+  {
+    id: 1,
+    title: "Issue Bounty: Add DAO system to the project - $3000",
+    description: "This is next step of Tansu Project.",
+    outcome: "",
+    status: "active",
+    voteStatus: {
+      totalScore: 6,
+      interest: {
+        voteType: "interest",
+        score: 4,
+        voters: {
+          maintainer: [
+            {
+              address: "",
+              image: null,
+            },
+          ],
+          contributor: [
+            {
+              address: "",
+              image: null,
+            },
+            {
+              address: "",
+              image: null,
+            },
+          ],
+          community: [
+            {
+              address: "",
+              image: null,
+            },
+            {
+              address: "",
+              image: null,
+            },
+            {
+              address: "",
+              image: null,
+            },
+          ],
+        },
+      },
+      conflict: {
+        voteType: "conflict",
+        score: 1,
+        voters: {
+          maintainer: [],
+          contributor: [],
+          community: [
+            {
+              address: "",
+              image: null,
+            },
+          ],
+        },
+      },
+      abstain: {
+        voteType: "abstain",
+        score: 1,
+        voters: {
+          maintainer: [],
+          contributor: [],
+          community: [
+            {
+              address: "",
+              image: null,
+            },
+          ],
+        },
+      },
+    },
+    endDate: "2024-11-24",
   },
 ];

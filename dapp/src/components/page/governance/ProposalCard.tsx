@@ -13,7 +13,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
   return (
     <div
       className="w-full px-2 sm:px-4 md:pl-8 py-2 sm:py-3 md:py-4.5 bg-white border border-zinc-300 rounded-lg sm:rounded-xl cursor-pointer hover:border-lime hover:bg-zinc-500"
-      onClick={() => navigate(`/vote/proposal/${proposalNumber}`)}
+      onClick={() => navigate(`/proposal?id=${proposalNumber}`)}
     >
       <div className="w-full flex justify-between items-center">
         <div className="lg:max-w-[calc(100%-240px)] flex items-start gap-2">
