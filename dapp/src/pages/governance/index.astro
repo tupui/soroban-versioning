@@ -15,3 +15,16 @@ import ProposalPage from "../../components/page/vote/ProposalPage.astro";
     </Container>
   </main>
 </Layout>
+
+<script>
+  import { projectNameForGovernance } from "utils/store";
+
+  document.addEventListener("astro:page-load", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectName = urlParams.get("name") || "";
+    if (projectName) {
+      projectNameForGovernance.set(projectName);
+      console.log("projectName:", projectName);
+    }
+  });
+</script>
