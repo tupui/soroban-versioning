@@ -16,21 +16,17 @@ const ProposalStatusShow: React.FC<ProposalStatusShowProps> = ({
       title = "Active";
       backgroundColorClass = "bg-green";
       break;
-    case "defeated":
-      title = "Defeated";
+    case "rejected":
+      title = "Rejected";
       backgroundColorClass = "bg-red";
       break;
     case "cancelled":
       title = "Cancelled";
       backgroundColorClass = "bg-gray";
       break;
-    case "queued":
-      title = "Queued";
-      backgroundColorClass = "bg-yellow";
-      break;
-    case "executed":
-      title = "Executed";
-      backgroundColorClass = "bg-blue";
+    case "approved":
+      title = "Approved";
+      backgroundColorClass = "bg-violet-600";
       break;
     default:
       title = "Unknown";

@@ -1,9 +1,4 @@
-export type ProposalStatus =
-  | "active"
-  | "defeated"
-  | "cancelled"
-  | "queued"
-  | "executed";
+export type ProposalStatus = "active" | "rejected" | "cancelled" | "approved";
 
 export interface Proposal {
   id: number;
@@ -19,5 +14,4 @@ export interface ProposalCardProps {
   proposalTitle: string;
   proposalStatus: ProposalStatus;
   endDate: string | null;
-  expiredDate: string | null;
 }

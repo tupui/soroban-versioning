@@ -14,7 +14,7 @@ const ProposalList: React.FC = () => {
     [],
   );
 
-  const fetchProposalCardData = async (page: number) => {
+  const fetchProposalCardData = async (_page: number) => {
     setProposalCardData(demoProposalCardData);
   };
 
@@ -32,7 +32,6 @@ const ProposalList: React.FC = () => {
             proposalTitle={proposal.proposalTitle}
             proposalStatus={proposal.proposalStatus}
             endDate={proposal.endDate}
-            expiredDate={proposal.expiredDate}
           />
         ))}
       </div>

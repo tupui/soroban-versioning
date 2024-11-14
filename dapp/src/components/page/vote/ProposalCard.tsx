@@ -9,7 +9,6 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
   proposalTitle,
   proposalStatus,
   endDate,
-  expiredDate,
 }) => {
   return (
     <div
@@ -19,8 +18,8 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
       <div className="w-full flex justify-between items-center">
         <div className="lg:max-w-[calc(100%-240px)] flex items-start gap-2">
           <div className="flex items-center gap-1">
-            <div className="text-base sm:text-xl md:text-2xl font-medium text-blue whitespace-nowrap">
-              # {proposalNumber}
+            <div className="text-base sm:text-xl md:text-2xl font-medium text-zinc-700 whitespace-nowrap">
+              {proposalNumber}
             </div>
           </div>
           <div className="text-base sm:text-xl md:text-2xl font-medium text-gray-500">
@@ -36,13 +35,6 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
                   Ends in {calculateDateDifference(endDate)}
                 </div>
               )}
-            {proposalStatus === "queued" &&
-              expiredDate &&
-              calculateDateDifference(expiredDate) && (
-                <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-                  Expired on {calculateDateDifference(expiredDate)}
-                </div>
-              )}
           </div>
           <div className="">
             <ProposalStatusShow proposalStatus={proposalStatus} />
@@ -56,13 +48,6 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
             calculateDateDifference(endDate) && (
               <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
                 Ends in {calculateDateDifference(endDate)}
-              </div>
-            )}
-          {proposalStatus === "queued" &&
-            expiredDate &&
-            calculateDateDifference(expiredDate) && (
-              <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-                Expired on {calculateDateDifference(expiredDate)}
               </div>
             )}
         </div>
