@@ -41,8 +41,20 @@ import DonateModal from "./DonateModal.astro";
     class="row items-center py-8 sm:py-12 px-4 sm:px-8 md:px-20 w-full md:py-10"
   >
     <div class="space-y-6 md:w-full sm:pl-4 md:pl-0">
-      <div id="project-name" class="flex items-end space-x-2">
+      <div id="project-name" class="flex justify-between items-end space-x-2">
         <p id="project-name-value" class="text-2xl sm:text-4xl font-bold"></p>
+        <button
+          id="go-to-proposals-button"
+          class="bg-zinc-800 text-white px-4 py-2 rounded-lg flex items-center self-end sm:self-auto"
+        >
+          Proposals
+          <img
+            id="right-arrow-icon"
+            src="/icons/arrow.svg"
+            alt="->"
+            class="w-7 h-5 object-contain"
+          />
+        </button>
       </div>
 
       <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
@@ -256,8 +268,10 @@ import DonateModal from "./DonateModal.astro";
       "update-config-modal",
     ) as HTMLDialogElement;
 
+    let projectInfo: any;
+
     async function updateProjectInfo() {
-      const projectInfo = loadProjectInfo();
+      projectInfo = loadProjectInfo();
       if (projectInfo) {
         const projectNameElement =
           document.getElementById("project-name-value");
@@ -880,6 +894,16 @@ import DonateModal from "./DonateModal.astro";
         discord: "/icons/logos/discord.svg",
       };
       return icons[iconName] || "";
+    }
+
+    const proposalsButton = document.getElementById("go-to-proposals-button");
+    if (proposalsButton) {
+      proposalsButton.addEventListener("click", () => {
+        if (projectInfo) {
+          const name = projectInfo.name;
+          window.location.href = `/proposal?name=${name}`;
+        }
+      });
     }
   });
 </script>
