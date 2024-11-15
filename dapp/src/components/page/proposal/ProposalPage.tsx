@@ -10,11 +10,13 @@ import type { VoteType, VoteStatus } from "types/proposal";
 import { demoProposalData } from "constants/demoProposalData";
 import ProposalDetail from "./ProposalDetail";
 import { fetchProposalFromIPFS } from "@service/ProposalService";
+import type { ProposalOutcome } from "types/proposal";
 
 const ProposalPage: React.FC = () => {
   const id = useStore(proposalId);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [description, setDescription] = useState("");
+  const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [voteType, setVoteType] = useState<VoteType>();
   const [voteStatus, setVoteStatus] = useState<VoteStatus>();
 
@@ -26,6 +28,7 @@ const ProposalPage: React.FC = () => {
   const getProposalDetails = async () => {
     const proposal = demoProposalData[0];
     if (proposal) {
+      setOutcome(proposal.outcome);
       setVoteStatus(proposal.voteStatus);
       const description = await fetchProposalFromIPFS(proposal.ipfsLink);
       console.log("description:", description);
@@ -54,7 +57,7 @@ const ProposalPage: React.FC = () => {
           abstain={20}
           onClick={(voteType) => openVotersModal(voteType)}
         />
-        <ProposalDetail description={description} outcome="" />
+        <ProposalDetail description={description} outcome={outcome} />
       </div>
       {isModalOpen && voteStatus && (
         <VotersModal

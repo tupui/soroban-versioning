@@ -5,7 +5,7 @@ export interface Proposal {
   title: string;
   ipfsLink: string;
   description: string;
-  outcome: string;
+  outcome: ProposalOutcome;
   status: ProposalStatus;
   voteStatus: VoteStatus;
   endDate: string;
@@ -42,4 +42,19 @@ export interface VoteData {
 export interface Voter {
   address: string;
   image: string | null;
+}
+
+export interface ProposalOutcome {
+  approved: {
+    description: string;
+    xdr: string;
+  };
+  rejected: {
+    description: string;
+    xdr: string;
+  };
+  cancelled: {
+    description: string;
+    xdr: string;
+  };
 }

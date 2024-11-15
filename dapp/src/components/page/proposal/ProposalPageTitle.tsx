@@ -21,7 +21,7 @@ const ProposalPageTitle: React.FC<Props> = ({ id, title, submitVote }) => {
         <span className="w-14 sm:w-16 md:w-20 flex justify-center text-2xl sm:text-3xl md:text-4xl px-1 font-medium bg-lime rounded-md sm:rounded-lg">
           {projectId}
         </span>
-        <p className="text-2xl font-normal text-center md:text-start">
+        <p className="text-2xl sm:text-3xl lg:text-[34px] font-normal text-center md:text-start">
           {title}
         </p>
       </div>
