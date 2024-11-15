@@ -17,4 +17,14 @@ async function fetchProposalFromIPFS(url: string) {
   }
 }
 
-export { fetchProposalFromIPFS };
+async function fetchOutcomeDataFromIPFS(baseUrl: string) {
+  try {
+    const response = await axios.get(`${baseUrl}/outcomes.json`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching the outcomes data from IPFS:", error);
+    throw error;
+  }
+}
+
+export { fetchProposalFromIPFS, fetchOutcomeDataFromIPFS };

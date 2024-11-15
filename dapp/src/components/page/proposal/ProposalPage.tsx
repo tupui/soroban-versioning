@@ -9,7 +9,10 @@ import { proposalId } from "utils/store";
 import type { VoteType, VoteStatus } from "types/proposal";
 import { demoProposalData } from "constants/demoProposalData";
 import ProposalDetail from "./ProposalDetail";
-import { fetchProposalFromIPFS } from "@service/ProposalService";
+import {
+  fetchOutcomeDataFromIPFS,
+  fetchProposalFromIPFS,
+} from "@service/ProposalService";
 import type { ProposalOutcome } from "types/proposal";
 
 const ProposalPage: React.FC = () => {
@@ -28,11 +31,12 @@ const ProposalPage: React.FC = () => {
   const getProposalDetails = async () => {
     const proposal = demoProposalData[0];
     if (proposal) {
-      setOutcome(proposal.outcome);
       setVoteStatus(proposal.voteStatus);
       const description = await fetchProposalFromIPFS(proposal.ipfsLink);
-      console.log("description:", description);
       setDescription(description);
+      const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
+      console.log("outcome", outcome);
+      setOutcome(outcome);
     } else {
       alert("Proposal not found");
     }

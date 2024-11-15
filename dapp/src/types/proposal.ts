@@ -5,7 +5,7 @@ export interface Proposal {
   title: string;
   ipfsLink: string;
   description: string;
-  outcome: ProposalOutcome;
+  outcome: string;
   status: ProposalStatus;
   voteStatus: VoteStatus;
   endDate: string;
