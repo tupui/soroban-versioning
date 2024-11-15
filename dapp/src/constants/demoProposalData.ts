@@ -71,7 +71,7 @@ export const demoProposalData: Proposal[] = [
       "https://bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4.ipfs.w3s.link/",
     description:
       "https://bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4.ipfs.w3s.link/proposal.md",
-    outcome: 
+    outcome:
       "https://bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4.ipfs.w3s.link/outcomes.json",
     status: "active",
     voteStatus: {
@@ -84,30 +84,42 @@ export const demoProposalData: Proposal[] = [
             {
               address: "",
               image: null,
+              name: "Pamphile Roy",
+              github: "https://github.com/tupui",
             },
           ],
           contributor: [
             {
               address: "",
               image: null,
+              name: "",
+              github: "",
             },
             {
               address: "",
               image: null,
+              name: "",
+              github: "",
             },
           ],
           community: [
             {
               address: "",
               image: null,
+              name: "",
+              github: "",
             },
             {
               address: "",
               image: null,
+              name: "",
+              github: "",
             },
             {
               address: "",
               image: null,
+              name: "",
+              github: "",
             },
           ],
         },
@@ -122,6 +134,8 @@ export const demoProposalData: Proposal[] = [
             {
               address: "",
               image: null,
+              name: "",
+              github: "",
             },
           ],
         },
@@ -136,6 +150,8 @@ export const demoProposalData: Proposal[] = [
             {
               address: "",
               image: null,
+              name: "",
+              github: "",
             },
           ],
         },

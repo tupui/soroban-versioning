@@ -30,7 +30,7 @@ const VotersModal: React.FC<VotersModalProps> = ({
       }}
     >
       <div
-        className="modal relative w-80 sm:w-max sm:min-w-[420px] sm:max-w-[90%] md:max-w-[620px] px-2 sm:px-4 md:px-5 py-2 sm:py-4 md:py-6 rounded-[20px] bg-white my-4 max-h-[90vh] overflow-y-auto"
+        className="modal relative w-80 sm:w-max sm:min-w-[420px] sm:max-w-[90%] md:max-w-[620px] px-3 sm:px-4 md:px-5 py-2 sm:py-4 md:py-6 rounded-lg sm:rounded-xl md:rounded-[20px] bg-white my-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-content flex flex-col gap-2 sm:gap-3 md:gap-4">
@@ -73,7 +73,12 @@ const VotersCard: React.FC<VoterCardProps> = ({ voterRole, voters }) => {
       </div>
       <div className="flex flex-wrap min-h-10 gap-x-2 sm:gap-x-3 md:gap-x-4 gap-y-1 sm:gap-y-2 md:gap-y-3">
         {voters.map((voter) => (
-          <div className="w-10 h-10 rounded-full overflow-hidden">
+          <div
+            onClick={() => {
+              voter.github && window.open(voter.github, "_blank");
+            }}
+            className="w-10 h-10 rounded-full overflow-hidden cursor-pointer"
+          >
             <img
               src={voter.image ?? "/icons/avatar.svg"}
               alt={voter.address}

@@ -42,6 +42,8 @@ export interface VoteData {
 export interface Voter {
   address: string;
   image: string | null;
+  name: string;
+  github: string;
 }
 
 export interface ProposalOutcome {
