@@ -1,3 +1,5 @@
+import { TransactionBuilder } from "@stellar/stellar-sdk";
+
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
   const ellipsis = "...";
@@ -43,3 +45,17 @@ export function capitalizeFirstLetter(str: string): string {
   if (!str) return str;
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
+
+export const processDecodedData = (xdrData: string): any => {
+  let trxFromXdr;
+  try {
+    trxFromXdr = TransactionBuilder.fromXDR(
+      xdrData,
+      "Test SDF Network ; September 2015",
+    );
+  } catch (error) {
+    console.error("Error decoding XDR:", error);
+  }
+
+  return trxFromXdr;
+};

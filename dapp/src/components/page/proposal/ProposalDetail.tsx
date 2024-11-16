@@ -4,6 +4,7 @@ import Markdown from "markdown-to-jsx";
 import "github-markdown-css";
 import type { ProposalOutcome } from "types/proposal";
 import { demoOutcomeData } from "constants/demoProposalData";
+import { processDecodedData } from "utils/utils";
 import JsonView from "react18-json-view";
 import "react18-json-view/src/style.css";
 interface ProposalDetailProps {
@@ -57,6 +58,8 @@ export const OutcomeDetail: React.FC<{
   const getContentFromXdr = async (_xdr: string) => {
     try {
       if (_xdr) {
+        const decoded = processDecodedData(_xdr);
+        console.log("decode:", decoded);
         setContent(demoOutcomeData);
       }
     } catch (error) {
