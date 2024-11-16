@@ -1,8 +1,11 @@
 import React from "react";
+import { useState, useEffect } from "react";
 import Markdown from "markdown-to-jsx";
 import "github-markdown-css";
 import type { ProposalOutcome } from "types/proposal";
-
+import { demoOutcomeData } from "constants/demoProposalData";
+import JsonView from "react18-json-view";
+import "react18-json-view/src/style.css";
 interface ProposalDetailProps {
   description: string;
   outcome: ProposalOutcome | null;
@@ -29,8 +32,8 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
           <div className="text-xl sm:text-2xl md:text-3xl font-semibold">
             Proposed Outcome
           </div>
-          <div className="w-full mt-4 sm:mt-5 md:mt-7 min-h-24 sm:min-h-32 bg-white">
-            <div className="px-1 sm:px-2 md:px-3 py-2 sm:py-3 md:py-4 flex flex-col gap-2 sm:gap-3 md:gap-5">
+          <div className="w-full mt-4 sm:mt-5 md:mt-7 min-h-24 sm:min-h-32">
+            <div className="flex flex-col gap-2 sm:gap-3 md:gap-5">
               {outcome &&
                 Object.entries(outcome).map(([key, value]) => (
                   <OutcomeDetail key={key} type={key} detail={value} />
@@ -45,18 +48,28 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
 
 export default ProposalDetail;
 
-const OutcomeDetail: React.FC<{
+export const OutcomeDetail: React.FC<{
   type: string;
   detail: { description: string; xdr: string };
 }> = ({ type, detail }) => {
-  const [isExpanded, setIsExpanded] = React.useState(false);
+  const [content, setContent] = useState<any>(null);
 
-  const toggleExpand = () => {
-    setIsExpanded((prev) => !prev);
+  const getContentFromXdr = async (_xdr: string) => {
+    try {
+      if (_xdr) {
+        setContent(demoOutcomeData);
+      }
+    } catch (error) {
+      console.error("Error decoding XDR:", error);
+    }
   };
 
+  useEffect(() => {
+    getContentFromXdr(detail.xdr);
+  }, [detail]);
+
   return (
-    <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
+    <div className="flex flex-col gap-1 sm:gap-2 md:gap-3">
       <div className="flex flex-col sm:flex-row items-start gap-1 sm:gap-2 md:gap-3">
         <div
           className={`text-base sm:text-xl md:text-2xl text-white md:py-0.5 px-1 md:px-2 rounded md:rounded-md 
@@ -68,24 +81,13 @@ const OutcomeDetail: React.FC<{
           {detail.description}
         </div>
       </div>
-      <div className="flex items-start gap-1">
-        <div className="w-9 sm:w-11 md:w-16">
-          <label className="text-base sm:text-xl md:text-[26px]">XDR:</label>
-        </div>
-        <div
-          className={`w-[calc(100%-68px)] px-1 sm:px-2 rounded border bg-zinc-100 border-zinc-300 text-sm sm:text-base md:text-lg break-words transition-all duration-150 ${
-            isExpanded
-              ? "h-36 py-0.5 sm:py-1 overflow-y-auto"
-              : "h-5 sm:h-[26px] md:h-[30px] sm:py-0.5 overflow-hidden truncate"
-          }`}
-        >
-          {detail.xdr}
-        </div>
-        <div
-          onClick={toggleExpand}
-          className="w-5 sm:w-[26px] md:w-[30px] h-5 sm:h-[26px] md:h-[30px] rounded border border-zinc-300"
-        >
-          {isExpanded ? "^" : "#"}
+      <div className="w-full p-2 md:p-4 pr-0 md:pr-0 bg-white">
+        <div className="pr-2 md:pr-4 max-h-40 md:max-h-80 overflow-y-auto">
+          {content ? (
+            <JsonView src={content} theme="vscode" collapsed={2} />
+          ) : (
+            <div className="text-center text-base md:text-lg">No content</div>
+          )}
         </div>
       </div>
     </div>

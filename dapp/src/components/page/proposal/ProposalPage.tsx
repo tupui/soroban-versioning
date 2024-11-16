@@ -35,7 +35,6 @@ const ProposalPage: React.FC = () => {
       const description = await fetchProposalFromIPFS(proposal.ipfsLink);
       setDescription(description);
       const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
-      console.log("outcome", outcome);
       setOutcome(outcome);
     } else {
       alert("Proposal not found");

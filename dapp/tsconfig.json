@@ -4,7 +4,11 @@
     "baseUrl": "src",
     "paths": {
       "@service/*": ["service/*"]
-    }
+    },
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ESNext",
+    "allowSyntheticDefaultImports": true
   },
   "extends": "astro/tsconfigs/strictest",
   "exclude": ["packages"]

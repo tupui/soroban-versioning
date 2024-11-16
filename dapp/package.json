@@ -14,6 +14,7 @@
     "js-sha3": "^0.9.3",
     "markdown-to-jsx": "^7.5.0",
     "nanostores": "^0.11.3",
+    "react18-json-view": "^0.2.8",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.3"
   },
