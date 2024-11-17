@@ -35,6 +35,11 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
                   Ends in {calculateDateDifference(endDate)}
                 </div>
               )}
+            {proposalStatus === "voted" && (
+              <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
+                Pending execution
+              </div>
+            )}
           </div>
           <div className="">
             <ProposalStatusShow proposalStatus={proposalStatus} />
@@ -50,6 +55,11 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
                 Ends in {calculateDateDifference(endDate)}
               </div>
             )}
+          {proposalStatus === "voted" && (
+            <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
+              Pending execution
+            </div>
+          )}
         </div>
       </div>
     </div>

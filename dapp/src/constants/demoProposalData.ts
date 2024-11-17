@@ -34,8 +34,8 @@ export const demoProposalCardData: ProposalCardProps[] = [
   {
     proposalNumber: 5,
     proposalTitle: "Proposal Five",
-    proposalStatus: "cancelled",
-    endDate: null,
+    proposalStatus: "voted",
+    endDate: "2024-11-9",
   },
   {
     proposalNumber: 4,

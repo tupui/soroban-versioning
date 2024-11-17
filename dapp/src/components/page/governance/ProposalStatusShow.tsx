@@ -14,7 +14,7 @@ const ProposalStatusShow: React.FC<ProposalStatusShowProps> = ({
   switch (proposalStatus) {
     case "active":
       title = "Active";
-      backgroundColorClass = "bg-green";
+      backgroundColorClass = "bg-active";
       break;
     case "rejected":
       title = "Rejected";
@@ -22,11 +22,15 @@ const ProposalStatusShow: React.FC<ProposalStatusShowProps> = ({
       break;
     case "cancelled":
       title = "Cancelled";
-      backgroundColorClass = "bg-gray";
+      backgroundColorClass = "bg-abstain";
+      break;
+    case "voted":
+      title = "Voted";
+      backgroundColorClass = "bg-voted";
       break;
     case "approved":
       title = "Approved";
-      backgroundColorClass = "bg-violet-600";
+      backgroundColorClass = "bg-approved";
       break;
     default:
       title = "Unknown";
