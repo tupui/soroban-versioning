@@ -4,7 +4,7 @@ import ProposalStatusDiv from "./ProposalStatusDiv";
 import type { ProposalStatus } from "types/proposal";
 
 interface Props {
-  status: ProposalStatus;
+  status: ProposalStatus | null;
   endDate: string | null;
 }
 
@@ -12,7 +12,7 @@ const ProposalStatusSection: React.FC<Props> = ({ status, endDate }) => {
   return (
     <div className="flex items-center mt-3 sm:mt-5 md:mt-8 gap-2 sm:gap-3 md:gap-4">
       <div className="">
-        <ProposalStatusDiv proposalStatus={status} />
+        {status && <ProposalStatusDiv proposalStatus={status} />}
       </div>
       <div className="hidden lg:block">
         {status === "active" && endDate && (

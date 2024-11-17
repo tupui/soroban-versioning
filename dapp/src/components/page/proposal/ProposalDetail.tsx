@@ -73,7 +73,7 @@ export const OutcomeDetail: React.FC<{
 
   return (
     <div className="flex flex-col gap-1 sm:gap-2 md:gap-3">
-      <div className="flex flex-col sm:flex-row items-start gap-1 sm:gap-2 md:gap-3">
+      <div className="flex flex-col md:flex-row items-start gap-1 sm:gap-2 md:gap-3">
         <div
           className={`text-base sm:text-xl md:text-2xl text-white md:py-0.5 px-1 md:px-2 rounded md:rounded-md 
             ${type === "approved" ? "bg-approved" : type === "rejected" ? "bg-conflict" : type === "cancelled" ? "bg-abstain" : type === "voted" ? "bg-voted" : "bg-gray-300"}`}

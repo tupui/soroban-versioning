@@ -6,7 +6,7 @@ import VoteStatusBar from "./VoteStatusBar";
 import VotersModal from "./VotersModal";
 import { useStore } from "@nanostores/react";
 import { proposalId } from "utils/store";
-import type { VoteType, VoteStatus } from "types/proposal";
+import type { VoteType, VoteStatus, ProposalStatus } from "types/proposal";
 import { demoProposalData } from "constants/demoProposalData";
 import ProposalDetail from "./ProposalDetail";
 import {
@@ -22,16 +22,26 @@ const ProposalPage: React.FC = () => {
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [voteType, setVoteType] = useState<VoteType>();
   const [voteStatus, setVoteStatus] = useState<VoteStatus>();
+  const [proposalStatus, setProposalStatus] = useState<ProposalStatus | null>(
+    null,
+  );
+  const [endDate, setEndDate] = useState<string | null>(null);
 
   const openVotersModal = (voteType: VoteType) => {
-    setVoteType(voteType);
-    setIsModalOpen(true);
+    if (proposalStatus === "active") {
+      setVoteType(voteType);
+      setIsModalOpen(true);
+    } else {
+      alert("Cannot show voters while voting is in progress");
+    }
   };
 
   const getProposalDetails = async () => {
     const proposal = demoProposalData[0];
     if (proposal) {
       setVoteStatus(proposal.voteStatus);
+      setProposalStatus(proposal.status);
+      setEndDate(proposal.endDate);
       const description = await fetchProposalFromIPFS(proposal.ipfsLink);
       setDescription(description);
       const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
@@ -53,7 +63,7 @@ const ProposalPage: React.FC = () => {
         submitVote={() => {}}
       />
       <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
-        <ProposalStatusSection status="active" endDate={"2024-11-24"} />
+        <ProposalStatusSection status={proposalStatus} endDate={endDate} />
         <VoteStatusBar
           interest={50}
           conflict={30}
