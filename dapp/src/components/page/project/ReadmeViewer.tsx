@@ -25,7 +25,6 @@ const ReadmeViewer = () => {
             await fetchReadmeContentFromConfigUrl(configUrl);
           if (readmeContent) {
             setReadmeContent(readmeContent);
-            console.log("readmeContent:", readmeContent);
           }
         }
       }
