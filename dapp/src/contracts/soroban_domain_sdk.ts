@@ -7,11 +7,12 @@ const defaultTimeout = import.meta.env.PUBLIC_DEFAULT_TIMEOUT ?? 30;
 const simulationAccount = import.meta.env.PUBLIC_TANSU_OWNER_ID;
 
 const sdk: SorobanDomainsSDK = new SorobanDomainsSDK({
+  // @ts-ignore
   stellarSDK: SDK,
-  rpc: new SDK.SorobanRpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL),
+  rpc: new SDK.rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL),
   // @ts-ignore
   network: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-  contractId: contractId,
+  vaultsContractId: contractId,
   defaultFee: defaultFee,
   defaultTimeout: defaultTimeout,
   simulationAccount: simulationAccount,
