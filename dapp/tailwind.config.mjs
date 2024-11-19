@@ -42,6 +42,7 @@ export default {
     },
     boxShadow: {
       card: "0px 5px 0px 0px #191A23",
+      vote: "0px 0px 4px 4px #ACFF75",
     },
   },
 };

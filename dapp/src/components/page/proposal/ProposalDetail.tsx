@@ -4,18 +4,24 @@ import Markdown from "markdown-to-jsx";
 import "github-markdown-css";
 import JsonView from "react18-json-view";
 import "react18-json-view/src/style.css";
-import { processDecodedData } from "utils/utils";
+import {
+  capitalizeFirstLetter,
+  processDecodedData,
+  modifySlashInXdr,
+} from "utils/utils";
 import { demoOutcomeData } from "constants/demoProposalData";
 import { stellarLabViewXdrLink } from "constants/serviceLinks";
-import type { ProposalOutcome } from "types/proposal";
+import type { ProposalOutcome, ProposalStatus } from "types/proposal";
 interface ProposalDetailProps {
   description: string;
   outcome: ProposalOutcome | null;
+  status: ProposalStatus | null;
 }
 
 const ProposalDetail: React.FC<ProposalDetailProps> = ({
   description,
   outcome,
+  status,
 }) => {
   return (
     <div className="w-full bg-zinc-100 rounded-xl px-4 sm:px-8 md:px-12 py-4 sm:py-7 md:py-10">
@@ -38,7 +44,12 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
             <div className="flex flex-col gap-3 sm:gap-5 md:gap-8">
               {outcome &&
                 Object.entries(outcome).map(([key, value]) => (
-                  <OutcomeDetail key={key} type={key} detail={value} />
+                  <OutcomeDetail
+                    key={key}
+                    type={key}
+                    detail={value}
+                    proposalStatus={status}
+                  />
                 ))}
             </div>
           </div>
@@ -53,16 +64,13 @@ export default ProposalDetail;
 export const OutcomeDetail: React.FC<{
   type: string;
   detail: { description: string; xdr: string };
-}> = ({ type, detail }) => {
+  proposalStatus: ProposalStatus | null;
+}> = ({ type, detail, proposalStatus }) => {
   const [content, setContent] = useState<any>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleHeight = () => {
     setIsExpanded(!isExpanded);
-  };
-
-  const modifySlashInXdr = (xdr: string) => {
-    return xdr.replaceAll("/", "//");
   };
 
   const getContentFromXdr = async (_xdr: string) => {
@@ -83,12 +91,13 @@ export const OutcomeDetail: React.FC<{
 
   return (
     <div className="flex flex-col gap-1 sm:gap-4 md:gap-6">
-      <div className="flex flex-col md:flex-row items-start gap-1 sm:gap-2 md:gap-3">
+      <div className="flex flex-col items-start gap-1 sm:gap-2 md:gap-3">
         <div
           className={`text-base sm:text-xl md:text-2xl text-white md:py-0.5 px-1 md:px-2 rounded md:rounded-md 
-            ${type === "approved" ? "bg-approved" : type === "rejected" ? "bg-conflict" : type === "cancelled" ? "bg-abstain" : type === "voted" ? "bg-voted" : "bg-gray-300"}`}
+            ${type === "approved" ? "bg-approved" : type === "rejected" ? "bg-conflict" : type === "cancelled" ? "bg-abstain" : type === "voted" ? "bg-voted" : "bg-gray-300"}
+            ${type === proposalStatus || (type === "approved" && proposalStatus === "voted") ? "shadow-vote" : `${type !== "active" && !(type === "approved" && proposalStatus === "voted") && "bg-zinc-700"}`}`}
         >
-          {type}
+          {capitalizeFirstLetter(type)}
         </div>
         <div className="text-sm sm:text-lg md:text-xl md:mt-1.5">
           {detail.description}
