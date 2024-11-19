@@ -8,7 +8,12 @@ interface Props {
   status: ProposalStatus | null;
 }
 
-const ProposalPageTitle: React.FC<Props> = ({ id, title, submitVote, status }) => {
+const ProposalPageTitle: React.FC<Props> = ({
+  id,
+  title,
+  submitVote,
+  status,
+}) => {
   const [projectId, setProjectId] = useState(id);
 
   useEffect(() => {
