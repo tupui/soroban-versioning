@@ -35,7 +35,7 @@ const ProposalPage: React.FC = () => {
   const [endDate, setEndDate] = useState<string | null>(null);
 
   const openVotersModal = (voteType: VoteType) => {
-    if (proposalStatus === "active") {
+    if (proposalStatus !== "active") {
       setVoteType(voteType);
       setIsVotersModalOpen(true);
     } else {
