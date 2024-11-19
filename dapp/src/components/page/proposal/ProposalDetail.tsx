@@ -95,7 +95,7 @@ export const OutcomeDetail: React.FC<{
         <div
           className={`text-base sm:text-xl md:text-2xl text-white md:py-0.5 px-1 md:px-2 rounded md:rounded-md 
             ${type === "approved" ? "bg-approved" : type === "rejected" ? "bg-conflict" : type === "cancelled" ? "bg-abstain" : type === "voted" ? "bg-voted" : "bg-gray-300"}
-            ${type === proposalStatus || (type === "approved" && proposalStatus === "voted") ? "shadow-vote" : `${type !== "active" && !(type === "approved" && proposalStatus === "voted") && "bg-zinc-700"}`}`}
+            ${type === proposalStatus || (type === "approved" && proposalStatus === "voted") ? "shadow-vote" : `${proposalStatus !== "active" && !(type === "approved" && proposalStatus === "voted") && "bg-zinc-700"}`}`}
         >
           {capitalizeFirstLetter(type)}
         </div>
