@@ -1,8 +1,8 @@
 #![cfg(test)]
 
-use super::{
-    domain_contract, domain_node, domain_register, ContractErrors, Versioning, VersioningClient,
-};
+use super::{domain_contract, Tansu, TansuClient};
+use crate::errors::ContractErrors;
+use crate::versioning::{domain_node, domain_register};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{
     symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
@@ -44,8 +44,8 @@ fn test() {
 
     // setup for Tansu
     let contract_admin = Address::generate(&env);
-    let contract_id = env.register_contract(None, Versioning);
-    let contract = VersioningClient::new(&env, &contract_id);
+    let contract_id = env.register_contract(None, Tansu);
+    let contract = TansuClient::new(&env, &contract_id);
 
     contract.init(&contract_admin);
 
