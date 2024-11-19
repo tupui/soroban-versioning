@@ -1,4 +1,3 @@
-/// <reference types="node" resolution-mode="require"/>
 import { Buffer } from "buffer";
 import {
   AssembledTransaction,
@@ -6,14 +5,13 @@ import {
   ClientOptions as ContractClientOptions,
 } from "@stellar/stellar-sdk/contract";
 import type { u32 } from "@stellar/stellar-sdk/contract";
-
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
 export declare const networks: {
   readonly testnet: {
     readonly networkPassphrase: "Test SDF Network ; September 2015";
-    readonly contractId: "CCYM5OC6RTMEUHRK2BRU5YX4G4O745DPLPU4EXVTRCUN7JRJJWXEEXAB";
+    readonly contractId: "CCHZAAUJJZOCFZVTQWGZU4PXR7SFB5PL3XBSHUBNQPXJ3KWE4VFHOBE5";
   };
 };
 export declare const Errors: {
@@ -52,18 +50,15 @@ export type ProjectKey =
       tag: "LastHash";
       values: readonly [Buffer];
     };
-
 export interface Config {
   hash: string;
   url: string;
 }
-
 export interface Project {
   config: Config;
   maintainers: Array<string>;
   name: string;
 }
-
 export interface Client {
   /**
    * Construct and simulate a init transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
@@ -277,12 +272,9 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<Project>>;
 }
-
 export declare class Client extends ContractClient {
   readonly options: ContractClientOptions;
-
   constructor(options: ContractClientOptions);
-
   readonly fromJSON: {
     init: (json: string) => AssembledTransaction<null>;
     version: (json: string) => AssembledTransaction<number>;

@@ -10,6 +10,10 @@ ifndef domain_contract_id
 	override domain_contract_id = $(shell cat .soroban/soroban_domain_id)
 endif
 
+ifndef wasm
+override wasm = versioning_v1.0.0.wasm
+endif
+
 # Add help text after each target name starting with '\#\#'
 help:   ## show this help
 	@echo -e "Help for this makefile\n"
@@ -76,9 +80,11 @@ contract_bindings: contract_build-release
 		--network $(network) \
 		--contract-id $(shell cat .soroban/soroban_versioning_id) \
 		--output-dir dapp/packages/soroban_versioning \
-		--overwrite
+		--overwrite && \
+	cd packages/soroban_versioning && \
+	bun run build
 
-contract_deploy: contract_test contract_bindings contract_build-release  ## Deploy Soroban contract to testnet
+contract_deploy:  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
   		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
   		--source-account mando-$(network) \
@@ -95,14 +101,14 @@ contract_init:
     	init \
     	--admin $(shell soroban keys address mando-$(network))
 
-contract_upgrade: contract_build-release
+contract_upgrade:  ## After manually pulling the wasm from the pipeline, update the contract
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .soroban/soroban_versioning_id) \
     	-- \
     	upgrade \
-		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm)
+		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm $(wasm))
 
 # --------- Soroban Domains --------- #
 
@@ -123,7 +129,7 @@ contract_domain_init:
 		init \
 		--adm $(shell soroban keys address mando-$(network)) \
 		--node_rate 100 \
-		--col_asset $(shell stellar contract id asset --asset native --network $(network) --source-account mando-$(network)) \
+		--col_asset $(shell stellar contract id asset --asset native --network $(network)) \
 		--min_duration 31536000 \
 		--allowed_tlds '[{"bytes": "786c6d"}]'
 

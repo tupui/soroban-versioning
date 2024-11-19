@@ -20,7 +20,6 @@ import type {
   Typepoint,
   Duration,
 } from "@stellar/stellar-sdk/contract";
-
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
@@ -33,7 +32,7 @@ if (typeof window !== "undefined") {
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CCYM5OC6RTMEUHRK2BRU5YX4G4O745DPLPU4EXVTRCUN7JRJJWXEEXAB",
+    contractId: "CCHZAAUJJZOCFZVTQWGZU4PXR7SFB5PL3XBSHUBNQPXJ3KWE4VFHOBE5",
   },
 } as const;
 
@@ -285,7 +284,6 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<Project>>;
 }
-
 export class Client extends ContractClient {
   constructor(public readonly options: ContractClientOptions) {
     super(
@@ -307,7 +305,6 @@ export class Client extends ContractClient {
       options,
     );
   }
-
   public readonly fromJSON = {
     init: this.txFromJSON<null>,
     version: this.txFromJSON<u32>,

@@ -3,7 +3,6 @@ import {
   Client as ContractClient,
   Spec as ContractSpec,
 } from "@stellar/stellar-sdk/contract";
-
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
@@ -14,7 +13,7 @@ if (typeof window !== "undefined") {
 export const networks = {
   testnet: {
     networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CCYM5OC6RTMEUHRK2BRU5YX4G4O745DPLPU4EXVTRCUN7JRJJWXEEXAB",
+    contractId: "CCHZAAUJJZOCFZVTQWGZU4PXR7SFB5PL3XBSHUBNQPXJ3KWE4VFHOBE5",
   },
 };
 export const Errors = {
@@ -26,10 +25,8 @@ export const Errors = {
   5: { message: "InvalidDomainError" },
   6: { message: "MaintainerNotDomainOwner" },
 };
-
 export class Client extends ContractClient {
   options;
-
   constructor(options) {
     super(
       new ContractSpec([
@@ -51,7 +48,6 @@ export class Client extends ContractClient {
     );
     this.options = options;
   }
-
   fromJSON = {
     init: this.txFromJSON,
     version: this.txFromJSON,
