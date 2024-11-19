@@ -10,6 +10,7 @@ mod domain_contract {
 }
 
 // mod contract_dao;
+mod contract_dao;
 mod errors;
 mod test;
 mod types;
@@ -64,6 +65,8 @@ pub trait DaoTrait {
     ) -> u32;
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: bool);
+
+    fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 
     fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal;
 }

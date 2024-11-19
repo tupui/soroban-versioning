@@ -26,10 +26,7 @@ pub struct Proposal {
 
 #[contracttype]
 pub struct Dao {
-    pub active_proposals: Vec<Proposal>,
-    pub accepted_proposals: Vec<Proposal>,
-    pub rejected_proposals: Vec<Proposal>,
-    pub cancelled_proposals: Vec<Proposal>,
+    pub proposals: Option<Vec<Proposal>>,
 }
 
 #[contracttype]
