@@ -1,11 +1,12 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { useStore } from "@nanostores/react";
 import ProposalPageTitle from "./ProposalPageTitle";
 import ProposalStatusSection from "./ProposalStatusSection";
 import VoteStatusBar from "./VoteStatusBar";
 import VotersModal from "./VotersModal";
-import { useStore } from "@nanostores/react";
-import { proposalId } from "utils/store";
+import VotingModal from "./VotingModal";
+import { connectedPublicKey, proposalId } from "utils/store";
 import type { VoteType, VoteStatus, ProposalStatus } from "types/proposal";
 import { demoProposalData } from "constants/demoProposalData";
 import ProposalDetail from "./ProposalDetail";
@@ -17,7 +18,10 @@ import type { ProposalOutcome } from "types/proposal";
 
 const ProposalPage: React.FC = () => {
   const id = useStore(proposalId);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const connectedAddress = useStore(connectedPublicKey);
+  const [isVotersModalOpen, setIsVotersModalOpen] = useState(false);
+  const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
+  const [maintainers, setMaintainers] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [voteType, setVoteType] = useState<VoteType>();
@@ -30,15 +34,19 @@ const ProposalPage: React.FC = () => {
   const openVotersModal = (voteType: VoteType) => {
     if (proposalStatus === "active") {
       setVoteType(voteType);
-      setIsModalOpen(true);
+      setIsVotersModalOpen(true);
     } else {
       alert("Cannot show voters while voting is in progress");
     }
   };
 
-  const openVotingModal = (id: string) => {
+  const openVotingModal = () => {
     if (proposalStatus === "active") {
-      alert("open modal with id: " + id);
+      if (connectedAddress) {
+        setIsVotingModalOpen(true);
+      } else {
+        alert("Please connect your wallet first");
+      }
     } else {
       alert("Cannot vote anymore, voting is ended.");
     }
@@ -47,6 +55,7 @@ const ProposalPage: React.FC = () => {
   const getProposalDetails = async () => {
     const proposal = demoProposalData[0];
     if (proposal) {
+      setMaintainers(proposal.maintainers);
       setVoteStatus(proposal.voteStatus);
       setProposalStatus(proposal.status);
       setEndDate(proposal.endDate);
@@ -68,8 +77,9 @@ const ProposalPage: React.FC = () => {
       <ProposalPageTitle
         id={id}
         title="Bounty of issue: integrate DAO system to Tansu - $3000"
-        submitVote={(id) => openVotingModal(id)}
+        submitVote={() => openVotingModal()}
         status={proposalStatus}
+        maintainers={maintainers}
       />
       <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
         <ProposalStatusSection status={proposalStatus} endDate={endDate} />
@@ -79,14 +89,21 @@ const ProposalPage: React.FC = () => {
           abstain={20}
           onClick={(voteType) => openVotersModal(voteType)}
         />
-        <ProposalDetail description={description} outcome={outcome} />
+        <ProposalDetail
+          description={description}
+          outcome={outcome}
+          status={proposalStatus}
+        />
       </div>
-      {isModalOpen && voteStatus && (
+      {isVotersModalOpen && voteStatus && (
         <VotersModal
           NQGScore={4.5}
           voteData={voteType ? voteStatus[voteType] : null}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => setIsVotersModalOpen(false)}
         />
+      )}
+      {isVotingModalOpen && (
+        <VotingModal onClose={() => setIsVotingModalOpen(false)} />
       )}
     </div>
   );

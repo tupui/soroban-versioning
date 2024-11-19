@@ -5,3 +5,4 @@ export const latestCommit = atom("");
 export const projectCardModalOpen = atom(false);
 export const projectNameForGovernance = atom("");
 export const proposalId = atom("");
+export const connectedPublicKey = atom("");
