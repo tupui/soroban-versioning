@@ -8,6 +8,7 @@ interface Props {
   title: string;
   maintainers: string[];
   submitVote: () => void;
+  executeProposal: () => void;
   status: ProposalStatus | null;
 }
 
@@ -16,10 +17,25 @@ const ProposalPageTitle: React.FC<Props> = ({
   title,
   maintainers,
   submitVote,
+  executeProposal,
   status,
 }) => {
   const [projectId, setProjectId] = useState(id);
+  const [isMaintainer, setIsMaintainer] = useState(false);
   const connectedAddress = useStore(connectedPublicKey);
+
+  const checkIsMaintainer = () => {
+    if (connectedAddress) {
+      const isMaintainer = maintainers.includes(connectedAddress);
+      setIsMaintainer(isMaintainer);
+    } else {
+      setIsMaintainer(false);
+    }
+  };
+
+  useEffect(() => {
+    checkIsMaintainer();
+  }, [connectedAddress, maintainers]);
 
   useEffect(() => {
     if (id) {
@@ -49,6 +65,22 @@ const ProposalPageTitle: React.FC<Props> = ({
           >
             <span className="text-center text-white text-base sm:text-lg md:text-xl font-normal">
               Vote
+            </span>
+          </button>
+        </div>
+        <div
+          id="vote-proposal-button"
+          className={`${status === "voted" && isMaintainer ? "block" : "hidden"}`}
+        >
+          <button
+            disabled={status !== "voted" || !isMaintainer}
+            onClick={() => {
+              executeProposal();
+            }}
+            className={`w-full px-3 md:px-4 py-1 sm:py-1.5 md:py-3 ${status !== "voted" ? "bg-zinc-600" : "bg-zinc-900"} rounded-lg sm:rounded-xl md:rounded-[14px] justify-center gap-2.5 inline-flex`}
+          >
+            <span className="text-center text-white text-base sm:text-lg md:text-xl font-normal">
+              Execute
             </span>
           </button>
         </div>

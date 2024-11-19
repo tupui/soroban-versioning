@@ -59,3 +59,7 @@ export const processDecodedData = (xdrData: string): any => {
 
   return trxFromXdr;
 };
+
+export const modifySlashInXdr = (xdr: string) => {
+  return xdr.replaceAll("/", "//");
+};

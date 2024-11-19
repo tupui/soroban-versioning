@@ -67,13 +67,18 @@ export const demoProposalData: Proposal[] = [
   {
     id: 1,
     title: "Issue Bounty: Add DAO system to the project - $3000",
+    projectName: "Tansu",
+    maintainers: [
+      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
+      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
+    ],
     ipfsLink:
       "https://bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4.ipfs.w3s.link/",
     description:
       "https://bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4.ipfs.w3s.link/proposal.md",
     outcome:
       "https://bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4.ipfs.w3s.link/outcomes.json",
-    status: "active",
+    status: "voted",
     voteStatus: {
       totalScore: 6,
       interest: {
@@ -157,7 +162,7 @@ export const demoProposalData: Proposal[] = [
         },
       },
     },
-    endDate: "2024-11-24",
+    endDate: "2024-11-19",
   },
 ];
 

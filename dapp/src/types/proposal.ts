@@ -8,6 +8,8 @@ export type ProposalStatus =
 export interface Proposal {
   id: number;
   title: string;
+  projectName: string;
+  maintainers: string[];
   ipfsLink: string;
   description: string;
   outcome: string;

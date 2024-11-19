@@ -15,12 +15,15 @@ import {
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
 import type { ProposalOutcome } from "types/proposal";
+import ExecuteProposalModal from "./ExecuteProposalModal";
 
 const ProposalPage: React.FC = () => {
   const id = useStore(proposalId);
   const connectedAddress = useStore(connectedPublicKey);
   const [isVotersModalOpen, setIsVotersModalOpen] = useState(false);
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
+  const [isExecuteProposalModalOpen, setIsExecuteProposalModalOpen] =
+    useState(false);
   const [maintainers, setMaintainers] = useState<string[]>([]);
   const [description, setDescription] = useState("");
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
@@ -52,6 +55,14 @@ const ProposalPage: React.FC = () => {
     }
   };
 
+  const openExecuteProposalModal = () => {
+    if (proposalStatus === "voted") {
+      setIsExecuteProposalModalOpen(true);
+    } else {
+      alert("Cannot execute proposal.");
+    }
+  };
+
   const getProposalDetails = async () => {
     const proposal = demoProposalData[0];
     if (proposal) {
@@ -78,6 +89,7 @@ const ProposalPage: React.FC = () => {
         id={id}
         title="Bounty of issue: integrate DAO system to Tansu - $3000"
         submitVote={() => openVotingModal()}
+        executeProposal={() => openExecuteProposalModal()}
         status={proposalStatus}
         maintainers={maintainers}
       />
@@ -104,6 +116,12 @@ const ProposalPage: React.FC = () => {
       )}
       {isVotingModalOpen && (
         <VotingModal onClose={() => setIsVotingModalOpen(false)} />
+      )}
+      {isExecuteProposalModalOpen && (
+        <ExecuteProposalModal
+          xdr={outcome?.approved.xdr ?? ""}
+          onClose={() => setIsExecuteProposalModalOpen(false)}
+        />
       )}
     </div>
   );

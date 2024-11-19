@@ -16,15 +16,14 @@
 /* custom scrollbar */
 /* For Webkit-based browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
-  width: 10px !important;
+  width: 2px !important;
 }
 
 ::-webkit-scrollbar:horizontal {
-  height: 10px !important;
+  height: 2px !important;
 }
 
 ::-webkit-scrollbar-track {
-  background: #fff !important;
   border-radius: 10px !important;
   cursor: pointer;
 }
@@ -32,7 +31,6 @@
 ::-webkit-scrollbar-thumb {
   background-color: #aaa !important;
   border-radius: 10px;
-  border: 2px solid #fff !important;
 }
 
 ::-webkit-scrollbar-thumb:hover {
