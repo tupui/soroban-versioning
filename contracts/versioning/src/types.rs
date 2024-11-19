@@ -36,7 +36,7 @@ pub struct Dao {
 pub enum ProjectKey {
     Key(Bytes),      // UUID of the project from keccak256(name)
     LastHash(Bytes), // last hash of the project
-    Dao(Bytes, u32), // Decentralized organization
+    Dao(Bytes, u32), // Decentralized organization, pagination
 }
 
 #[contracttype]

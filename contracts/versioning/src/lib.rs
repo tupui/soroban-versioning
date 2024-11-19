@@ -54,11 +54,18 @@ pub trait VersioningTrait {
 }
 
 pub trait DaoTrait {
-    fn create_proposal(env: Env, title: String, description: String, duration: u64) -> u32;
+    fn create_proposal(
+        env: Env,
+        proposer: Address,
+        project_key: Bytes,
+        title: String,
+        ipfs: String,
+        voting_ends_at: u64,
+    ) -> u32;
 
-    fn vote(env: Env, proposal_id: u32, vote: bool);
+    fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: bool);
 
-    fn get_proposal(env: Env, proposal_id: u32) -> types::Proposal;
+    fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal;
 }
 
 fn auth_maintainers(env: &Env, maintainer: &Address, maintainers: &Vec<Address>) {
