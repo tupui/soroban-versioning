@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 import ProposalTypeButton from "./ProposalTypeButton";
 import ProposalList from "./ProposalList";
+import IdeaList from "./IdeaList";
 
 const ProposalsSection: React.FC = () => {
   const [proposalType, setProposalType] = useState("proposal");
@@ -25,7 +26,8 @@ const ProposalsSection: React.FC = () => {
         />
       </div>
       <div className="w-full">
-        <ProposalList />
+        {proposalType === "proposal" && <ProposalList />}
+        {proposalType === "idea" && <IdeaList />}
       </div>
     </div>
   );
