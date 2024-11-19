@@ -1,12 +1,14 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import type { ProposalStatus } from "types/proposal";
 interface Props {
   id: string;
   title: string;
   submitVote: (id: string) => void;
+  status: ProposalStatus | null;
 }
 
-const ProposalPageTitle: React.FC<Props> = ({ id, title, submitVote }) => {
+const ProposalPageTitle: React.FC<Props> = ({ id, title, submitVote, status }) => {
   const [projectId, setProjectId] = useState(id);
 
   useEffect(() => {
@@ -27,10 +29,11 @@ const ProposalPageTitle: React.FC<Props> = ({ id, title, submitVote }) => {
       </div>
       <div id="vote-proposal-button" className="">
         <button
+          disabled={status !== "active"}
           onClick={() => submitVote(id)}
-          className={`w-full px-4 py-2 sm:py-3 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex`}
+          className={`w-full px-3 md:px-4 py-1 sm:py-1.5 md:py-3 ${status !== "active" ? "bg-zinc-600" : "bg-zinc-900"} rounded-lg sm:rounded-xl md:rounded-[14px] justify-center gap-2.5 inline-flex`}
         >
-          <span className="text-center text-white text-xl font-normal leading-7">
+          <span className="text-center text-white text-base sm:text-lg md:text-xl font-normal">
             Vote
           </span>
         </button>

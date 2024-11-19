@@ -14,7 +14,7 @@ const ProposalStatusSection: React.FC<Props> = ({ status, endDate }) => {
       <div className="">
         {status && <ProposalStatusDiv proposalStatus={status} />}
       </div>
-      <div className="hidden lg:block">
+      <div className="">
         {status === "active" && endDate && (
           <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
             Ends in {calculateDateDifference(endDate)}

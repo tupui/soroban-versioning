@@ -36,6 +36,14 @@ const ProposalPage: React.FC = () => {
     }
   };
 
+  const openVotingModal = (id: string) => {
+    if (proposalStatus === "active") {
+      alert("open modal with id: " + id);
+    } else {
+      alert("Cannot vote anymore, voting is ended.");
+    }
+  };
+
   const getProposalDetails = async () => {
     const proposal = demoProposalData[0];
     if (proposal) {
@@ -60,7 +68,8 @@ const ProposalPage: React.FC = () => {
       <ProposalPageTitle
         id={id}
         title="Bounty of issue: integrate DAO system to Tansu - $3000"
-        submitVote={() => {}}
+        submitVote={(id) => openVotingModal(id)}
+        status={proposalStatus}
       />
       <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
         <ProposalStatusSection status={proposalStatus} endDate={endDate} />
