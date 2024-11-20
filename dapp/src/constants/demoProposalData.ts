@@ -3,7 +3,7 @@ import type { Proposal, ProposalCardProps } from "types/proposal";
 export const demoProposalCardData: ProposalCardProps[] = [
   {
     proposalNumber: 10,
-    proposalTitle: "Issue Bounty: Addition of DAO system to Tansu - $3000",
+    proposalTitle: "Issue Bounty: Addition of DAO system to Tansu",
     proposalStatus: "active",
     endDate: "2024-11-24",
   },
@@ -66,7 +66,7 @@ export const demoProposalCardData: ProposalCardProps[] = [
 export const demoProposalData: Proposal[] = [
   {
     id: 1,
-    title: "Issue Bounty: Add DAO system to the project - $3000",
+    title: "Issue Bounty: Add DAO system to the project",
     projectName: "Tansu",
     maintainers: [
       "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",

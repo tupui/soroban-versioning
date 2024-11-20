@@ -87,7 +87,7 @@ const ProposalPage: React.FC = () => {
     <div>
       <ProposalPageTitle
         id={id}
-        title="Bounty of issue: integrate DAO system to Tansu - $3000"
+        title="Bounty of issue: integrate DAO system to Tansu"
         submitVote={() => openVotingModal()}
         executeProposal={() => openExecuteProposalModal()}
         status={proposalStatus}
