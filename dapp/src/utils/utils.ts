@@ -51,7 +51,7 @@ export const processDecodedData = (xdrData: string): any => {
   try {
     trxFromXdr = TransactionBuilder.fromXDR(
       xdrData,
-      "Test SDF Network ; September 2015",
+      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
     );
   } catch (error) {
     console.error("Error decoding XDR:", error);
