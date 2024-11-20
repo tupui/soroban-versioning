@@ -25,14 +25,14 @@ export interface ProposalCardProps {
   endDate: string | null;
 }
 
-export type VoteType = "interest" | "conflict" | "abstain";
+export type VoteType = "approve" | "reject" | "abstain";
 
 export type VoterRole = "maintainer" | "contributor" | "community";
 
 export interface VoteStatus {
   totalScore: number;
-  interest: VoteData;
-  conflict: VoteData;
+  approve: VoteData;
+  reject: VoteData;
   abstain: VoteData;
 }
 

@@ -81,8 +81,8 @@ export const demoProposalData: Proposal[] = [
     status: "voted",
     voteStatus: {
       totalScore: 6,
-      interest: {
-        voteType: "interest",
+      approve: {
+        voteType: "approve",
         score: 4,
         voters: {
           maintainer: [
@@ -129,8 +129,8 @@ export const demoProposalData: Proposal[] = [
           ],
         },
       },
-      conflict: {
-        voteType: "conflict",
+      reject: {
+        voteType: "reject",
         score: 1,
         voters: {
           maintainer: [],

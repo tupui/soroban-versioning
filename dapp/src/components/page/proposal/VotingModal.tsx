@@ -36,17 +36,17 @@ const VotingModal: React.FC<VotersModalProps> = ({ onClose }) => {
 
           <div className="flex flex-col gap-5">
             <CheckBox
-              value="interest"
+              value="approve"
               option={selectedOption}
               setOption={setSelectedOption}
-              label="Interest"
+              label="Approve"
               bgColor="bg-interest"
             />
             <CheckBox
-              value="conflict"
+              value="reject"
               option={selectedOption}
               setOption={setSelectedOption}
-              label="Conflict"
+              label="Reject"
               bgColor="bg-conflict"
             />
             <CheckBox

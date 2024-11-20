@@ -96,8 +96,8 @@ const ProposalPage: React.FC = () => {
       <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
         <ProposalStatusSection status={proposalStatus} endDate={endDate} />
         <VoteStatusBar
-          interest={50}
-          conflict={30}
+          approve={50}
+          reject={30}
           abstain={20}
           onClick={(voteType) => openVotersModal(voteType)}
         />

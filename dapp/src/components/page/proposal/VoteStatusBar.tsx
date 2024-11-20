@@ -2,21 +2,21 @@ import React from "react";
 import type { VoteType } from "types/proposal";
 
 interface VoteStatusBarProps {
-  interest: number;
-  conflict: number;
+  approve: number;
+  reject: number;
   abstain: number;
   onClick?: (voteType: VoteType) => void;
 }
 
 const VoteStatusBar: React.FC<VoteStatusBarProps> = ({
-  interest,
-  conflict,
+  approve,
+  reject,
   abstain,
   onClick,
 }) => {
-  const total = interest + conflict + abstain;
-  const interestPercent = total ? (interest / total) * 100 : 0;
-  const conflictPercent = total ? (conflict / total) * 100 : 0;
+  const total = approve + reject + abstain;
+  const interestPercent = total ? (approve / total) * 100 : 0;
+  const conflictPercent = total ? (reject / total) * 100 : 0;
   const abstainPercent = total ? (abstain / total) * 100 : 0;
 
   return (
@@ -24,7 +24,7 @@ const VoteStatusBar: React.FC<VoteStatusBarProps> = ({
       <div
         className="bg-interest cursor-pointer"
         style={{ width: `${interestPercent}%` }}
-        onClick={() => onClick?.("interest")}
+        onClick={() => onClick?.("approve")}
       ></div>
       <div
         className="bg-abstain cursor-pointer"
@@ -34,7 +34,7 @@ const VoteStatusBar: React.FC<VoteStatusBarProps> = ({
       <div
         className="bg-conflict cursor-pointer"
         style={{ width: `${conflictPercent}%` }}
-        onClick={() => onClick?.("conflict")}
+        onClick={() => onClick?.("reject")}
       ></div>
     </div>
   );
