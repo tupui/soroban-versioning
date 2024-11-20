@@ -50,8 +50,6 @@ const ProposalPage: React.FC = () => {
       } else {
         alert("Please connect your wallet first");
       }
-    } else {
-      alert("Cannot vote anymore, voting is ended.");
     }
   };
 
