@@ -11,11 +11,9 @@ export interface Proposal {
   projectName: string;
   maintainers: string[];
   ipfsLink: string;
-  description: string;
-  outcome: string;
   status: ProposalStatus;
   voteStatus: VoteStatus;
-  endDate: string;
+  endDate: string | null;
 }
 
 export interface ProposalCardProps {
