@@ -6,7 +6,6 @@ import ProposalCard from "./ProposalCard";
 import { projectNameForGovernance } from "utils/store";
 import { useStore } from "@nanostores/react";
 import type { ProposalView, ProposalViewStatus } from "types/proposal";
-import { e } from "../../../../dist/_astro/GithubService.BV48oq3e";
 
 const ProposalList: React.FC = () => {
   const projectName = useStore(projectNameForGovernance);
