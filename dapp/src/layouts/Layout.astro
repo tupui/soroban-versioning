@@ -28,10 +28,10 @@ const { title } = Astro.props;
     <SEO
       title={title}
       description="Bringing open source software development onto the Stellar blockchain"
-      nofollow="true"
+      nofollow={true}
       openGraph={{
         basic: {
-          title: { title },
+          title: title,
           type: "website",
           image: "https://testnet.tansu.dev/logo.svg",
         },

@@ -1,0 +1,36 @@
+---
+import PrimaryButton from "../../utils/PrimaryButton.astro";
+import Topic from "../../utils/Topic.astro";
+---
+
+<div
+  class="relative flex flex-col items-center md:flex-row justify-between mb-1.5 mt-4 sm:mt-8 md:mt-12 gap-y-4"
+>
+  <Topic title="Project Governance" description="" id="proposal-page-topic" />
+  <div id="create-proposal-button" class="">
+    <PrimaryButton
+      wrapId="wrap-create-proposal-button"
+      dataAttr="data-create-proposal-button"
+      ariaControls="create-proposal-modal"
+      buttonText="Submit Proposal"
+    />
+  </div>
+</div>
+
+<script>
+  import { projectNameForGovernance } from "utils/store";
+  import { capitalizeFirstLetter } from "utils/utils";
+
+  document.addEventListener("astro:page-load", async () => {
+    projectNameForGovernance.subscribe((projectName) => {
+      if (projectName) {
+        const titleElement = document
+          .getElementById("proposal-page-topic")
+          ?.querySelector("span");
+        if (titleElement) {
+          titleElement.textContent = `${capitalizeFirstLetter(projectName)} Governance`;
+        }
+      }
+    });
+  });
+</script>

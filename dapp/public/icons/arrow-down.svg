@@ -1,4 +1,21 @@
-<svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-<line x1="0.698853" y1="2.32306" x2="7.29476" y2="8.76762" stroke="black" stroke-opacity="0.77" stroke-width="2"/>
-<path d="M13.0903 2.13403L6.0748 9.06512" stroke="black" stroke-opacity="0.77" stroke-width="2"/>
+<svg
+  width="14"
+  height="10"
+  viewBox="0 0 14 10"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <line
+    x1="0.698853"
+    y1="2.32306"
+    x2="7.29476"
+    y2="8.76762"
+    stroke="black"
+    stroke-opacity="0.77"
+    stroke-width="2"></line>
+  <path
+    d="M13.0903 2.13403L6.0748 9.06512"
+    stroke="black"
+    stroke-opacity="0.77"
+    stroke-width="2"></path>
 </svg>

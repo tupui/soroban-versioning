@@ -1,0 +1,30 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Container from "../../components/layout/Container.astro";
+import GovernancePage from "../../components/page/governance/GovernancePage.astro";
+---
+
+<script is:inline>
+  var global = global || window;
+</script>
+
+<Layout title="Tansu">
+  <main class="space-y-20">
+    <Container>
+      <GovernancePage />
+    </Container>
+  </main>
+</Layout>
+
+<script>
+  import { projectNameForGovernance } from "utils/store";
+
+  document.addEventListener("astro:page-load", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectName = urlParams.get("name") || "";
+    if (projectName) {
+      projectNameForGovernance.set(projectName);
+      console.log("projectName:", projectName);
+    }
+  });
+</script>
