@@ -13,12 +13,12 @@ import {
 } from "utils/utils";
 import { demoOutcomeData } from "constants/demoProposalData";
 import { stellarLabViewXdrLink } from "constants/serviceLinks";
-import type { ProposalOutcome, ProposalStatus } from "types/proposal";
+import type { ProposalOutcome, ProposalViewStatus } from "types/proposal";
 interface ProposalDetailProps {
   ipfsLink: string | null;
   description: string;
   outcome: ProposalOutcome | null;
-  status: ProposalStatus | null;
+  status: ProposalViewStatus | null;
 }
 
 const ProposalDetail: React.FC<ProposalDetailProps> = ({
@@ -106,7 +106,7 @@ export default ProposalDetail;
 export const OutcomeDetail: React.FC<{
   type: string;
   detail: { description: string; xdr: string };
-  proposalStatus: ProposalStatus | null;
+  proposalStatus: ProposalViewStatus | null;
 }> = ({ type, detail, proposalStatus }) => {
   const [content, setContent] = useState<any>(null);
   const [isExpanded, setIsExpanded] = useState(false);

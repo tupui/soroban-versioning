@@ -1,10 +1,10 @@
 import React from "react";
 import { calculateDateDifference } from "../../../utils/formatTimeFunctions";
 import ProposalStatusShow from "../governance/ProposalStatusShow";
-import type { ProposalStatus } from "types/proposal";
+import type { ProposalViewStatus } from "types/proposal";
 
 interface Props {
-  status: ProposalStatus | null;
+  status: ProposalViewStatus | null;
   endDate: string | null;
 }
 

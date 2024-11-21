@@ -7,14 +7,19 @@ import VoteStatusBar from "./VoteStatusBar";
 import VotersModal from "./VotersModal";
 import VotingModal from "./VotingModal";
 import { connectedPublicKey, proposalId } from "utils/store";
-import type { VoteType, Proposal } from "types/proposal";
 import { demoProposalData } from "constants/demoProposalData";
 import ProposalDetail from "./ProposalDetail";
 import {
   fetchOutcomeDataFromIPFS,
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
-import type { ProposalOutcome } from "types/proposal";
+import type {
+  ProposalOutcome,
+  Proposal,
+  ProposalView,
+  ProposalViewStatus,
+  VoteType,
+} from "types/proposal";
 import ExecuteProposalModal from "./ExecuteProposalModal";
 
 const ProposalPage: React.FC = () => {
@@ -24,7 +29,7 @@ const ProposalPage: React.FC = () => {
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
   const [isExecuteProposalModalOpen, setIsExecuteProposalModalOpen] =
     useState(false);
-  const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [proposal, setProposal] = useState<ProposalView | null>(null);
   const [description, setDescription] = useState("");
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [voteType, setVoteType] = useState<VoteType>();
@@ -49,16 +54,42 @@ const ProposalPage: React.FC = () => {
   };
 
   const openExecuteProposalModal = () => {
-    if (proposal?.status === "voted") {
+    if (proposal?.status === "active") {
       setIsExecuteProposalModalOpen(true);
     } else {
       alert("Cannot execute proposal.");
     }
   };
   const getProposalDetails = async () => {
-    const proposal = demoProposalData[id - 1];
+    const proposal = demoProposalData.find((p) => p.id === id);
     if (proposal) {
-      setProposal(proposal);
+      let proposalStatusView;
+
+      if (proposal.status === "accepted") {
+        proposalStatusView = "approved";
+      } else if (proposal.status === "active") {
+        if (proposal.endDate !== null) {
+          const endDateTimestamp = new Date(proposal.endDate).setHours(
+            0,
+            0,
+            0,
+            0,
+          );
+          const currentTime = new Date().setHours(0, 0, 0, 0);
+          if (endDateTimestamp < currentTime) {
+            proposalStatusView = "voted";
+          } else {
+            proposalStatusView = "active";
+          }
+        }
+      } else {
+        proposalStatusView = proposal.status;
+      }
+      const proposalView: ProposalView = {
+        ...proposal,
+        status: proposalStatusView as ProposalViewStatus,
+      };
+      setProposal(proposalView);
       const description = await fetchProposalFromIPFS(proposal.ipfsLink);
       setDescription(description);
       const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);

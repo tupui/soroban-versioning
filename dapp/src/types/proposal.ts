@@ -1,9 +1,11 @@
-export type ProposalStatus =
+export type ProposalStatus = "active" | "rejected" | "cancelled" | "accepted";
+
+export type ProposalViewStatus =
   | "active"
   | "rejected"
   | "cancelled"
-  | "approved"
-  | "voted";
+  | "voted"
+  | "approved";
 
 export interface Proposal {
   id: number;
@@ -16,10 +18,21 @@ export interface Proposal {
   endDate: string | null;
 }
 
-export interface ProposalCardProps {
+export interface ProposalView {
+  id: number;
+  title: string;
+  projectName: string;
+  maintainers: string[];
+  ipfsLink: string;
+  status: ProposalViewStatus;
+  voteStatus: VoteStatus;
+  endDate: string | null;
+}
+
+export interface ProposalCardView {
   proposalNumber: number;
   proposalTitle: string;
-  proposalStatus: ProposalStatus;
+  proposalStatus: ProposalViewStatus;
   endDate: string | null;
 }
 

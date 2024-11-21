@@ -2,14 +2,14 @@ import { useStore } from "@nanostores/react";
 import React from "react";
 import { useState, useEffect } from "react";
 import { connectedPublicKey } from "utils/store";
-import type { ProposalStatus } from "types/proposal";
+import type { ProposalViewStatus } from "types/proposal";
 interface Props {
   id: string;
   title: string;
   maintainers: string[];
   submitVote: () => void;
   executeProposal: () => void;
-  status: ProposalStatus | null;
+  status: ProposalViewStatus | null;
 }
 
 const ProposalPageTitle: React.FC<Props> = ({
