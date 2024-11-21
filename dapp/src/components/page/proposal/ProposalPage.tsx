@@ -7,7 +7,10 @@ import VoteStatusBar from "./VoteStatusBar";
 import VotersModal from "./VotersModal";
 import VotingModal from "./VotingModal";
 import { connectedPublicKey, proposalId } from "utils/store";
-import type { VoteType, VoteStatus, ProposalStatus } from "types/proposal";
+import type {
+  VoteType,
+  Proposal,
+} from "types/proposal";
 import { demoProposalData } from "constants/demoProposalData";
 import ProposalDetail from "./ProposalDetail";
 import {
@@ -24,18 +27,13 @@ const ProposalPage: React.FC = () => {
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
   const [isExecuteProposalModalOpen, setIsExecuteProposalModalOpen] =
     useState(false);
-  const [maintainers, setMaintainers] = useState<string[]>([]);
+  const [proposal, setProposal] = useState<Proposal | null>(null);
   const [description, setDescription] = useState("");
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [voteType, setVoteType] = useState<VoteType>();
-  const [voteStatus, setVoteStatus] = useState<VoteStatus>();
-  const [proposalStatus, setProposalStatus] = useState<ProposalStatus | null>(
-    null,
-  );
-  const [endDate, setEndDate] = useState<string | null>(null);
 
   const openVotersModal = (voteType: VoteType) => {
-    if (proposalStatus !== "active") {
+    if (proposal?.status !== "active") {
       setVoteType(voteType);
       setIsVotersModalOpen(true);
     } else {
@@ -44,7 +42,7 @@ const ProposalPage: React.FC = () => {
   };
 
   const openVotingModal = () => {
-    if (proposalStatus === "active") {
+    if (proposal?.status === "active") {
       if (connectedAddress) {
         setIsVotingModalOpen(true);
       } else {
@@ -54,20 +52,16 @@ const ProposalPage: React.FC = () => {
   };
 
   const openExecuteProposalModal = () => {
-    if (proposalStatus === "voted") {
+    if (proposal?.status === "voted") {
       setIsExecuteProposalModalOpen(true);
     } else {
       alert("Cannot execute proposal.");
     }
   };
-
   const getProposalDetails = async () => {
-    const proposal = demoProposalData[0];
+    const proposal = demoProposalData[id - 1];
     if (proposal) {
-      setMaintainers(proposal.maintainers);
-      setVoteStatus(proposal.voteStatus);
-      setProposalStatus(proposal.status);
-      setEndDate(proposal.endDate);
+      setProposal(proposal);
       const description = await fetchProposalFromIPFS(proposal.ipfsLink);
       setDescription(description);
       const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
@@ -84,31 +78,35 @@ const ProposalPage: React.FC = () => {
   return (
     <div>
       <ProposalPageTitle
-        id={id}
-        title="Bounty of issue: integrate DAO system to Tansu"
+        id={proposal?.id.toString() || ""}
+        title={proposal?.title || ""}
         submitVote={() => openVotingModal()}
         executeProposal={() => openExecuteProposalModal()}
-        status={proposalStatus}
-        maintainers={maintainers}
+        status={proposal?.status || null}
+        maintainers={proposal?.maintainers || []}
       />
       <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
-        <ProposalStatusSection status={proposalStatus} endDate={endDate} />
+        <ProposalStatusSection
+          status={proposal?.status || null}
+          endDate={proposal?.endDate || null}
+        />
         <VoteStatusBar
-          approve={50}
-          reject={30}
-          abstain={20}
+          approve={proposal?.voteStatus?.approve?.score || 0}
+          reject={proposal?.voteStatus?.reject?.score || 0}
+          abstain={proposal?.voteStatus?.abstain?.score || 0}
           onClick={(voteType) => openVotersModal(voteType)}
         />
         <ProposalDetail
+          ipfsLink={proposal?.ipfsLink || null}
           description={description}
           outcome={outcome}
-          status={proposalStatus}
+          status={proposal?.status || null}
         />
       </div>
-      {isVotersModalOpen && voteStatus && (
+      {isVotersModalOpen && proposal?.voteStatus && (
         <VotersModal
-          NQGScore={4.5}
-          voteData={voteType ? voteStatus[voteType] : null}
+          NQGScore={proposal?.voteStatus?.nqgScore || 0}
+          voteData={(voteType && proposal?.voteStatus?.[voteType]) || null}
           onClose={() => setIsVotersModalOpen(false)}
         />
       )}

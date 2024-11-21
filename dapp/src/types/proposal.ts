@@ -29,6 +29,7 @@ export type VoterRole = "maintainer" | "contributor" | "community";
 
 export interface VoteStatus {
   totalScore: number;
+  nqgScore: number;
   approve: VoteData;
   reject: VoteData;
   abstain: VoteData;

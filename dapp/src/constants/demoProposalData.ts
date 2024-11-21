@@ -3,7 +3,7 @@ import type { Proposal, ProposalCardProps } from "types/proposal";
 export const demoProposalCardData: ProposalCardProps[] = [
   {
     proposalNumber: 5,
-    proposalTitle: "Issue Bounty: Addition of DAO system to Tansu",
+    proposalTitle: "Support: Addition of DAO system to Tansu",
     proposalStatus: "active",
     endDate: "2024-11-24",
   },
@@ -42,11 +42,11 @@ export const demoProposalData: Proposal[] = [
       "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
       "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
     ],
-    ipfsLink:
-      "https://bafybeifaztpwi4j2jslrbofmifj2teld6aglhny2z6ivjga7vv5thidrr4.ipfs.w3s.link/",
+    ipfsLink: "bafybeifaztpwi4j2jslrbofmifj2teld6aglhny2z6ivjga7vv5thidrr4",
     status: "cancelled",
     voteStatus: {
-      totalScore: 6,
+      totalScore: 0,
+      nqgScore: 0,
       approve: {
         voteType: "approve",
         score: 0,
@@ -85,11 +85,11 @@ export const demoProposalData: Proposal[] = [
       "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
       "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
     ],
-    ipfsLink:
-      "https://bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i.ipfs.w3s.link/",
+    ipfsLink: "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
     status: "approved",
     voteStatus: {
       totalScore: 10,
+      nqgScore: 4.8,
       approve: {
         voteType: "approve",
         score: 8,
@@ -205,11 +205,11 @@ export const demoProposalData: Proposal[] = [
       "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
       "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
     ],
-    ipfsLink:
-      "https://bafybeiafz4gvlwe74n4chp3elpxuogusqsutpj6vrprj5bazrb3yjcru5u.ipfs.w3s.link/",
+    ipfsLink: "bafybeiafz4gvlwe74n4chp3elpxuogusqsutpj6vrprj5bazrb3yjcru5u",
     status: "rejected",
     voteStatus: {
       totalScore: 8,
+      nqgScore: 1.7,
       approve: {
         voteType: "approve",
         score: 3,
@@ -302,11 +302,11 @@ export const demoProposalData: Proposal[] = [
       "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
       "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
     ],
-    ipfsLink:
-      "https://bafybeifzgwidr5ppkwplu4g7ckylksscxslgu367bbtrptzhkgdsai6yxa.ipfs.w3s.link/",
+    ipfsLink: "bafybeifzgwidr5ppkwplu4g7ckylksscxslgu367bbtrptzhkgdsai6yxa",
     status: "voted",
     voteStatus: {
       totalScore: 7,
+      nqgScore: 4.5,
       approve: {
         voteType: "approve",
         score: 5,
@@ -404,11 +404,11 @@ export const demoProposalData: Proposal[] = [
       "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
       "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
     ],
-    ipfsLink:
-      "https://bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4.ipfs.w3s.link/",
+    ipfsLink: "bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4",
     status: "active",
     voteStatus: {
       totalScore: 6,
+      nqgScore: 3.7,
       approve: {
         voteType: "approve",
         score: 4,
@@ -490,7 +490,7 @@ export const demoProposalData: Proposal[] = [
         },
       },
     },
-    endDate: "2024-11-19",
+    endDate: "2024-11-24",
   },
 ];
 

@@ -1,10 +1,10 @@
 import axios from "axios";
+import { getOutcomeLinkFromIpfs, getProposalLinkFromIpfs } from "utils/utils";
 
 async function fetchProposalFromIPFS(url: string) {
   try {
-    const response = await axios.get(
-      url.endsWith("/") ? `${url}proposal.md` : `${url}/proposal.md`,
-    );
+    const proposalUrl = getProposalLinkFromIpfs(url);
+    const response = await axios.get(proposalUrl);
     let content = response.data;
     content = content.replace(
       /!\[([^\]]*)\]\(([^http][^)]+)\)/g,
@@ -17,9 +17,10 @@ async function fetchProposalFromIPFS(url: string) {
   }
 }
 
-async function fetchOutcomeDataFromIPFS(baseUrl: string) {
+async function fetchOutcomeDataFromIPFS(url: string) {
   try {
-    const response = await axios.get(`${baseUrl}/outcomes.json`);
+    const outcomeUrl = getOutcomeLinkFromIpfs(url);
+    const response = await axios.get(outcomeUrl);
     return response.data;
   } catch (error) {
     console.error("Error fetching the outcomes data from IPFS:", error);

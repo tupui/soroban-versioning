@@ -8,17 +8,21 @@ import {
   capitalizeFirstLetter,
   processDecodedData,
   modifySlashInXdr,
+  getProposalLinkFromIpfs,
+  getOutcomeLinkFromIpfs,
 } from "utils/utils";
 import { demoOutcomeData } from "constants/demoProposalData";
 import { stellarLabViewXdrLink } from "constants/serviceLinks";
 import type { ProposalOutcome, ProposalStatus } from "types/proposal";
 interface ProposalDetailProps {
+  ipfsLink: string | null;
   description: string;
   outcome: ProposalOutcome | null;
   status: ProposalStatus | null;
 }
 
 const ProposalDetail: React.FC<ProposalDetailProps> = ({
+  ipfsLink,
   description,
   outcome,
   status,
@@ -27,8 +31,27 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
     <div className="w-full bg-zinc-100 rounded-xl px-4 sm:px-8 md:px-12 py-4 sm:py-7 md:py-10">
       <div className="w-full flex flex-col gap-4 sm:gap-6 md:gap-8">
         <div className="">
-          <div className="text-xl sm:text-2xl md:text-3xl font-semibold">
-            Proposal Description
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+            <div className="text-xl sm:text-2xl md:text-3xl font-semibold">
+              Proposal Description
+            </div>
+            <a
+              href={(ipfsLink && getProposalLinkFromIpfs(ipfsLink)) || ""}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                id="Layer_1"
+                x="0px"
+                y="0px"
+                className="w-4 sm:w-6 h-4 sm:h-6 fill-black hover:fill-blue"
+                viewBox="0 0 512 512"
+                enable-background="new 0 0 512 512"
+              >
+                <path d="M459.654,233.373l-90.531,90.5c-49.969,50-131.031,50-181,0c-7.875-7.844-14.031-16.688-19.438-25.813  l42.063-42.063c2-2.016,4.469-3.172,6.828-4.531c2.906,9.938,7.984,19.344,15.797,27.156c24.953,24.969,65.563,24.938,90.5,0  l90.5-90.5c24.969-24.969,24.969-65.563,0-90.516c-24.938-24.953-65.531-24.953-90.5,0l-32.188,32.219  c-26.109-10.172-54.25-12.906-81.641-8.891l68.578-68.578c50-49.984,131.031-49.984,181.031,0  C509.623,102.342,509.623,183.389,459.654,233.373z M220.326,382.186l-32.203,32.219c-24.953,24.938-65.563,24.938-90.516,0  c-24.953-24.969-24.953-65.563,0-90.531l90.516-90.5c24.969-24.969,65.547-24.969,90.5,0c7.797,7.797,12.875,17.203,15.813,27.125  c2.375-1.375,4.813-2.5,6.813-4.5l42.063-42.047c-5.375-9.156-11.563-17.969-19.438-25.828c-49.969-49.984-131.031-49.984-181.016,0  l-90.5,90.5c-49.984,50-49.984,131.031,0,181.031c49.984,49.969,131.031,49.969,181.016,0l68.594-68.594  C274.561,395.092,246.42,392.342,220.326,382.186z" />
+              </svg>
+            </a>
           </div>
           <div className="w-full mt-4 sm:mt-5 md:mt-7 min-h-24 sm:min-h-32">
             <div className="markdown-body w-full px-4 sm:px-6 md:px-8 py-6">
@@ -37,8 +60,27 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
           </div>
         </div>
         <div className="">
-          <div className="text-xl sm:text-2xl md:text-3xl font-semibold">
-            Proposed Outcome
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
+            <div className="text-xl sm:text-2xl md:text-3xl font-semibold">
+              Proposal Outcome
+            </div>
+            <a
+              href={(ipfsLink && getOutcomeLinkFromIpfs(ipfsLink)) || ""}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                id="Layer_1"
+                x="0px"
+                y="0px"
+                className="w-4 sm:w-6 h-4 sm:h-6 fill-black hover:fill-blue"
+                viewBox="0 0 512 512"
+                enable-background="new 0 0 512 512"
+              >
+                <path d="M459.654,233.373l-90.531,90.5c-49.969,50-131.031,50-181,0c-7.875-7.844-14.031-16.688-19.438-25.813  l42.063-42.063c2-2.016,4.469-3.172,6.828-4.531c2.906,9.938,7.984,19.344,15.797,27.156c24.953,24.969,65.563,24.938,90.5,0  l90.5-90.5c24.969-24.969,24.969-65.563,0-90.516c-24.938-24.953-65.531-24.953-90.5,0l-32.188,32.219  c-26.109-10.172-54.25-12.906-81.641-8.891l68.578-68.578c50-49.984,131.031-49.984,181.031,0  C509.623,102.342,509.623,183.389,459.654,233.373z M220.326,382.186l-32.203,32.219c-24.953,24.938-65.563,24.938-90.516,0  c-24.953-24.969-24.953-65.563,0-90.531l90.516-90.5c24.969-24.969,65.547-24.969,90.5,0c7.797,7.797,12.875,17.203,15.813,27.125  c2.375-1.375,4.813-2.5,6.813-4.5l42.063-42.047c-5.375-9.156-11.563-17.969-19.438-25.828c-49.969-49.984-131.031-49.984-181.016,0  l-90.5,90.5c-49.984,50-49.984,131.031,0,181.031c49.984,49.969,131.031,49.969,181.016,0l68.594-68.594  C274.561,395.092,246.42,392.342,220.326,382.186z" />
+              </svg>
+            </a>
           </div>
           <div className="w-full bg-white mt-4 sm:mt-5 md:mt-7 px-3 sm:px-5 md:px-6 py-4 sm:py-7 md:py-9 min-h-24 sm:min-h-32">
             <div className="flex flex-col gap-3 sm:gap-5 md:gap-8">

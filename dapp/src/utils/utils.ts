@@ -63,3 +63,11 @@ export const processDecodedData = (xdrData: string): any => {
 export const modifySlashInXdr = (xdr: string) => {
   return xdr.replaceAll("/", "//");
 };
+
+export const getProposalLinkFromIpfs = (ipfsLink: string) => {
+  return `https://${ipfsLink}.ipfs.w3s.link/proposal.md`;
+};
+
+export const getOutcomeLinkFromIpfs = (ipfsLink: string) => {
+  return `https://${ipfsLink}.ipfs.w3s.link/outcomes.json`;
+};
