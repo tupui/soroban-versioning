@@ -7,10 +7,7 @@ import VoteStatusBar from "./VoteStatusBar";
 import VotersModal from "./VotersModal";
 import VotingModal from "./VotingModal";
 import { connectedPublicKey, proposalId } from "utils/store";
-import type {
-  VoteType,
-  Proposal,
-} from "types/proposal";
+import type { VoteType, Proposal } from "types/proposal";
 import { demoProposalData } from "constants/demoProposalData";
 import ProposalDetail from "./ProposalDetail";
 import {
