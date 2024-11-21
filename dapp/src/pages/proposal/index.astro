@@ -23,7 +23,7 @@ import ProposalPage from "../../components/page/proposal/ProposalPage.tsx";
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id") || "";
     if (id) {
-      proposalId.set(id);
+      proposalId.set(Number(id));
       console.log("id:", id);
     }
   });
