@@ -60,41 +60,43 @@ const ProposalPage: React.FC = () => {
     }
   };
   const getProposalDetails = async () => {
-    const proposal = demoProposalData.find((p) => p.id === id);
-    if (proposal) {
-      let proposalStatusView;
+    if (id) {
+      const proposal = demoProposalData.find((p) => p.id === id);
+      if (proposal) {
+        let proposalStatusView;
 
-      if (proposal.status === "accepted") {
-        proposalStatusView = "approved";
-      } else if (proposal.status === "active") {
-        if (proposal.endDate !== null) {
-          const endDateTimestamp = new Date(proposal.endDate).setHours(
-            0,
-            0,
-            0,
-            0,
-          );
-          const currentTime = new Date().setHours(0, 0, 0, 0);
-          if (endDateTimestamp < currentTime) {
-            proposalStatusView = "voted";
-          } else {
-            proposalStatusView = "active";
+        if (proposal.status === "accepted") {
+          proposalStatusView = "approved";
+        } else if (proposal.status === "active") {
+          if (proposal.endDate !== null) {
+            const endDateTimestamp = new Date(proposal.endDate).setHours(
+              0,
+              0,
+              0,
+              0,
+            );
+            const currentTime = new Date().setHours(0, 0, 0, 0);
+            if (endDateTimestamp < currentTime) {
+              proposalStatusView = "voted";
+            } else {
+              proposalStatusView = "active";
+            }
           }
+        } else {
+          proposalStatusView = proposal.status;
         }
+        const proposalView: ProposalView = {
+          ...proposal,
+          status: proposalStatusView as ProposalViewStatus,
+        };
+        setProposal(proposalView);
+        const description = await fetchProposalFromIPFS(proposal.ipfsLink);
+        setDescription(description);
+        const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
+        setOutcome(outcome);
       } else {
-        proposalStatusView = proposal.status;
+        alert("Proposal not found");
       }
-      const proposalView: ProposalView = {
-        ...proposal,
-        status: proposalStatusView as ProposalViewStatus,
-      };
-      setProposal(proposalView);
-      const description = await fetchProposalFromIPFS(proposal.ipfsLink);
-      setDescription(description);
-      const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
-      setOutcome(outcome);
-    } else {
-      alert("Proposal not found");
     }
   };
 
