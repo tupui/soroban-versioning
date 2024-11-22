@@ -628,6 +628,12 @@ import DonateModal from "./DonateModal.astro";
                 commitPopup.innerHTML =
                   '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
               }
+            } else {
+              commitComponent.classList.add("bg-orange-200");
+              commitIcon.src = "/icons/failed.svg";
+              commitIcon.alt = "Failed";
+              commitPopup.innerHTML =
+                '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
             }
           } catch (error) {
             commitComponent.classList.add("bg-orange-200");
