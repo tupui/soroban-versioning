@@ -22,7 +22,18 @@ const ProposalPageTitle: React.FC<Props> = ({
 }) => {
   const [projectId, setProjectId] = useState(id);
   const [isMaintainer, setIsMaintainer] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const connectedAddress = useStore(connectedPublicKey);
+
+  const checkIsConnected = () => {
+    if (connectedAddress) {
+      setIsConnected(true);
+    } else {
+      if (isConnected) {
+        setIsConnected(false);
+      }
+    }
+  };
 
   const checkIsMaintainer = () => {
     if (connectedAddress) {
@@ -35,7 +46,8 @@ const ProposalPageTitle: React.FC<Props> = ({
 
   useEffect(() => {
     checkIsMaintainer();
-  }, [connectedAddress, maintainers]);
+    checkIsConnected();
+  }, [connectedAddress]);
 
   useEffect(() => {
     if (id) {
@@ -61,7 +73,7 @@ const ProposalPageTitle: React.FC<Props> = ({
           <button
             disabled={status !== "active"}
             onClick={() => submitVote()}
-            className={`w-full px-3 md:px-4 py-1 sm:py-1.5 md:py-3 ${!connectedAddress ? "bg-zinc-600" : "bg-zinc-900"} rounded-lg sm:rounded-xl md:rounded-[14px] justify-center gap-2.5 inline-flex`}
+            className={`w-full px-3 md:px-4 py-1 sm:py-1.5 md:py-3 ${!isConnected ? "bg-zinc-600" : "bg-zinc-900"} rounded-lg sm:rounded-xl md:rounded-[14px] justify-center gap-2.5 inline-flex`}
           >
             <span className="text-center text-white text-base sm:text-lg md:text-xl font-normal">
               Vote
