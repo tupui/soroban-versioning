@@ -1,8 +1,8 @@
 import React from "react";
-import type { ProposalStatus } from "types/proposal";
+import type { ProposalViewStatus } from "types/proposal";
 
 interface ProposalStatusShowProps {
-  proposalStatus: ProposalStatus;
+  proposalStatus: ProposalViewStatus;
 }
 
 const ProposalStatusShow: React.FC<ProposalStatusShowProps> = ({

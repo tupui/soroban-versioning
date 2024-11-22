@@ -2,20 +2,25 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useStore } from "@nanostores/react";
 import ProposalPageTitle from "./ProposalPageTitle";
+import ProposalDetail from "./ProposalDetail";
 import ProposalStatusSection from "./ProposalStatusSection";
 import VoteStatusBar from "./VoteStatusBar";
 import VotersModal from "./VotersModal";
 import VotingModal from "./VotingModal";
+import ExecuteProposalModal from "./ExecuteProposalModal";
+import { modifyProposalStatusToView } from "utils/utils";
 import { connectedPublicKey, proposalId } from "utils/store";
-import type { VoteType, Proposal } from "types/proposal";
 import { demoProposalData } from "constants/demoProposalData";
-import ProposalDetail from "./ProposalDetail";
 import {
   fetchOutcomeDataFromIPFS,
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
-import type { ProposalOutcome } from "types/proposal";
-import ExecuteProposalModal from "./ExecuteProposalModal";
+import type {
+  ProposalOutcome,
+  ProposalView,
+  ProposalViewStatus,
+  VoteType,
+} from "types/proposal";
 
 const ProposalPage: React.FC = () => {
   const id = useStore(proposalId);
@@ -24,7 +29,7 @@ const ProposalPage: React.FC = () => {
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
   const [isExecuteProposalModalOpen, setIsExecuteProposalModalOpen] =
     useState(false);
-  const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [proposal, setProposal] = useState<ProposalView | null>(null);
   const [description, setDescription] = useState("");
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [voteType, setVoteType] = useState<VoteType>();
@@ -49,22 +54,32 @@ const ProposalPage: React.FC = () => {
   };
 
   const openExecuteProposalModal = () => {
-    if (proposal?.status === "voted") {
+    if (proposal?.status === "active") {
       setIsExecuteProposalModalOpen(true);
     } else {
       alert("Cannot execute proposal.");
     }
   };
   const getProposalDetails = async () => {
-    const proposal = demoProposalData[id - 1];
-    if (proposal) {
-      setProposal(proposal);
-      const description = await fetchProposalFromIPFS(proposal.ipfsLink);
-      setDescription(description);
-      const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
-      setOutcome(outcome);
-    } else {
-      alert("Proposal not found");
+    if (id) {
+      const proposal = demoProposalData.find((p) => p.id === id);
+      if (proposal) {
+        const proposalStatusView = modifyProposalStatusToView(
+          proposal.status,
+          proposal.endDate,
+        );
+        const proposalView: ProposalView = {
+          ...proposal,
+          status: proposalStatusView as ProposalViewStatus,
+        };
+        setProposal(proposalView);
+        const description = await fetchProposalFromIPFS(proposal.ipfsLink);
+        setDescription(description);
+        const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
+        setOutcome(outcome);
+      } else {
+        alert("Proposal not found");
+      }
     }
   };
 

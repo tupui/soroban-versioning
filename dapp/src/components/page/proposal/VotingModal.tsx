@@ -14,7 +14,8 @@ const VotingModal: React.FC<VotersModalProps> = ({ onClose }) => {
       alert("You should select one option to vote");
       return;
     }
-    alert("Voted!");
+    alert(`You voted to "${selectedOption}" option!`);
+    onClose();
   };
 
   return (

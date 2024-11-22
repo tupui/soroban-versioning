@@ -1,81 +1,300 @@
-import type { Proposal, ProposalCardProps } from "types/proposal";
-
-export const demoProposalCardData: ProposalCardProps[] = [
-  {
-    proposalNumber: 5,
-    proposalTitle: "Support: Addition of DAO system to Tansu",
-    proposalStatus: "active",
-    endDate: "2024-11-24",
-  },
-  {
-    proposalNumber: 4,
-    proposalTitle: "Hire design team",
-    proposalStatus: "voted",
-    endDate: "2024-11-17",
-  },
-  {
-    proposalNumber: 3,
-    proposalTitle: "Use design system from Stellar",
-    proposalStatus: "rejected",
-    endDate: "2024-11-15",
-  },
-  {
-    proposalNumber: 2,
-    proposalTitle: "Integrate with xlm.sh",
-    proposalStatus: "approved",
-    endDate: "2024-11-14",
-  },
-  {
-    proposalNumber: 1,
-    proposalTitle: "Support Soroban Domains for maintainers' addresses",
-    proposalStatus: "cancelled",
-    endDate: null,
-  },
-];
+import type { Proposal } from "types/proposal";
 
 export const demoProposalData: Proposal[] = [
   {
-    id: 1,
-    title: "Support Soroban Domains for maintainers' addresses",
+    id: 5,
+    title: "Support: Add DAO system to the project",
     projectName: "Tansu",
     maintainers: [
       "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
       "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
     ],
-    ipfsLink: "bafybeifaztpwi4j2jslrbofmifj2teld6aglhny2z6ivjga7vv5thidrr4",
-    status: "cancelled",
+    ipfsLink: "bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4",
+    status: "active",
     voteStatus: {
-      totalScore: 0,
-      nqgScore: 0,
+      totalScore: 6,
+      nqgScore: 3.7,
       approve: {
         voteType: "approve",
-        score: 0,
+        score: 4,
         voters: {
-          maintainer: [],
-          contributor: [],
-          community: [],
+          maintainer: [
+            {
+              address: "",
+              image: null,
+              name: "Pamphile Roy",
+              github: "https://github.com/tupui",
+            },
+          ],
+          contributor: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+          community: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
         },
       },
       reject: {
         voteType: "reject",
-        score: 0,
+        score: 1,
         voters: {
           maintainer: [],
           contributor: [],
-          community: [],
+          community: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
         },
       },
       abstain: {
         voteType: "abstain",
-        score: 0,
+        score: 1,
         voters: {
           maintainer: [],
           contributor: [],
-          community: [],
+          community: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
         },
       },
     },
-    endDate: null,
+    endDate: "2024-11-24",
+  },
+  {
+    id: 4,
+    title: "Hire design team",
+    projectName: "Tansu",
+    maintainers: [
+      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
+      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
+    ],
+    ipfsLink: "bafybeifzgwidr5ppkwplu4g7ckylksscxslgu367bbtrptzhkgdsai6yxa",
+    status: "active",
+    voteStatus: {
+      totalScore: 7,
+      nqgScore: 4.5,
+      approve: {
+        voteType: "approve",
+        score: 5,
+        voters: {
+          maintainer: [
+            {
+              address: "",
+              image: null,
+              name: "Pamphile Roy",
+              github: "https://github.com/tupui",
+            },
+          ],
+          contributor: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+          community: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+        },
+      },
+      reject: {
+        voteType: "reject",
+        score: 1,
+        voters: {
+          maintainer: [],
+          contributor: [],
+          community: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+        },
+      },
+      abstain: {
+        voteType: "abstain",
+        score: 1,
+        voters: {
+          maintainer: [],
+          contributor: [],
+          community: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+        },
+      },
+    },
+    endDate: "2024-11-17",
+  },
+  {
+    id: 3,
+    title: "Use design system from Stellar",
+    projectName: "Tansu",
+    maintainers: [
+      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
+      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
+    ],
+    ipfsLink: "bafybeiafz4gvlwe74n4chp3elpxuogusqsutpj6vrprj5bazrb3yjcru5u",
+    status: "rejected",
+    voteStatus: {
+      totalScore: 8,
+      nqgScore: 1.7,
+      approve: {
+        voteType: "approve",
+        score: 3,
+        voters: {
+          maintainer: [
+            {
+              address: "",
+              image: null,
+              name: "Pamphile Roy",
+              github: "https://github.com/tupui",
+            },
+          ],
+          contributor: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+          community: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+        },
+      },
+      reject: {
+        voteType: "reject",
+        score: 4,
+        voters: {
+          maintainer: [],
+          contributor: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+          community: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+        },
+      },
+      abstain: {
+        voteType: "abstain",
+        score: 1,
+        voters: {
+          maintainer: [],
+          contributor: [],
+          community: [
+            {
+              address: "",
+              image: null,
+              name: "",
+              github: "",
+            },
+          ],
+        },
+      },
+    },
+    endDate: "2024-11-15",
   },
   {
     id: 2,
@@ -86,7 +305,7 @@ export const demoProposalData: Proposal[] = [
       "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
     ],
     ipfsLink: "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
-    status: "approved",
+    status: "accepted",
     voteStatus: {
       totalScore: 10,
       nqgScore: 4.8,
@@ -198,299 +417,47 @@ export const demoProposalData: Proposal[] = [
     endDate: "2024-11-14",
   },
   {
-    id: 3,
-    title: "Use design system from Stellar",
+    id: 1,
+    title: "Support Soroban Domains for maintainers' addresses",
     projectName: "Tansu",
     maintainers: [
       "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
       "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
     ],
-    ipfsLink: "bafybeiafz4gvlwe74n4chp3elpxuogusqsutpj6vrprj5bazrb3yjcru5u",
-    status: "rejected",
+    ipfsLink: "bafybeifaztpwi4j2jslrbofmifj2teld6aglhny2z6ivjga7vv5thidrr4",
+    status: "cancelled",
     voteStatus: {
-      totalScore: 8,
-      nqgScore: 1.7,
+      totalScore: 0,
+      nqgScore: 0,
       approve: {
         voteType: "approve",
-        score: 3,
+        score: 0,
         voters: {
-          maintainer: [
-            {
-              address: "",
-              image: null,
-              name: "Pamphile Roy",
-              github: "https://github.com/tupui",
-            },
-          ],
-          contributor: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
+          maintainer: [],
+          contributor: [],
+          community: [],
         },
       },
       reject: {
         voteType: "reject",
-        score: 4,
+        score: 0,
         voters: {
           maintainer: [],
-          contributor: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
+          contributor: [],
+          community: [],
         },
       },
       abstain: {
         voteType: "abstain",
-        score: 1,
+        score: 0,
         voters: {
           maintainer: [],
           contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
+          community: [],
         },
       },
     },
-    endDate: "2024-11-15",
-  },
-  {
-    id: 4,
-    title: "Hire design team",
-    projectName: "Tansu",
-    maintainers: [
-      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
-      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
-    ],
-    ipfsLink: "bafybeifzgwidr5ppkwplu4g7ckylksscxslgu367bbtrptzhkgdsai6yxa",
-    status: "voted",
-    voteStatus: {
-      totalScore: 7,
-      nqgScore: 4.5,
-      approve: {
-        voteType: "approve",
-        score: 5,
-        voters: {
-          maintainer: [
-            {
-              address: "",
-              image: null,
-              name: "Pamphile Roy",
-              github: "https://github.com/tupui",
-            },
-          ],
-          contributor: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
-      },
-      reject: {
-        voteType: "reject",
-        score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
-      },
-      abstain: {
-        voteType: "abstain",
-        score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
-      },
-    },
-    endDate: "2024-11-17",
-  },
-  {
-    id: 5,
-    title: "Support: Add DAO system to the project",
-    projectName: "Tansu",
-    maintainers: [
-      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
-      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
-    ],
-    ipfsLink: "bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4",
-    status: "active",
-    voteStatus: {
-      totalScore: 6,
-      nqgScore: 3.7,
-      approve: {
-        voteType: "approve",
-        score: 4,
-        voters: {
-          maintainer: [
-            {
-              address: "",
-              image: null,
-              name: "Pamphile Roy",
-              github: "https://github.com/tupui",
-            },
-          ],
-          contributor: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
-      },
-      reject: {
-        voteType: "reject",
-        score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
-      },
-      abstain: {
-        voteType: "abstain",
-        score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
-      },
-    },
-    endDate: "2024-11-24",
+    endDate: null,
   },
 ];
 

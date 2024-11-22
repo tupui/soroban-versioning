@@ -1,10 +1,10 @@
 import React from "react";
 import ProposalStatusShow from "./ProposalStatusShow";
-import type { ProposalCardProps } from "types/proposal";
+import type { ProposalCardView } from "types/proposal";
 import { calculateDateDifference } from "utils/formatTimeFunctions";
 import { navigate } from "astro:transitions/client";
 
-const ProposalCard: React.FC<ProposalCardProps> = ({
+const ProposalCard: React.FC<ProposalCardView> = ({
   proposalNumber,
   proposalTitle,
   proposalStatus,
