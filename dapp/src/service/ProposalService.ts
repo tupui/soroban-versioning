@@ -1,15 +1,22 @@
 import axios from "axios";
-import { getOutcomeLinkFromIpfs, getProposalLinkFromIpfs } from "utils/utils";
+import {
+  getIpfsBasicLink,
+  getOutcomeLinkFromIpfs,
+  getProposalLinkFromIpfs,
+} from "utils/utils";
 
 async function fetchProposalFromIPFS(url: string) {
   try {
     const proposalUrl = getProposalLinkFromIpfs(url);
     const response = await axios.get(proposalUrl);
     let content = response.data;
+
+    const basicUrl = getIpfsBasicLink(url);
     content = content.replace(
       /!\[([^\]]*)\]\(([^http][^)]+)\)/g,
-      `![$1](${url}$2)`,
+      `![$1](${basicUrl}$2)`,
     );
+
     return content;
   } catch (error) {
     console.error("Error fetching the IPFS file:", error);

@@ -64,6 +64,10 @@ export const modifySlashInXdr = (xdr: string) => {
   return xdr.replaceAll("/", "//");
 };
 
+export const getIpfsBasicLink = (ipfsLink: string) => {
+  return `https://${ipfsLink}.ipfs.w3s.link/`;
+};
+
 export const getProposalLinkFromIpfs = (ipfsLink: string) => {
   return `https://${ipfsLink}.ipfs.w3s.link/proposal.md`;
 };

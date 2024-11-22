@@ -15,7 +15,6 @@ import {
 } from "@service/ProposalService";
 import type {
   ProposalOutcome,
-  Proposal,
   ProposalView,
   ProposalViewStatus,
   VoteType,
