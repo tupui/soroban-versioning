@@ -64,6 +64,8 @@ import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
         }
 
         const latestSha = await getProjectHash();
+        console.log("latestSha:", latestSha);
+        
         if (
           typeof latestSha === "string" &&
           latestSha.match(/^[a-f0-9]{40}$/)
