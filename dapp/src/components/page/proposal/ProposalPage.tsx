@@ -2,13 +2,15 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useStore } from "@nanostores/react";
 import ProposalPageTitle from "./ProposalPageTitle";
+import ProposalDetail from "./ProposalDetail";
 import ProposalStatusSection from "./ProposalStatusSection";
 import VoteStatusBar from "./VoteStatusBar";
 import VotersModal from "./VotersModal";
 import VotingModal from "./VotingModal";
+import ExecuteProposalModal from "./ExecuteProposalModal";
+import { modifyProposalStatusToView } from "utils/utils";
 import { connectedPublicKey, proposalId } from "utils/store";
 import { demoProposalData } from "constants/demoProposalData";
-import ProposalDetail from "./ProposalDetail";
 import {
   fetchOutcomeDataFromIPFS,
   fetchProposalFromIPFS,
@@ -19,7 +21,6 @@ import type {
   ProposalViewStatus,
   VoteType,
 } from "types/proposal";
-import ExecuteProposalModal from "./ExecuteProposalModal";
 
 const ProposalPage: React.FC = () => {
   const id = useStore(proposalId);
@@ -63,28 +64,10 @@ const ProposalPage: React.FC = () => {
     if (id) {
       const proposal = demoProposalData.find((p) => p.id === id);
       if (proposal) {
-        let proposalStatusView;
-
-        if (proposal.status === "accepted") {
-          proposalStatusView = "approved";
-        } else if (proposal.status === "active") {
-          if (proposal.endDate !== null) {
-            const endDateTimestamp = new Date(proposal.endDate).setHours(
-              0,
-              0,
-              0,
-              0,
-            );
-            const currentTime = new Date().setHours(0, 0, 0, 0);
-            if (endDateTimestamp < currentTime) {
-              proposalStatusView = "voted";
-            } else {
-              proposalStatusView = "active";
-            }
-          }
-        } else {
-          proposalStatusView = proposal.status;
-        }
+        const proposalStatusView = modifyProposalStatusToView(
+          proposal.status,
+          proposal.endDate,
+        );
         const proposalView: ProposalView = {
           ...proposal,
           status: proposalStatusView as ProposalViewStatus,

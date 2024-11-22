@@ -1,10 +1,11 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { useStore } from "@nanostores/react";
 import Pagination from "../../utils/Pagination";
 import { demoProposalData } from "constants/demoProposalData";
 import ProposalCard from "./ProposalCard";
 import { projectNameForGovernance } from "utils/store";
-import { useStore } from "@nanostores/react";
+import { modifyProposalStatusToView } from "utils/utils";
 import type { ProposalView, ProposalViewStatus } from "types/proposal";
 
 const ProposalList: React.FC = () => {
@@ -14,28 +15,10 @@ const ProposalList: React.FC = () => {
 
   const fetchProposalData = async (_page: number) => {
     const updatedProposalData = demoProposalData.map((proposal) => {
-      let proposalStatusView;
-
-      if (proposal.status === "accepted") {
-        proposalStatusView = "approved";
-      } else if (proposal.status === "active") {
-        if (proposal.endDate !== null) {
-          const endDateTimestamp = new Date(proposal.endDate).setHours(
-            0,
-            0,
-            0,
-            0,
-          );
-          const currentTime = new Date().setHours(0, 0, 0, 0);
-          if (endDateTimestamp < currentTime) {
-            proposalStatusView = "voted";
-          } else {
-            proposalStatusView = "active";
-          }
-        }
-      } else {
-        proposalStatusView = proposal.status;
-      }
+      const proposalStatusView = modifyProposalStatusToView(
+        proposal.status,
+        proposal.endDate,
+      );
 
       return { ...proposal, status: proposalStatusView as ProposalViewStatus };
     });

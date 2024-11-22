@@ -1,4 +1,5 @@
 import { TransactionBuilder } from "@stellar/stellar-sdk";
+import type { ProposalStatus, ProposalViewStatus } from "types/proposal";
 
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
@@ -74,4 +75,24 @@ export const getProposalLinkFromIpfs = (ipfsLink: string) => {
 
 export const getOutcomeLinkFromIpfs = (ipfsLink: string) => {
   return `https://${ipfsLink}.ipfs.w3s.link/outcomes.json`;
+};
+
+export const modifyProposalStatusToView = (
+  status: ProposalStatus,
+  endDate: string | null,
+): ProposalViewStatus => {
+  if (status === "accepted") {
+    return "approved";
+  }
+  if (status === "active") {
+    if (endDate !== null) {
+      const endDateTimestamp = new Date(endDate).setHours(0, 0, 0, 0);
+      const currentTime = new Date().setHours(0, 0, 0, 0);
+      if (endDateTimestamp < currentTime) {
+        return "voted";
+      }
+      return "active";
+    }
+  }
+  return status;
 };
