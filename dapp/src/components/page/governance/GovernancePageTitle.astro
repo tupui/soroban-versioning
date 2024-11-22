@@ -18,6 +18,7 @@ import Topic from "../../utils/Topic.astro";
 </div>
 
 <script>
+  import { navigate } from "astro:transitions/client";
   import { projectNameForGovernance } from "utils/store";
   import { capitalizeFirstLetter } from "utils/utils";
 
@@ -32,5 +33,15 @@ import Topic from "../../utils/Topic.astro";
         }
       }
     });
+
+    const submitProposalButton = document.getElementById(
+      "wrap-create-proposal-button",
+    );
+
+    if (submitProposalButton) {
+      submitProposalButton.addEventListener("click", () => {
+        navigate(`/proposal/new`);
+      });
+    }
   });
 </script>

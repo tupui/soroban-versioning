@@ -5,6 +5,7 @@
     "@astrojs/tailwind": "5.1.2",
     "@creit.tech/sorobandomains-sdk": "^0.1.4",
     "@creit.tech/stellar-wallets-kit": "^1.2.5",
+    "@mdxeditor/editor": "^3.19.2",
     "@nanostores/react": "^0.8.0",
     "@stellar/stellar-sdk": "^13.0.0",
     "astro": "4.16.13",

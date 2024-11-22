@@ -1,0 +1,23 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Container from "../../components/layout/Container.astro";
+import NewProposalPageTitle from "components/page/governance/NewProposalPageTitle.astro";
+import NewProposalPage from "components/page/governance/NewProposalPage.astro";
+---
+
+<script is:inline>
+  var global = global || window;
+</script>
+
+<Layout title="Tansu">
+  <main class="space-y-20">
+    <Container>
+      <NewProposalPageTitle />
+      <NewProposalPage />
+    </Container>
+  </main>
+</Layout>
+
+<script>
+  document.addEventListener("astro:page-load", async () => {});
+</script>
