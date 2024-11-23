@@ -14,4 +14,5 @@ pub enum ContractErrors {
     MaintainerNotDomainOwner = 6,
     // DAO
     NoProposalorPageFound = 7,
+    AlreadyVoted = 8,
 }

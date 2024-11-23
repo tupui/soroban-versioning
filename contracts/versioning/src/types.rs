@@ -8,9 +8,16 @@ pub enum DataKey {
 #[contracttype]
 pub enum ProposalStatus {
     Active,
-    Accepted,
+    Approved,
     Rejected,
     Cancelled,
+}
+
+#[contracttype]
+pub enum Vote {
+    Approve,
+    Reject,
+    Abstain,
 }
 
 #[contracttype]
@@ -19,8 +26,10 @@ pub struct Proposal {
     pub title: String,
     pub ipfs: String,
     pub voting_ends_at: u64,
-    pub votes_for: Vec<Address>,
-    pub votes_against: Vec<Address>,
+    pub voters_approve: Vec<Address>,
+    pub voters_reject: Vec<Address>,
+    pub voters_abstain: Vec<Address>,
+    pub nqg: u32,
     pub status: ProposalStatus,
 }
 
@@ -34,6 +43,7 @@ pub enum ProjectKey {
     Key(Bytes),      // UUID of the project from keccak256(name)
     LastHash(Bytes), // last hash of the project
     Dao(Bytes, u32), // Decentralized organization, pagination
+    DaoTotalProposals(Bytes),
 }
 
 #[contracttype]
