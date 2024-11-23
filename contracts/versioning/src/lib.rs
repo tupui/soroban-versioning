@@ -9,12 +9,11 @@ mod domain_contract {
     );
 }
 
-// mod contract_dao;
 mod contract_dao;
+mod contract_versioning;
 mod errors;
 mod test;
 mod types;
-mod versioning;
 
 contractmeta!(key = "Description", val = "Tansu - Soroban Versioning");
 
@@ -64,7 +63,7 @@ pub trait DaoTrait {
         voting_ends_at: u64,
     ) -> u32;
 
-    fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: bool);
+    fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote);
 
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 

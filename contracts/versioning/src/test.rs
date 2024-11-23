@@ -1,8 +1,8 @@
 #![cfg(test)]
 
 use super::{domain_contract, Tansu, TansuClient};
+use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
-use crate::versioning::{domain_node, domain_register};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{
     symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
