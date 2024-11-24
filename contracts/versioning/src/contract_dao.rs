@@ -61,8 +61,15 @@ impl DaoTrait for Tansu {
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote) {
         voter.require_auth();
-        let mut proposal =
-            <Tansu as DaoTrait>::get_proposal(env.clone(), project_key.clone(), proposal_id);
+
+        let page = proposal_id.div_ceil(9); // 10/10=1 but page 2 so 10-1
+        let sub_id = proposal_id % 10;
+        let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key.clone(), page);
+        let mut proposal = match dao_page.proposals.try_get(sub_id) {
+            Ok(Some(proposal)) => proposal,
+            _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
+        };
+
         // only allow to vote once per voter
         if proposal.voters_approve.contains(&voter)
             | proposal.voters_reject.contains(&voter)
@@ -75,10 +82,12 @@ impl DaoTrait for Tansu {
                 types::Vote::Reject => proposal.voters_reject.push_back(voter),
                 types::Vote::Abstain => proposal.voters_abstain.push_back(voter),
             }
-            let page = proposal_id.div_ceil(9); // round up
+
+            dao_page.proposals.set(sub_id, proposal);
+
             env.storage()
                 .persistent()
-                .set(&types::ProjectKey::Dao(project_key, page), &proposal)
+                .set(&types::ProjectKey::Dao(project_key, page), &dao_page)
         }
     }
 
