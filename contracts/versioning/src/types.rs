@@ -6,6 +6,7 @@ pub enum DataKey {
 }
 
 #[contracttype]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ProposalStatus {
     Active,
     Approved,
@@ -14,6 +15,7 @@ pub enum ProposalStatus {
 }
 
 #[contracttype]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Vote {
     Approve,
     Reject,
@@ -21,6 +23,7 @@ pub enum Vote {
 }
 
 #[contracttype]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Proposal {
     pub id: u32,
     pub title: String,
@@ -34,11 +37,13 @@ pub struct Proposal {
 }
 
 #[contracttype]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Dao {
     pub proposals: Vec<Proposal>,
 }
 
 #[contracttype]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ProjectKey {
     Key(Bytes),      // UUID of the project from keccak256(name)
     LastHash(Bytes), // last hash of the project
@@ -47,12 +52,14 @@ pub enum ProjectKey {
 }
 
 #[contracttype]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Config {
     pub url: String,  // link to toml file with project metadata
     pub hash: String, // hash of the file found at the URL
 }
 
 #[contracttype]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Project {
     pub name: String,
     pub config: Config,

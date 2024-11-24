@@ -3,6 +3,7 @@
 use super::{domain_contract, Tansu, TansuClient};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
+use crate::types::{Dao, Vote};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{
     symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
@@ -173,14 +174,58 @@ fn test() {
     assert_eq!(error, ContractErrors::MaintainerNotDomainOwner.into());
 
     // DAO
+    let dao = contract.get_dao(&id, &0);
+    assert_eq!(
+        dao,
+        Dao {
+            proposals: Vec::new(&env)
+        }
+    );
+
     let title = String::from_str(&env, "Integrate with xlm.sh");
     let ipfs = String::from_str(
         &env,
         "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
     );
-    let proposal_id = contract.create_proposal(&grogu, &id, &title, &ipfs, &1732449243);
+    let voting_ends_at = 1732449243;
+    let proposal_id = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at);
 
     assert_eq!(proposal_id, 0);
+
+    let proposal = contract.get_proposal(&id, &proposal_id);
+    assert_eq!(proposal.id, 0);
+    assert_eq!(proposal.title, title);
+    assert_eq!(proposal.ipfs, ipfs);
+    assert_eq!(proposal.voting_ends_at, voting_ends_at);
+    assert_eq!(proposal.voters_approve, Vec::new(&env));
+    assert_eq!(proposal.voters_reject, Vec::new(&env));
+    assert_eq!(proposal.voters_abstain, vec![&env, grogu.clone()]);
+
+    let dao = contract.get_dao(&id, &0);
+    assert_eq!(
+        dao,
+        Dao {
+            proposals: vec![&env, proposal.clone()]
+        }
+    );
+
+    // id does not exist
+    let error = contract.try_get_proposal(&id, &10).unwrap_err().unwrap();
+    assert_eq!(error, ContractErrors::NoProposalorPageFound.into());
+
+    // cannot vote for your own proposal
+    let error = contract
+        .try_vote(&grogu, &id, &proposal_id, &Vote::Approve)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::AlreadyVoted.into());
+
+    contract.vote(&mando, &id, &proposal_id, &Vote::Approve);
+
+    let proposal = contract.get_proposal(&id, &proposal_id);
+    assert_eq!(proposal.voters_approve, vec![&env, mando.clone()]);
+    assert_eq!(proposal.voters_reject, Vec::new(&env));
+    assert_eq!(proposal.voters_abstain, vec![&env, grogu.clone()]);
 }
 
 #[test]

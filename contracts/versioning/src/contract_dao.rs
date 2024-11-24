@@ -44,12 +44,9 @@ impl DaoTrait for Tansu {
                 &next_id,
             );
 
-            let page = proposal_id.div_ceil(10);
+            let page = proposal_id.div_ceil(9);
             let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key.clone(), page);
-            let mut proposals = dao_page.proposals;
-            proposals.push_back(proposal);
-
-            dao_page.proposals = proposals;
+            dao_page.proposals.push_back(proposal);
 
             env.storage().persistent().set(
                 &types::ProjectKey::Dao(project_key.clone(), page),
@@ -78,7 +75,7 @@ impl DaoTrait for Tansu {
                 types::Vote::Reject => proposal.voters_reject.push_back(voter),
                 types::Vote::Abstain => proposal.voters_abstain.push_back(voter),
             }
-            let page = proposal_id.div_ceil(10); // round up
+            let page = proposal_id.div_ceil(9); // round up
             env.storage()
                 .persistent()
                 .set(&types::ProjectKey::Dao(project_key, page), &proposal)
@@ -105,7 +102,7 @@ impl DaoTrait for Tansu {
     }
 
     fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal {
-        let page = proposal_id.div_ceil(10); // round up
+        let page = proposal_id.div_ceil(9); // 10/10=1 but page 2 so 10-1
         let sub_id = proposal_id % 10;
         let dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key, page);
         let proposals = dao_page.proposals;
