@@ -35,7 +35,7 @@ pub struct Proposal {
 
 #[contracttype]
 pub struct Dao {
-    pub proposals: Option<Vec<Proposal>>,
+    pub proposals: Vec<Proposal>,
 }
 
 #[contracttype]

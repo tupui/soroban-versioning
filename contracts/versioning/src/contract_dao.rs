@@ -1,6 +1,5 @@
-use soroban_sdk::{contractimpl, panic_with_error, vec, Address, Bytes, Env, String, Vec};
-
 use crate::{errors, types, DaoTrait, Tansu, TansuClient};
+use soroban_sdk::{contractimpl, panic_with_error, vec, Address, Bytes, Env, String, Vec};
 
 #[contractimpl]
 impl DaoTrait for Tansu {
@@ -47,10 +46,10 @@ impl DaoTrait for Tansu {
 
             let page = proposal_id.div_ceil(10);
             let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key.clone(), page);
-            let mut proposals = dao_page.proposals.unwrap_or(Vec::new(&env));
+            let mut proposals = dao_page.proposals;
             proposals.push_back(proposal);
 
-            dao_page.proposals = Some(proposals);
+            dao_page.proposals = proposals;
 
             env.storage().persistent().set(
                 &types::ProjectKey::Dao(project_key.clone(), page),
@@ -97,8 +96,8 @@ impl DaoTrait for Tansu {
             env.storage()
                 .persistent()
                 .get(&types::ProjectKey::Dao(project_key, page))
-                .unwrap_or_else(|| {
-                    panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound);
+                .unwrap_or(types::Dao {
+                    proposals: Vec::new(&env),
                 })
         } else {
             panic_with_error!(&env, &errors::ContractErrors::InvalidKey);
@@ -109,9 +108,7 @@ impl DaoTrait for Tansu {
         let page = proposal_id.div_ceil(10); // round up
         let sub_id = proposal_id % 10;
         let dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key, page);
-        let proposals = dao_page.proposals.unwrap_or_else(|| {
-            panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound);
-        });
+        let proposals = dao_page.proposals;
         match proposals.try_get(sub_id) {
             Ok(Some(proposal)) => proposal,
             _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
