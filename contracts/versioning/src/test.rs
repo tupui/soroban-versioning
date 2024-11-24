@@ -171,6 +171,16 @@ fn test() {
         .unwrap();
 
     assert_eq!(error, ContractErrors::MaintainerNotDomainOwner.into());
+
+    // DAO
+    let title = String::from_str(&env, "Integrate with xlm.sh");
+    let ipfs = String::from_str(
+        &env,
+        "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
+    );
+    let proposal_id = contract.create_proposal(&grogu, &id, &title, &ipfs, &1732449243);
+
+    assert_eq!(proposal_id, 0);
 }
 
 #[test]
