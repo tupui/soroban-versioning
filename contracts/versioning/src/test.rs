@@ -222,6 +222,13 @@ fn test() {
 
     contract.vote(&mando, &id, &proposal_id, &Vote::Approve);
 
+    // cannot vote twice
+    let error = contract
+        .try_vote(&mando, &id, &proposal_id, &Vote::Approve)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::AlreadyVoted.into());
+
     let proposal = contract.get_proposal(&id, &proposal_id);
     assert_eq!(proposal.voters_approve, vec![&env, mando.clone()]);
     assert_eq!(proposal.voters_reject, Vec::new(&env));
