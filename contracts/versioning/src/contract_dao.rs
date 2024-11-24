@@ -3,6 +3,8 @@ use soroban_sdk::{contractimpl, panic_with_error, vec, Address, Bytes, Env, Stri
 
 #[contractimpl]
 impl DaoTrait for Tansu {
+    /// Create a proposal on the DAO of the project.
+    /// Proposal initiators are automatically put in the abstain group.
     fn create_proposal(
         env: Env,
         proposer: Address,
@@ -59,6 +61,8 @@ impl DaoTrait for Tansu {
         }
     }
 
+    /// Cast a vote on a proposal.
+    /// Double votes are not allowed.
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote) {
         voter.require_auth();
 
@@ -91,6 +95,8 @@ impl DaoTrait for Tansu {
         }
     }
 
+    /// Get one page of proposal of the DAO.
+    /// A page has 10 proposals.
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao {
         let key_ = types::ProjectKey::Key(project_key.clone());
         if env
@@ -110,6 +116,7 @@ impl DaoTrait for Tansu {
         }
     }
 
+    /// Only return a single proposal
     fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal {
         let page = proposal_id.div_ceil(9); // 10/10=1 but page 2 so 10-1
         let sub_id = proposal_id % 10;
