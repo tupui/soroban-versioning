@@ -17,7 +17,7 @@ jobs:
     name: Compile Stellar smart contract for production and create release
     permissions:
       contents: write # in order to create releases
-    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@4d0117fd348fb90cc36e2cd8c774f822802752af
+    uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@8764eba5769e4ffb63883889c2db5cc12eb44ef8
     with:
       release_name: ${{ github.event.inputs.release_name }}
       release_description: "Tansu contract release"
