@@ -68,7 +68,6 @@ const ProposalForm: React.FC = () => {
       ...imageFiles,
       { localUrl: url, publicUrl: image.name, source: image },
     ]);
-    console.log("imageUrl:", imageFiles);
     return url;
   };
 

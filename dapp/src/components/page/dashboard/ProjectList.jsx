@@ -90,7 +90,6 @@ const ProjectList = () => {
   };
 
   const checkProjectOnChain = async (projectName) => {
-    console.log("search:", projectName);
     setIsLoading(true);
     try {
       const project = await getProjectFromName(projectName);
