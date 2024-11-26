@@ -34,10 +34,14 @@ import {
   useCodeBlockEditorContext,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
-import { capitalizeFirstLetter } from "utils/utils";
+import * as Delegation from "@web3-storage/w3up-client/delegation";
+import * as Client from "@web3-storage/w3up-client";
+import { capitalizeFirstLetter, getIpfsBasicLink } from "utils/utils";
 import type { ProposalOutcome } from "types/proposal";
+import Loading from "components/utils/Loading";
 
 const ProposalForm: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [mdText, setMdText] = useState("");
   const [isClient, setIsClient] = useState(false);
   const [approveDescription, setApproveDescription] = useState("");
@@ -69,7 +73,7 @@ const ProposalForm: React.FC = () => {
   };
 
   const PlainTextCodeEditorDescriptor: CodeBlockEditorDescriptor = {
-    match: (language, meta) => true,
+    match: (_language, _meta) => true,
     priority: 0,
     Editor: (props) => {
       const cb = useCodeBlockEditorContext();
@@ -86,7 +90,28 @@ const ProposalForm: React.FC = () => {
     },
   };
 
-  const submitProposal = () => {
+  const submitProposal = async () => {
+    setIsLoading(true);
+    const client = await Client.create();
+    const apiUrl = `/api/w3up-delegation`;
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ did: client.agent.did() }),
+    });
+    const data = await response.arrayBuffer();
+
+    const delegation = await Delegation.extract(new Uint8Array(data));
+    if (!delegation.ok) {
+      throw new Error("Failed to extract delegation", {
+        cause: delegation.error,
+      });
+    }
+
+    const space = await client.addSpace(delegation.ok);
+    client.setCurrentSpace(space.did());
+
     const proposalOutcome: ProposalOutcome = {
       approved: {
         description: approveDescription,
@@ -101,6 +126,7 @@ const ProposalForm: React.FC = () => {
         xdr: cancelledXdr,
       },
     };
+
     const outcome = new Blob([JSON.stringify(proposalOutcome)], {
       type: "application/json",
     });
@@ -119,7 +145,13 @@ const ProposalForm: React.FC = () => {
     });
 
     files.push(new File([description], "proposal.md"));
-    alert("Proposal submitted successfully!");
+
+    const directoryCid = await client.uploadDirectory(files);
+
+    setIsLoading(false);
+    alert(
+      `Proposal submitted successfully! CID: ${getIpfsBasicLink(directoryCid.toString())}`,
+    );
   };
 
   return (
@@ -223,9 +255,13 @@ const ProposalForm: React.FC = () => {
             className="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
             onClick={() => submitProposal()}
           >
-            <span className="text-center text-white text-xl font-normal leading-7">
-              Submit Proposal
-            </span>
+            {isLoading ? (
+              <Loading theme="dark" />
+            ) : (
+              <span className="text-center text-white text-xl font-normal leading-7">
+                Submit Proposal
+              </span>
+            )}
           </button>
         </div>
       </div>
