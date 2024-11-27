@@ -34,8 +34,10 @@ import {
   useCodeBlockEditorContext,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
-import * as Delegation from "@web3-storage/w3up-client/delegation";
 import * as Client from "@web3-storage/w3up-client";
+import { StoreMemory } from "@web3-storage/w3up-client/stores/memory";
+import * as Proof from "@web3-storage/w3up-client/proof";
+import { Signer } from "@web3-storage/w3up-client/principal/ed25519";
 import { capitalizeFirstLetter, getIpfsBasicLink } from "utils/utils";
 import type { ProposalOutcome } from "types/proposal";
 import Loading from "components/utils/Loading";
@@ -91,25 +93,16 @@ const ProposalForm: React.FC = () => {
 
   const submitProposal = async () => {
     setIsLoading(true);
-    const client = await Client.create();
-    const apiUrl = `/api/w3up-delegation`;
 
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ did: client.agent.did() }),
-    });
-    const data = await response.arrayBuffer();
+    const key = import.meta.env.PUBLIC_STORACHA_SING_PRIVATE_KEY;
+    const storachaProof = import.meta.env.PUBLIC_STORACHA_PROOF;
 
-    const delegation = await Delegation.extract(new Uint8Array(data));
-    if (!delegation.ok) {
-      throw new Error("Failed to extract delegation", {
-        cause: delegation.error,
-      });
-    }
-
-    const space = await client.addSpace(delegation.ok);
-    client.setCurrentSpace(space.did());
+    const principal = Signer.parse(key);
+    const store = new StoreMemory();
+    const client = await Client.create({ principal, store });
+    const proof = await Proof.parse(storachaProof);
+    const space = await client.addSpace(proof);
+    await client.setCurrentSpace(space.did());
 
     const proposalOutcome: ProposalOutcome = {
       approved: {
@@ -145,6 +138,7 @@ const ProposalForm: React.FC = () => {
 
     files.push(new File([description], "proposal.md"));
 
+    console.log("proposal uploading...");
     const directoryCid = await client.uploadDirectory(files);
 
     setIsLoading(false);
