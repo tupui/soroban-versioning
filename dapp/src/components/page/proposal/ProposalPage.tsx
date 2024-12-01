@@ -9,7 +9,11 @@ import VotersModal from "./VotersModal";
 import VotingModal from "./VotingModal";
 import ExecuteProposalModal from "./ExecuteProposalModal";
 import { modifyProposalStatusToView } from "utils/utils";
-import { connectedPublicKey, proposalId } from "utils/store";
+import {
+  connectedPublicKey,
+  projectNameForGovernance,
+  proposalId,
+} from "utils/store";
 import { demoProposalData } from "constants/demoProposalData";
 import {
   fetchOutcomeDataFromIPFS,
@@ -24,6 +28,7 @@ import type {
 
 const ProposalPage: React.FC = () => {
   const id = useStore(proposalId);
+  const projectName = useStore(projectNameForGovernance);
   const connectedAddress = useStore(connectedPublicKey);
   const [isVotersModalOpen, setIsVotersModalOpen] = useState(false);
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
@@ -61,7 +66,7 @@ const ProposalPage: React.FC = () => {
     }
   };
   const getProposalDetails = async () => {
-    if (id) {
+    if (id && projectName) {
       const proposal = demoProposalData.find((p) => p.id === id);
       if (proposal) {
         const proposalStatusView = modifyProposalStatusToView(
@@ -80,6 +85,8 @@ const ProposalPage: React.FC = () => {
       } else {
         alert("Proposal not found");
       }
+    } else {
+      alert("Project name or proposal id is not provided");
     }
   };
 

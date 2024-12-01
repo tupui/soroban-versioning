@@ -23,14 +23,16 @@ import Topic from "../../utils/Topic.astro";
   import { capitalizeFirstLetter } from "utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
-    projectNameForGovernance.subscribe((projectName) => {
-      if (projectName) {
+    let projectName = "";
+    projectNameForGovernance.subscribe((_projectName) => {
+      if (_projectName) {
         const titleElement = document
           .getElementById("proposal-page-topic")
           ?.querySelector("span");
         if (titleElement) {
-          titleElement.textContent = `${capitalizeFirstLetter(projectName)} Governance`;
+          titleElement.textContent = `${capitalizeFirstLetter(_projectName)} Governance`;
         }
+        projectName = _projectName;
       }
     });
 
@@ -40,7 +42,11 @@ import Topic from "../../utils/Topic.astro";
 
     if (submitProposalButton) {
       submitProposalButton.addEventListener("click", () => {
-        navigate(`/proposal/new`);
+        if (projectName) {
+          navigate(`/proposal/new?name=${projectName}`);
+        } else {
+          alert("Project name is not provided");
+        }
       });
     }
   });

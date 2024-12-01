@@ -14,16 +14,23 @@ const ProposalList: React.FC = () => {
   const [proposalData, setProposalData] = useState<ProposalView[]>([]);
 
   const fetchProposalData = async (_page: number) => {
-    const updatedProposalData = demoProposalData.map((proposal) => {
-      const proposalStatusView = modifyProposalStatusToView(
-        proposal.status,
-        proposal.endDate,
-      );
+    if (projectName) {
+      const updatedProposalData = demoProposalData.map((proposal) => {
+        const proposalStatusView = modifyProposalStatusToView(
+          proposal.status,
+          proposal.endDate,
+        );
 
-      return { ...proposal, status: proposalStatusView as ProposalViewStatus };
-    });
+        return {
+          ...proposal,
+          status: proposalStatusView as ProposalViewStatus,
+        };
+      });
 
-    setProposalData(updatedProposalData);
+      setProposalData(updatedProposalData);
+    } else {
+      alert("Project name is not provided");
+    }
   };
 
   useEffect(() => {
