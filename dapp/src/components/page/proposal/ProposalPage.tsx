@@ -19,6 +19,7 @@ import {
   fetchOutcomeDataFromIPFS,
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
+import { getProjectFromName } from "@service/ReadContractService";
 import type {
   ProposalOutcome,
   ProposalView,
@@ -68,19 +69,28 @@ const ProposalPage: React.FC = () => {
   const getProposalDetails = async () => {
     if (id && projectName) {
       const proposal = demoProposalData.find((p) => p.id === id);
+      const projectInfo = await getProjectFromName(projectName);
+
       if (proposal) {
         const proposalStatusView = modifyProposalStatusToView(
           proposal.status,
-          proposal.endDate,
+          proposal.voting_ends_at,
         );
         const proposalView: ProposalView = {
-          ...proposal,
+          id: proposal.id,
+          title: proposal.title,
+          projectName: projectName,
+          maintainers: projectInfo?.maintainers || [],
+          ipfsLink: proposal.ipfs,
+          endDate: proposal.voting_ends_at,
+          nqg: proposal.nqg,
+          voteStatus: proposal.voteStatus,
           status: proposalStatusView as ProposalViewStatus,
         };
         setProposal(proposalView);
-        const description = await fetchProposalFromIPFS(proposal.ipfsLink);
+        const description = await fetchProposalFromIPFS(proposal.ipfs);
         setDescription(description);
-        const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
+        const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfs);
         setOutcome(outcome);
       } else {
         alert("Proposal not found");
@@ -124,7 +134,7 @@ const ProposalPage: React.FC = () => {
       </div>
       {isVotersModalOpen && proposal?.voteStatus && (
         <VotersModal
-          NQGScore={proposal?.voteStatus?.nqgScore || 0}
+          NQGScore={proposal?.nqg || 0}
           voteData={(voteType && proposal?.voteStatus?.[voteType]) || null}
           onClose={() => setIsVotersModalOpen(false)}
         />

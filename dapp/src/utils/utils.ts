@@ -81,7 +81,7 @@ export const modifyProposalStatusToView = (
   status: ProposalStatus,
   endDate: string | null,
 ): ProposalViewStatus => {
-  if (status === "accepted") {
+  if (status === "approved") {
     return "approved";
   }
   if (status === "active") {
