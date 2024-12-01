@@ -72,8 +72,9 @@ const VotersCard: React.FC<VoterCardProps> = ({ voterRole, voters }) => {
         </div>
       </div>
       <div className="flex flex-wrap min-h-10 gap-x-2 sm:gap-x-3 md:gap-x-4 gap-y-1 sm:gap-y-2 md:gap-y-3">
-        {voters.map((voter) => (
+        {voters.map((voter, index) => (
           <div
+            key={index}
             onClick={() => {
               voter.github && window.open(voter.github, "_blank");
             }}
