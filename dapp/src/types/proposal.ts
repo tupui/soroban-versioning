@@ -21,7 +21,6 @@ export interface ProposalView {
   id: number;
   title: string;
   projectName: string;
-  maintainers: string[];
   ipfsLink: string;
   status: ProposalViewStatus;
   endDate: string | null;

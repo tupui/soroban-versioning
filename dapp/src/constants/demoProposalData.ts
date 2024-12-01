@@ -89,7 +89,7 @@ export const demoProposalData: Proposal[] = [
         },
       },
     },
-    voting_ends_at: "2024-11-24",
+    voting_ends_at: "2024-12-15",
   },
   {
     id: 4,
