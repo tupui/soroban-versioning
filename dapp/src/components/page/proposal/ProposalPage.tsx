@@ -8,7 +8,7 @@ import VoteStatusBar from "./VoteStatusBar";
 import VotersModal from "./VotersModal";
 import VotingModal from "./VotingModal";
 import ExecuteProposalModal from "./ExecuteProposalModal";
-import { modifyProposalStatusToView } from "utils/utils";
+import { modifyProposalToView } from "utils/utils";
 import {
   connectedPublicKey,
   projectNameForGovernance,
@@ -20,12 +20,7 @@ import {
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
 import { getProjectFromName } from "@service/ReadContractService";
-import type {
-  ProposalOutcome,
-  ProposalView,
-  ProposalViewStatus,
-  VoteType,
-} from "types/proposal";
+import type { ProposalOutcome, ProposalView, VoteType } from "types/proposal";
 
 const ProposalPage: React.FC = () => {
   const id = useStore(proposalId);
@@ -39,6 +34,7 @@ const ProposalPage: React.FC = () => {
   const [description, setDescription] = useState("");
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [voteType, setVoteType] = useState<VoteType>();
+  const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
 
   const openVotersModal = (voteType: VoteType) => {
     if (proposal?.status !== "active") {
@@ -70,23 +66,12 @@ const ProposalPage: React.FC = () => {
     if (id && projectName) {
       const proposal = demoProposalData.find((p) => p.id === id);
       const projectInfo = await getProjectFromName(projectName);
+      if (projectInfo && projectInfo.maintainers) {
+        setProjectMaintainers(projectInfo?.maintainers);
+      }
 
       if (proposal) {
-        const proposalStatusView = modifyProposalStatusToView(
-          proposal.status,
-          proposal.voting_ends_at,
-        );
-        const proposalView: ProposalView = {
-          id: proposal.id,
-          title: proposal.title,
-          projectName: projectName,
-          maintainers: projectInfo?.maintainers || [],
-          ipfsLink: proposal.ipfs,
-          endDate: proposal.voting_ends_at,
-          nqg: proposal.nqg,
-          voteStatus: proposal.voteStatus,
-          status: proposalStatusView as ProposalViewStatus,
-        };
+        const proposalView = modifyProposalToView(proposal, projectName);
         setProposal(proposalView);
         const description = await fetchProposalFromIPFS(proposal.ipfs);
         setDescription(description);
@@ -112,7 +97,7 @@ const ProposalPage: React.FC = () => {
         submitVote={() => openVotingModal()}
         executeProposal={() => openExecuteProposalModal()}
         status={proposal?.status || null}
-        maintainers={proposal?.maintainers || []}
+        maintainers={projectMaintainers}
       />
       <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
         <ProposalStatusSection
