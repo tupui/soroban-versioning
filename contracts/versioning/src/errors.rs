@@ -2,6 +2,7 @@ use soroban_sdk::contracterror;
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+#[repr(u32)]
 pub enum ContractErrors {
     UnexpectedError = 0,
     // Versioning
@@ -13,6 +14,8 @@ pub enum ContractErrors {
     InvalidDomainError = 5,
     MaintainerNotDomainOwner = 6,
     // DAO
-    NoProposalorPageFound = 7,
-    AlreadyVoted = 8,
+    ProposalInputValidation = 7,
+    NoProposalorPageFound = 8,
+    AlreadyVoted = 9,
+    ProposalVotingTime = 10,
 }

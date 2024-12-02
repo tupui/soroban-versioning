@@ -187,7 +187,7 @@ fn test() {
         &env,
         "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
     );
-    let voting_ends_at = 1732449243;
+    let voting_ends_at = env.ledger().timestamp() + 3600 * 24 * 2;
     let proposal_id = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at);
 
     assert_eq!(proposal_id, 0);
