@@ -47,7 +47,7 @@ async function backend(did) {
     "filecoin/offer",
     "upload/add",
   ];
-  const expiration = Math.floor(Date.now() / 1000) + 60 * 60 * 24;
+  const expiration = Math.floor(Date.now() / 1000) + 10;
   const delegation = await client.createDelegation(audience, abilities, {
     expiration,
   });
