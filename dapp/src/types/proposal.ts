@@ -1,4 +1,4 @@
-export type ProposalStatus = "active" | "rejected" | "cancelled" | "accepted";
+export type ProposalStatus = "active" | "rejected" | "cancelled" | "approved";
 
 export type ProposalViewStatus =
   | "active"
@@ -10,23 +10,22 @@ export type ProposalViewStatus =
 export interface Proposal {
   id: number;
   title: string;
-  projectName: string;
-  maintainers: string[];
-  ipfsLink: string;
+  ipfs: string;
+  nqg: number;
   status: ProposalStatus;
+  voting_ends_at: string | null;
   voteStatus: VoteStatus;
-  endDate: string | null;
 }
 
 export interface ProposalView {
   id: number;
   title: string;
   projectName: string;
-  maintainers: string[];
   ipfsLink: string;
   status: ProposalViewStatus;
-  voteStatus: VoteStatus;
   endDate: string | null;
+  nqg: number;
+  voteStatus: VoteStatus;
 }
 
 export interface ProposalCardView {
@@ -41,8 +40,6 @@ export type VoteType = "approve" | "reject" | "abstain";
 export type VoterRole = "maintainer" | "contributor" | "community";
 
 export interface VoteStatus {
-  totalScore: number;
-  nqgScore: number;
   approve: VoteData;
   reject: VoteData;
   abstain: VoteData;

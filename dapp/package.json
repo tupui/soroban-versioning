@@ -1,12 +1,15 @@
 {
   "dependencies": {
     "@astrojs/check": "^0.9.4",
+    "@astrojs/netlify": "^5.5.4",
     "@astrojs/react": "^3.6.2",
     "@astrojs/tailwind": "5.1.2",
     "@creit.tech/sorobandomains-sdk": "^0.1.4",
     "@creit.tech/stellar-wallets-kit": "^1.2.5",
+    "@mdxeditor/editor": "^3.19.2",
     "@nanostores/react": "^0.8.0",
     "@stellar/stellar-sdk": "^13.0.0",
+    "@web3-storage/w3up-client": "^16.5.1",
     "astro": "4.16.14",
     "astro-seo": "^0.8.4",
     "github-markdown-css": "^5.8.0",

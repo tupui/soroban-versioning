@@ -18,19 +18,56 @@ import Topic from "../../utils/Topic.astro";
 </div>
 
 <script>
-  import { projectNameForGovernance } from "utils/store";
+  import { getProjectFromName } from "@service/ReadContractService";
+  import { navigate } from "astro:transitions/client";
+  import { connectedPublicKey, projectNameForGovernance } from "utils/store";
   import { capitalizeFirstLetter } from "utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
-    projectNameForGovernance.subscribe((projectName) => {
-      if (projectName) {
+    let projectName = "";
+    let maintainers: string[] = [];
+    let connectedAddress = "";
+    projectNameForGovernance.subscribe(async (_projectName) => {
+      if (_projectName) {
         const titleElement = document
           .getElementById("proposal-page-topic")
           ?.querySelector("span");
         if (titleElement) {
-          titleElement.textContent = `${capitalizeFirstLetter(projectName)} Governance`;
+          titleElement.textContent = `${capitalizeFirstLetter(_projectName)} Governance`;
+        }
+        projectName = _projectName;
+        const projectInfo = await getProjectFromName(_projectName);
+        if (projectInfo && projectInfo.maintainers) {
+          maintainers = projectInfo?.maintainers;
         }
       }
     });
+
+    connectedPublicKey.subscribe((publicKey) => {
+      connectedAddress = publicKey;
+    });
+
+    const submitProposalButton = document.getElementById(
+      "wrap-create-proposal-button",
+    );
+
+    if (submitProposalButton) {
+      submitProposalButton.addEventListener("click", () => {
+        if (!connectedAddress) {
+          alert("Please connect your wallet first");
+          return;
+        }
+
+        if (projectName) {
+          if (maintainers.includes(connectedAddress)) {
+            navigate(`/proposal/new?name=${projectName}`);
+          } else {
+            alert("Only maintainers can submit proposals");
+          }
+        } else {
+          alert("Project name is not provided");
+        }
+      });
+    }
   });
 </script>

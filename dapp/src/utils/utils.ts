@@ -1,5 +1,10 @@
 import { TransactionBuilder } from "@stellar/stellar-sdk";
-import type { ProposalStatus, ProposalViewStatus } from "types/proposal";
+import type {
+  Proposal,
+  ProposalStatus,
+  ProposalView,
+  ProposalViewStatus,
+} from "types/proposal";
 
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
@@ -81,7 +86,7 @@ export const modifyProposalStatusToView = (
   status: ProposalStatus,
   endDate: string | null,
 ): ProposalViewStatus => {
-  if (status === "accepted") {
+  if (status === "approved") {
     return "approved";
   }
   if (status === "active") {
@@ -95,4 +100,26 @@ export const modifyProposalStatusToView = (
     }
   }
   return status;
+};
+
+export const modifyProposalToView = (
+  proposal: Proposal,
+  projectName: string,
+): ProposalView => {
+  const proposalStatusView = modifyProposalStatusToView(
+    proposal.status,
+    proposal.voting_ends_at,
+  );
+  const proposalView: ProposalView = {
+    id: proposal.id,
+    title: proposal.title,
+    projectName: projectName,
+    ipfsLink: proposal.ipfs,
+    endDate: proposal.voting_ends_at,
+    nqg: proposal.nqg,
+    voteStatus: proposal.voteStatus,
+    status: proposalStatusView as ProposalViewStatus,
+  };
+
+  return proposalView;
 };

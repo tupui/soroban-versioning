@@ -17,14 +17,17 @@ import ProposalPage from "../../components/page/proposal/ProposalPage.tsx";
 </Layout>
 
 <script>
-  import { proposalId } from "utils/store";
+  import { projectNameForGovernance, proposalId } from "utils/store";
 
   document.addEventListener("astro:page-load", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get("id") || "";
     if (id) {
       proposalId.set(Number(id));
-      console.log("id:", id);
+    }
+    const projectName = urlParams.get("name") || "";
+    if (projectName) {
+      projectNameForGovernance.set(projectName);
     }
   });
 </script>

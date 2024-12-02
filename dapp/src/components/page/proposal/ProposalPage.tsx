@@ -8,22 +8,23 @@ import VoteStatusBar from "./VoteStatusBar";
 import VotersModal from "./VotersModal";
 import VotingModal from "./VotingModal";
 import ExecuteProposalModal from "./ExecuteProposalModal";
-import { modifyProposalStatusToView } from "utils/utils";
-import { connectedPublicKey, proposalId } from "utils/store";
+import { modifyProposalToView } from "utils/utils";
+import {
+  connectedPublicKey,
+  projectNameForGovernance,
+  proposalId,
+} from "utils/store";
 import { demoProposalData } from "constants/demoProposalData";
 import {
   fetchOutcomeDataFromIPFS,
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
-import type {
-  ProposalOutcome,
-  ProposalView,
-  ProposalViewStatus,
-  VoteType,
-} from "types/proposal";
+import { getProjectFromName } from "@service/ReadContractService";
+import type { ProposalOutcome, ProposalView, VoteType } from "types/proposal";
 
 const ProposalPage: React.FC = () => {
   const id = useStore(proposalId);
+  const projectName = useStore(projectNameForGovernance);
   const connectedAddress = useStore(connectedPublicKey);
   const [isVotersModalOpen, setIsVotersModalOpen] = useState(false);
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
@@ -33,6 +34,7 @@ const ProposalPage: React.FC = () => {
   const [description, setDescription] = useState("");
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [voteType, setVoteType] = useState<VoteType>();
+  const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
 
   const openVotersModal = (voteType: VoteType) => {
     if (proposal?.status !== "active") {
@@ -61,25 +63,25 @@ const ProposalPage: React.FC = () => {
     }
   };
   const getProposalDetails = async () => {
-    if (id) {
+    if (id && projectName) {
       const proposal = demoProposalData.find((p) => p.id === id);
+      const projectInfo = await getProjectFromName(projectName);
+      if (projectInfo && projectInfo.maintainers) {
+        setProjectMaintainers(projectInfo?.maintainers);
+      }
+
       if (proposal) {
-        const proposalStatusView = modifyProposalStatusToView(
-          proposal.status,
-          proposal.endDate,
-        );
-        const proposalView: ProposalView = {
-          ...proposal,
-          status: proposalStatusView as ProposalViewStatus,
-        };
+        const proposalView = modifyProposalToView(proposal, projectName);
         setProposal(proposalView);
-        const description = await fetchProposalFromIPFS(proposal.ipfsLink);
+        const description = await fetchProposalFromIPFS(proposal.ipfs);
         setDescription(description);
-        const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfsLink);
+        const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfs);
         setOutcome(outcome);
       } else {
         alert("Proposal not found");
       }
+    } else {
+      alert("Project name or proposal id is not provided");
     }
   };
 
@@ -95,7 +97,7 @@ const ProposalPage: React.FC = () => {
         submitVote={() => openVotingModal()}
         executeProposal={() => openExecuteProposalModal()}
         status={proposal?.status || null}
-        maintainers={proposal?.maintainers || []}
+        maintainers={projectMaintainers}
       />
       <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
         <ProposalStatusSection
@@ -117,7 +119,7 @@ const ProposalPage: React.FC = () => {
       </div>
       {isVotersModalOpen && proposal?.voteStatus && (
         <VotersModal
-          NQGScore={proposal?.voteStatus?.nqgScore || 0}
+          NQGScore={proposal?.nqg || 0}
           voteData={(voteType && proposal?.voteStatus?.[voteType]) || null}
           onClose={() => setIsVotersModalOpen(false)}
         />

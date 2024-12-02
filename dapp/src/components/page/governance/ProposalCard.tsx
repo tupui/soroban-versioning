@@ -1,8 +1,10 @@
 import React from "react";
 import ProposalStatusShow from "./ProposalStatusShow";
-import type { ProposalCardView } from "types/proposal";
-import { calculateDateDifference } from "utils/formatTimeFunctions";
 import { navigate } from "astro:transitions/client";
+import { useStore } from "@nanostores/react";
+import { calculateDateDifference } from "utils/formatTimeFunctions";
+import { projectNameForGovernance } from "utils/store";
+import type { ProposalCardView } from "types/proposal";
 
 const ProposalCard: React.FC<ProposalCardView> = ({
   proposalNumber,
@@ -10,10 +12,14 @@ const ProposalCard: React.FC<ProposalCardView> = ({
   proposalStatus,
   endDate,
 }) => {
+  const projectName = useStore(projectNameForGovernance);
+
   return (
     <div
       className="w-full px-2 sm:px-4 md:pl-8 py-2 sm:py-3 md:py-4.5 bg-white border border-zinc-300 rounded-lg sm:rounded-xl cursor-pointer hover:border-lime hover:bg-zinc-500"
-      onClick={() => navigate(`/proposal?id=${proposalNumber}`)}
+      onClick={() =>
+        navigate(`/proposal?id=${proposalNumber}&&name=${projectName}`)
+      }
     >
       <div className="w-full flex justify-between items-center">
         <div className="lg:max-w-[calc(100%-240px)] flex items-start gap-2">

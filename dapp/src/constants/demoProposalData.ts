@@ -4,16 +4,10 @@ export const demoProposalData: Proposal[] = [
   {
     id: 5,
     title: "Support: Add DAO system to the project",
-    projectName: "Tansu",
-    maintainers: [
-      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
-      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
-    ],
-    ipfsLink: "bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4",
+    ipfs: "bafybeigstnjnededvbckmvlmodpw2m745i5lidmyttb4u7o6ouiudokbx4",
     status: "active",
+    nqg: 3.7,
     voteStatus: {
-      totalScore: 6,
-      nqgScore: 3.7,
       approve: {
         voteType: "approve",
         score: 4,
@@ -95,21 +89,15 @@ export const demoProposalData: Proposal[] = [
         },
       },
     },
-    endDate: "2024-11-24",
+    voting_ends_at: "2024-12-15",
   },
   {
     id: 4,
     title: "Hire design team",
-    projectName: "Tansu",
-    maintainers: [
-      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
-      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
-    ],
-    ipfsLink: "bafybeifzgwidr5ppkwplu4g7ckylksscxslgu367bbtrptzhkgdsai6yxa",
+    ipfs: "bafybeifzgwidr5ppkwplu4g7ckylksscxslgu367bbtrptzhkgdsai6yxa",
     status: "active",
+    nqg: 4.5,
     voteStatus: {
-      totalScore: 7,
-      nqgScore: 4.5,
       approve: {
         voteType: "approve",
         score: 5,
@@ -197,21 +185,15 @@ export const demoProposalData: Proposal[] = [
         },
       },
     },
-    endDate: "2024-11-17",
+    voting_ends_at: "2024-11-17",
   },
   {
     id: 3,
     title: "Use design system from Stellar",
-    projectName: "Tansu",
-    maintainers: [
-      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
-      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
-    ],
-    ipfsLink: "bafybeiafz4gvlwe74n4chp3elpxuogusqsutpj6vrprj5bazrb3yjcru5u",
+    ipfs: "bafybeiafz4gvlwe74n4chp3elpxuogusqsutpj6vrprj5bazrb3yjcru5u",
     status: "rejected",
+    nqg: 1.7,
     voteStatus: {
-      totalScore: 8,
-      nqgScore: 1.7,
       approve: {
         voteType: "approve",
         score: 3,
@@ -294,21 +276,15 @@ export const demoProposalData: Proposal[] = [
         },
       },
     },
-    endDate: "2024-11-15",
+    voting_ends_at: "2024-11-15",
   },
   {
     id: 2,
     title: "Integrate with xlm.sh",
-    projectName: "Tansu",
-    maintainers: [
-      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
-      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
-    ],
-    ipfsLink: "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
-    status: "accepted",
+    ipfs: "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
+    status: "approved",
+    nqg: 4.8,
     voteStatus: {
-      totalScore: 10,
-      nqgScore: 4.8,
       approve: {
         voteType: "approve",
         score: 8,
@@ -414,21 +390,15 @@ export const demoProposalData: Proposal[] = [
         },
       },
     },
-    endDate: "2024-11-14",
+    voting_ends_at: "2024-11-14",
   },
   {
     id: 1,
     title: "Support Soroban Domains for maintainers' addresses",
-    projectName: "Tansu",
-    maintainers: [
-      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
-      "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
-    ],
-    ipfsLink: "bafybeifaztpwi4j2jslrbofmifj2teld6aglhny2z6ivjga7vv5thidrr4",
+    ipfs: "bafybeifaztpwi4j2jslrbofmifj2teld6aglhny2z6ivjga7vv5thidrr4",
     status: "cancelled",
+    nqg: 0,
     voteStatus: {
-      totalScore: 0,
-      nqgScore: 0,
       approve: {
         voteType: "approve",
         score: 0,
@@ -457,7 +427,7 @@ export const demoProposalData: Proposal[] = [
         },
       },
     },
-    endDate: null,
+    voting_ends_at: null,
   },
 ];
 
