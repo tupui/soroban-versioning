@@ -1,5 +1,5 @@
 use crate::{errors, types, DaoTrait, Tansu, TansuClient};
-use soroban_sdk::{contractimpl, panic_with_error, vec, Address, Bytes, Env, Error, String, Vec};
+use soroban_sdk::{contractimpl, panic_with_error, vec, Address, Bytes, Env, String, Vec};
 
 const MAX_TITLE_LENGTH: u32 = 256;
 const MAX_PROPOSALS_PER_PAGE: u32 = 9;
@@ -35,9 +35,9 @@ impl DaoTrait for Tansu {
         let ipfs_len = ipfs.len();
         let title_len = title.len();
 
-        if !(min_voting_timestamp <= voting_ends_at && voting_ends_at <= max_voting_timestamp)
-            || !(10 <= title_len && title_len <= MAX_TITLE_LENGTH)
-            || !(32 <= ipfs_len && ipfs_len <= 64)
+        if !((min_voting_timestamp..=max_voting_timestamp).contains(&voting_ends_at)
+            && (10..=MAX_TITLE_LENGTH).contains(&title_len)
+            && (32..=64).contains(&ipfs_len))
         {
             panic_with_error!(&env, &errors::ContractErrors::ProposalInputValidation);
         }
@@ -78,7 +78,7 @@ impl DaoTrait for Tansu {
                 &next_id,
             );
 
-            let page = proposal_id.div_ceil(MAX_PROPOSALS_PER_PAGE);
+            let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
             let mut dao_page =
                 <Tansu as DaoTrait>::get_dao(env.clone(), project_key_.clone(), page);
             dao_page.proposals.push_back(proposal);
@@ -100,11 +100,17 @@ impl DaoTrait for Tansu {
 
     /// Cast a vote on a proposal.
     /// Double votes are not allowed.
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `voter` - Address of the voter
+    /// * `project_key` - Unique identifier for the project
+    /// * `proposal_id` - ID of the proposal
+    /// * `vote` - Approve, reject or abstain decision
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote) {
         voter.require_auth();
 
         let project_key_ = project_key.clone();
-        let page = proposal_id.div_ceil(MAX_PROPOSALS_PER_PAGE);
+        let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
         let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
         let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key_.clone(), page);
         let mut proposal = match dao_page.proposals.try_get(sub_id) {
@@ -119,6 +125,7 @@ impl DaoTrait for Tansu {
         {
             panic_with_error!(&env, &errors::ContractErrors::AlreadyVoted);
         } else {
+            // Record the vote
             match vote {
                 types::Vote::Approve => proposal.voters_approve.push_back(voter),
                 types::Vote::Reject => proposal.voters_reject.push_back(voter),
@@ -135,6 +142,12 @@ impl DaoTrait for Tansu {
 
     /// Get one page of proposal of the DAO.
     /// A page has 0 to MAX_PROPOSALS_PER_PAGE proposals.
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `project_key` - Unique identifier for the project
+    /// * `page` - Page of proposals
+    /// # Returns
+    /// * `types::Dao` - The Dao object (vector of proposals)
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao {
         if page >= MAX_PAGES {
             panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound);
@@ -160,8 +173,14 @@ impl DaoTrait for Tansu {
     }
 
     /// Only return a single proposal
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `project_key` - Unique identifier for the project
+    /// * `proposal_id` - ID of the proposal
+    /// # Returns
+    /// * `types::Proposal` - The proposal object
     fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal {
-        let page = proposal_id.div_ceil(MAX_PROPOSALS_PER_PAGE);
+        let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
         let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
         let dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key, page);
         let proposals = dao_page.proposals;
