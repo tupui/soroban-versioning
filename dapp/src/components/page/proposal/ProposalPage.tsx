@@ -21,6 +21,7 @@ import {
 } from "@service/ProposalService";
 import { getProjectFromName } from "@service/ReadContractService";
 import type { ProposalOutcome, ProposalView, VoteType } from "types/proposal";
+import Loading from "components/utils/Loading";
 
 const ProposalPage: React.FC = () => {
   const id = useStore(proposalId);
@@ -35,6 +36,7 @@ const ProposalPage: React.FC = () => {
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [voteType, setVoteType] = useState<VoteType>();
   const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const openVotersModal = (voteType: VoteType) => {
     if (proposal?.status !== "active") {
@@ -64,6 +66,7 @@ const ProposalPage: React.FC = () => {
   };
   const getProposalDetails = async () => {
     if (id && projectName) {
+      setIsLoading(true);
       const proposal = demoProposalData.find((p) => p.id === id);
       const projectInfo = await getProjectFromName(projectName);
       if (projectInfo && projectInfo.maintainers) {
@@ -80,6 +83,7 @@ const ProposalPage: React.FC = () => {
       } else {
         alert("Proposal not found");
       }
+      setIsLoading(false);
     } else {
       alert("Project name or proposal id is not provided");
     }
@@ -87,53 +91,61 @@ const ProposalPage: React.FC = () => {
 
   useEffect(() => {
     getProposalDetails();
-  }, [id]);
+  }, [id, projectName]);
 
   return (
-    <div>
-      <ProposalPageTitle
-        id={proposal?.id.toString() || ""}
-        title={proposal?.title || ""}
-        submitVote={() => openVotingModal()}
-        executeProposal={() => openExecuteProposalModal()}
-        status={proposal?.status || null}
-        maintainers={projectMaintainers}
-      />
-      <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
-        <ProposalStatusSection
-          status={proposal?.status || null}
-          endDate={proposal?.endDate || null}
-        />
-        <VoteStatusBar
-          approve={proposal?.voteStatus?.approve?.score || 0}
-          reject={proposal?.voteStatus?.reject?.score || 0}
-          abstain={proposal?.voteStatus?.abstain?.score || 0}
-          onClick={(voteType) => openVotersModal(voteType)}
-        />
-        <ProposalDetail
-          ipfsLink={proposal?.ipfsLink || null}
-          description={description}
-          outcome={outcome}
-          status={proposal?.status || null}
-        />
-      </div>
-      {isVotersModalOpen && proposal?.voteStatus && (
-        <VotersModal
-          NQGScore={proposal?.nqg || 0}
-          voteData={(voteType && proposal?.voteStatus?.[voteType]) || null}
-          onClose={() => setIsVotersModalOpen(false)}
-        />
+    <>
+      {isLoading ? (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <Loading />
+        </div>
+      ) : (
+        <>
+          <ProposalPageTitle
+            id={proposal?.id.toString() || ""}
+            title={proposal?.title || ""}
+            submitVote={() => openVotingModal()}
+            executeProposal={() => openExecuteProposalModal()}
+            status={proposal?.status || null}
+            maintainers={projectMaintainers}
+          />
+          <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
+            <ProposalStatusSection
+              status={proposal?.status || null}
+              endDate={proposal?.endDate || null}
+            />
+            <VoteStatusBar
+              approve={proposal?.voteStatus?.approve?.score || 0}
+              reject={proposal?.voteStatus?.reject?.score || 0}
+              abstain={proposal?.voteStatus?.abstain?.score || 0}
+              onClick={(voteType) => openVotersModal(voteType)}
+            />
+            <ProposalDetail
+              ipfsLink={proposal?.ipfsLink || null}
+              description={description}
+              outcome={outcome}
+              status={proposal?.status || null}
+            />
+          </div>
+          {isVotersModalOpen && proposal?.voteStatus && (
+            <VotersModal
+              NQGScore={proposal?.nqg || 0}
+              voteData={(voteType && proposal?.voteStatus?.[voteType]) || null}
+              onClose={() => setIsVotersModalOpen(false)}
+            />
+          )}
+          {isVotingModalOpen && (
+            <VotingModal onClose={() => setIsVotingModalOpen(false)} />
+          )}
+          {isExecuteProposalModalOpen && (
+            <ExecuteProposalModal
+              xdr={outcome?.approved.xdr ?? ""}
+              onClose={() => setIsExecuteProposalModalOpen(false)}
+            />
+          )}
+        </>
       )}
-      {isVotingModalOpen && (
-        <VotingModal onClose={() => setIsVotingModalOpen(false)} />
-      )}
-      {isExecuteProposalModalOpen && (
-        <ExecuteProposalModal
-          xdr={outcome?.approved.xdr ?? ""}
-          onClose={() => setIsExecuteProposalModalOpen(false)}
-        />
-      )}
-    </div>
+    </>
   );
 };
 
