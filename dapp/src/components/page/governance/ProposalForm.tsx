@@ -34,11 +34,14 @@ import {
   useCodeBlockEditorContext,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
+import { useStore } from "@nanostores/react";
 import * as Delegation from "@web3-storage/w3up-client/delegation";
 import * as Client from "@web3-storage/w3up-client";
 import { capitalizeFirstLetter, getIpfsBasicLink } from "utils/utils";
 import type { ProposalOutcome } from "types/proposal";
 import Loading from "components/utils/Loading";
+import { connectedPublicKey, projectNameForGovernance } from "utils/store";
+import { getProjectFromName } from "@service/ReadContractService";
 
 const ProposalForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -53,10 +56,30 @@ const ProposalForm: React.FC = () => {
   const [imageFiles, setImageFiles] = useState<
     { localUrl: string; publicUrl: string; source: File }[]
   >([]);
+  const connectedAddress = useStore(connectedPublicKey);
+  const projectName = useStore(projectNameForGovernance);
+  const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const getProjectMaintainers = async () => {
+    if (projectName) {
+      const projectInfo = await getProjectFromName(projectName);
+      if (projectInfo && projectInfo.maintainers) {
+        setProjectMaintainers(projectInfo?.maintainers);
+      }
+    } else {
+      alert("Project name is not provided");
+    }
+  };
+
+  useEffect(() => {
+    if (isClient) {
+      getProjectMaintainers();
+    }
+  }, [isClient, projectName]);
 
   if (!isClient) {
     return null;
@@ -90,6 +113,16 @@ const ProposalForm: React.FC = () => {
   };
 
   const submitProposal = async () => {
+    if (!connectedAddress) {
+      alert("Please connect your wallet first");
+      return;
+    }
+
+    if (projectMaintainers.includes(connectedAddress)) {
+      alert("You are not a maintainer of this project");
+      return;
+    }
+
     setIsLoading(true);
     const client = await Client.create();
     const apiUrl = `/api/w3up-delegation`;

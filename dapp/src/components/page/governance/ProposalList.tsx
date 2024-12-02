@@ -20,8 +20,6 @@ const ProposalList: React.FC = () => {
       });
 
       setProposalData(updatedProposalData);
-    } else {
-      alert("Project name is not provided");
     }
   };
 

@@ -22,12 +22,14 @@ import NewProposalPage from "components/page/governance/NewProposalPage.astro";
   import { projectNameForGovernance } from "utils/store";
 
   document.addEventListener("astro:page-load", async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectName = urlParams.get("name") || "";
-    if (projectName) {
-      projectNameForGovernance.set(projectName);
-    } else {
-      alert("Project name is not provided");
+    if (window.location.pathname === "/proposal/new") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectName = urlParams.get("name") || "";
+      if (projectName) {
+        projectNameForGovernance.set(projectName);
+      } else {
+        alert("Project name is not provided");
+      }
     }
   });
 </script>
