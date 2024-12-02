@@ -29,8 +29,8 @@ export const POST = async ({ request }) => {
 };
 
 async function backend(did) {
-  const key = import.meta.env.PUBLIC_STORACHA_SING_PRIVATE_KEY;
-  const storachaProof = import.meta.env.PUBLIC_STORACHA_PROOF;
+  const key = import.meta.env.STORACHA_SING_PRIVATE_KEY;
+  const storachaProof = import.meta.env.STORACHA_PROOF;
 
   const principal = Signer.parse(key);
   const store = new StoreMemory();

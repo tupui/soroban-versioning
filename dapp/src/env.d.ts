@@ -11,8 +11,8 @@ interface ImportMetaEnv {
   readonly SOROBAN_NETWORK: string;
   readonly PUBLIC_DEFAULT_FEE: string;
   readonly PUBLIC_DEFAULT_TIMEOUT: number;
-  readonly PUBLIC_STORACHA_SING_PRIVATE_KEY: string;
-  readonly PUBLIC_STORACHA_PROOF: string;
+  readonly STORACHA_SING_PRIVATE_KEY: string;
+  readonly STORACHA_PROOF: string;
 }
 
 interface ImportMeta {
