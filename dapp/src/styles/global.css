@@ -16,23 +16,25 @@
 /* custom scrollbar */
 /* For Webkit-based browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
-  width: 10px !important;
+  width: 2px !important;
+}
+
+::-webkit-scrollbar:horizontal {
+  height: 2px !important;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1 !important;
   border-radius: 10px !important;
   cursor: pointer;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #777 !important;
+  background-color: #aaa !important;
   border-radius: 10px;
-  border: 2px solid #f1f1f1 !important;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #555 !important;
+  background-color: #999 !important;
 }
 
 /* Custom number input */

@@ -44,7 +44,6 @@ import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
   document.addEventListener("astro:page-load", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const projectName = urlParams.get("name") || "";
-    console.log("projectName:", projectName);
     if (projectName) {
       console.log("project info loading...");
       setProjectId(projectName);
@@ -64,6 +63,7 @@ import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
         }
 
         const latestSha = await getProjectHash();
+
         if (
           typeof latestSha === "string" &&
           latestSha.match(/^[a-f0-9]{40}$/)

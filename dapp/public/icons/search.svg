@@ -11,13 +11,11 @@
     fill="#B9FF66"
     strokeWidth="2"
     strokeLinecap="round"
-    strokeLinejoin="round"
-  />
+    strokeLinejoin="round"></path>
   <path
     d="M18 18L14 14"
     stroke="#B0B0B0"
     strokeWidth="2"
     strokeLinecap="round"
-    strokeLinejoin="round"
-  />
+    strokeLinejoin="round"></path>
 </svg>

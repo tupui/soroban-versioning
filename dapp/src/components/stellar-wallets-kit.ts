@@ -3,6 +3,7 @@ import {
   FREIGHTER_ID,
   StellarWalletsKit,
 } from "@creit.tech/stellar-wallets-kit";
+import { connectedPublicKey } from "utils/store";
 
 const kit: StellarWalletsKit = new StellarWalletsKit({
   modules: allowAllModules(),
@@ -22,6 +23,7 @@ function loadedPublicKey(): string | undefined {
 function setPublicKey(data: string): void {
   connectionState.publicKey = data;
   localStorage.setItem("publicKey", data);
+  connectedPublicKey.set(data);
 }
 
 function initializeConnection(): void {

@@ -57,6 +57,20 @@ const config: Config = {
   themeConfig: {
     // Replace with your project's social card
     image: 'https://tansu.dev/img/logo.png',
+    metadata: [
+      { name: "x:creator", content: "@PamphileRoy" },
+      { name: "x:card", content: "summary_large_image" },
+      {
+        name: "x:image",
+        content: "https://testnet.tansu.dev/logo.svg",
+      },
+      { name: "x:title", content: "Tansu" },
+      {
+        name: "x:description",
+        content:
+          "Bringing open source software development onto the Stellar blockchain",
+      },
+    ],
     navbar: {
       title: 'Tansu',
       logo: {

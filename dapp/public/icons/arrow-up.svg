@@ -1,4 +1,21 @@
-<svg width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-<line y1="-1" x2="9.72572" y2="-1" transform="matrix(0.678192 -0.734885 -0.661046 -0.750346 0 7.63025)" stroke="black" stroke-opacity="0.77" stroke-width="2"/>
-<path d="M13.0903 8.63312L6.0748 0.946243" stroke="black" stroke-opacity="0.77" stroke-width="2"/>
+<svg
+  width="14"
+  height="11"
+  viewBox="0 0 14 11"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <line
+    y1="-1"
+    x2="9.72572"
+    y2="-1"
+    transform="matrix(0.678192 -0.734885 -0.661046 -0.750346 0 7.63025)"
+    stroke="black"
+    stroke-opacity="0.77"
+    stroke-width="2"></line>
+  <path
+    d="M13.0903 8.63312L6.0748 0.946243"
+    stroke="black"
+    stroke-opacity="0.77"
+    stroke-width="2"></path>
 </svg>

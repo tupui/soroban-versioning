@@ -1,0 +1,35 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Container from "../../components/layout/Container.astro";
+import NewProposalPageTitle from "components/page/governance/NewProposalPageTitle.astro";
+import NewProposalPage from "components/page/governance/NewProposalPage.astro";
+---
+
+<script is:inline>
+  var global = global || window;
+</script>
+
+<Layout title="Tansu">
+  <main class="space-y-20">
+    <Container>
+      <NewProposalPageTitle />
+      <NewProposalPage />
+    </Container>
+  </main>
+</Layout>
+
+<script>
+  import { projectNameForGovernance } from "utils/store";
+
+  document.addEventListener("astro:page-load", async () => {
+    if (window.location.pathname === "/proposal/new") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const projectName = urlParams.get("name") || "";
+      if (projectName) {
+        projectNameForGovernance.set(projectName);
+      } else {
+        alert("Project name is not provided");
+      }
+    }
+  });
+</script>

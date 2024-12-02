@@ -1,3 +1,11 @@
+import { TransactionBuilder } from "@stellar/stellar-sdk";
+import type {
+  Proposal,
+  ProposalStatus,
+  ProposalView,
+  ProposalViewStatus,
+} from "types/proposal";
+
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
   const ellipsis = "...";
@@ -38,3 +46,80 @@ export function extractConfigData(tomlData: any, projectName: string) {
     maintainersAddresses: tomlData.ACCOUNTS || [],
   };
 }
+
+export function capitalizeFirstLetter(str: string): string {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export const processDecodedData = (xdrData: string): any => {
+  let trxFromXdr;
+  try {
+    trxFromXdr = TransactionBuilder.fromXDR(
+      xdrData,
+      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+    );
+  } catch (error) {
+    console.error("Error decoding XDR:", error);
+  }
+
+  return trxFromXdr;
+};
+
+export const modifySlashInXdr = (xdr: string) => {
+  return xdr.replaceAll("/", "//");
+};
+
+export const getIpfsBasicLink = (ipfsLink: string) => {
+  return `https://${ipfsLink}.ipfs.w3s.link/`;
+};
+
+export const getProposalLinkFromIpfs = (ipfsLink: string) => {
+  return `https://${ipfsLink}.ipfs.w3s.link/proposal.md`;
+};
+
+export const getOutcomeLinkFromIpfs = (ipfsLink: string) => {
+  return `https://${ipfsLink}.ipfs.w3s.link/outcomes.json`;
+};
+
+export const modifyProposalStatusToView = (
+  status: ProposalStatus,
+  endDate: string | null,
+): ProposalViewStatus => {
+  if (status === "approved") {
+    return "approved";
+  }
+  if (status === "active") {
+    if (endDate !== null) {
+      const endDateTimestamp = new Date(endDate).setHours(0, 0, 0, 0);
+      const currentTime = new Date().setHours(0, 0, 0, 0);
+      if (endDateTimestamp < currentTime) {
+        return "voted";
+      }
+      return "active";
+    }
+  }
+  return status;
+};
+
+export const modifyProposalToView = (
+  proposal: Proposal,
+  projectName: string,
+): ProposalView => {
+  const proposalStatusView = modifyProposalStatusToView(
+    proposal.status,
+    proposal.voting_ends_at,
+  );
+  const proposalView: ProposalView = {
+    id: proposal.id,
+    title: proposal.title,
+    projectName: projectName,
+    ipfsLink: proposal.ipfs,
+    endDate: proposal.voting_ends_at,
+    nqg: proposal.nqg,
+    voteStatus: proposal.voteStatus,
+    status: proposalStatusView as ProposalViewStatus,
+  };
+
+  return proposalView;
+};

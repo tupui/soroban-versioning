@@ -28,30 +28,28 @@ const { title } = Astro.props;
     <SEO
       title={title}
       description="Bringing open source software development onto the Stellar blockchain"
-      nofollow="true"
+      nofollow={true}
       openGraph={{
         basic: {
-          title: { title },
+          title: title,
           type: "website",
           image: "https://testnet.tansu.dev/logo.svg",
         },
-      }}
-      twitter={{
-        creator: "@PamphileRoy",
-        card: "summary_large_image",
       }}
       extend={{
         // extending the default link tags
         link: [{ rel: "icon", href: "/logo.svg" }],
         // extending the default meta tags
         meta: [
+          { name: "x:creator", content: "@PamphileRoy" },
+          { name: "x:card", content: "summary_large_image" },
           {
-            name: "twitter:image",
+            name: "x:image",
             content: "https://testnet.tansu.dev/logo.svg",
           },
-          { name: "twitter:title", content: "Tansu" },
+          { name: "x:title", content: "Tansu" },
           {
-            name: "twitter:description",
+            name: "x:description",
             content:
               "Bringing open source software development onto the Stellar blockchain",
           },
