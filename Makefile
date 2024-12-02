@@ -75,13 +75,14 @@ contract_build-release: contract_build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 
-contract_bindings: contract_build-release
+contract_bindings: contract_build-release  ## Create bindings
 	stellar contract bindings typescript \
 		--network $(network) \
 		--contract-id $(shell cat .soroban/soroban_versioning_id) \
+		--wasm target/wasm32-unknown-unknown/release/versioning.wasm \
 		--output-dir dapp/packages/soroban_versioning \
 		--overwrite && \
-	cd packages/soroban_versioning && \
+	cd dapp/packages/soroban_versioning && \
 	bun run build
 
 contract_deploy:  ## Deploy Soroban contract to testnet

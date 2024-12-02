@@ -4,7 +4,7 @@ import {
   Client as ContractClient,
   ClientOptions as ContractClientOptions,
 } from "@stellar/stellar-sdk/contract";
-import type { u32 } from "@stellar/stellar-sdk/contract";
+import type { u32, u64 } from "@stellar/stellar-sdk/contract";
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
@@ -36,11 +36,61 @@ export declare const Errors: {
   6: {
     message: string;
   };
+  7: {
+    message: string;
+  };
+  8: {
+    message: string;
+  };
 };
 export type DataKey = {
   tag: "Admin";
   values: void;
 };
+export type ProposalStatus =
+  | {
+      tag: "Active";
+      values: void;
+    }
+  | {
+      tag: "Approved";
+      values: void;
+    }
+  | {
+      tag: "Rejected";
+      values: void;
+    }
+  | {
+      tag: "Cancelled";
+      values: void;
+    };
+export type Vote =
+  | {
+      tag: "Approve";
+      values: void;
+    }
+  | {
+      tag: "Reject";
+      values: void;
+    }
+  | {
+      tag: "Abstain";
+      values: void;
+    };
+export interface Proposal {
+  id: u32;
+  ipfs: string;
+  nqg: u32;
+  status: ProposalStatus;
+  title: string;
+  voters_abstain: Array<string>;
+  voters_approve: Array<string>;
+  voters_reject: Array<string>;
+  voting_ends_at: u64;
+}
+export interface Dao {
+  proposals: Array<Proposal>;
+}
 export type ProjectKey =
   | {
       tag: "Key";
@@ -48,6 +98,14 @@ export type ProjectKey =
     }
   | {
       tag: "LastHash";
+      values: readonly [Buffer];
+    }
+  | {
+      tag: "Dao";
+      values: readonly [Buffer, u32];
+    }
+  | {
+      tag: "DaoTotalProposals";
       values: readonly [Buffer];
     };
 export interface Config {
@@ -61,6 +119,127 @@ export interface Project {
 }
 export interface Client {
   /**
+   * Construct and simulate a create_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Create a proposal on the DAO of the project.
+   * Proposal initiators are automatically put in the abstain group.
+   */
+  create_proposal: (
+    {
+      proposer,
+      project_key,
+      title,
+      ipfs,
+      voting_ends_at,
+    }: {
+      proposer: string;
+      project_key: Buffer;
+      title: string;
+      ipfs: string;
+      voting_ends_at: u64;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<u32>>;
+  /**
+   * Construct and simulate a vote transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Cast a vote on a proposal.
+   * Double votes are not allowed.
+   */
+  vote: (
+    {
+      voter,
+      project_key,
+      proposal_id,
+      vote,
+    }: {
+      voter: string;
+      project_key: Buffer;
+      proposal_id: u32;
+      vote: Vote;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a get_dao transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get one page of proposal of the DAO.
+   * A page has 10 proposals.
+   */
+  get_dao: (
+    {
+      project_key,
+      page,
+    }: {
+      project_key: Buffer;
+      page: u32;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<Dao>>;
+  /**
+   * Construct and simulate a get_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Only return a single proposal
+   */
+  get_proposal: (
+    {
+      project_key,
+      proposal_id,
+    }: {
+      project_key: Buffer;
+      proposal_id: u32;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<Proposal>>;
+  /**
    * Construct and simulate a init transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   init: (
@@ -68,6 +247,30 @@ export interface Client {
       admin,
     }: {
       admin: string;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  upgrade: (
+    {
+      new_wasm_hash,
+    }: {
+      new_wasm_hash: Buffer;
     },
     options?: {
       /**
@@ -101,30 +304,6 @@ export interface Client {
      */
     simulate?: boolean;
   }) => Promise<AssembledTransaction<u32>>;
-  /**
-   * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  upgrade: (
-    {
-      new_wasm_hash,
-    }: {
-      new_wasm_hash: Buffer;
-    },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
-  ) => Promise<AssembledTransaction<null>>;
   /**
    * Construct and simulate a register transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Register a new Git projects and associated metadata.
@@ -276,9 +455,13 @@ export declare class Client extends ContractClient {
   readonly options: ContractClientOptions;
   constructor(options: ContractClientOptions);
   readonly fromJSON: {
+    create_proposal: (json: string) => AssembledTransaction<number>;
+    vote: (json: string) => AssembledTransaction<null>;
+    get_dao: (json: string) => AssembledTransaction<Dao>;
+    get_proposal: (json: string) => AssembledTransaction<Proposal>;
     init: (json: string) => AssembledTransaction<null>;
-    version: (json: string) => AssembledTransaction<number>;
     upgrade: (json: string) => AssembledTransaction<null>;
+    version: (json: string) => AssembledTransaction<number>;
     register: (json: string) => AssembledTransaction<Buffer>;
     update_config: (json: string) => AssembledTransaction<null>;
     commit: (json: string) => AssembledTransaction<null>;
