@@ -123,67 +123,75 @@ const ProposalForm: React.FC = () => {
       return;
     }
 
-    setIsLoading(true);
-    const client = await Client.create();
-    const apiUrl = `/api/w3up-delegation`;
+    try {
+      setIsLoading(true);
+      const client = await Client.create();
+      const apiUrl = `/api/w3up-delegation`;
 
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ did: client.agent.did() }),
-    });
-    const data = await response.arrayBuffer();
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ did: client.agent.did() }),
+      });
+      const data = await response.arrayBuffer();
 
-    const delegation = await Delegation.extract(new Uint8Array(data));
-    if (!delegation.ok) {
-      throw new Error("Failed to extract delegation", {
-        cause: delegation.error,
+      const delegation = await Delegation.extract(new Uint8Array(data));
+      if (!delegation.ok) {
+        throw new Error("Failed to extract delegation", {
+          cause: delegation.error,
+        });
+      }
+
+      const space = await client.addSpace(delegation.ok);
+      client.setCurrentSpace(space.did());
+
+      const proposalOutcome: ProposalOutcome = {
+        approved: {
+          description: approveDescription,
+          xdr: approveXdr,
+        },
+        rejected: {
+          description: rejectDescription,
+          xdr: rejectXdr,
+        },
+        cancelled: {
+          description: cancelledDescription,
+          xdr: cancelledXdr,
+        },
+      };
+
+      const outcome = new Blob([JSON.stringify(proposalOutcome)], {
+        type: "application/json",
+      });
+
+      let files = [new File([outcome], "outcomes.json")];
+      let description = mdText;
+
+      imageFiles.forEach((image) => {
+        if (description.includes(image.localUrl)) {
+          description = description.replace(
+            new RegExp(image.localUrl, "g"),
+            image.publicUrl,
+          );
+          files.push(new File([image.source], image.publicUrl));
+        }
+      });
+
+      files.push(new File([description], "proposal.md"));
+
+      const directoryCid = await client.uploadDirectory(files);
+
+      setIsLoading(false);
+      alert(
+        `Proposal submitted successfully! CID: ${getIpfsBasicLink(directoryCid.toString())}`,
+      );
+
+      window.location.href = `/governance?name=${projectName}`;
+    } catch (error) {
+      throw new Error("Error submitting proposal", {
+        cause: error,
       });
     }
-
-    const space = await client.addSpace(delegation.ok);
-    client.setCurrentSpace(space.did());
-
-    const proposalOutcome: ProposalOutcome = {
-      approved: {
-        description: approveDescription,
-        xdr: approveXdr,
-      },
-      rejected: {
-        description: rejectDescription,
-        xdr: rejectXdr,
-      },
-      cancelled: {
-        description: cancelledDescription,
-        xdr: cancelledXdr,
-      },
-    };
-
-    const outcome = new Blob([JSON.stringify(proposalOutcome)], {
-      type: "application/json",
-    });
-
-    let files = [new File([outcome], "outcomes.json")];
-    let description = mdText;
-
-    imageFiles.forEach((image) => {
-      if (description.includes(image.localUrl)) {
-        description = description.replace(
-          new RegExp(image.localUrl, "g"),
-          image.publicUrl,
-        );
-        files.push(new File([image.source], image.publicUrl));
-      }
-    });
-
-    files.push(new File([description], "proposal.md"));
-
-    const directoryCid = await client.uploadDirectory(files);
-
-    setIsLoading(false);
-    alert(
-      `Proposal submitted successfully! CID: ${getIpfsBasicLink(directoryCid.toString())}`,
-    );
   };
 
   return (
