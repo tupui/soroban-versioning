@@ -113,6 +113,25 @@ const ProposalForm: React.FC = () => {
   };
 
   const submitProposal = async () => {
+    const isDescriptionValid = (description: string) => {
+      return description.trim().split(/\s+/).length >= 3;
+    };
+
+    if (!isDescriptionValid(approveDescription)) {
+      alert("Approved description must contain at least 3 words.");
+      return;
+    }
+
+    if (!isDescriptionValid(rejectDescription)) {
+      alert("Rejected description must contain at least 3 words.");
+      return;
+    }
+
+    if (!isDescriptionValid(cancelledDescription)) {
+      alert("Cancelled description must contain at least 3 words.");
+      return;
+    }
+
     if (!connectedAddress) {
       alert("Please connect your wallet first");
       return;
