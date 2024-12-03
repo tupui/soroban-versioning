@@ -134,20 +134,20 @@ async function createProposal(
 
   if (!publicKey) {
     alert("Please connect your wallet first");
-    return 0;
+    return -1;
   } else {
     Versioning.options.publicKey = publicKey;
   }
 
-  const tx = await Versioning.create_proposal({
-    proposer: publicKey,
-    project_key: Buffer.from(project_key, "utf-8"),
-    title: title,
-    ipfs: ipfs,
-    voting_ends_at: BigInt(voting_ends_at),
-  });
-
   try {
+    const tx = await Versioning.create_proposal({
+      proposer: publicKey,
+      project_key: Buffer.from(project_key, "utf-8"),
+      title: title,
+      ipfs: ipfs,
+      voting_ends_at: BigInt(voting_ends_at),
+    });
+
     const result = await tx.signAndSend({
       signTransaction: async (xdr) => {
         const { signedTxXdr } = await kit.signTransaction(xdr);
@@ -157,7 +157,7 @@ async function createProposal(
     return result.result;
   } catch (e) {
     console.error(e);
-    return 0;
+    return -1;
   }
 }
 

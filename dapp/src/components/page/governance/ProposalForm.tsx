@@ -113,10 +113,15 @@ const ProposalForm: React.FC = () => {
     },
   };
 
+  const isDescriptionValid = (description: string) => {
+    return description.trim().split(/\s+/).length >= 3;
+  };
+
   const submitProposal = async () => {
-    const isDescriptionValid = (description: string) => {
-      return description.trim().split(/\s+/).length >= 3;
-    };
+    if (!proposalName) {
+      alert("Proposal name is required");
+      return;
+    }
 
     if (!isDescriptionValid(approveDescription)) {
       alert("Approved description must contain at least 3 words.");
@@ -201,12 +206,25 @@ const ProposalForm: React.FC = () => {
 
       const directoryCid = await client.uploadDirectory(files);
 
-      setIsLoading(false);
-      alert(
-        `Proposal submitted successfully! CID: ${getIpfsBasicLink(directoryCid.toString())}`,
+      const { createProposal } = await import("@service/WriteContractService");
+
+      const proposalId = await createProposal(
+        projectName,
+        proposalName,
+        directoryCid.toString(),
+        Date.now() + 86400000 * import.meta.env.PUBLIC_VOTING_PERIOD,
       );
 
-      window.location.href = `/governance?name=${projectName}`;
+      setIsLoading(false);
+      if (proposalId === -1) {
+        alert("Error submitting proposal");
+      } else {
+        alert(
+          `Proposal submitted successfully! Proposal ID: ${proposalId}, CID: ${getIpfsBasicLink(directoryCid.toString())}`,
+        );
+
+        window.location.href = `/governance?name=${projectName}`;
+      }
     } catch (error) {
       throw new Error("Error submitting proposal", {
         cause: error,
