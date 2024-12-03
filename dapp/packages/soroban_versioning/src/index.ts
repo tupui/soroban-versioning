@@ -51,9 +51,13 @@ export const Errors = {
 
   6: { message: "MaintainerNotDomainOwner" },
 
-  7: { message: "NoProposalorPageFound" },
+  7: { message: "ProposalInputValidation" },
 
-  8: { message: "AlreadyVoted" },
+  8: { message: "NoProposalorPageFound" },
+
+  9: { message: "AlreadyVoted" },
+
+  10: { message: "ProposalVotingTime" },
 };
 export type DataKey = { tag: "Admin"; values: void };
 
@@ -106,6 +110,15 @@ export interface Client {
    * Construct and simulate a create_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Create a proposal on the DAO of the project.
    * Proposal initiators are automatically put in the abstain group.
+   * # Arguments
+   * * `env` - The environment object
+   * * `proposer` - Address of the proposal creator
+   * * `project_key` - Unique identifier for the project
+   * * `title` - Title of the proposal
+   * * `ipfs` - IPFS content identifier describing the proposal
+   * * `voting_ends_at` - UNIX timestamp when voting ends
+   * # Returns
+   * * `u32` - The ID of the created proposal
    */
   create_proposal: (
     {
@@ -143,6 +156,12 @@ export interface Client {
    * Construct and simulate a vote transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Cast a vote on a proposal.
    * Double votes are not allowed.
+   * # Arguments
+   * * `env` - The environment object
+   * * `voter` - Address of the voter
+   * * `project_key` - Unique identifier for the project
+   * * `proposal_id` - ID of the proposal
+   * * `vote` - Approve, reject or abstain decision
    */
   vote: (
     {
@@ -172,7 +191,13 @@ export interface Client {
   /**
    * Construct and simulate a get_dao transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get one page of proposal of the DAO.
-   * A page has 10 proposals.
+   * A page has 0 to MAX_PROPOSALS_PER_PAGE proposals.
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - Unique identifier for the project
+   * * `page` - Page of proposals
+   * # Returns
+   * * `types::Dao` - The Dao object (vector of proposals)
    */
   get_dao: (
     { project_key, page }: { project_key: Buffer; page: u32 },
@@ -197,6 +222,12 @@ export interface Client {
   /**
    * Construct and simulate a get_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Only return a single proposal
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - Unique identifier for the project
+   * * `proposal_id` - ID of the proposal
+   * # Returns
+   * * `types::Proposal` - The proposal object
    */
   get_proposal: (
     { project_key, proposal_id }: { project_key: Buffer; proposal_id: u32 },
@@ -437,10 +468,10 @@ export class Client extends ContractClient {
   constructor(public readonly options: ContractClientOptions) {
     super(
       new ContractSpec([
-        "AAAAAAAAAGxDcmVhdGUgYSBwcm9wb3NhbCBvbiB0aGUgREFPIG9mIHRoZSBwcm9qZWN0LgpQcm9wb3NhbCBpbml0aWF0b3JzIGFyZSBhdXRvbWF0aWNhbGx5IHB1dCBpbiB0aGUgYWJzdGFpbiBncm91cC4AAAAPY3JlYXRlX3Byb3Bvc2FsAAAAAAUAAAAAAAAACHByb3Bvc2VyAAAAEwAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAAAAAAFdGl0bGUAAAAAAAAQAAAAAAAAAARpcGZzAAAAEAAAAAAAAAAOdm90aW5nX2VuZHNfYXQAAAAAAAYAAAABAAAABA==",
-        "AAAAAAAAADhDYXN0IGEgdm90ZSBvbiBhIHByb3Bvc2FsLgpEb3VibGUgdm90ZXMgYXJlIG5vdCBhbGxvd2VkLgAAAAR2b3RlAAAABAAAAAAAAAAFdm90ZXIAAAAAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAtwcm9wb3NhbF9pZAAAAAAEAAAAAAAAAAR2b3RlAAAH0AAAAARWb3RlAAAAAA==",
-        "AAAAAAAAAD1HZXQgb25lIHBhZ2Ugb2YgcHJvcG9zYWwgb2YgdGhlIERBTy4KQSBwYWdlIGhhcyAxMCBwcm9wb3NhbHMuAAAAAAAAB2dldF9kYW8AAAAAAgAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAAAAAAEcGFnZQAAAAQAAAABAAAH0AAAAANEYW8A",
-        "AAAAAAAAAB1Pbmx5IHJldHVybiBhIHNpbmdsZSBwcm9wb3NhbAAAAAAAAAxnZXRfcHJvcG9zYWwAAAACAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAtwcm9wb3NhbF9pZAAAAAAEAAAAAQAAB9AAAAAIUHJvcG9zYWw=",
+        "AAAAAAAAAcFDcmVhdGUgYSBwcm9wb3NhbCBvbiB0aGUgREFPIG9mIHRoZSBwcm9qZWN0LgpQcm9wb3NhbCBpbml0aWF0b3JzIGFyZSBhdXRvbWF0aWNhbGx5IHB1dCBpbiB0aGUgYWJzdGFpbiBncm91cC4KIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgcHJvcG9zZXJgIC0gQWRkcmVzcyBvZiB0aGUgcHJvcG9zYWwgY3JlYXRvcgoqIGBwcm9qZWN0X2tleWAgLSBVbmlxdWUgaWRlbnRpZmllciBmb3IgdGhlIHByb2plY3QKKiBgdGl0bGVgIC0gVGl0bGUgb2YgdGhlIHByb3Bvc2FsCiogYGlwZnNgIC0gSVBGUyBjb250ZW50IGlkZW50aWZpZXIgZGVzY3JpYmluZyB0aGUgcHJvcG9zYWwKKiBgdm90aW5nX2VuZHNfYXRgIC0gVU5JWCB0aW1lc3RhbXAgd2hlbiB2b3RpbmcgZW5kcwojIFJldHVybnMKKiBgdTMyYCAtIFRoZSBJRCBvZiB0aGUgY3JlYXRlZCBwcm9wb3NhbAAAAAAAAA9jcmVhdGVfcHJvcG9zYWwAAAAABQAAAAAAAAAIcHJvcG9zZXIAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAV0aXRsZQAAAAAAABAAAAAAAAAABGlwZnMAAAAQAAAAAAAAAA52b3RpbmdfZW5kc19hdAAAAAAABgAAAAEAAAAE",
+        "AAAAAAAAAQ5DYXN0IGEgdm90ZSBvbiBhIHByb3Bvc2FsLgpEb3VibGUgdm90ZXMgYXJlIG5vdCBhbGxvd2VkLgojIEFyZ3VtZW50cwoqIGBlbnZgIC0gVGhlIGVudmlyb25tZW50IG9iamVjdAoqIGB2b3RlcmAgLSBBZGRyZXNzIG9mIHRoZSB2b3RlcgoqIGBwcm9qZWN0X2tleWAgLSBVbmlxdWUgaWRlbnRpZmllciBmb3IgdGhlIHByb2plY3QKKiBgcHJvcG9zYWxfaWRgIC0gSUQgb2YgdGhlIHByb3Bvc2FsCiogYHZvdGVgIC0gQXBwcm92ZSwgcmVqZWN0IG9yIGFic3RhaW4gZGVjaXNpb24AAAAAAAR2b3RlAAAABAAAAAAAAAAFdm90ZXIAAAAAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAtwcm9wb3NhbF9pZAAAAAAEAAAAAAAAAAR2b3RlAAAH0AAAAARWb3RlAAAAAA==",
+        "AAAAAAAAARRHZXQgb25lIHBhZ2Ugb2YgcHJvcG9zYWwgb2YgdGhlIERBTy4KQSBwYWdlIGhhcyAwIHRvIE1BWF9QUk9QT1NBTFNfUEVSX1BBR0UgcHJvcG9zYWxzLgojIEFyZ3VtZW50cwoqIGBlbnZgIC0gVGhlIGVudmlyb25tZW50IG9iamVjdAoqIGBwcm9qZWN0X2tleWAgLSBVbmlxdWUgaWRlbnRpZmllciBmb3IgdGhlIHByb2plY3QKKiBgcGFnZWAgLSBQYWdlIG9mIHByb3Bvc2FscwojIFJldHVybnMKKiBgdHlwZXM6OkRhb2AgLSBUaGUgRGFvIG9iamVjdCAodmVjdG9yIG9mIHByb3Bvc2FscykAAAAHZ2V0X2RhbwAAAAACAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAARwYWdlAAAABAAAAAEAAAfQAAAAA0RhbwA=",
+        "AAAAAAAAANdPbmx5IHJldHVybiBhIHNpbmdsZSBwcm9wb3NhbAojIEFyZ3VtZW50cwoqIGBlbnZgIC0gVGhlIGVudmlyb25tZW50IG9iamVjdAoqIGBwcm9qZWN0X2tleWAgLSBVbmlxdWUgaWRlbnRpZmllciBmb3IgdGhlIHByb2plY3QKKiBgcHJvcG9zYWxfaWRgIC0gSUQgb2YgdGhlIHByb3Bvc2FsCiMgUmV0dXJucwoqIGB0eXBlczo6UHJvcG9zYWxgIC0gVGhlIHByb3Bvc2FsIG9iamVjdAAAAAAMZ2V0X3Byb3Bvc2FsAAAAAgAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAAAAAALcHJvcG9zYWxfaWQAAAAABAAAAAEAAAfQAAAACFByb3Bvc2Fs",
         "AAAAAAAAAAAAAAAEaW5pdAAAAAEAAAAAAAAABWFkbWluAAAAAAAAEwAAAAA=",
         "AAAAAAAAAAAAAAAHdXBncmFkZQAAAAABAAAAAAAAAA1uZXdfd2FzbV9oYXNoAAAAAAAD7gAAACAAAAAA",
         "AAAAAAAAAAAAAAAHdmVyc2lvbgAAAAAAAAAAAQAAAAQ=",
@@ -449,7 +480,7 @@ export class Client extends ContractClient {
         "AAAAAAAAABhTZXQgdGhlIGxhc3QgY29tbWl0IGhhc2gAAAAGY29tbWl0AAAAAAADAAAAAAAAAAptYWludGFpbmVyAAAAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAARoYXNoAAAAEAAAAAA=",
         "AAAAAAAAABhHZXQgdGhlIGxhc3QgY29tbWl0IGhhc2gAAAAKZ2V0X2NvbW1pdAAAAAAAAQAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAEAAAAQ",
         "AAAAAAAAAAAAAAALZ2V0X3Byb2plY3QAAAAAAQAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAEAAAfQAAAAB1Byb2plY3QA",
-        "AAAABAAAAAAAAAAAAAAADkNvbnRyYWN0RXJyb3JzAAAAAAAJAAAAAAAAAA9VbmV4cGVjdGVkRXJyb3IAAAAAAAAAAAAAAAAKSW52YWxpZEtleQAAAAAAAQAAAAAAAAATUHJvamVjdEFscmVhZHlFeGlzdAAAAAACAAAAAAAAABZVbnJlZ2lzdGVyZWRNYWludGFpbmVyAAAAAAADAAAAAAAAAAtOb0hhc2hGb3VuZAAAAAAEAAAAAAAAABJJbnZhbGlkRG9tYWluRXJyb3IAAAAAAAUAAAAAAAAAGE1haW50YWluZXJOb3REb21haW5Pd25lcgAAAAYAAAAAAAAAFU5vUHJvcG9zYWxvclBhZ2VGb3VuZAAAAAAAAAcAAAAAAAAADEFscmVhZHlWb3RlZAAAAAg=",
+        "AAAABAAAAAAAAAAAAAAADkNvbnRyYWN0RXJyb3JzAAAAAAALAAAAAAAAAA9VbmV4cGVjdGVkRXJyb3IAAAAAAAAAAAAAAAAKSW52YWxpZEtleQAAAAAAAQAAAAAAAAATUHJvamVjdEFscmVhZHlFeGlzdAAAAAACAAAAAAAAABZVbnJlZ2lzdGVyZWRNYWludGFpbmVyAAAAAAADAAAAAAAAAAtOb0hhc2hGb3VuZAAAAAAEAAAAAAAAABJJbnZhbGlkRG9tYWluRXJyb3IAAAAAAAUAAAAAAAAAGE1haW50YWluZXJOb3REb21haW5Pd25lcgAAAAYAAAAAAAAAF1Byb3Bvc2FsSW5wdXRWYWxpZGF0aW9uAAAAAAcAAAAAAAAAFU5vUHJvcG9zYWxvclBhZ2VGb3VuZAAAAAAAAAgAAAAAAAAADEFscmVhZHlWb3RlZAAAAAkAAAAAAAAAElByb3Bvc2FsVm90aW5nVGltZQAAAAAACg==",
         "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAAAQAAAAAAAAAAAAAABUFkbWluAAAA",
         "AAAAAgAAAAAAAAAAAAAADlByb3Bvc2FsU3RhdHVzAAAAAAAEAAAAAAAAAAAAAAAGQWN0aXZlAAAAAAAAAAAAAAAAAAhBcHByb3ZlZAAAAAAAAAAAAAAACFJlamVjdGVkAAAAAAAAAAAAAAAJQ2FuY2VsbGVkAAAA",
         "AAAAAgAAAAAAAAAAAAAABFZvdGUAAAADAAAAAAAAAAAAAAAHQXBwcm92ZQAAAAAAAAAAAAAAAAZSZWplY3QAAAAAAAAAAAAAAAAAB0Fic3RhaW4A",

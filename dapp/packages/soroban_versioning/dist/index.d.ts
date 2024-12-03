@@ -42,6 +42,12 @@ export declare const Errors: {
   8: {
     message: string;
   };
+  9: {
+    message: string;
+  };
+  10: {
+    message: string;
+  };
 };
 export type DataKey = {
   tag: "Admin";
@@ -122,6 +128,15 @@ export interface Client {
    * Construct and simulate a create_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Create a proposal on the DAO of the project.
    * Proposal initiators are automatically put in the abstain group.
+   * # Arguments
+   * * `env` - The environment object
+   * * `proposer` - Address of the proposal creator
+   * * `project_key` - Unique identifier for the project
+   * * `title` - Title of the proposal
+   * * `ipfs` - IPFS content identifier describing the proposal
+   * * `voting_ends_at` - UNIX timestamp when voting ends
+   * # Returns
+   * * `u32` - The ID of the created proposal
    */
   create_proposal: (
     {
@@ -156,6 +171,12 @@ export interface Client {
    * Construct and simulate a vote transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Cast a vote on a proposal.
    * Double votes are not allowed.
+   * # Arguments
+   * * `env` - The environment object
+   * * `voter` - Address of the voter
+   * * `project_key` - Unique identifier for the project
+   * * `proposal_id` - ID of the proposal
+   * * `vote` - Approve, reject or abstain decision
    */
   vote: (
     {
@@ -187,7 +208,13 @@ export interface Client {
   /**
    * Construct and simulate a get_dao transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get one page of proposal of the DAO.
-   * A page has 10 proposals.
+   * A page has 0 to MAX_PROPOSALS_PER_PAGE proposals.
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - Unique identifier for the project
+   * * `page` - Page of proposals
+   * # Returns
+   * * `types::Dao` - The Dao object (vector of proposals)
    */
   get_dao: (
     {
@@ -215,6 +242,12 @@ export interface Client {
   /**
    * Construct and simulate a get_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Only return a single proposal
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - Unique identifier for the project
+   * * `proposal_id` - ID of the proposal
+   * # Returns
+   * * `types::Proposal` - The proposal object
    */
   get_proposal: (
     {
@@ -462,7 +495,7 @@ export declare class Client extends ContractClient {
     init: (json: string) => AssembledTransaction<null>;
     upgrade: (json: string) => AssembledTransaction<null>;
     version: (json: string) => AssembledTransaction<number>;
-    register: (json: string) => AssembledTransaction<Buffer>;
+    register: (json: string) => AssembledTransaction<Buffer<ArrayBufferLike>>;
     update_config: (json: string) => AssembledTransaction<null>;
     commit: (json: string) => AssembledTransaction<null>;
     get_commit: (json: string) => AssembledTransaction<string>;
