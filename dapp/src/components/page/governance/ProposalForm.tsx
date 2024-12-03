@@ -59,6 +59,7 @@ const ProposalForm: React.FC = () => {
   const connectedAddress = useStore(connectedPublicKey);
   const projectName = useStore(projectNameForGovernance);
   const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
+  const [proposalName, setProposalName] = useState("");
 
   useEffect(() => {
     setIsClient(true);
@@ -215,6 +216,16 @@ const ProposalForm: React.FC = () => {
 
   return (
     <div>
+      <h3 className="text-base sm:text-lg md:text-2xl font-semibold py-2">
+        Proposal Name
+      </h3>
+      <input
+        type="text"
+        value={proposalName}
+        onChange={(e) => setProposalName(e.target.value)}
+        className="w-full p-2 border border-zinc-700 rounded-md focus:outline-none"
+        placeholder="Enter your proposal name here..."
+      />
       <h3 className="text-base sm:text-lg md:text-2xl font-semibold py-2">
         Proposal Description
       </h3>
