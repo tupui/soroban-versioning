@@ -48,7 +48,7 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
 <script>
   import { commitHash } from "../../../service/WriteContractService";
   import { loadProjectInfo } from "../../../service/StateService";
-  import { loadedPublicKey } from "../../stellar-wallets-kit";
+  import { loadedPublicKey } from "../../../service/walletService";
   import { latestCommit, projectInfoLoaded } from "../../../utils/store";
 
   document.addEventListener("astro:page-load", () => {

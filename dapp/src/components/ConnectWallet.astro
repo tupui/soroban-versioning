@@ -9,12 +9,12 @@
 
 <script>
   import { truncateMiddle } from "../utils/utils";
+  import { kit } from "./stellar-wallets-kit";
   import {
     initializeConnection,
-    kit,
     loadedPublicKey,
     setPublicKey,
-  } from "./stellar-wallets-kit";
+  } from "../service/walletService";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();

@@ -252,7 +252,7 @@ import DonateModal from "./DonateModal.astro";
 <DonateModal />
 
 <script>
-  import { loadedPublicKey } from "../../stellar-wallets-kit";
+  import { loadedPublicKey } from "../../../service/walletService";
   import { updateConfig } from "../../../service/WriteContractService";
   import { getProject } from "../../../service/ReadContractService";
   import {

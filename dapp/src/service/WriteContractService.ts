@@ -1,4 +1,5 @@
-import { kit, loadedPublicKey } from "../components/stellar-wallets-kit";
+import { kit } from "../components/stellar-wallets-kit";
+import { loadedPublicKey } from "./walletService";
 import Versioning from "../contracts/soroban_versioning";
 
 import { loadedProjectId } from "./StateService";
@@ -123,4 +124,41 @@ async function updateConfig(
   }
 }
 
-export { commitHash, registerProject, updateConfig };
+async function createProposal(
+  project_key: string,
+  title: string,
+  ipfs: string,
+  voting_ends_at: number,
+): Promise<number> {
+  const publicKey = loadedPublicKey();
+
+  if (!publicKey) {
+    alert("Please connect your wallet first");
+    return 0;
+  } else {
+    Versioning.options.publicKey = publicKey;
+  }
+
+  const tx = await Versioning.create_proposal({
+    proposer: publicKey,
+    project_key: Buffer.from(project_key, "utf-8"),
+    title: title,
+    ipfs: ipfs,
+    voting_ends_at: BigInt(voting_ends_at),
+  });
+
+  try {
+    const result = await tx.signAndSend({
+      signTransaction: async (xdr) => {
+        const { signedTxXdr } = await kit.signTransaction(xdr);
+        return signedTxXdr;
+      },
+    });
+    return result.result;
+  } catch (e) {
+    console.error(e);
+    return 0;
+  }
+}
+
+export { commitHash, registerProject, updateConfig, createProposal };
