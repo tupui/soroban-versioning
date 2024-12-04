@@ -26,6 +26,15 @@ function mapVoteTypeToVote(voteType: VoteType): Vote {
   }
 }
 
+function fetchErrorCode(error: any): string {
+  const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
+  let errorCode: ContractErrorMessageKey = 0;
+  if (errorCodeMatch && errorCodeMatch[1]) {
+    errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
+  }
+  return contractErrorMessages[errorCode];
+}
+
 async function commitHash(commit_hash: string): Promise<boolean> {
   const projectId = loadedProjectId();
 
@@ -151,12 +160,15 @@ async function createProposal(
   title: string,
   ipfs: string,
   voting_ends_at: number,
-): Promise<number> {
+): Promise<Response<number>> {
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    alert("Please connect your wallet first");
-    return -1;
+    return {
+      data: -1,
+      error: true,
+      errorMessage: "Please connect your wallet first",
+    };
   } else {
     Versioning.options.publicKey = publicKey;
   }
@@ -178,10 +190,11 @@ async function createProposal(
         return signedTxXdr;
       },
     });
-    return result.result;
+    return { data: result.result, error: false, errorMessage: "" };
   } catch (e) {
     console.error(e);
-    return -1;
+    const errorMessage = fetchErrorCode(e);
+    return { data: -1, error: true, errorMessage };
   }
 }
 
@@ -223,16 +236,12 @@ async function voteToProposal(
     });
     return { data: true, error: false, errorMessage: "" };
   } catch (e: any) {
-    const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(e.message);
-    let errorCode: ContractErrorMessageKey = 0;
-    if (errorCodeMatch && errorCodeMatch[1]) {
-      errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
-    }
+    const errorMessage = fetchErrorCode(e);
 
     return {
       data: false,
       error: true,
-      errorMessage: contractErrorMessages[errorCode],
+      errorMessage,
     };
   }
 }

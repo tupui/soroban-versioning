@@ -223,7 +223,7 @@ const ProposalForm: React.FC = () => {
 
       const { createProposal } = await import("@service/WriteContractService");
 
-      const proposalId = await createProposal(
+      const res = await createProposal(
         projectName,
         proposalName,
         directoryCid.toString(),
@@ -231,19 +231,17 @@ const ProposalForm: React.FC = () => {
       );
 
       setIsLoading(false);
-      if (proposalId === -1) {
-        alert("Error submitting proposal");
+      if (res.error) {
+        alert(res.errorMessage);
       } else {
         alert(
-          `Proposal submitted successfully! Proposal ID: ${proposalId}, CID: ${getIpfsBasicLink(directoryCid.toString())}`,
+          `Proposal submitted successfully! Proposal ID: ${res.data}, CID: ${getIpfsBasicLink(directoryCid.toString())}`,
         );
 
         window.location.href = `/governance?name=${projectName}`;
       }
     } catch (error) {
-      throw new Error("Error submitting proposal", {
-        cause: error,
-      });
+      alert("Error submitting proposal.");
     }
   };
 
