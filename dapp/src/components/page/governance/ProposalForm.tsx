@@ -68,9 +68,12 @@ const ProposalForm: React.FC = () => {
 
   const getProjectMaintainers = async () => {
     if (projectName) {
-      const projectInfo = await getProjectFromName(projectName);
+      const res = await getProjectFromName(projectName);
+      const projectInfo = res.data;
       if (projectInfo && projectInfo.maintainers) {
         setProjectMaintainers(projectInfo?.maintainers);
+      } else if (res.error) {
+        alert(res.errorMessage);
       }
     } else {
       alert("Project name is not provided");

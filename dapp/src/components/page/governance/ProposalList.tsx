@@ -18,13 +18,17 @@ const ProposalList: React.FC = () => {
   const fetchProposalData = async (_page: number) => {
     if (projectName) {
       setIsLoading(true);
-      const proposals = await getProposals(projectName, _page);
+      const res = await getProposals(projectName, _page);
+      const proposals = res.data;
 
-      const updatedProposalData = proposals.map((proposal) => {
-        return modifyProposalToView(proposal, projectName);
-      });
-
-      setProposalData(updatedProposalData);
+      if (proposals && !res.error) {
+        const updatedProposalData = proposals.map((proposal) => {
+          return modifyProposalToView(proposal, projectName);
+        });
+        setProposalData(updatedProposalData);
+      } else {
+        alert(res.errorMessage);
+      }
     }
     setIsLoading(false);
   };

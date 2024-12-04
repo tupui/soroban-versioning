@@ -752,7 +752,8 @@ import DonateModal from "./DonateModal.astro";
           );
 
           if (updateStatus) {
-            const project = await getProject();
+            const res = await getProject();
+            const project = res.data;
             if (
               project &&
               project.name &&
@@ -760,6 +761,8 @@ import DonateModal from "./DonateModal.astro";
               project.maintainers
             ) {
               setProject(project);
+            } else if (res.error) {
+              alert(res.errorMessage);
             }
             updateProjectInfo();
             (

@@ -67,12 +67,15 @@ const ProposalPage: React.FC = () => {
   const getProposalDetails = async () => {
     if (id !== undefined && projectName) {
       setIsLoading(true);
-      const proposal = await getProposal(projectName, id);
-      const projectInfo = await getProjectFromName(projectName);
+      const response = await getProposal(projectName, id);
+      const proposal = response.data;
+      const res = await getProjectFromName(projectName);
+      const projectInfo = res.data;
       if (projectInfo && projectInfo.maintainers) {
         setProjectMaintainers(projectInfo?.maintainers);
+      } else if (res.error) {
+        alert(res.errorMessage);
       }
-
       if (proposal) {
         const proposalView = modifyProposalToView(proposal, projectName);
         setProposal(proposalView);
@@ -80,8 +83,8 @@ const ProposalPage: React.FC = () => {
         setDescription(description);
         const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfs);
         setOutcome(outcome);
-      } else {
-        alert("Proposal not found");
+      } else if (response.error) {
+        alert(response.errorMessage);
       }
       setIsLoading(false);
     } else {

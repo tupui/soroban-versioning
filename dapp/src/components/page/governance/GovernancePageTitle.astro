@@ -36,9 +36,12 @@ import Topic from "../../utils/Topic.astro";
           titleElement.textContent = `${capitalizeFirstLetter(_projectName)} Governance`;
         }
         projectName = _projectName;
-        const projectInfo = await getProjectFromName(_projectName);
+        const res = await getProjectFromName(_projectName);
+        const projectInfo = res.data;
         if (projectInfo && projectInfo.maintainers) {
           maintainers = projectInfo?.maintainers;
+        } else {
+          alert(res.errorMessage);
         }
       }
     });

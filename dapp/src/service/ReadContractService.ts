@@ -6,54 +6,81 @@ import { loadedProjectId } from "./StateService";
 import { modifyProposalFromContract } from "utils/utils";
 import type { Project, Proposal } from "soroban_versioning";
 import type { Proposal as ModifiedProposal } from "types/proposal";
+import type { Response } from "types/response";
+import {
+  contractErrorMessages,
+  type ContractErrorMessageKey,
+} from "constants/contractErrorMessages";
 
-async function getProjectHash(): Promise<string | void> {
-  const projectId = loadedProjectId();
-
-  if (projectId === undefined) {
-    alert("No project defined");
-    return;
+function fetchErrorCode(error: any): string {
+  const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
+  let errorCode: ContractErrorMessageKey = 0;
+  if (errorCodeMatch && errorCodeMatch[1]) {
+    errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
   }
-  const res = await Versioning.get_commit({
-    project_key: projectId,
-  });
-  return res.result;
+  return contractErrorMessages[errorCode];
 }
 
-async function getProject(): Promise<Project | void> {
+async function getProjectHash(): Promise<Response<string>> {
   const projectId = loadedProjectId();
 
   if (projectId === undefined) {
-    alert("No project defined");
-    return;
+    return { data: null, error: true, errorMessage: "No project defined" };
   }
-  const res = await Versioning.get_project({
-    project_key: projectId,
-  });
-  return res.result;
+  try {
+    const res = await Versioning.get_commit({
+      project_key: projectId,
+    });
+    return { data: res.result, error: false, errorMessage: "" };
+  } catch (e: any) {
+    const errorMessage = fetchErrorCode(e);
+    return { data: null, error: true, errorMessage };
+  }
+}
+
+async function getProject(): Promise<Response<Project>> {
+  const projectId = loadedProjectId();
+
+  if (projectId === undefined) {
+    return { data: null, error: true, errorMessage: "No project defined" };
+  }
+  try {
+    const res = await Versioning.get_project({
+      project_key: projectId,
+    });
+    return { data: res.result, error: false, errorMessage: "" };
+  } catch (e: any) {
+    const errorMessage = fetchErrorCode(e);
+    return { data: null, error: true, errorMessage };
+  }
 }
 
 async function getProjectFromName(
   projectName: string,
-): Promise<Project | void> {
+): Promise<Response<Project>> {
   const projectId = Buffer.from(
     keccak256.create().update(projectName).digest(),
   );
 
   if (projectId === undefined) {
-    alert("No project defined");
-    return;
+    return { data: null, error: true, errorMessage: "No project defined" };
   }
-  const res = await Versioning.get_project({
-    project_key: projectId,
-  });
-  return res.result;
+  try {
+    const res = await Versioning.get_project({
+      project_key: projectId,
+    });
+    return { data: res.result, error: false, errorMessage: "" };
+  } catch (e: any) {
+    const errorMessage = fetchErrorCode(e);
+
+    return { data: null, error: true, errorMessage };
+  }
 }
 
 async function getProposals(
   project_name: string,
   page: number,
-): Promise<ModifiedProposal[]> {
+): Promise<Response<ModifiedProposal[]>> {
   const project_key = Buffer.from(
     keccak256.create().update(project_name).digest(),
   );
@@ -68,17 +95,17 @@ async function getProposals(
         return modifyProposalFromContract(proposal);
       },
     );
-    return proposals;
-  } catch (e) {
-    console.error(e);
-    return [];
+    return { data: proposals, error: false, errorMessage: "" };
+  } catch (e: any) {
+    const errorMessage = fetchErrorCode(e);
+    return { data: null, error: true, errorMessage };
   }
 }
 
 async function getProposal(
   projectName: string,
   proposalId: number,
-): Promise<ModifiedProposal | null> {
+): Promise<Response<ModifiedProposal | null>> {
   const project_key = Buffer.from(
     keccak256.create().update(projectName).digest(),
   );
@@ -89,10 +116,14 @@ async function getProposal(
     });
 
     const proposal: Proposal = res.result;
-    return modifyProposalFromContract(proposal);
-  } catch (e) {
-    console.error(e);
-    return null;
+    return {
+      data: modifyProposalFromContract(proposal),
+      error: false,
+      errorMessage: "",
+    };
+  } catch (e: any) {
+    const errorMessage = fetchErrorCode(e);
+    return { data: null, error: true, errorMessage };
   }
 }
 
