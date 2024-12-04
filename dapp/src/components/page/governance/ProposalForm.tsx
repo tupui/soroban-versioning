@@ -60,6 +60,7 @@ const ProposalForm: React.FC = () => {
   const projectName = useStore(projectNameForGovernance);
   const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
   const [proposalName, setProposalName] = useState("");
+  const [votingDays, setVotingDays] = useState<number>(5);
 
   useEffect(() => {
     setIsClient(true);
@@ -113,8 +114,8 @@ const ProposalForm: React.FC = () => {
     },
   };
 
-  const isDescriptionValid = (description: string) => {
-    return description.trim().split(/\s+/).length >= 3;
+  const isDescriptionValid = (description: string, words: number = 3) => {
+    return description.trim().split(/\s+/).length >= words;
   };
 
   const submitProposal = async () => {
@@ -124,6 +125,16 @@ const ProposalForm: React.FC = () => {
       proposalName.length > 256
     ) {
       alert("Proposal name is required");
+      return;
+    }
+
+    if (votingDays < 5 || votingDays > 30) {
+      alert("Voting days must be between 5 and 30");
+      return;
+    }
+
+    if (!isDescriptionValid(mdText, 10)) {
+      alert("Proposal description must contain at least 10 words.");
       return;
     }
 
@@ -216,8 +227,7 @@ const ProposalForm: React.FC = () => {
         projectName,
         proposalName,
         directoryCid.toString(),
-        Math.floor(Date.now() / 1000) +
-          86400 * import.meta.env.PUBLIC_VOTING_PERIOD,
+        Math.floor(Date.now() / 1000) + 86400 * votingDays,
       );
 
       setIsLoading(false);
@@ -239,8 +249,8 @@ const ProposalForm: React.FC = () => {
 
   return (
     <div>
-      <h3 className="text-base sm:text-lg md:text-2xl font-semibold py-2">
-        Proposal Name
+      <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-3">
+        Name
       </h3>
       <input
         type="text"
@@ -249,8 +259,8 @@ const ProposalForm: React.FC = () => {
         className="w-full p-2 border border-zinc-700 rounded-md focus:outline-none"
         placeholder="Enter your proposal name here..."
       />
-      <h3 className="text-base sm:text-lg md:text-2xl font-semibold py-2">
-        Proposal Description
+      <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-3">
+        Description
       </h3>
       <div className="rounded-md border border-zinc-700 overflow-hidden">
         <MDXEditor
@@ -318,8 +328,8 @@ const ProposalForm: React.FC = () => {
           placeholder="Input your proposal description here..."
         />
       </div>
-      <h3 className="text-base sm:text-lg md:text-2xl font-semibold py-2">
-        Proposal Outcome
+      <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-8">
+        Outcome
       </h3>
       <div className="w-full max-w-[840px] mx-auto flex flex-col gap-4 sm:gap-6 md:gap-10">
         <OutcomeInput
@@ -343,6 +353,19 @@ const ProposalForm: React.FC = () => {
           xdr={cancelledXdr}
           setXdr={setCancelledXdr}
         />
+        <div className="w-full flex items-center">
+          <h5 className="w-[80px] sm:w-[90px] md:w-[105px] pr-1.5 text-right text-base text-nowrap">
+            Voting dates:
+          </h5>
+          <input
+            type="number"
+            value={votingDays}
+            onChange={(e) => setVotingDays(Number(e.target.value))}
+            className="w-14 pr-2 text-right text-base border border-zinc-700 rounded-md focus:outline-none"
+            placeholder=""
+          />
+          <div className="pl-1.5 text-base">days</div>
+        </div>
         <div className="ml-[80px] sm:ml-[90px] md:ml-[105px]">
           <button
             className="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
