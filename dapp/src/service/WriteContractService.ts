@@ -3,6 +3,7 @@ import { loadedPublicKey } from "./walletService";
 import Versioning from "../contracts/soroban_versioning";
 
 import { loadedProjectId } from "./StateService";
+import { keccak256 } from "js-sha3";
 
 async function commitHash(commit_hash: string): Promise<boolean> {
   const projectId = loadedProjectId();
@@ -125,7 +126,7 @@ async function updateConfig(
 }
 
 async function createProposal(
-  project_key: string,
+  project_name: string,
   title: string,
   ipfs: string,
   voting_ends_at: number,
@@ -138,11 +139,13 @@ async function createProposal(
   } else {
     Versioning.options.publicKey = publicKey;
   }
-
+  const project_key = Buffer.from(
+    keccak256.create().update(project_name).digest(),
+  );
   try {
     const tx = await Versioning.create_proposal({
       proposer: publicKey,
-      project_key: Buffer.from(project_key, "utf-8"),
+      project_key: project_key,
       title: title,
       ipfs: ipfs,
       voting_ends_at: BigInt(voting_ends_at),

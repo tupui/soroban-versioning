@@ -118,7 +118,11 @@ const ProposalForm: React.FC = () => {
   };
 
   const submitProposal = async () => {
-    if (!proposalName) {
+    if (
+      !proposalName ||
+      proposalName.length < 10 ||
+      proposalName.length > 256
+    ) {
       alert("Proposal name is required");
       return;
     }
@@ -143,7 +147,7 @@ const ProposalForm: React.FC = () => {
       return;
     }
 
-    if (projectMaintainers.includes(connectedAddress)) {
+    if (!projectMaintainers.includes(connectedAddress)) {
       alert("You are not a maintainer of this project");
       return;
     }
@@ -212,7 +216,8 @@ const ProposalForm: React.FC = () => {
         projectName,
         proposalName,
         directoryCid.toString(),
-        Date.now() + 86400000 * import.meta.env.PUBLIC_VOTING_PERIOD,
+        Math.floor(Date.now() / 1000) +
+          86400 * import.meta.env.PUBLIC_VOTING_PERIOD,
       );
 
       setIsLoading(false);
