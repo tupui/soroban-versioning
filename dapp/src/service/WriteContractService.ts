@@ -35,18 +35,20 @@ function fetchErrorCode(error: any): string {
   return contractErrorMessages[errorCode];
 }
 
-async function commitHash(commit_hash: string): Promise<boolean> {
+async function commitHash(commit_hash: string): Promise<Response<boolean>> {
   const projectId = loadedProjectId();
 
   if (!projectId) {
-    alert("No project defined");
-    return false;
+    return { data: false, error: true, errorMessage: "No project defined" };
   }
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    alert("Please connect your wallet first");
-    return false;
+    return {
+      data: false,
+      error: true,
+      errorMessage: "Please connect your wallet first",
+    };
   } else {
     Versioning.options.publicKey = publicKey;
   }
@@ -63,10 +65,10 @@ async function commitHash(commit_hash: string): Promise<boolean> {
         return signedTxXdr;
       },
     });
-    return true;
+    return { data: true, error: false, errorMessage: "" };
   } catch (e) {
-    console.error(e);
-    return false;
+    const errorMessage = fetchErrorCode(e);
+    return { data: false, error: true, errorMessage };
   }
 }
 
