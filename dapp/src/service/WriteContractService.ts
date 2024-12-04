@@ -7,6 +7,10 @@ import { keccak256 } from "js-sha3";
 import type { Vote } from "soroban_versioning";
 import type { VoteType } from "types/proposal";
 import type { Response } from "types/response";
+import {
+  contractErrorMessages,
+  type ContractErrorMessageKey,
+} from "constants/contractErrorMessages";
 
 // Function to map VoteType to Vote
 function mapVoteTypeToVote(voteType: VoteType): Vote {
@@ -189,8 +193,11 @@ async function voteToProposal(
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    alert("Please connect your wallet first");
-    return { data: false, error: false, errorCode: -1 };
+    return {
+      data: false,
+      error: true,
+      errorMessage: "Please connect your wallet first",
+    };
   } else {
     Versioning.options.publicKey = publicKey;
   }
@@ -214,15 +221,19 @@ async function voteToProposal(
         return signedTxXdr;
       },
     });
-    return { data: true, error: false, errorCode: -1 };
+    return { data: true, error: false, errorMessage: "" };
   } catch (e: any) {
     const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(e.message);
-    let errorCode = -1;
+    let errorCode: ContractErrorMessageKey = 0;
     if (errorCodeMatch && errorCodeMatch[1]) {
-      errorCode = parseInt(errorCodeMatch[1], 10);
+      errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
     }
 
-    return { data: false, error: true, errorCode };
+    return {
+      data: false,
+      error: true,
+      errorMessage: contractErrorMessages[errorCode],
+    };
   }
 }
 

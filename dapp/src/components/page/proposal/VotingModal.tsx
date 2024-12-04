@@ -1,10 +1,6 @@
 import React from "react";
 import { useState } from "react";
 import type { VoteType } from "types/proposal";
-import {
-  contractErrorMessages,
-  type ContractErrorMessageKey,
-} from "constants/contractErrorMessages";
 
 interface VotersModalProps {
   projectName: string;
@@ -47,8 +43,8 @@ const VotingModal: React.FC<VotersModalProps> = ({
     } else {
       setIsLoading(false);
       if (res.error) {
-        const errorCode = res.errorCode as ContractErrorMessageKey;
-        alert(contractErrorMessages[errorCode]);
+        const errorMessage = res.errorMessage;
+        alert(errorMessage);
       }
     }
     onClose();

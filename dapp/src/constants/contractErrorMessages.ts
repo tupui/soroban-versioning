@@ -1,5 +1,5 @@
 export const contractErrorMessages = {
-  0: "An unexpected error has occurred in contract.",
+  0: "An unexpected error has occurred.",
   1: "The provided key is invalid.",
   2: "The project already exists.",
   3: "The user is not a maintainer.",
