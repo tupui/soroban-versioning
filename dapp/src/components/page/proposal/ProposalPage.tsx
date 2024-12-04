@@ -131,6 +131,7 @@ const ProposalPage: React.FC = () => {
             <VotersModal
               NQGScore={proposal?.nqg || 0}
               voteData={(voteType && proposal?.voteStatus?.[voteType]) || null}
+              projectMaintainers={projectMaintainers}
               onClose={() => setIsVotersModalOpen(false)}
             />
           )}

@@ -11,85 +11,71 @@ export const demoProposalData: Proposal[] = [
       approve: {
         voteType: "approve",
         score: 4,
-        voters: {
-          maintainer: [
-            {
-              address: "",
-              image: null,
-              name: "Pamphile Roy",
-              github: "https://github.com/tupui",
-            },
-          ],
-          contributor: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "GCILP4HWE2QGEO4KUMOZ6S6J3A46W47EVCGZW2YPYCPH5CQF6EACNBCN",
+            image: null,
+            name: "Pamphile Roy",
+            github: "https://github.com/tupui",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
       reject: {
         voteType: "reject",
         score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
       abstain: {
         voteType: "abstain",
         score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
     },
-    voting_ends_at: "2024-12-15",
+    voting_ends_at: new Date("2024-12-15T00:00:00Z").getTime() / 1000,
   },
   {
     id: 4,
@@ -101,91 +87,71 @@ export const demoProposalData: Proposal[] = [
       approve: {
         voteType: "approve",
         score: 5,
-        voters: {
-          maintainer: [
-            {
-              address: "",
-              image: null,
-              name: "Pamphile Roy",
-              github: "https://github.com/tupui",
-            },
-          ],
-          contributor: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
+            image: null,
+            name: "Taku",
+            github: "https://github.com/0xExp-po",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
       reject: {
         voteType: "reject",
         score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
       abstain: {
         voteType: "abstain",
         score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
     },
-    voting_ends_at: "2024-11-17",
+    voting_ends_at: new Date("2024-11-14T00:00:00Z").getTime() / 1000,
   },
   {
     id: 3,
@@ -197,86 +163,65 @@ export const demoProposalData: Proposal[] = [
       approve: {
         voteType: "approve",
         score: 3,
-        voters: {
-          maintainer: [
-            {
-              address: "",
-              image: null,
-              name: "Pamphile Roy",
-              github: "https://github.com/tupui",
-            },
-          ],
-          contributor: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "GDOQ67KNQFEQW27QTLSBD2UWDAGPWVFCK6TP73WF7OS2A3VEYSAZXQWD",
+            image: null,
+            name: "Taku",
+            github: "https://github.com/0xExp-po",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
       reject: {
         voteType: "reject",
         score: 4,
-        voters: {
-          maintainer: [],
-          contributor: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
       abstain: {
         voteType: "abstain",
         score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
     },
-    voting_ends_at: "2024-11-15",
+    voting_ends_at: new Date("2024-11-10T00:00:00Z").getTime() / 1000,
   },
   {
     id: 2,
@@ -288,109 +233,77 @@ export const demoProposalData: Proposal[] = [
       approve: {
         voteType: "approve",
         score: 8,
-        voters: {
-          maintainer: [
-            {
-              address: "",
-              image: null,
-              name: "Pamphile Roy",
-              github: "https://github.com/tupui",
-            },
-          ],
-          contributor: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "GCILP4HWE2QGEO4KUMOZ6S6J3A46W47EVCGZW2YPYCPH5CQF6EACNBCN",
+            image: null,
+            name: "Pamphile Roy",
+            github: "https://github.com/tupui",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
       reject: {
         voteType: "reject",
         score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
       abstain: {
         voteType: "abstain",
         score: 1,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [
-            {
-              address: "",
-              image: null,
-              name: "",
-              github: "",
-            },
-          ],
-        },
+        voters: [
+          {
+            address: "",
+            image: null,
+            name: "",
+            github: "",
+          },
+        ],
       },
     },
-    voting_ends_at: "2024-11-14",
+    voting_ends_at: new Date("2024-11-04T00:00:00Z").getTime() / 1000,
   },
   {
     id: 1,
@@ -402,32 +315,20 @@ export const demoProposalData: Proposal[] = [
       approve: {
         voteType: "approve",
         score: 0,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [],
-        },
+        voters: [],
       },
       reject: {
         voteType: "reject",
         score: 0,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [],
-        },
+        voters: [],
       },
       abstain: {
         voteType: "abstain",
         score: 0,
-        voters: {
-          maintainer: [],
-          contributor: [],
-          community: [],
-        },
+        voters: [],
       },
     },
-    voting_ends_at: null,
+    voting_ends_at: new Date("2024-10-30T00:00:00Z").getTime() / 1000,
   },
 ];
 

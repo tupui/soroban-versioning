@@ -13,7 +13,7 @@ export interface Proposal {
   ipfs: string;
   nqg: number;
   status: ProposalStatus;
-  voting_ends_at: string | null;
+  voting_ends_at: number;
   voteStatus: VoteStatus;
 }
 
@@ -23,7 +23,7 @@ export interface ProposalView {
   projectName: string;
   ipfsLink: string;
   status: ProposalViewStatus;
-  endDate: string | null;
+  endDate: number;
   nqg: number;
   voteStatus: VoteStatus;
 }
@@ -32,12 +32,12 @@ export interface ProposalCardView {
   proposalNumber: number;
   proposalTitle: string;
   proposalStatus: ProposalViewStatus;
-  endDate: string | null;
+  endDate: number;
 }
 
 export type VoteType = "approve" | "reject" | "abstain";
 
-export type VoterRole = "maintainer" | "contributor" | "community";
+export type VoterRole = "maintainer" | "community";
 
 export interface VoteStatus {
   approve: VoteData;
@@ -48,11 +48,7 @@ export interface VoteStatus {
 export interface VoteData {
   voteType: VoteType;
   score: number;
-  voters: {
-    maintainer: Voter[];
-    contributor: Voter[];
-    community: Voter[];
-  };
+  voters: Voter[];
 }
 
 export interface Voter {

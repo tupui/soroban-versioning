@@ -84,15 +84,16 @@ export const getOutcomeLinkFromIpfs = (ipfsLink: string) => {
 
 export const modifyProposalStatusToView = (
   status: ProposalStatus,
-  endDate: string | null,
+  endDate: number,
 ): ProposalViewStatus => {
   if (status === "approved") {
     return "approved";
   }
   if (status === "active") {
     if (endDate !== null) {
-      const endDateTimestamp = new Date(endDate).setHours(0, 0, 0, 0);
-      const currentTime = new Date().setHours(0, 0, 0, 0);
+      const endDateTimestamp = new Date(endDate * 1000);
+      const currentTime = new Date();
+
       if (endDateTimestamp < currentTime) {
         return "voted";
       }
