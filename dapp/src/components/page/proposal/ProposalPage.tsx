@@ -19,7 +19,7 @@ import {
   fetchOutcomeDataFromIPFS,
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
-import { getProjectFromName } from "@service/ReadContractService";
+import { getProjectFromName, getProposal } from "@service/ReadContractService";
 import type { ProposalOutcome, ProposalView, VoteType } from "types/proposal";
 import Loading from "components/utils/Loading";
 
@@ -65,9 +65,9 @@ const ProposalPage: React.FC = () => {
     }
   };
   const getProposalDetails = async () => {
-    if (id && projectName) {
+    if (id !== undefined && projectName) {
       setIsLoading(true);
-      const proposal = demoProposalData.find((p) => p.id === id);
+      const proposal = await getProposal(projectName, id);
       const projectInfo = await getProjectFromName(projectName);
       if (projectInfo && projectInfo.maintainers) {
         setProjectMaintainers(projectInfo?.maintainers);

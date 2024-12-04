@@ -5,6 +5,7 @@ import type {
   ProposalView,
   ProposalViewStatus,
 } from "types/proposal";
+import type { Proposal as ContractProposal } from "soroban_versioning";
 
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
@@ -123,4 +124,55 @@ export const modifyProposalToView = (
   };
 
   return proposalView;
+};
+
+export const modifyProposalFromContract = (
+  proposal: ContractProposal,
+): Proposal => {
+  return {
+    id: proposal.id,
+    title: proposal.title,
+    ipfs: proposal.ipfs,
+    nqg: proposal.nqg,
+    status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
+    voting_ends_at: Number(proposal.voting_ends_at),
+    voteStatus: {
+      approve: {
+        voteType: "approve",
+        score: proposal.voters_approve.length,
+        voters: proposal.voters_approve.map((voter: string) => {
+          return {
+            address: voter,
+            image: null,
+            name: "",
+            github: "",
+          };
+        }),
+      },
+      reject: {
+        voteType: "reject",
+        score: proposal.voters_reject.length,
+        voters: proposal.voters_reject.map((voter: string) => {
+          return {
+            address: voter,
+            image: null,
+            name: "",
+            github: "",
+          };
+        }),
+      },
+      abstain: {
+        voteType: "abstain",
+        score: proposal.voters_abstain.length,
+        voters: proposal.voters_abstain.map((voter: string) => {
+          return {
+            address: voter,
+            image: null,
+            name: "",
+            github: "",
+          };
+        }),
+      },
+    },
+  };
 };

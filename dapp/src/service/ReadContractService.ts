@@ -1,16 +1,11 @@
 import Versioning from "../contracts/soroban_versioning";
-import type { Project } from "soroban_versioning";
 import * as pkg from "js-sha3";
-
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
-
 import { loadedProjectId } from "./StateService";
-import type {
-  Proposal as ModifiedProposal,
-  ProposalStatus,
-} from "types/proposal";
-import type { Proposal } from "soroban_versioning";
+import { modifyProposalFromContract } from "utils/utils";
+import type { Project, Proposal } from "soroban_versioning";
+import type { Proposal as ModifiedProposal } from "types/proposal";
 
 async function getProjectHash(): Promise<string | void> {
   const projectId = loadedProjectId();
@@ -70,52 +65,7 @@ async function getProposals(
 
     const proposals: ModifiedProposal[] = res.result.proposals.map(
       (proposal: Proposal) => {
-        return {
-          id: proposal.id,
-          title: proposal.title,
-          ipfs: proposal.ipfs,
-          nqg: proposal.nqg,
-          status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
-          voting_ends_at: Number(proposal.voting_ends_at),
-          voteStatus: {
-            approve: {
-              voteType: "approve",
-              score: proposal.voters_approve.length,
-              voters: proposal.voters_approve.map((voter: string) => {
-                return {
-                  address: voter,
-                  image: null,
-                  name: "",
-                  github: "",
-                };
-              }),
-            },
-            reject: {
-              voteType: "reject",
-              score: proposal.voters_reject.length,
-              voters: proposal.voters_reject.map((voter: string) => {
-                return {
-                  address: voter,
-                  image: null,
-                  name: "",
-                  github: "",
-                };
-              }),
-            },
-            abstain: {
-              voteType: "abstain",
-              score: proposal.voters_abstain.length,
-              voters: proposal.voters_abstain.map((voter: string) => {
-                return {
-                  address: voter,
-                  image: null,
-                  name: "",
-                  github: "",
-                };
-              }),
-            },
-          },
-        };
+        return modifyProposalFromContract(proposal);
       },
     );
     return proposals;
@@ -125,4 +75,31 @@ async function getProposals(
   }
 }
 
-export { getProject, getProjectHash, getProjectFromName, getProposals };
+async function getProposal(
+  projectName: string,
+  proposalId: number,
+): Promise<ModifiedProposal | null> {
+  const project_key = Buffer.from(
+    keccak256.create().update(projectName).digest(),
+  );
+  try {
+    const res = await Versioning.get_proposal({
+      project_key: project_key,
+      proposal_id: proposalId,
+    });
+
+    const proposal: Proposal = res.result;
+    return modifyProposalFromContract(proposal);
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
+export {
+  getProject,
+  getProjectHash,
+  getProjectFromName,
+  getProposals,
+  getProposal,
+};
