@@ -249,7 +249,7 @@ import ModalInput from "../../utils/ModalInput.astro";
         }
 
         // If all checks pass, proceed with registration
-        const register_status = await registerProject(
+        const res = await registerProject(
           project_name.value,
           maintainers.value,
           config_url.value,
@@ -259,8 +259,8 @@ import ModalInput from "../../utils/ModalInput.astro";
 
         wrap_loader.style.display = "none";
         wrap_button.style.display = "block";
-        if (!register_status) {
-          alert("Project could not be registered! Please retry.");
+        if (res.error) {
+          alert(res.errorMessage);
         } else {
           const project = await getProject();
           if (
