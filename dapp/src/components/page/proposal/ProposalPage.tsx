@@ -14,7 +14,6 @@ import {
   projectNameForGovernance,
   proposalId,
 } from "utils/store";
-import { demoProposalData } from "constants/demoProposalData";
 import {
   fetchOutcomeDataFromIPFS,
   fetchProposalFromIPFS,
@@ -37,6 +36,7 @@ const ProposalPage: React.FC = () => {
   const [voteType, setVoteType] = useState<VoteType>();
   const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVoted, setIsVoted] = useState(false);
 
   const openVotersModal = (voteType: VoteType) => {
     if (proposal?.status !== "active") {
@@ -91,7 +91,7 @@ const ProposalPage: React.FC = () => {
 
   useEffect(() => {
     getProposalDetails();
-  }, [id, projectName]);
+  }, [id, projectName, isVoted]);
 
   return (
     <>
@@ -136,7 +136,13 @@ const ProposalPage: React.FC = () => {
             />
           )}
           {isVotingModalOpen && (
-            <VotingModal onClose={() => setIsVotingModalOpen(false)} />
+            <VotingModal
+              projectName={projectName}
+              proposalId={id}
+              isVoted={isVoted}
+              setIsVoted={setIsVoted}
+              onClose={() => setIsVotingModalOpen(false)}
+            />
           )}
           {isExecuteProposalModalOpen && (
             <ExecuteProposalModal

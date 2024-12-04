@@ -4,6 +4,22 @@ import Versioning from "../contracts/soroban_versioning";
 
 import { loadedProjectId } from "./StateService";
 import { keccak256 } from "js-sha3";
+import type { Vote } from "soroban_versioning";
+import type { VoteType } from "types/proposal";
+
+// Function to map VoteType to Vote
+function mapVoteTypeToVote(voteType: VoteType): Vote {
+  switch (voteType) {
+    case "approve":
+      return { tag: "Approve", values: undefined };
+    case "reject":
+      return { tag: "Reject", values: undefined };
+    case "abstain":
+      return { tag: "Abstain", values: undefined };
+    default:
+      throw new Error("Invalid vote type");
+  }
+}
 
 async function commitHash(commit_hash: string): Promise<boolean> {
   const projectId = loadedProjectId();
@@ -164,4 +180,50 @@ async function createProposal(
   }
 }
 
-export { commitHash, registerProject, updateConfig, createProposal };
+async function voteToProposal(
+  project_name: string,
+  proposal_id: number,
+  vote: VoteType,
+): Promise<boolean> {
+  const publicKey = loadedPublicKey();
+
+  if (!publicKey) {
+    alert("Please connect your wallet first");
+    return false;
+  } else {
+    Versioning.options.publicKey = publicKey;
+  }
+  const project_key = Buffer.from(
+    keccak256.create().update(project_name).digest(),
+  );
+
+  const mappedVote = mapVoteTypeToVote(vote);
+
+  const tx = await Versioning.vote({
+    voter: publicKey,
+    project_key: project_key,
+    proposal_id: Number(proposal_id),
+    vote: mappedVote,
+  });
+
+  try {
+    await tx.signAndSend({
+      signTransaction: async (xdr) => {
+        const { signedTxXdr } = await kit.signTransaction(xdr);
+        return signedTxXdr;
+      },
+    });
+    return true;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
+}
+
+export {
+  commitHash,
+  registerProject,
+  updateConfig,
+  createProposal,
+  voteToProposal,
+};
