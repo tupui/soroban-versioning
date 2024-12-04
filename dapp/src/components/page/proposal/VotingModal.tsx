@@ -1,6 +1,10 @@
 import React from "react";
 import { useState } from "react";
 import type { VoteType } from "types/proposal";
+import {
+  contractErrorMessages,
+  type ContractErrorMessageKey,
+} from "constants/contractErrorMessages";
 
 interface VotersModalProps {
   projectName: string;
@@ -36,13 +40,16 @@ const VotingModal: React.FC<VotersModalProps> = ({
     const { voteToProposal } = await import("@service/WriteContractService");
     const res = await voteToProposal(projectName, proposalId, selectedOption);
 
-    if (res) {
+    if (res.data) {
       setIsLoading(false);
       alert(`You have successfully voted to "${selectedOption}" option.`);
       setIsVoted(true);
     } else {
       setIsLoading(false);
-      alert("Error voting");
+      if (res.error) {
+        const errorCode = res.errorCode as ContractErrorMessageKey;
+        alert(contractErrorMessages[errorCode]);
+      }
     }
     onClose();
   };

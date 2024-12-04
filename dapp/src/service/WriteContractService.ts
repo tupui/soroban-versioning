@@ -6,6 +6,7 @@ import { loadedProjectId } from "./StateService";
 import { keccak256 } from "js-sha3";
 import type { Vote } from "soroban_versioning";
 import type { VoteType } from "types/proposal";
+import type { Response } from "types/response";
 
 // Function to map VoteType to Vote
 function mapVoteTypeToVote(voteType: VoteType): Vote {
@@ -184,12 +185,12 @@ async function voteToProposal(
   project_name: string,
   proposal_id: number,
   vote: VoteType,
-): Promise<boolean> {
+): Promise<Response<boolean>> {
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
     alert("Please connect your wallet first");
-    return false;
+    return { data: false, error: false, errorCode: -1 };
   } else {
     Versioning.options.publicKey = publicKey;
   }
@@ -213,10 +214,15 @@ async function voteToProposal(
         return signedTxXdr;
       },
     });
-    return true;
-  } catch (e) {
-    console.error(e);
-    return false;
+    return { data: true, error: false, errorCode: -1 };
+  } catch (e: any) {
+    const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(e.message);
+    let errorCode = -1;
+    if (errorCodeMatch && errorCodeMatch[1]) {
+      errorCode = parseInt(errorCodeMatch[1], 10);
+    }
+
+    return { data: false, error: true, errorCode };
   }
 }
 
