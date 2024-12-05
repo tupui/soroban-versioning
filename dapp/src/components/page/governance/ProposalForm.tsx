@@ -131,7 +131,7 @@ const ProposalForm: React.FC = () => {
       return;
     }
 
-    if (votingDays < 5 || votingDays > 30) {
+    if (votingDays < 1 || votingDays > 30) {
       alert("Voting days must be between 5 and 30");
       return;
     }
@@ -146,12 +146,12 @@ const ProposalForm: React.FC = () => {
       return;
     }
 
-    if (!isDescriptionValid(rejectDescription)) {
+    if (rejectXdr && !isDescriptionValid(rejectDescription)) {
       alert("Rejected description must contain at least 3 words.");
       return;
     }
 
-    if (!isDescriptionValid(cancelledDescription)) {
+    if (cancelledXdr && !isDescriptionValid(cancelledDescription)) {
       alert("Cancelled description must contain at least 3 words.");
       return;
     }
@@ -244,6 +244,8 @@ const ProposalForm: React.FC = () => {
         window.location.href = `/governance?name=${projectName}`;
       }
     } catch (error) {
+      setIsLoading(false);
+      console.log("submit proposal error:", error);
       alert("Error submitting proposal.");
     }
   };
