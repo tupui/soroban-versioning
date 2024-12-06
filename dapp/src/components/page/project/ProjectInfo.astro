@@ -751,7 +751,7 @@ import DonateModal from "./DonateModal.astro";
             modalConfigHash,
           );
 
-          if (updateStatus) {
+          if (updateStatus.data && !updateStatus.error) {
             const res = await getProject();
             const project = res.data;
             if (
@@ -770,8 +770,8 @@ import DonateModal from "./DonateModal.astro";
                 "update-config-modal",
               ) as HTMLDialogElement
             ).close();
-          } else {
-            alert("Failed to update project configuration. Please try again.");
+          } else if (updateStatus.error) {
+            alert(updateStatus.errorMessage);
           }
         } catch (error) {
           console.error("Error updating config:", error);

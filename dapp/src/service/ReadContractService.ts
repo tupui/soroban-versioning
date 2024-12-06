@@ -12,29 +12,37 @@ import {
   type ContractErrorMessageKey,
 } from "constants/contractErrorMessages";
 
-function fetchErrorCode(error: any): string {
+function fetchErrorCode(error: any): {
+  errorCode: ContractErrorMessageKey;
+  errorMessage: string;
+} {
   const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
   let errorCode: ContractErrorMessageKey = 0;
   if (errorCodeMatch && errorCodeMatch[1]) {
     errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
   }
-  return contractErrorMessages[errorCode];
+  return { errorCode, errorMessage: contractErrorMessages[errorCode] };
 }
 
 async function getProjectHash(): Promise<Response<string>> {
   const projectId = loadedProjectId();
 
   if (projectId === undefined) {
-    return { data: null, error: true, errorMessage: "No project defined" };
+    return {
+      data: null,
+      error: true,
+      errorCode: -1,
+      errorMessage: "No project defined",
+    };
   }
   try {
     const res = await Versioning.get_commit({
       project_key: projectId,
     });
-    return { data: res.result, error: false, errorMessage: "" };
+    return { data: res.result, error: false, errorCode: -1, errorMessage: "" };
   } catch (e: any) {
-    const errorMessage = fetchErrorCode(e);
-    return { data: null, error: true, errorMessage };
+    const { errorCode, errorMessage } = fetchErrorCode(e);
+    return { data: null, error: true, errorCode, errorMessage };
   }
 }
 
@@ -42,16 +50,21 @@ async function getProject(): Promise<Response<Project>> {
   const projectId = loadedProjectId();
 
   if (projectId === undefined) {
-    return { data: null, error: true, errorMessage: "No project defined" };
+    return {
+      data: null,
+      error: true,
+      errorCode: -1,
+      errorMessage: "No project defined",
+    };
   }
   try {
     const res = await Versioning.get_project({
       project_key: projectId,
     });
-    return { data: res.result, error: false, errorMessage: "" };
+    return { data: res.result, error: false, errorCode: -1, errorMessage: "" };
   } catch (e: any) {
-    const errorMessage = fetchErrorCode(e);
-    return { data: null, error: true, errorMessage };
+    const { errorCode, errorMessage } = fetchErrorCode(e);
+    return { data: null, error: true, errorCode, errorMessage };
   }
 }
 
@@ -63,17 +76,21 @@ async function getProjectFromName(
   );
 
   if (projectId === undefined) {
-    return { data: null, error: true, errorMessage: "No project defined" };
+    return {
+      data: null,
+      error: true,
+      errorCode: -1,
+      errorMessage: "No project defined",
+    };
   }
   try {
     const res = await Versioning.get_project({
       project_key: projectId,
     });
-    return { data: res.result, error: false, errorMessage: "" };
+    return { data: res.result, error: false, errorCode: -1, errorMessage: "" };
   } catch (e: any) {
-    const errorMessage = fetchErrorCode(e);
-
-    return { data: null, error: true, errorMessage };
+    const { errorCode, errorMessage } = fetchErrorCode(e);
+    return { data: null, error: true, errorCode, errorMessage };
   }
 }
 
@@ -95,10 +112,10 @@ async function getProposals(
         return modifyProposalFromContract(proposal);
       },
     );
-    return { data: proposals, error: false, errorMessage: "" };
+    return { data: proposals, error: false, errorCode: -1, errorMessage: "" };
   } catch (e: any) {
-    const errorMessage = fetchErrorCode(e);
-    return { data: null, error: true, errorMessage };
+    const { errorCode, errorMessage } = fetchErrorCode(e);
+    return { data: null, error: true, errorCode, errorMessage };
   }
 }
 
@@ -119,11 +136,12 @@ async function getProposal(
     return {
       data: modifyProposalFromContract(proposal),
       error: false,
+      errorCode: -1,
       errorMessage: "",
     };
   } catch (e: any) {
-    const errorMessage = fetchErrorCode(e);
-    return { data: null, error: true, errorMessage };
+    const { errorCode, errorMessage } = fetchErrorCode(e);
+    return { data: null, error: true, errorCode, errorMessage };
   }
 }
 
