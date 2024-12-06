@@ -122,6 +122,11 @@ const ProposalForm: React.FC = () => {
   };
 
   const submitProposal = async () => {
+    if (!projectName) {
+      alert("Project name is required");
+      return;
+    }
+
     if (
       !proposalName ||
       proposalName.length < 10 ||
@@ -224,6 +229,11 @@ const ProposalForm: React.FC = () => {
 
       const directoryCid = await client.uploadDirectory(files);
 
+      if (!directoryCid) {
+        alert("Failed to upload proposal");
+        return;
+      }
+
       const { createProposal } = await import("@service/WriteContractService");
 
       const res = await createProposal(
@@ -245,7 +255,7 @@ const ProposalForm: React.FC = () => {
       }
     } catch (error) {
       setIsLoading(false);
-      console.log("submit proposal error:", error);
+      console.error("submit proposal error:", error);
       alert("Error submitting proposal.");
     }
   };
