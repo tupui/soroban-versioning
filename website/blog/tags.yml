@@ -3,6 +3,11 @@ dapp:
   permalink: /dapp
   description: Decentralized Application
 
+dao:
+  label: dao
+  permalink: /dao
+  description: Decentralized Autonomous Organization
+
 scf:
   label: scf
   permalink: /scf

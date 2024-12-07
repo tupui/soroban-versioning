@@ -15,7 +15,7 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/soroban-wordmark-temp.svg').default,
     description: (
       <>
-        Tansu is a Soroban smart contract running on the Stellar blockchain. This allows extremely low operational costs, efficiency and security with a fast finality.
+        Tansu's Soroban smart contract runs on the Stellar blockchain. This allows extremely low operational costs, efficiency and security.
       </>
     ),
   },
@@ -24,7 +24,7 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/git-logo.svg').default,
     description: (
       <>
-        Tansu brings decentralization back to Git. Pushing new hashes on the Stellar blockchain to ensure immutability.
+        Tansu brings decentralization back to Git. From pushing new hashes to making governance decision, all on the Stellar blockchain.
       </>
     ),
   },

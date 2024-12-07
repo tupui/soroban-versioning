@@ -1,0 +1,52 @@
+---
+slug: dao
+title: A Decentralized Autonomous Organization (DAO) for every project
+authors: pamphile
+tags: [dapp, dao]
+---
+
+Tansu is getting a Decentralized Autonomous Organization (DAO) system! Communities will be able to fully govern their project in a decentralized fashion.
+
+All projects created on Tansu will get their very own DAO. Forget sending an email as a dead letter to a mailing list, with a DAO, there are clear rules, the process is transparent, more fair and there is an immutable record of every single decision.
+
+<!-- truncate -->
+
+### Decentralized Autonomous Organization (DAO)
+
+A DAO is an organization where its rules are strictly enforced by the use of smart contracts. You cannot bend some rules and everyone in the community gets treated impartially depending on their status in the DAO. All of which is transparent. DAOs are set to transform the governance of projects.
+
+### Proposals
+
+Maintainers can create proposals for their project. These can be about anything, from changing the API of a function, adding a new feature to deciding when to meet for your community calls.
+
+![List of proposals](/assets/blog/dao_1_proposals.png)
+
+### Storing proposals
+
+All proposals are registered on-chain and anyone can inspect them.
+
+![Proposal on-chain](/assets/blog/dao_1_chain.png)
+
+But the proposal themselves are not stored on-chain as it would be costly and impractical. Instead, proposals are hosted on [IPFS](https://ipfs.tech). This was a natural choice as IPFS is the de facto answer to decentralized storage.
+
+![Proposal on IPFS](/assets/blog/dao_1_ipfs.png)
+
+:::info[Primer on IPFS]
+
+See the previous [post](2024-10-20-ipfs.mdx).
+
+:::
+
+### Outcomes
+
+A proposal can have 3 different outcome. It's either accepted, rejected or cancelled. The start of the show here is that outcomes can trigger transactions!
+
+![Proposal outcomes](/assets/blog/dao_1_outcomes.png)
+
+When creating a proposal, you can give a transaction and when the proposal voting period ends, a maintainer will trigger the proposal execution which will trigger it's voted outcome.
+
+This mechanism is very powerful because it allows to manage very important and complex actions such as making a release, adding a new maintainer or spending funds. All these actions can now be recorded on-chain for everyone to see and validate.
+
+### Closing thoughts
+
+Careful readers will have noted that I did not talk about voting. Once more, we are going to do things a bit differently here. Votes are not going to be (directly) associated with a token holding, rather your voting power will depend on your reputation and what you are doing in your project and the extended community. Stay tuned!
