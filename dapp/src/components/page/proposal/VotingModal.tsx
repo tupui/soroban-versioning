@@ -3,18 +3,50 @@ import { useState } from "react";
 import type { VoteType } from "types/proposal";
 
 interface VotersModalProps {
+  projectName: string;
+  proposalId: number;
+  isVoted: boolean;
+  setIsVoted: React.Dispatch<React.SetStateAction<boolean>>;
   onClose: () => void;
 }
 
-const VotingModal: React.FC<VotersModalProps> = ({ onClose }) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+const VotingModal: React.FC<VotersModalProps> = ({
+  projectName,
+  proposalId,
+  isVoted,
+  setIsVoted,
+  onClose,
+}) => {
+  const [selectedOption, setSelectedOption] = useState<VoteType | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleVote = () => {
+  const handleVote = async () => {
     if (!selectedOption) {
       alert("You should select one option to vote");
       return;
     }
-    alert(`You voted to "${selectedOption}" option!`);
+
+    if (isVoted) {
+      alert("You have already voted");
+      onClose();
+      return;
+    }
+
+    setIsLoading(true);
+    const { voteToProposal } = await import("@service/WriteContractService");
+    const res = await voteToProposal(projectName, proposalId, selectedOption);
+
+    if (res.data) {
+      setIsLoading(false);
+      alert(`You have successfully voted to "${selectedOption}" option.`);
+      setIsVoted(true);
+    } else {
+      setIsLoading(false);
+      if (res.error) {
+        const errorMessage = res.errorMessage;
+        alert(errorMessage);
+      }
+    }
     onClose();
   };
 
@@ -60,10 +92,19 @@ const VotingModal: React.FC<VotersModalProps> = ({ onClose }) => {
           </div>
 
           <button
-            className="bg-black text-white mt-4 mb-1 py-1 px-4 rounded-lg text-lg"
+            disabled={isLoading}
+            className="bg-black w-[94px] mt-4 mb-1 py-1 px-2 rounded-lg text-lg"
             onClick={handleVote}
           >
-            Vote
+            {isLoading ? (
+              <span className="text-center text-white text-xl font-normal leading-7">
+                Voting...
+              </span>
+            ) : (
+              <span className="text-center text-white text-xl font-normal leading-7">
+                Vote
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -95,7 +136,7 @@ const CheckBox: React.FC<{
         ></span>
       </span>
       <p
-        className={`px-3 py-0.5 ${bgColor} rounded-lg text-white text-lg font-medium`}
+        className={`w-24 py-0.5 ${bgColor} rounded-lg text-white text-center text-lg font-medium`}
       >
         {label}
       </p>

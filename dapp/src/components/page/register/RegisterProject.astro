@@ -187,7 +187,8 @@ import ModalInput from "../../utils/ModalInput.astro";
         let isValid = true;
 
         // Check project name
-        const project = await getProjectFromName(project_name.value);
+        const response = await getProjectFromName(project_name.value);
+        const project = response.data;
         if (project && project.name && project.name === project_name.value) {
           isValid = false;
           showError(
@@ -195,6 +196,8 @@ import ModalInput from "../../utils/ModalInput.astro";
             project_name_error,
             "Project name already registered",
           );
+        } else if (response.error) {
+          alert(response.errorMessage);
         }
 
         // Check maintainers
@@ -249,7 +252,7 @@ import ModalInput from "../../utils/ModalInput.astro";
         }
 
         // If all checks pass, proceed with registration
-        const register_status = await registerProject(
+        const res = await registerProject(
           project_name.value,
           maintainers.value,
           config_url.value,
@@ -259,10 +262,11 @@ import ModalInput from "../../utils/ModalInput.astro";
 
         wrap_loader.style.display = "none";
         wrap_button.style.display = "block";
-        if (!register_status) {
-          alert("Project could not be registered! Please retry.");
+        if (res.error) {
+          alert(res.errorMessage);
         } else {
-          const project = await getProject();
+          const res = await getProject();
+          const project = res.data;
           if (
             project &&
             project.name &&
@@ -284,13 +288,21 @@ import ModalInput from "../../utils/ModalInput.astro";
 
             const latestSha = await getProjectHash();
             if (
-              typeof latestSha === "string" &&
-              latestSha.match(/^[a-f0-9]{40}$/)
+              latestSha.data &&
+              typeof latestSha.data === "string" &&
+              latestSha.data.match(/^[a-f0-9]{40}$/)
             ) {
-              setProjectLatestSha(latestSha);
-            } else setProjectLatestSha("");
+              setProjectLatestSha(latestSha.data);
+            } else {
+              setProjectLatestSha("");
+              if (latestSha.error) {
+                alert(latestSha.errorMessage);
+              }
+            }
 
             navigate(`/project?name=${project.name}`);
+          } else if (res.error) {
+            alert(res.errorMessage);
           }
         }
       });
