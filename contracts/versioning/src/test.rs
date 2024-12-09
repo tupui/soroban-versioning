@@ -15,7 +15,7 @@ fn test() {
     env.mock_all_auths();
 
     // setup for Soroban Domain
-    let domain_contract_id = env.register_contract_wasm(None, domain_contract::WASM);
+    let domain_contract_id = env.register(domain_contract::WASM, ());
     let domain_client = domain_contract::Client::new(&env, &domain_contract_id);
 
     let adm: Address = Address::generate(&env);
@@ -45,7 +45,7 @@ fn test() {
 
     // setup for Tansu
     let contract_admin = Address::generate(&env);
-    let contract_id = env.register_contract(None, Tansu);
+    let contract_id = env.register(Tansu, ());
     let contract = TansuClient::new(&env, &contract_id);
 
     contract.init(&contract_admin);
@@ -243,7 +243,7 @@ fn test_utils() {
     let key: Bytes = env.crypto().keccak256(&name_b).into();
     let node = domain_node(&env, &key);
 
-    let domain_contract_id = env.register_contract_wasm(None, domain_contract::WASM);
+    let domain_contract_id = env.register(domain_contract::WASM, ());
     let domain_client = domain_contract::Client::new(&env, &domain_contract_id);
     let node_official = domain_client.parse_domain(&name_b, &tld_b);
 

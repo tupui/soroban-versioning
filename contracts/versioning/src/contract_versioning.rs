@@ -3,7 +3,7 @@ use soroban_sdk::{
     String, Symbol, Val, Vec,
 };
 
-use crate::{domain_contract, errors, types, Tansu, TansuClient, VersioningTrait};
+use crate::{domain_contract, errors, types, Tansu, TansuArgs, TansuClient, VersioningTrait};
 
 #[contractimpl]
 impl VersioningTrait for Tansu {

@@ -495,7 +495,7 @@ export declare class Client extends ContractClient {
     init: (json: string) => AssembledTransaction<null>;
     upgrade: (json: string) => AssembledTransaction<null>;
     version: (json: string) => AssembledTransaction<number>;
-    register: (json: string) => AssembledTransaction<Buffer<ArrayBufferLike>>;
+    register: (json: string) => AssembledTransaction<Buffer>;
     update_config: (json: string) => AssembledTransaction<null>;
     commit: (json: string) => AssembledTransaction<null>;
     get_commit: (json: string) => AssembledTransaction<string>;

@@ -1,4 +1,4 @@
-use crate::{errors, types, DaoTrait, Tansu, TansuClient};
+use crate::{errors, types, DaoTrait, Tansu, TansuArgs, TansuClient};
 use soroban_sdk::{contractimpl, panic_with_error, vec, Address, Bytes, Env, String, Vec};
 
 const MAX_TITLE_LENGTH: u32 = 256;
