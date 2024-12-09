@@ -5,7 +5,7 @@ import type { ProposalViewStatus } from "types/proposal";
 
 interface Props {
   status: ProposalViewStatus | null;
-  endDate: string | null;
+  endDate: number | null;
 }
 
 const ProposalStatusSection: React.FC<Props> = ({ status, endDate }) => {

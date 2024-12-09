@@ -47,10 +47,18 @@ async function backend(did) {
     "filecoin/offer",
     "upload/add",
   ];
-  const expiration = Math.floor(Date.now() / 1000) + 10;
+  const expiration = Math.floor(Date.now() / 1000) + 86400;
+  const expirationDate = new Date(expiration * 1000);
+  console.log("expiration time:", expirationDate.toUTCString());
+
   const delegation = await client.createDelegation(audience, abilities, {
     expiration,
   });
+
+  console.log(
+    "delegation expire time:",
+    new Date(delegation.expiration * 1000).toUTCString(),
+  );
 
   const archive = await delegation.archive();
   return archive.ok;
