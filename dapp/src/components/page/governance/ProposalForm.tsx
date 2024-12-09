@@ -191,7 +191,7 @@ const ProposalForm: React.FC = () => {
       }
 
       const space = await client.addSpace(delegation.ok);
-      
+
       await client.setCurrentSpace(space.did());
 
       const proposalOutcome: ProposalOutcome = {
@@ -259,7 +259,7 @@ const ProposalForm: React.FC = () => {
 
         window.location.href = `/governance?name=${projectName}`;
       }
-    } catch (error : any) {
+    } catch (error: any) {
       setIsLoading(false);
       console.error("submit proposal error:", error.cause);
       alert("Error submitting proposal.");
