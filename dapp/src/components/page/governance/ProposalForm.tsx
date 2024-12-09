@@ -191,7 +191,8 @@ const ProposalForm: React.FC = () => {
       }
 
       const space = await client.addSpace(delegation.ok);
-      client.setCurrentSpace(space.did());
+      
+      await client.setCurrentSpace(space.did());
 
       const proposalOutcome: ProposalOutcome = {
         approved: {
@@ -227,6 +228,11 @@ const ProposalForm: React.FC = () => {
 
       files.push(new File([description], "proposal.md"));
 
+      if (!files) {
+        alert("Failed to create proposal files");
+        return;
+      }
+
       const directoryCid = await client.uploadDirectory(files);
 
       if (!directoryCid) {
@@ -253,9 +259,9 @@ const ProposalForm: React.FC = () => {
 
         window.location.href = `/governance?name=${projectName}`;
       }
-    } catch (error) {
+    } catch (error : any) {
       setIsLoading(false);
-      console.error("submit proposal error:", error);
+      console.error("submit proposal error:", error.cause);
       alert("Error submitting proposal.");
     }
   };
