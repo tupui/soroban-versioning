@@ -70,8 +70,7 @@ async function commitHash(commit_hash: string): Promise<Response<boolean>> {
   try {
     await tx.signAndSend({
       signTransaction: async (xdr) => {
-        const { signedTxXdr } = await kit.signTransaction(xdr);
-        return signedTxXdr;
+        return await kit.signTransaction(xdr);
       },
     });
     return { data: true, error: false, errorCode: -1, errorMessage: "" };
@@ -117,8 +116,7 @@ async function registerProject(
   try {
     await tx.signAndSend({
       signTransaction: async (xdr) => {
-        const { signedTxXdr } = await kit.signTransaction(xdr);
-        return signedTxXdr;
+        return await kit.signTransaction(xdr);
       },
     });
     return { data: true, error: false, errorCode: -1, errorMessage: "" };
@@ -169,8 +167,7 @@ async function updateConfig(
   try {
     await tx.signAndSend({
       signTransaction: async (xdr) => {
-        const { signedTxXdr } = await kit.signTransaction(xdr);
-        return signedTxXdr;
+        return await kit.signTransaction(xdr);
       },
     });
     return { data: true, error: false, errorCode: -1, errorMessage: "" };
@@ -214,8 +211,7 @@ async function createProposal(
   try {
     const result = await tx.signAndSend({
       signTransaction: async (xdr) => {
-        const { signedTxXdr } = await kit.signTransaction(xdr);
-        return signedTxXdr;
+        return await kit.signTransaction(xdr);
       },
     });
     return {
@@ -264,8 +260,7 @@ async function voteToProposal(
   try {
     await tx.signAndSend({
       signTransaction: async (xdr) => {
-        const { signedTxXdr } = await kit.signTransaction(xdr);
-        return signedTxXdr;
+        return await kit.signTransaction(xdr);
       },
     });
     return { data: true, error: false, errorCode: -1, errorMessage: "" };
