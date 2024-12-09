@@ -10,7 +10,7 @@
     "@nanostores/react": "^0.8.0",
     "@stellar/stellar-sdk": "^13.0.0",
     "@web3-storage/w3up-client": "^16.5.1",
-    "astro": "4.16.16",
+    "astro": "4.16.17",
     "astro-seo": "^0.8.4",
     "github-markdown-css": "^5.8.0",
     "install": "^0.13.0",
