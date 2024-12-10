@@ -10,6 +10,7 @@ mod domain_contract {
 }
 
 mod contract_dao;
+mod contract_tansu;
 mod contract_versioning;
 mod errors;
 mod test;
@@ -20,13 +21,15 @@ contractmeta!(key = "Description", val = "Tansu - Soroban Versioning");
 #[contract]
 pub struct Tansu;
 
-pub trait VersioningTrait {
+pub trait TansuTrait {
     fn init(env: Env, admin: Address);
 
     fn upgrade(env: Env, hash: BytesN<32>);
 
     fn version() -> u32;
+}
 
+pub trait VersioningTrait {
     fn register(
         env: Env,
         maintainer: Address,
