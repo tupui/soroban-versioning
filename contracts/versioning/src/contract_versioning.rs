@@ -3,29 +3,10 @@ use soroban_sdk::{
     String, Symbol, Val, Vec,
 };
 
-use crate::{domain_contract, errors, types, Tansu, TansuClient, VersioningTrait};
+use crate::{domain_contract, errors, types, Tansu, TansuArgs, TansuClient, VersioningTrait};
 
 #[contractimpl]
 impl VersioningTrait for Tansu {
-    fn init(env: Env, admin: Address) {
-        env.storage().instance().set(&types::DataKey::Admin, &admin);
-    }
-
-    fn upgrade(env: Env, new_wasm_hash: BytesN<32>) {
-        let admin: Address = env
-            .storage()
-            .instance()
-            .get(&types::DataKey::Admin)
-            .unwrap();
-        admin.require_auth();
-
-        env.deployer().update_current_contract_wasm(new_wasm_hash);
-    }
-
-    fn version() -> u32 {
-        1
-    }
-
     /// Register a new Git projects and associated metadata.
     fn register(
         env: Env,
