@@ -3,8 +3,8 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'Tansu - Soroban Versioning',
-  tagline: 'Bringing open source software development onto the Stellar blockchain',
+  title: 'Tansu',
+  tagline: 'Bringing open source software development to the Stellar blockchain',
   favicon: 'img/logo.svg',
 
   // Set the production url of your site here
