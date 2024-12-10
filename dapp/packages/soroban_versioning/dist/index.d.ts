@@ -273,30 +273,6 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<Proposal>>;
   /**
-   * Construct and simulate a init transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   */
-  init: (
-    {
-      admin,
-    }: {
-      admin: string;
-    },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
-  ) => Promise<AssembledTransaction<null>>;
-  /**
    * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   upgrade: (
@@ -492,10 +468,9 @@ export declare class Client extends ContractClient {
     vote: (json: string) => AssembledTransaction<null>;
     get_dao: (json: string) => AssembledTransaction<Dao>;
     get_proposal: (json: string) => AssembledTransaction<Proposal>;
-    init: (json: string) => AssembledTransaction<null>;
     upgrade: (json: string) => AssembledTransaction<null>;
     version: (json: string) => AssembledTransaction<number>;
-    register: (json: string) => AssembledTransaction<Buffer>;
+    register: (json: string) => AssembledTransaction<Buffer<ArrayBufferLike>>;
     update_config: (json: string) => AssembledTransaction<null>;
     commit: (json: string) => AssembledTransaction<null>;
     get_commit: (json: string) => AssembledTransaction<string>;

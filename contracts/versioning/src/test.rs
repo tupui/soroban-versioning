@@ -45,10 +45,8 @@ fn test() {
 
     // setup for Tansu
     let contract_admin = Address::generate(&env);
-    let contract_id = env.register(Tansu, ());
+    let contract_id = env.register(Tansu, (&contract_admin,));
     let contract = TansuClient::new(&env, &contract_id);
-
-    contract.init(&contract_admin);
 
     let name = String::from_str(&env, "tansu");
     let url = String::from_str(&env, "github.com/file.toml");

@@ -22,7 +22,7 @@ contractmeta!(key = "Description", val = "Tansu - Soroban Versioning");
 pub struct Tansu;
 
 pub trait TansuTrait {
-    fn init(env: Env, admin: Address);
+    fn __constructor(env: Env, admin: Address);
 
     fn upgrade(env: Env, hash: BytesN<32>);
 

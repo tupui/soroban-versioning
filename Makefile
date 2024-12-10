@@ -83,24 +83,19 @@ contract_bindings: contract_build-release  ## Create bindings
 		--output-dir dapp/packages/soroban_versioning \
 		--overwrite && \
 	cd dapp/packages/soroban_versioning && \
-	bun run build
+	bun run build && \
+	cd ../.. && \
+	bun formatter
 
 contract_deploy:  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
   		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
   		--source-account mando-$(network) \
   		--network $(network) \
+  		-- \
+  		--admin $(shell soroban keys address mando-$(network)) \
   		> .soroban/soroban_versioning_id && \
   	cat .soroban/soroban_versioning_id
-
-contract_init:
-	stellar contract invoke \
-    	--source-account mando-$(network) \
-    	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
-    	-- \
-    	init \
-    	--admin $(shell soroban keys address mando-$(network))
 
 contract_upgrade:  ## After manually pulling the wasm from the pipeline, update the contract
 	stellar contract invoke \

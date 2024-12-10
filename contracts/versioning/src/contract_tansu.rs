@@ -4,7 +4,7 @@ use crate::{types, Tansu, TansuArgs, TansuClient, TansuTrait};
 
 #[contractimpl]
 impl TansuTrait for Tansu {
-    fn init(env: Env, admin: Address) {
+    fn __constructor(env: Env, admin: Address) {
         env.storage().instance().set(&types::DataKey::Admin, &admin);
     }
 
