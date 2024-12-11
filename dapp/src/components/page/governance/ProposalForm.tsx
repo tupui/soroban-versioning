@@ -176,11 +176,25 @@ const ProposalForm: React.FC = () => {
       const client = await Client.create();
       const apiUrl = `/api/w3up-delegation`;
 
+      const { generateChallengeTransaction } = await import(
+        "@service/ChallengeService"
+      );
+
+      const did = client.agent.did();
+
+      const signedTxXdr = await generateChallengeTransaction(did);
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ did: client.agent.did() }),
+        body: JSON.stringify({ signedTxXdr, projectName, did }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error}`);
+        throw new Error(errorData.error);
+      }
       const data = await response.arrayBuffer();
 
       const delegation = await Delegation.extract(new Uint8Array(data));
@@ -189,6 +203,7 @@ const ProposalForm: React.FC = () => {
           cause: delegation.error,
         });
       }
+      console.log("Delegation successfully extracted from server");
 
       const space = await client.addSpace(delegation.ok);
 
@@ -234,6 +249,7 @@ const ProposalForm: React.FC = () => {
       }
 
       const directoryCid = await client.uploadDirectory(files);
+      console.log("Proposal successfully uploaded to IPFS");
 
       if (!directoryCid) {
         alert("Failed to upload proposal");
@@ -261,7 +277,10 @@ const ProposalForm: React.FC = () => {
       }
     } catch (error: any) {
       setIsLoading(false);
-      console.error("submit proposal error:", error.cause);
+      console.error(
+        "submit proposal error:",
+        error?.cause ? error.cause : error,
+      );
       alert("Error submitting proposal.");
     }
   };

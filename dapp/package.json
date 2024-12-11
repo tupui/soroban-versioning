@@ -12,6 +12,7 @@
     "@web3-storage/w3up-client": "^16.5.2",
     "astro": "4.16.17",
     "astro-seo": "^0.8.4",
+    "crypto-js": "^4.2.0",
     "github-markdown-css": "^5.8.1",
     "install": "^0.13.0",
     "js-sha3": "^0.9.3",

@@ -94,6 +94,18 @@ async function getProjectFromName(
   }
 }
 
+async function getProjectFromId(projectId: Buffer): Promise<Response<Project>> {
+  try {
+    const res = await Versioning.get_project({
+      project_key: projectId,
+    });
+    return { data: res.result, error: false, errorCode: -1, errorMessage: "" };
+  } catch (e: any) {
+    const { errorCode, errorMessage } = fetchErrorCode(e);
+    return { data: null, error: true, errorCode, errorMessage };
+  }
+}
+
 async function getProposals(
   project_name: string,
   page: number,
@@ -149,6 +161,7 @@ export {
   getProject,
   getProjectHash,
   getProjectFromName,
+  getProjectFromId,
   getProposals,
   getProposal,
 };
