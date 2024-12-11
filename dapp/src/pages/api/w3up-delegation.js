@@ -103,7 +103,7 @@ async function generateDelegation(did) {
     "filecoin/offer",
     "upload/add",
   ];
-  const expiration = Math.floor(Date.now() / 1000) + 86400;
+  const expiration = Math.floor(Date.now() / 1000) + 60;
   const expirationDate = new Date(expiration * 1000);
   console.log("expiration time:", expirationDate.toUTCString());
 
