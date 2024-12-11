@@ -252,7 +252,7 @@ import DonateModal from "./DonateModal.astro";
 <DonateModal />
 
 <script>
-  import { loadedPublicKey } from "../../stellar-wallets-kit";
+  import { loadedPublicKey } from "../../../service/walletService";
   import { updateConfig } from "../../../service/WriteContractService";
   import { getProject } from "../../../service/ReadContractService";
   import {
@@ -751,8 +751,9 @@ import DonateModal from "./DonateModal.astro";
             modalConfigHash,
           );
 
-          if (updateStatus) {
-            const project = await getProject();
+          if (updateStatus.data && !updateStatus.error) {
+            const res = await getProject();
+            const project = res.data;
             if (
               project &&
               project.name &&
@@ -760,6 +761,8 @@ import DonateModal from "./DonateModal.astro";
               project.maintainers
             ) {
               setProject(project);
+            } else if (res.error) {
+              alert(res.errorMessage);
             }
             updateProjectInfo();
             (
@@ -767,8 +770,8 @@ import DonateModal from "./DonateModal.astro";
                 "update-config-modal",
               ) as HTMLDialogElement
             ).close();
-          } else {
-            alert("Failed to update project configuration. Please try again.");
+          } else if (updateStatus.error) {
+            alert(updateStatus.errorMessage);
           }
         } catch (error) {
           console.error("Error updating config:", error);

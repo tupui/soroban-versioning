@@ -9,15 +9,16 @@ async function fetchProposalFromIPFS(url: string) {
   try {
     const proposalUrl = getProposalLinkFromIpfs(url);
     const response = await axios.get(proposalUrl);
-    let content = response.data;
+    const content = response.data;
 
     const basicUrl = getIpfsBasicLink(url);
-    content = content.replace(
-      /!\[([^\]]*)\]\(([^http][^)]+)\)/g,
-      `![$1](${basicUrl}$2)`,
+
+    const updatedContent = content.replace(
+      /!\[([^\]]*)\]\(([^http][^)]+|[^)]+)\)/g,
+      `![$1](${basicUrl}/$2)`,
     );
 
-    return content;
+    return updatedContent;
   } catch (error) {
     console.error("Error fetching the IPFS file:", error);
     throw error;

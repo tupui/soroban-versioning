@@ -59,6 +59,8 @@ const ProposalForm: React.FC = () => {
   const connectedAddress = useStore(connectedPublicKey);
   const projectName = useStore(projectNameForGovernance);
   const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
+  const [proposalName, setProposalName] = useState("");
+  const [votingDays, setVotingDays] = useState<number>(5);
 
   useEffect(() => {
     setIsClient(true);
@@ -66,9 +68,12 @@ const ProposalForm: React.FC = () => {
 
   const getProjectMaintainers = async () => {
     if (projectName) {
-      const projectInfo = await getProjectFromName(projectName);
+      const res = await getProjectFromName(projectName);
+      const projectInfo = res.data;
       if (projectInfo && projectInfo.maintainers) {
         setProjectMaintainers(projectInfo?.maintainers);
+      } else if (res.error) {
+        alert(res.errorMessage);
       }
     } else {
       alert("Project name is not provided");
@@ -112,13 +117,56 @@ const ProposalForm: React.FC = () => {
     },
   };
 
+  const isDescriptionValid = (description: string, words: number = 3) => {
+    return description.trim().split(/\s+/).length >= words;
+  };
+
   const submitProposal = async () => {
+    if (!projectName) {
+      alert("Project name is required");
+      return;
+    }
+
+    if (
+      !proposalName ||
+      proposalName.length < 10 ||
+      proposalName.length > 256
+    ) {
+      alert("Proposal name is required");
+      return;
+    }
+
+    if (votingDays < 1 || votingDays > 30) {
+      alert("Voting days must be between 5 and 30");
+      return;
+    }
+
+    if (!isDescriptionValid(mdText, 10)) {
+      alert("Proposal description must contain at least 10 words.");
+      return;
+    }
+
+    if (!isDescriptionValid(approveDescription)) {
+      alert("Approved description must contain at least 3 words.");
+      return;
+    }
+
+    if (rejectXdr && !isDescriptionValid(rejectDescription)) {
+      alert("Rejected description must contain at least 3 words.");
+      return;
+    }
+
+    if (cancelledXdr && !isDescriptionValid(cancelledDescription)) {
+      alert("Cancelled description must contain at least 3 words.");
+      return;
+    }
+
     if (!connectedAddress) {
       alert("Please connect your wallet first");
       return;
     }
 
-    if (projectMaintainers.includes(connectedAddress)) {
+    if (!projectMaintainers.includes(connectedAddress)) {
       alert("You are not a maintainer of this project");
       return;
     }
@@ -128,11 +176,25 @@ const ProposalForm: React.FC = () => {
       const client = await Client.create();
       const apiUrl = `/api/w3up-delegation`;
 
+      const { generateChallengeTransaction } = await import(
+        "@service/ChallengeService"
+      );
+
+      const did = client.agent.did();
+
+      const signedTxXdr = await generateChallengeTransaction(did);
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ did: client.agent.did() }),
+        body: JSON.stringify({ signedTxXdr, projectName, did }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(`Error: ${errorData.error}`);
+        throw new Error(errorData.error);
+      }
       const data = await response.arrayBuffer();
 
       const delegation = await Delegation.extract(new Uint8Array(data));
@@ -141,9 +203,11 @@ const ProposalForm: React.FC = () => {
           cause: delegation.error,
         });
       }
+      console.log("Delegation successfully extracted from server");
 
       const space = await client.addSpace(delegation.ok);
-      client.setCurrentSpace(space.did());
+
+      await client.setCurrentSpace(space.did());
 
       const proposalOutcome: ProposalOutcome = {
         approved: {
@@ -179,25 +243,62 @@ const ProposalForm: React.FC = () => {
 
       files.push(new File([description], "proposal.md"));
 
-      const directoryCid = await client.uploadDirectory(files);
+      if (!files) {
+        alert("Failed to create proposal files");
+        return;
+      }
 
-      setIsLoading(false);
-      alert(
-        `Proposal submitted successfully! CID: ${getIpfsBasicLink(directoryCid.toString())}`,
+      const directoryCid = await client.uploadDirectory(files);
+      console.log("Proposal successfully uploaded to IPFS");
+
+      if (!directoryCid) {
+        alert("Failed to upload proposal");
+        return;
+      }
+
+      const { createProposal } = await import("@service/WriteContractService");
+
+      const res = await createProposal(
+        projectName,
+        proposalName,
+        directoryCid.toString(),
+        Math.floor(Date.now() / 1000) + 86400 * votingDays,
       );
 
-      window.location.href = `/governance?name=${projectName}`;
-    } catch (error) {
-      throw new Error("Error submitting proposal", {
-        cause: error,
-      });
+      setIsLoading(false);
+      if (res.error) {
+        alert(res.errorMessage);
+      } else {
+        alert(
+          `Proposal submitted successfully! Proposal ID: ${res.data}, CID: ${getIpfsBasicLink(directoryCid.toString())}`,
+        );
+
+        window.location.href = `/governance?name=${projectName}`;
+      }
+    } catch (error: any) {
+      setIsLoading(false);
+      console.error(
+        "submit proposal error:",
+        error?.cause ? error.cause : error,
+      );
+      alert("Error submitting proposal.");
     }
   };
 
   return (
     <div>
-      <h3 className="text-base sm:text-lg md:text-2xl font-semibold py-2">
-        Proposal Description
+      <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-3">
+        Name
+      </h3>
+      <input
+        type="text"
+        value={proposalName}
+        onChange={(e) => setProposalName(e.target.value)}
+        className="w-full p-2 border border-zinc-700 rounded-md focus:outline-none"
+        placeholder="Enter your proposal name here..."
+      />
+      <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-3">
+        Description
       </h3>
       <div className="rounded-md border border-zinc-700 overflow-hidden">
         <MDXEditor
@@ -265,8 +366,8 @@ const ProposalForm: React.FC = () => {
           placeholder="Input your proposal description here..."
         />
       </div>
-      <h3 className="text-base sm:text-lg md:text-2xl font-semibold py-2">
-        Proposal Outcome
+      <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-8">
+        Outcome
       </h3>
       <div className="w-full max-w-[840px] mx-auto flex flex-col gap-4 sm:gap-6 md:gap-10">
         <OutcomeInput
@@ -290,6 +391,19 @@ const ProposalForm: React.FC = () => {
           xdr={cancelledXdr}
           setXdr={setCancelledXdr}
         />
+        <div className="w-full flex items-center">
+          <h5 className="w-[80px] sm:w-[90px] md:w-[105px] pr-1.5 text-right text-base text-nowrap">
+            Voting dates:
+          </h5>
+          <input
+            type="number"
+            value={votingDays}
+            onChange={(e) => setVotingDays(Number(e.target.value))}
+            className="w-14 pr-2 text-right text-base border border-zinc-700 rounded-md focus:outline-none"
+            placeholder=""
+          />
+          <div className="pl-1.5 text-base">days</div>
+        </div>
         <div className="ml-[80px] sm:ml-[90px] md:ml-[105px]">
           <button
             className="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"

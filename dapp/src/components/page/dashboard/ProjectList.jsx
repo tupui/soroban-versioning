@@ -92,7 +92,8 @@ const ProjectList = () => {
   const checkProjectOnChain = async (projectName) => {
     setIsLoading(true);
     try {
-      const project = await getProjectFromName(projectName);
+      const res = await getProjectFromName(projectName);
+      const project = res.data;
       if (project && project.name && project.config && project.maintainers) {
         const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
         if (tomlData) {
@@ -118,6 +119,7 @@ const ProjectList = () => {
         setIsInOnChain(true);
       } else {
         setIsInOnChain(false);
+        alert(res.errorMessage);
       }
     } catch (error) {
       console.error("Error checking project on-chain:", error);
