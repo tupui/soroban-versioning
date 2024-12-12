@@ -22,7 +22,8 @@ const ProjectCard = ({ config }) => {
     refreshLocalStorage();
     try {
       setProjectId(config.projectName.toLowerCase());
-      const project = await getProject();
+      const res = await getProject();
+      const project = res.data;
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
         const { username, repoName } = getAuthorRepo(project.config.url);
@@ -39,15 +40,25 @@ const ProjectCard = ({ config }) => {
 
         const latestSha = await getProjectHash();
         if (
-          typeof latestSha === "string" &&
-          latestSha.match(/^[a-f0-9]{40}$/)
+          latestSha.data &&
+          typeof latestSha.data === "string" &&
+          latestSha.data.match(/^[a-f0-9]{40}$/)
         ) {
-          setProjectLatestSha(latestSha);
-        } else setProjectLatestSha("");
+          setProjectLatestSha(latestSha.data);
+        } else {
+          setProjectLatestSha("");
+          if (latestSha.error) {
+            alert(latestSha.errorMessage);
+          }
+        }
 
         projectCardModalOpen.set(true);
       } else {
-        alert(`There is not such project: ${config.projectName}`);
+        if (res.error) {
+          alert(res.errorMessage);
+        } else {
+          alert(`There is not such project: ${config.projectName}`);
+        }
       }
     } catch (e) {
       console.error(e);

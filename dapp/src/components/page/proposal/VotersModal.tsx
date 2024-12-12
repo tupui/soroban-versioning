@@ -6,18 +6,37 @@ import type { VoteData, VoterRole, Voter } from "types/proposal";
 interface VotersModalProps {
   NQGScore: number;
   voteData: VoteData | null;
+  projectMaintainers: string[];
   onClose: () => void;
 }
 
 const VotersModal: React.FC<VotersModalProps> = ({
   NQGScore,
   voteData,
+  projectMaintainers,
   onClose,
 }) => {
-  const [voters, setVoters] = useState(voteData?.voters);
+  const modifyVotersInfo = (voters: Voter[] | undefined) => {
+    const modifiedVoters = {
+      maintainer: [] as Voter[],
+      community: [] as Voter[],
+    };
+    if (!voters) return modifiedVoters;
+
+    voters.forEach((voter: Voter) => {
+      if (projectMaintainers.includes(voter.address)) {
+        modifiedVoters.maintainer.push(voter);
+      } else {
+        modifiedVoters.community.push(voter);
+      }
+    });
+    return modifiedVoters;
+  };
+
+  const [voters, setVoters] = useState(modifyVotersInfo(voteData?.voters));
 
   useEffect(() => {
-    setVoters(voteData?.voters);
+    setVoters(modifyVotersInfo(voteData?.voters));
   }, [voteData]);
 
   return (
@@ -39,10 +58,6 @@ const VotersModal: React.FC<VotersModalProps> = ({
               <VotersCard
                 voterRole="maintainer"
                 voters={voters["maintainer"]}
-              />
-              <VotersCard
-                voterRole="contributor"
-                voters={voters["contributor"]}
               />
               <VotersCard voterRole="community" voters={voters["community"]} />
             </>

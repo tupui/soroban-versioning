@@ -33,8 +33,8 @@ export function formatDate(dateString: string): string {
   return date.toLocaleDateString(undefined, dateOptions);
 }
 
-export function calculateDateDifference(dateString: string): string | null {
-  const inputDate = new Date(dateString + "T00:00:00");
+export function calculateDateDifference(timestamp: number): string | null {
+  const inputDate = new Date(timestamp * 1000);
   const now = new Date();
 
   const timeDiff = inputDate.getTime() - now.getTime();
