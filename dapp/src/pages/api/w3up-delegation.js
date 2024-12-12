@@ -86,14 +86,19 @@ const getProjectMaintainers = async (projectName) => {
 
 async function generateDelegation(did) {
   const key = import.meta.env.STORACHA_SING_PRIVATE_KEY;
-  const storachaProof =
-    import.meta.env.STORACHA_PROOF_1 + import.meta.env.STORACHA_PROOF_2;
+  const storachaProof = import.meta.env.STORACHA_PROOF;
+
+  if (storachaProof.length === 64) {
+    // storachaProof is a AES256 key in that case
+    return null;
+  }
+
+  const proof = await Proof.parse(storachaProof);
 
   const principal = Signer.parse(key);
   const store = new StoreMemory();
   const client = await Client.create({ principal, store });
 
-  const proof = await Proof.parse(storachaProof);
   const space = await client.addSpace(proof);
   await client.setCurrentSpace(space.did());
 
