@@ -86,7 +86,7 @@ const getProjectMaintainers = async (projectName) => {
 
 async function generateDelegation(did) {
   const key = import.meta.env.STORACHA_SING_PRIVATE_KEY;
-  const storachaProof = import.meta.env.STORACHA_PROOF;
+  const storachaProof = import.meta.env.STORACHA_PROOF_1 + import.meta.env.STORACHA_PROOF_2;
 
   const principal = Signer.parse(key);
   const store = new StoreMemory();
