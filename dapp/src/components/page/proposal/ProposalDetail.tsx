@@ -1,19 +1,19 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import * as StellarXdr from "utils/stellarXdr";
 import Markdown from "markdown-to-jsx";
 import "github-markdown-css";
 import JsonView from "react18-json-view";
 import "react18-json-view/src/style.css";
 import {
   capitalizeFirstLetter,
-  processDecodedData,
   modifySlashInXdr,
   getProposalLinkFromIpfs,
   getOutcomeLinkFromIpfs,
 } from "utils/utils";
-import { demoOutcomeData } from "constants/demoProposalData";
 import { stellarLabViewXdrLink } from "constants/serviceLinks";
 import type { ProposalOutcome, ProposalViewStatus } from "types/proposal";
+import { parseToLosslessJson } from "utils/passToLosslessJson";
 interface ProposalDetailProps {
   ipfsLink: string | null;
   description: string;
@@ -27,6 +27,17 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
   outcome,
   status,
 }) => {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    const init = async () => {
+      await StellarXdr.initialize();
+      setIsReady(true);
+    };
+
+    init();
+  }, []);
+
   return (
     <div className="w-full bg-zinc-100 rounded-xl px-4 sm:px-8 md:px-12 py-4 sm:py-7 md:py-10">
       <div className="w-full flex flex-col gap-4 sm:gap-6 md:gap-8">
@@ -91,6 +102,7 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
                     type={key}
                     detail={value}
                     proposalStatus={status}
+                    isXdrInit={isReady}
                   />
                 ))}
             </div>
@@ -107,7 +119,8 @@ export const OutcomeDetail: React.FC<{
   type: string;
   detail: { description: string; xdr: string };
   proposalStatus: ProposalViewStatus | null;
-}> = ({ type, detail, proposalStatus }) => {
+  isXdrInit: boolean;
+}> = ({ type, detail, proposalStatus, isXdrInit }) => {
   const [content, setContent] = useState<any>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -117,10 +130,13 @@ export const OutcomeDetail: React.FC<{
 
   const getContentFromXdr = async (_xdr: string) => {
     try {
+      if (!isXdrInit) {
+        return;
+      }
+
       if (_xdr) {
-        const decoded = processDecodedData(_xdr);
-        console.log("decode:", decoded);
-        setContent(demoOutcomeData);
+        const decoded = StellarXdr.decode("TransactionEnvelope", _xdr);
+        setContent(parseToLosslessJson(decoded));
       }
     } catch (error) {
       console.error("Error decoding XDR:", error);
@@ -129,7 +145,7 @@ export const OutcomeDetail: React.FC<{
 
   useEffect(() => {
     getContentFromXdr(detail.xdr);
-  }, [detail]);
+  }, [detail, isXdrInit]);
 
   return (
     <div className="flex flex-col gap-1 sm:gap-4 md:gap-6">
