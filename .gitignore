@@ -38,3 +38,4 @@ yarn-error.log*
 
 # Storacha proof and keys
 .storacha
+encrypted_proof.bin.test
