@@ -116,11 +116,6 @@ async function generateDelegation(did) {
     expiration,
   });
 
-  console.log(
-    "delegation expire time:",
-    new Date(delegation.expiration * 1000).toUTCString(),
-  );
-
   const archive = await delegation.archive();
   return archive.ok;
 }

@@ -203,7 +203,6 @@ const ProposalForm: React.FC = () => {
           cause: delegation.error,
         });
       }
-      console.log("Delegation successfully extracted from server");
 
       const space = await client.addSpace(delegation.ok);
 
@@ -249,7 +248,6 @@ const ProposalForm: React.FC = () => {
       }
 
       const directoryCid = await client.uploadDirectory(files);
-      console.log("Proposal successfully uploaded to IPFS");
 
       if (!directoryCid) {
         alert("Failed to upload proposal");

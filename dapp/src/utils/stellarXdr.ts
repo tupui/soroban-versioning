@@ -16,7 +16,6 @@ declare global {
 const initialize = async () => {
   if (!window.__STELLAR_XDR_INIT__) {
     await init(wasmUrl);
-    console.log("Stellar XDR JSON initialized");
     window.__STELLAR_XDR_INIT__ = true;
   }
 };
