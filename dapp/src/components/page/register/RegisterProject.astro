@@ -99,7 +99,6 @@ import ModalInput from "../../utils/ModalInput.astro";
 
 <script>
   import {
-    getProject,
     getProjectFromName,
     getProjectHash,
   } from "@service/ReadContractService";
@@ -265,7 +264,7 @@ import ModalInput from "../../utils/ModalInput.astro";
         if (res.error) {
           alert(res.errorMessage);
         } else {
-          const res = await getProject();
+          const res = await getProjectFromName(project_name.value);
           const project = res.data;
           if (
             project &&
