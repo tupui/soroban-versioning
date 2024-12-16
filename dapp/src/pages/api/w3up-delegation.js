@@ -13,6 +13,7 @@ import {
   getProjectFromName,
 } from "@service/ReadContractService";
 import crypto from "crypto";
+import decryptProof from "../../utils/decryptAES256";
 import pkg from "js-sha3";
 const { keccak256 } = pkg;
 
@@ -86,11 +87,9 @@ const getProjectMaintainers = async (projectName) => {
 
 async function generateDelegation(did) {
   const key = import.meta.env.STORACHA_SING_PRIVATE_KEY;
-  const storachaProof = import.meta.env.STORACHA_PROOF;
-
+  let storachaProof = import.meta.env.STORACHA_PROOF;
   if (storachaProof.length === 64) {
-    // storachaProof is a AES256 key in that case
-    return null;
+    storachaProof = await decryptProof(storachaProof);
   }
 
   const proof = await Proof.parse(storachaProof);
@@ -116,11 +115,6 @@ async function generateDelegation(did) {
   const delegation = await client.createDelegation(audience, abilities, {
     expiration,
   });
-
-  console.log(
-    "delegation expire time:",
-    new Date(delegation.expiration * 1000).toUTCString(),
-  );
 
   const archive = await delegation.archive();
   return archive.ok;

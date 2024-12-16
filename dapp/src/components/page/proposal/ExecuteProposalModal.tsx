@@ -1,9 +1,10 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import JsonView from "react18-json-view";
-import { modifySlashInXdr, processDecodedData } from "utils/utils";
+import { modifySlashInXdr } from "utils/utils";
 import { stellarLabViewXdrLink } from "constants/serviceLinks";
-import { demoOutcomeData } from "constants/demoProposalData";
+import * as StellarXdr from "utils/stellarXdr";
+import { parseToLosslessJson } from "utils/passToLosslessJson";
 
 interface VotersModalProps {
   xdr: string;
@@ -18,9 +19,8 @@ const VotersModal: React.FC<VotersModalProps> = ({ xdr, onClose }) => {
   const getContentFromXdr = async (_xdr: string) => {
     try {
       if (_xdr) {
-        const decoded = processDecodedData(_xdr);
-        console.log("decode:", decoded);
-        setContent(demoOutcomeData);
+        const decoded = StellarXdr.decode("TransactionEnvelope", _xdr);
+        setContent(parseToLosslessJson(decoded));
       }
     } catch (error) {
       console.error("Error decoding XDR:", error);
