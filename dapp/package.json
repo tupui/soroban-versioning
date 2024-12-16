@@ -1,8 +1,8 @@
 {
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/netlify": "^5.5.4",
-    "@astrojs/react": "^4.0.0",
+    "@astrojs/netlify": "^6.0.1",
+    "@astrojs/react": "^4.1.1",
     "@astrojs/tailwind": "5.1.3",
     "@creit.tech/sorobandomains-sdk": "^0.1.4",
     "@creit.tech/stellar-wallets-kit": "^1.3.0",
@@ -11,7 +11,7 @@
     "@stellar/stellar-sdk": "^13.0.0",
     "@stellar/stellar-xdr-json": "^22.0.0-rc.1.1",
     "@web3-storage/w3up-client": "^16.5.2",
-    "astro": "4.16.17",
+    "astro": "5.0.8",
     "astro-seo": "^0.8.4",
     "crypto-js": "^4.2.0",
     "github-markdown-css": "^5.8.1",
