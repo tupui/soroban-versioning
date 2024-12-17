@@ -140,6 +140,55 @@ impl DaoTrait for Tansu {
         }
     }
 
+    fn execute(
+        env: Env,
+        maintainer: Address,
+        project_key: Bytes,
+        proposal_id: u32,
+    ) -> types::ProposalStatus {
+        maintainer.require_auth();
+
+        let project_key_ = project_key.clone();
+        let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
+        let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
+        let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key_.clone(), page);
+        let mut proposal = match dao_page.proposals.try_get(sub_id) {
+            Ok(Some(proposal)) => proposal,
+            _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
+        };
+
+        let curr_timestamp = env.ledger().timestamp();
+
+        // only allow to execute once
+        if proposal.status != types::ProposalStatus::Active {
+            panic_with_error!(&env, &errors::ContractErrors::AlreadyExecuted);
+        } else if curr_timestamp < proposal.voting_ends_at {
+            panic_with_error!(&env, &errors::ContractErrors::ProposalVotingTime);
+        } else {
+            // count votes
+            let voted_approve = proposal.voters_approve.len();
+            let voted_reject = proposal.voters_reject.len();
+            let voted_abstain = proposal.voters_abstain.len();
+
+            // accept or reject if we have a majority
+            if voted_approve > (voted_abstain + voted_reject) {
+                proposal.status = types::ProposalStatus::Approved;
+            } else if voted_reject > (voted_abstain + voted_approve) {
+                proposal.status = types::ProposalStatus::Rejected;
+            } else {
+                proposal.status = types::ProposalStatus::Cancelled
+            }
+
+            dao_page.proposals.set(sub_id, proposal.clone());
+
+            env.storage()
+                .persistent()
+                .set(&types::ProjectKey::Dao(project_key_, page), &dao_page);
+
+            proposal.status
+        }
+    }
+
     /// Get one page of proposal of the DAO.
     /// A page has 0 to MAX_PROPOSALS_PER_PAGE proposals.
     /// # Arguments
