@@ -21,6 +21,7 @@ dist
 
 # website and dApp
 node_modules
+package-lock.json
 
 # Production
 build
