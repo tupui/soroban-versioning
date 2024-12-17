@@ -3,7 +3,9 @@ import { loadedPublicKey } from "./walletService";
 import Versioning from "../contracts/soroban_versioning";
 
 import { loadedProjectId } from "./StateService";
-import { keccak256 } from "js-sha3";
+import * as pkg from "js-sha3";
+const { keccak256 } = pkg;
+import * as SDK from "@stellar/stellar-sdk";
 import type { Vote } from "soroban_versioning";
 import type { VoteType } from "types/proposal";
 import type { Response } from "types/response";
