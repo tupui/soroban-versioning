@@ -18,4 +18,5 @@ pub enum ContractErrors {
     NoProposalorPageFound = 8,
     AlreadyVoted = 9,
     ProposalVotingTime = 10,
+    AlreadyExecuted = 11,
 }

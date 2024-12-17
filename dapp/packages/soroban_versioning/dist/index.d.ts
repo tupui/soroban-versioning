@@ -11,7 +11,7 @@ export * as rpc from "@stellar/stellar-sdk/rpc";
 export declare const networks: {
   readonly testnet: {
     readonly networkPassphrase: "Test SDF Network ; September 2015";
-    readonly contractId: "CCHZAAUJJZOCFZVTQWGZU4PXR7SFB5PL3XBSHUBNQPXJ3KWE4VFHOBE5";
+    readonly contractId: "CB6EA5V4T5Z5XXOKHRU5MNYTZ2QESR4STUW6EBLA4HXYZ2BPVMCHRHUR";
   };
 };
 export declare const Errors: {
@@ -46,6 +46,9 @@ export declare const Errors: {
     message: string;
   };
   10: {
+    message: string;
+  };
+  11: {
     message: string;
   };
 };
@@ -205,6 +208,34 @@ export interface Client {
       simulate?: boolean;
     },
   ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a execute transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  execute: (
+    {
+      maintainer,
+      project_key,
+      proposal_id,
+    }: {
+      maintainer: string;
+      project_key: Buffer;
+      proposal_id: u32;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<ProposalStatus>>;
   /**
    * Construct and simulate a get_dao transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get one page of proposal of the DAO.
@@ -466,6 +497,7 @@ export declare class Client extends ContractClient {
   readonly fromJSON: {
     create_proposal: (json: string) => AssembledTransaction<number>;
     vote: (json: string) => AssembledTransaction<null>;
+    execute: (json: string) => AssembledTransaction<ProposalStatus>;
     get_dao: (json: string) => AssembledTransaction<Dao>;
     get_proposal: (json: string) => AssembledTransaction<Proposal>;
     upgrade: (json: string) => AssembledTransaction<null>;

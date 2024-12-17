@@ -68,6 +68,13 @@ pub trait DaoTrait {
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote);
 
+    fn execute(
+        env: Env,
+        maintainer: Address,
+        project_key: Bytes,
+        proposal_id: u32,
+    ) -> types::ProposalStatus;
+
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 
     fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal;

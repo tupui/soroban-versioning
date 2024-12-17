@@ -3,8 +3,9 @@
 use super::{domain_contract, Tansu, TansuClient};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
-use crate::types::{Dao, Vote};
+use crate::types::{Dao, ProposalStatus, Vote};
 use soroban_sdk::testutils::Address as _;
+use soroban_sdk::testutils::Ledger as _;
 use soroban_sdk::{
     symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
 };
@@ -228,9 +229,38 @@ fn test() {
     assert_eq!(error, ContractErrors::AlreadyVoted.into());
 
     let proposal = contract.get_proposal(&id, &proposal_id);
+    assert_eq!(proposal.status, ProposalStatus::Active);
     assert_eq!(proposal.voters_approve, vec![&env, mando.clone()]);
     assert_eq!(proposal.voters_reject, Vec::new(&env));
     assert_eq!(proposal.voters_abstain, vec![&env, grogu.clone()]);
+
+    // cast another vote and approve
+    env.ledger().set_timestamp(1234567890);
+    let kuiil = Address::generate(&env);
+    let voting_ends_at = 1234567890 + 3600 * 24 * 2;
+    let proposal_id_2 = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at);
+    contract.vote(&mando, &id, &proposal_id_2, &Vote::Approve);
+    contract.vote(&kuiil, &id, &proposal_id_2, &Vote::Approve);
+
+    // too early to execute
+    let error = contract
+        .try_execute(&mando, &id, &proposal_id_2)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::ProposalVotingTime.into());
+
+    env.ledger().set_timestamp(voting_ends_at + 1);
+
+    let vote_result = contract.execute(&mando, &id, &proposal_id_2);
+    assert_eq!(vote_result, ProposalStatus::Approved);
+    let proposal_2 = contract.get_proposal(&id, &proposal_id_2);
+    assert_eq!(
+        proposal_2.voters_approve,
+        vec![&env, mando.clone(), kuiil.clone()]
+    );
+    assert_eq!(proposal_2.voters_reject, Vec::new(&env));
+    assert_eq!(proposal_2.voters_abstain, vec![&env, grogu.clone()]);
+    assert_eq!(proposal_2.status, ProposalStatus::Approved);
 }
 
 #[test]
