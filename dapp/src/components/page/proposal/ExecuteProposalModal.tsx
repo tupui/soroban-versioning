@@ -1,22 +1,57 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import JsonView from "react18-json-view";
 import { modifySlashInXdr } from "utils/utils";
 import { stellarLabViewXdrLink } from "constants/serviceLinks";
 import * as StellarXdr from "utils/stellarXdr";
 import { parseToLosslessJson } from "utils/passToLosslessJson";
+import type { ProposalOutcome, VoteStatus, VoteType } from "types/proposal";
+import { executeProposal } from "@service/WriteContractService";
 
 interface VotersModalProps {
-  xdr: string;
+  projectName: string;
+  proposalId: number | undefined;
+  outcome: ProposalOutcome | null;
+  voteStatus: VoteStatus | null;
   onClose: () => void;
 }
 
-const VotersModal: React.FC<VotersModalProps> = ({ xdr, onClose }) => {
+const VotersModal: React.FC<VotersModalProps> = ({
+  projectName,
+  proposalId,
+  outcome,
+  voteStatus,
+  onClose,
+}) => {
   const [content, setContent] = useState<any>(null);
 
-  const signAndExecute = () => {};
+  const voteResultAndXdr: { voteResult: VoteType | null; xdr: string | null } =
+    useMemo(() => {
+      if (voteStatus && outcome) {
+        const { approve, abstain } = voteStatus;
+        let voteResult: VoteType | null = null;
+        let xdr: string | null = null;
+        if (approve.score > abstain.score) {
+          voteResult = "approve";
+          xdr = outcome?.approved?.xdr || null;
+        } else if (approve.score < abstain.score) {
+          voteResult = "reject";
+          xdr = outcome?.rejected?.xdr || null;
+        } else {
+          voteResult = "abstain";
+          xdr = outcome?.cancelled?.xdr || null;
+        }
+        return { voteResult, xdr };
+      } else {
+        return { voteResult: null, xdr: null };
+      }
+    }, [voteStatus, outcome]);
 
-  const getContentFromXdr = async (_xdr: string) => {
+  useEffect(() => {
+    getContentFromXdr(voteResultAndXdr.xdr);
+  }, [voteResultAndXdr.xdr]);
+
+  const getContentFromXdr = async (_xdr: string | null) => {
     try {
       if (_xdr) {
         const decoded = StellarXdr.decode("TransactionEnvelope", _xdr);
@@ -27,9 +62,41 @@ const VotersModal: React.FC<VotersModalProps> = ({ xdr, onClose }) => {
     }
   };
 
-  useEffect(() => {
-    getContentFromXdr(xdr);
-  }, [xdr]);
+  const signAndExecute = async () => {
+    if (!projectName) {
+      alert("Project name is required");
+      return;
+    }
+
+    if (proposalId === undefined) {
+      alert("Proposal ID is required");
+      return;
+    }
+
+    if (!voteResultAndXdr.voteResult) {
+      alert("Vote result is required");
+      return;
+    }
+
+    if (!voteResultAndXdr.xdr) {
+      alert("XDR is required");
+      return;
+    }
+
+    const res = await executeProposal(
+      projectName,
+      proposalId,
+      voteResultAndXdr.xdr,
+    );
+    if (res.error) {
+      alert(res.errorMessage);
+      onClose();
+    } else {
+      console.log("execute result:", res.data);
+      alert("Proposal executed successfully");
+      onClose();
+    }
+  };
 
   return (
     <div
@@ -48,7 +115,7 @@ const VotersModal: React.FC<VotersModalProps> = ({ xdr, onClose }) => {
           <div className="text-sm sm:text-lg md:text-[22px]">Outcome</div>
           <div className="flex flex-col gap-1 sm:gap-2 md:gap-3">
             <a
-              href={`${stellarLabViewXdrLink}${modifySlashInXdr(xdr)};;`}
+              href={`${stellarLabViewXdrLink}${modifySlashInXdr(voteResultAndXdr.xdr || "")};;`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-0.5 sm:gap-1 text-black hover:text-blue  group"

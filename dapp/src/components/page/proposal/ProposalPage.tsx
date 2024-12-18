@@ -58,7 +58,7 @@ const ProposalPage: React.FC = () => {
   };
 
   const openExecuteProposalModal = () => {
-    if (proposal?.status === "active") {
+    if (proposal?.status === "voted") {
       setIsExecuteProposalModalOpen(true);
     } else {
       alert("Cannot execute proposal.");
@@ -149,7 +149,10 @@ const ProposalPage: React.FC = () => {
           )}
           {isExecuteProposalModalOpen && (
             <ExecuteProposalModal
-              xdr={outcome?.approved.xdr ?? ""}
+              projectName={projectName}
+              proposalId={id}
+              outcome={outcome}
+              voteStatus={proposal?.voteStatus ?? null}
               onClose={() => setIsExecuteProposalModalOpen(false)}
             />
           )}
