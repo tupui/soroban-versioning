@@ -12,7 +12,11 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<!doctype html>
+<script>
+  import { Buffer } from "buffer";
+  global.Buffer = Buffer;
+</script>
+
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
