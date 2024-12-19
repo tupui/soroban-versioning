@@ -64,6 +64,7 @@ const ProposalPage: React.FC = () => {
       alert("Cannot execute proposal.");
     }
   };
+
   const getProposalDetails = async () => {
     if (id !== undefined && projectName) {
       setIsLoading(true);

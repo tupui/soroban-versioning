@@ -6,7 +6,6 @@ import { stellarLabViewXdrLink } from "constants/serviceLinks";
 import * as StellarXdr from "utils/stellarXdr";
 import { parseToLosslessJson } from "utils/passToLosslessJson";
 import type { ProposalOutcome, VoteStatus, VoteType } from "types/proposal";
-import { executeProposal } from "@service/WriteContractService";
 
 interface VotersModalProps {
   projectName: string;
@@ -83,6 +82,7 @@ const VotersModal: React.FC<VotersModalProps> = ({
       return;
     }
 
+    const { executeProposal } = await import("@service/WriteContractService");
     const res = await executeProposal(
       projectName,
       proposalId,
