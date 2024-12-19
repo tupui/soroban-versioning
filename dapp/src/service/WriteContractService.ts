@@ -3,7 +3,14 @@ import { loadedPublicKey } from "./walletService";
 import Versioning from "../contracts/soroban_versioning";
 
 import { loadedProjectId } from "./StateService";
-import { keccak256 } from "js-sha3";
+import * as pkg from "js-sha3";
+const { keccak256 } = pkg;
+import {
+  TransactionBuilder,
+  Transaction,
+  xdr,
+  rpc,
+} from "@stellar/stellar-sdk";
 import type { Vote } from "soroban_versioning";
 import type { VoteType } from "types/proposal";
 import type { Response } from "types/response";
@@ -11,6 +18,8 @@ import {
   contractErrorMessages,
   type ContractErrorMessageKey,
 } from "constants/contractErrorMessages";
+
+const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
 
 // Function to map VoteType to Vote
 function mapVoteTypeToVote(voteType: VoteType): Vote {
@@ -276,10 +285,131 @@ async function voteToProposal(
   }
 }
 
+async function execute(
+  project_name: string,
+  proposal_id: number,
+): Promise<Response<any>> {
+  const publicKey = loadedPublicKey();
+
+  if (!publicKey) {
+    return {
+      data: false,
+      error: true,
+      errorCode: -1,
+      errorMessage: "Please connect your wallet first",
+    };
+  } else {
+    Versioning.options.publicKey = publicKey;
+  }
+
+  const project_key = Buffer.from(
+    keccak256.create().update(project_name).digest(),
+  );
+
+  const tx = await Versioning.execute({
+    maintainer: publicKey,
+    project_key: project_key,
+    proposal_id: Number(proposal_id),
+  });
+
+  try {
+    const result = await tx.signAndSend({
+      signTransaction: async (xdr) => {
+        return await kit.signTransaction(xdr);
+      },
+    });
+    return {
+      data: result.result,
+      error: false,
+      errorCode: -1,
+      errorMessage: "",
+    };
+  } catch (e) {
+    console.error(e);
+    const { errorCode, errorMessage } = fetchErrorCode(e);
+    return { data: null, error: true, errorCode, errorMessage };
+  }
+}
+
+async function executeProposal(
+  project_name: string,
+  proposal_id: number,
+  executeXdr: string,
+): Promise<Response<any>> {
+  const publicKey = loadedPublicKey();
+
+  if (!publicKey) {
+    return {
+      data: false,
+      error: true,
+      errorCode: -1,
+      errorMessage: "Please connect your wallet first",
+    };
+  }
+
+  const res = await execute(project_name, proposal_id);
+  if (res.error) {
+    return res;
+  }
+
+  const executorAccount = await server.getAccount(publicKey);
+  try {
+    const outcomeTransactionEnvelope = xdr.TransactionEnvelope.fromXDR(
+      executeXdr,
+      "base64",
+    );
+
+    const outcomeTransaction = outcomeTransactionEnvelope.v1().tx();
+
+    const transactionBuilder = new TransactionBuilder(executorAccount, {
+      fee: import.meta.env.PUBLIC_DEFAULT_FEE,
+      networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+    });
+
+    outcomeTransaction.operations().forEach((operation) => {
+      transactionBuilder.addOperation(operation);
+    });
+
+    const compositeTransaction = transactionBuilder.setTimeout(180).build();
+
+    const { signedTxXdr } = await kit.signTransaction(
+      compositeTransaction.toXDR(),
+    );
+
+    const signedTransaction = new Transaction(
+      signedTxXdr,
+      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+    );
+
+    const result = await server.sendTransaction(signedTransaction);
+
+    if (result.status === "ERROR") {
+      return {
+        data: null,
+        error: true,
+        errorCode: -1,
+        errorMessage: "Transaction failed",
+      };
+    } else {
+      return {
+        data: result.hash,
+        error: false,
+        errorCode: -1,
+        errorMessage: "",
+      };
+    }
+  } catch (e) {
+    console.error(e);
+    const { errorCode, errorMessage } = fetchErrorCode(e);
+    return { data: null, error: true, errorCode, errorMessage };
+  }
+}
+
 export {
   commitHash,
   registerProject,
   updateConfig,
   createProposal,
   voteToProposal,
+  executeProposal,
 };

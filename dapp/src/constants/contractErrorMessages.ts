@@ -10,6 +10,7 @@ export const contractErrorMessages = {
   8: "Proposal or page could not be found.",
   9: "You have already voted.",
   10: "The proposal voting time has expired.",
+  11: "The proposal has already been executed.",
 };
 
 export type ContractErrorMessageKey = keyof typeof contractErrorMessages;
