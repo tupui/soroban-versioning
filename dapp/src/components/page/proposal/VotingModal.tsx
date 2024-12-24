@@ -4,7 +4,7 @@ import type { VoteType } from "types/proposal";
 
 interface VotersModalProps {
   projectName: string;
-  proposalId: number;
+  proposalId: number | undefined;
   isVoted: boolean;
   setIsVoted: React.Dispatch<React.SetStateAction<boolean>>;
   onClose: () => void;
@@ -34,6 +34,10 @@ const VotingModal: React.FC<VotersModalProps> = ({
 
     setIsLoading(true);
     const { voteToProposal } = await import("@service/WriteContractService");
+    if (proposalId === undefined) {
+      alert("Proposal ID is required");
+      return;
+    }
     const res = await voteToProposal(projectName, proposalId, selectedOption);
 
     if (res.data) {
