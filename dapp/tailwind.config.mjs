@@ -12,6 +12,7 @@ export default {
       colors: {
         black: "#000000",
         white: "#FFFFFF",
+        pink: "#311255",
         gray: "#B4B4B4",
         stone: "#231F20",
         lime: "#B9FF66",
@@ -31,18 +32,20 @@ export default {
           400: "#D5D5D5",
           500: "#CBCBCB",
           600: "#A3A3A3",
-          700: "#787878",
-          800: "#494949",
+          700: "#868489",
+          800: "#4C4354",
           900: "#191A23",
         },
       },
       fontFamily: {
-        SpaceGrotesk: ["Space Grotesk", "sans-serif"],
+        firacode: ["Fira Code", "monospace"],
+        victorMono: ["Victor Mono", "monospace"],
       },
     },
     boxShadow: {
       card: "0px 5px 0px 0px #191A23",
       vote: "0px 0px 4px 4px #ACFF75",
+      button: "1px 3px 18px rgba(45, 15, 81, 0.08)",
     },
   },
 };

@@ -13,6 +13,28 @@
   }
 }
 
+body {
+  max-width: 1920px;
+  margin: 0 auto 0 auto;
+  padding: 0;
+  background: linear-gradient(180deg, #fbfbfb 0%, #e2e2e2 100%);
+}
+
+.background-image {
+  position: fixed;
+  left: 90px;
+  top: 120px;
+  width: 738px;
+  object-fit: contain;
+}
+
+/* Adjust the background size for screens less than 1920px */
+@media (max-width: 1919px) {
+  .background-image {
+    width: calc(738 * 100vw / 1920);
+  }
+}
+
 /* custom scrollbar */
 /* For Webkit-based browsers (Chrome, Safari) */
 ::-webkit-scrollbar {
