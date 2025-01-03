@@ -66,7 +66,7 @@ const ProjectCard = ({ config }) => {
   };
 
   return (
-    <div className="project-card max-w-[400px] w-full border border-zinc-400 rounded-lg">
+    <div className="project-card w-full border border-zinc-400 rounded-lg">
       <div
         className="rounded-lg overflow-hidden cursor-pointer group"
         onClick={handleCardClick}
