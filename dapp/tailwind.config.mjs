@@ -17,7 +17,7 @@ export default {
         stone: "#231F20",
         lime: "#B9FF66",
         blue: "#0B32F6",
-        red: "#E70C0C",
+        red: "#FF3B30",
         yellow: "#E0D911",
         active: "#ED9033",
         interest: "#A9EE72",
@@ -40,12 +40,14 @@ export default {
       fontFamily: {
         firacode: ["Fira Code", "monospace"],
         victorMono: ["Victor Mono", "monospace"],
+        firaMono: ["Fira Mono", "monospace"],
       },
     },
     boxShadow: {
       card: "0px 5px 0px 0px #191A23",
       vote: "0px 0px 4px 4px #ACFF75",
       button: "1px 3px 18px rgba(45, 15, 81, 0.08)",
+      searchBox: "4px 8px 36px rgba(49, 18, 85, 0.12)",
     },
   },
 };

@@ -34,7 +34,7 @@
 
     async function setLoggedIn(publicKey: string) {
       const truncatedKey = truncateMiddle(publicKey, 13);
-      button.textContent = truncatedKey;
+      button.innerHTML = truncatedKey;
       button.title = publicKey;
     }
 

@@ -26,13 +26,8 @@ const ProjectList = () => {
 
   const [isModalOpen, setModalOpen] = useState(false);
   const [projectInfo, setProjectInfo] = useState(null);
-
-  // const options = [
-  //   { label: 'All', value: 'all' },
-  //   { label: 'Web', value: 'web' },
-  //   { label: 'Mobile', value: 'mobile' },
-  //   { label: 'Desktop', value: 'desktop' },
-  // ];
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
+  const [isFilterClose, setIsFilterClose] = useState(true);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -62,7 +57,7 @@ const ProjectList = () => {
         return () => clearTimeout(timer);
       }
     }
-  }, [searchTerm, projects]);
+  }, [projects]);
 
   useEffect(() => {
     setModalOpen(isProjectInfoModalOpen);
@@ -80,7 +75,18 @@ const ProjectList = () => {
   }, [isProjectInfoModalOpen]);
 
   const handleSearch = () => {
-    console.log("Search function activated");
+    if (projects && searchTerm) {
+      setRegisterButtonVisible(false);
+      const filtered = projects.filter((project) =>
+        project?.projectName.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+      setFilteredProjects(filtered);
+
+      if (searchTerm && filtered.length === 0) {
+        checkProjectOnChain(searchTerm);
+        setRegisterButtonVisible(true);
+      }
+    }
   };
 
   const handleRegister = () => {
@@ -119,7 +125,7 @@ const ProjectList = () => {
         setIsInOnChain(true);
       } else {
         setIsInOnChain(false);
-        alert(res.errorMessage);
+        alert(res.errorMessage || "Can not get project info.");
       }
     } catch (error) {
       console.error("Error checking project on-chain:", error);
@@ -128,49 +134,124 @@ const ProjectList = () => {
     }
   };
 
+  const closeSearchBox = () => {
+    setIsFilterClose(true);
+    setTimeout(() => setIsFilterVisible(false), 200);
+  };
+
+  const openSearchBox = () => {
+    setIsFilterVisible(true);
+    setIsFilterClose(false);
+  };
+
   return (
-    <div className="project-list-container">
-      <div className="filters flex gap-2 justify-center sm:gap-4 mb-4">
-        {/* <Dropdown options={options} onSelect={(e) => setCategory(e.target.value)} /> */}
-        <div className="search-container relative w-1/2">
-          <input
-            type="text"
-            placeholder="Search or register a project..."
-            className="w-full border rounded-2xl pl-3 sm:pl-4 pr-6 sm:pr-8 py-1 sm:py-2"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+    <div className="project-list-container relative  max-w-[984px] mx-auto">
+      <div className="flex flex-col items-center gap-[60px]">
+        <div className="flex justify-center items-center gap-6">
           <div
-            className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 rounded-full hover:bg-zinc-300 cursor-pointer flex justify-center items-center p-0.5 pl-[3px]"
-            onClick={handleSearch}
+            className="px-[30px] py-[18px] flex gap-3 border border-zinc-800 cursor-pointer"
+            onClick={() => openSearchBox()}
           >
-            <img
-              src="/icons/search.svg"
-              width={20}
-              height={20}
-              className="icon-search"
-            />
+            <img src="/icons/search.svg" width={20} height={20} />
+            <p className="text-[20px] leading-5 font-firacode text-pink">
+              Explore Projects
+            </p>
           </div>
+          <div className="px-[30px] py-[18px] flex gap-3 bg-white cursor-pointer">
+            <p className="text-[20px] leading-5 font-firacode text-pink">
+              Add Project
+            </p>
+            <img src="/icons/plus.svg" width={20} height={20} />
+          </div>
+        </div>
+        <div className="flex justify-center items-center gap-[18px]">
+          <p className="text-[26px] leading-[42px] font-firaMono text-pink">
+            Featured Projects
+          </p>
+          <img src="/icons/swap.svg" width={42} height={42} />
+        </div>
+      </div>
+
+      {/* This div is the search inbox component */}
+      <div
+        className={`filters bg-white shadow-searchBox absolute top-0 w-full ${isFilterVisible ? "" : "hidden"}`}
+      >
+        <div
+          className={`w-full px-9 flex flex-col gap-8 items-center overflow-hidden transition-all duration-200 ${isFilterClose ? "h-0 py-0" : "h-fit py-9"}`}
+        >
+          <div className="w-full flex gap-[10px]">
+            <div className="search-container relative w-full">
+              <input
+                type="text"
+                placeholder="What Are You Looking For?"
+                className="w-full font-firacode text-[20px] leading-5 border border-zinc-800 p-[18px] pr-10"
+                value={searchTerm}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch();
+                  }
+                }}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <div
+                className="absolute right-1 sm:right-[18px] top-1/2 transform -translate-y-1/2 cursor-pointer"
+                onClick={() => {
+                  setSearchTerm("");
+                  setRegisterButtonVisible(false);
+                  setFilteredProjects(projects);
+                }}
+              >
+                <img
+                  src="/icons/cancel.svg"
+                  width={20}
+                  height={20}
+                  className="icon-cancel"
+                />
+              </div>
+            </div>
+            <button
+              className="bg-pink shrink-0 cursor-pointer flex justify-center items-center gap-3 px-[30px] py-[18px]"
+              onClick={handleSearch}
+            >
+              <img
+                src="/icons/search-white.svg"
+                width={20}
+                height={20}
+                className="icon-search"
+              />
+              <p className="text-[20px] leading-5 font-firacode text-white">
+                Search
+              </p>
+            </button>
+          </div>
+          <div
+            id="search-result"
+            className="font-firacode text-lg leading-[18px] text-pink"
+          >
+            Results ({filteredProjects?.length || 0})
+          </div>
+        </div>
+        <div
+          className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 p-4 bg-red cursor-pointer"
+          onClick={() => {
+            closeSearchBox();
+          }}
+        >
+          <img
+            src="/icons/cancel-white.svg"
+            width={20}
+            height={20}
+            className="icon-cancel"
+          />
         </div>
       </div>
 
       {filteredProjects !== undefined &&
         (filteredProjects.length > 0 ? (
-          <div>
-            <div
-              id="featured-projects-topic"
-              className="grid place-items-center gap-8 mb-1.5 mt-12 md:flex"
-            >
-              <span className="text-2xl sm:text-4xl text-nowrap px-1.5 font-medium bg-lime rounded-md">
-                Featured Projects
-              </span>
-              <p className="text-2xl font-normal text-center md:text-start"></p>
-            </div>
-            <div className="project-list py-4 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
-              {filteredProjects.map((project, index) => (
-                <ProjectCard key={index} config={project} />
-              ))}
-            </div>
+          <div className="project-list pt-[42px] pb-[120px] grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 justify-items-center">
+            {filteredProjects.map((project, index) => (
+              <ProjectCard key={index} config={project} />
+            ))}
           </div>
         ) : isLoading ? (
           <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
