@@ -174,7 +174,7 @@ const ProjectList = () => {
 
       {/* This div is the search inbox component */}
       <div
-        className={`filters bg-white shadow-searchBox absolute top-0 w-full ${isFilterVisible ? "" : "hidden"}`}
+        className={`filters bg-white shadow-searchBox absolute top-0 w-full ${isFilterVisible ? "opacity-100" : "opacity-0"}`}
       >
         <div
           className={`w-full px-9 flex flex-col gap-8 items-center overflow-hidden transition-all duration-200 ${isFilterClose ? "h-0 py-0" : "h-fit py-9"}`}
@@ -261,7 +261,9 @@ const ProjectList = () => {
             </p>
           </div>
         ) : isInOnChain ? (
-          <ProjectCard key={1} config={configInfo} />
+          <div className="w-1/2 mx-auto pt-[42px] pb-[120px]">
+            <ProjectCard key={1} config={configInfo} />
+          </div>
         ) : (
           registerButtonVisible && (
             <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">

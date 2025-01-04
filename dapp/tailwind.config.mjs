@@ -44,7 +44,7 @@ export default {
       },
     },
     boxShadow: {
-      card: "0px 5px 0px 0px #191A23",
+      card: "1px 2px 12px rgba(45, 15, 81, 0.06)",
       vote: "0px 0px 4px 4px #ACFF75",
       button: "1px 3px 18px rgba(45, 15, 81, 0.08)",
       searchBox: "4px 8px 36px rgba(49, 18, 85, 0.12)",
