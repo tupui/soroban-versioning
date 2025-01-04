@@ -174,7 +174,7 @@ const ProjectList = () => {
 
       {/* This div is the search inbox component */}
       <div
-        className={`filters bg-white shadow-searchBox absolute top-0 w-full ${isFilterVisible ? "opacity-100" : "opacity-0"}`}
+        className={`filters bg-white shadow-modal absolute top-0 w-full ${isFilterVisible ? "opacity-100" : "opacity-0"}`}
       >
         <div
           className={`w-full px-9 flex flex-col gap-8 items-center overflow-hidden transition-all duration-200 ${isFilterClose ? "h-0 py-0" : "h-fit py-9"}`}
