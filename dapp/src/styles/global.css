@@ -24,6 +24,7 @@ body {
   position: fixed;
   left: 90px;
   top: 120px;
+  z-index: -1;
   width: 738px;
   object-fit: contain;
 }
