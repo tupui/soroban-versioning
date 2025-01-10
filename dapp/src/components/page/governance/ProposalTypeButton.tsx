@@ -1,11 +1,9 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 interface ProposalTypeButtonProps {
   proposalTypeStatus: string;
   proposalType: string;
   title: string;
-  position?: "start" | "end";
   onClick: (proposalType: string) => void;
 }
 
@@ -13,7 +11,6 @@ const ProposalTypeButton: React.FC<ProposalTypeButtonProps> = ({
   proposalTypeStatus,
   proposalType,
   title,
-  position = null,
   onClick,
 }) => {
   const [isSelected, setIsSelected] = useState(true);
@@ -26,13 +23,11 @@ const ProposalTypeButton: React.FC<ProposalTypeButtonProps> = ({
     }
   }, [proposalTypeStatus]);
 
-  const buttonClass = `px-2.5 sm:px-3 py-1.5 sm:py-2 text-md sm:text-xl font-medium border border-zinc-200 focus:outline-none ${
-    isSelected ? "bg-zinc-200" : "bg-white"
-  } ${position === "start" ? "rounded-tl-lg" : position === "end" ? "rounded-tr-lg" : ""}`;
+  const buttonClass = `py-[18px] w-[180px] flex justify-center border border-[#FFBD1E] ${isSelected ? "bg-[#FFBD1E]" : "bg-white"}`;
 
   return (
     <button className={buttonClass} onClick={() => onClick(proposalType)}>
-      {title}
+      <span className="text-base text-[#2D0F51]">{title}</span>
     </button>
   );
 };
