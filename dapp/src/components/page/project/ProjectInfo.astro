@@ -1,199 +1,148 @@
 ---
-import Topic from "../../utils/Topic.astro";
-import Modal from "../../utils/Modal.astro";
+import {
+  BackIcon,
+  BookIcon,
+  EyeIcon,
+  GotoIcon,
+  InfoIcon,
+  SettingIcon,
+} from "components/icons";
 import Loading from "../../utils/Loading.astro";
-import PrimaryButton from "../../utils/PrimaryButton.astro";
+import Modal from "../../utils/Modal.astro";
 import ModalInput from "../../utils/ModalInput.astro";
+import PrimaryButton from "../../utils/PrimaryButton.astro";
 import CommitHistory from "./CommitHistory.jsx";
 import DonateModal from "./DonateModal.astro";
+import ProjectReadme from "./ProjectReadme.astro";
 ---
 
-<div
-  class="relative flex flex-col items-center md:flex-row justify-between mb-1.5 mt-4 sm:mt-8 md:mt-12 gap-y-4"
->
-  <Topic
-    title="Project"
-    description="Details about the project"
-    id="project-name-topic"
-  />
-  <div class="flex gap-2 items-center">
-    <button
-      id="go-to-proposals-button"
-      class="px-2 sm:px-4 py-1.5 sm:py-3 bg-zinc-900 rounded-[14px] justify-center items-center gap-2.5 inline-flex"
-    >
-      <span
-        class="text-center text-white text-base sm:text-xl font-normal leading-7"
-      >
-        Governance
-      </span>
-      <img
-        id="right-arrow-icon"
-        src="/icons/arrow.svg"
-        alt="->"
-        class="w-7 h-5 object-contain"
-      />
-    </button>
-    <div id="open-donate-modal-button" class="pr-3">
-      <PrimaryButton
-        wrapId="wrap-donate-modal"
-        dataAttr="data-donate-modal"
-        ariaControls="donate-modal"
-        buttonText="♥ Support"
-      />
+<div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
+  <div class="flex justify-between items-center">
+    <div class="flex">
+      <button id="back-to-home" class="flex gap-[14px]">
+        <BackIcon />
+        <p class="leading-5 text-xl text-[#311255]">Back to Home Page</p>
+      </button>
     </div>
-    <div id="open-update-config-modal-button" class="pr-3 hidden">
-      <PrimaryButton
-        wrapId="wrap-update-config"
-        dataAttr="data-update-config"
-        ariaControls="update-config-modal"
-        buttonText="Update Config"
-      />
+    <div class="flex gap-3">
+      <div class="p-[12px_18px] bg-white">
+        <p class="leading-5 text-xl text-[#311255]">Follow</p>
+      </div>
+      <div class="p-[11px] bg-white">
+        <GotoIcon />
+      </div>
     </div>
   </div>
-</div>
-
-<div
-  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
->
-  <div
-    class="row items-center py-8 sm:py-12 px-4 sm:px-8 md:px-20 w-full md:py-10"
-  >
-    <div class="space-y-6 md:w-full sm:pl-4 md:pl-0">
-      <div id="project-name" class="flex justify-between items-end space-x-2">
-        <p id="project-name-value" class="text-2xl sm:text-4xl font-bold"></p>
-      </div>
-
-      <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
-        <img
-          id="project-thumbnail"
-          src="/fallback-image.jpg"
-          alt="Project Thumbnail"
-          class="w-full md:w-[40%] max-w-40 sm:max-w-56 md:max-w-80 object-cover rounded-lg"
-        />
-
-        <div class="flex-1">
-          <h3 class="text-base sm:text-lg md:text-2xl font-semibold">
-            Description
-          </h3>
-          <p id="project-description" class="flex-1 text-base sm:text-lg"></p>
+  <div class="py-12 flex flex-col gap-12 bg-[#FFFFFFB8]">
+    <div class="px-[72px] flex flex-col gap-9">
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-12">
+          <div class="flex gap-6 items-center">
+            <img
+              id="project-thumbnail"
+              src="/fallback-image.jpg"
+              alt="Project Thumbnail"
+              class="w-[220px] object-cover rounded-lg"
+            />
+            <div class="flex flex-col gap-9">
+              <div class="flex flex-col gap-1.5">
+                <div
+                  id="project-name"
+                  class="flex justify-between items-end space-x-2"
+                >
+                  <p
+                    id="project-name-value"
+                    class="text-2xl sm:text-4xl font-bold"
+                  >
+                  </p>
+                </div>
+                <p
+                  id="project-description"
+                  class="flex-1 text-base sm:text-lg text-[#4C4354]"
+                >
+                </p>
+              </div>
+              <div class="grid grid-cols-2 gap-9">
+                <div class="flex flex-col gap-[10px]">
+                  <div class="flex gap-2">
+                    <p class="text-[#4C4354]">Funding Progress</p>
+                    <InfoIcon />
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-[134px] bg-[#EFEBF4]">
+                      <div class="w-[68px] h-2 bg-[#FFBD1E]"></div>
+                    </div>
+                    <p class="font-medium text-[#311255]">$12,500 / $20,000</p>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-[10px]">
+                  <div class="flex gap-2">
+                    <p class="text-[#4C4354]">Synchronization Status</p>
+                    <InfoIcon />
+                  </div>
+                  <div
+                    id="project-sync-status"
+                    class="flex flex-wrap gap-5 min-h-7"
+                  >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
-        <div
-          id="project-maintainers"
-          class="space-y-1 w-full md:w-[40%] md:max-w-80"
+      <div class="flex gap-[18px]">
+        <button id="goto-dao" class="p-[18px_30px] flex gap-3 bg-[#311255]">
+          <SettingIcon />
+          <p class="leading-5 text-xl text-white">DAO Management</p>
+        </button>
+        <button class="p-[18px_30px] flex gap-3 bg-white">
+          <img src="/icons/heart.svg" />
+          <p class="leading-5 text-xl text-[#311255]">Support</p>
+        </button>
+        <button id="read-more-button" class="p-[18px_30px] flex gap-3 bg-white">
+          <BookIcon />
+          <p class="leading-5 text-xl text-[#311255]">Read More</p>
+        </button>
+        <button class="p-[18px_30px] flex gap-3 bg-white">
+          <EyeIcon />
+          <p class="leading-5 text-xl text-[#311255]">Last Hash</p>
+        </button>
+      </div>
+    </div>
+    <div class="p-[30px_72px] grid grid-cols-2 gap-12 bg-white">
+      <div id="project-maintainers" class="flex flex-col gap-5">
+        <p class="leading-4 text-base text-[#4C4354]">Maintainers</p>
+        <ul class="flex flex-col gap-[18px]"></ul>
+        <button
+          class="leading-[18px] text-lg font-[450] text-[#311255] underline"
         >
-          <h3 class="text-base sm:text-lg md:text-2xl font-semibold">
-            Maintainers
-          </h3>
-          <ul class="list-disc list-outside pl-5"></ul>
-        </div>
-
-        <div id="project-organization" class="space-y-1">
-          <h3 class="text-base sm:text-lg md:text-2xl font-semibold">
-            Organization
-          </h3>
-          <p id="project-organization-name" class=""></p>
-        </div>
+          View All
+        </button>
       </div>
-
-      <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
-        <div id="project-links" class="w-full md:w-[40%] md:max-w-80">
-          <div class="hidden sm:block space-y-2">
-            <div class="flex flex-col">
-              <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">
-                Official Links
-              </h3>
-              <div id="official-links" class="flex flex-wrap gap-x-2 min-h-7">
-              </div>
-            </div>
-
-            <div class="flex flex-col">
-              <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">
-                Socials
-              </h3>
-              <div id="social-links" class="flex flex-wrap gap-x-2 min-h-7">
-              </div>
-            </div>
-          </div>
-          <div id="links" class="sm:hidden mb-4 flex gap-2 items-center"></div>
+      <div class="flex flex-col gap-[30px]">
+        <div id="project-organization" class="flex flex-col gap-5">
+          <h3 class="leading-4 text-base text-[#4C4354]">Organization</h3>
+          <p
+            id="project-organization-name"
+            class="leading-5 text-xl text-[#311255]"
+          >
+          </p>
         </div>
-
-        <div class="md:w-[calc(60%-24px)]">
-          <div class="flex flex-col">
-            <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">
-              Syncronize status
-            </h3>
-            <div id="project-sync-status" class="flex flex-wrap gap-2 min-h-7">
-            </div>
-          </div>
-          <div>
-            <div class="min-h-7"></div>
-            <div
-              class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center sm:gap-x-4"
-            >
-              <div
-                id="view-commit-history"
-                class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    id="commit-icon-up"
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
-                    clip-rule="evenodd"></path>
-                  <path
-                    id="commit-icon-down"
-                    class="hidden"
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
-                    clip-rule="evenodd"></path>
-                </svg>
-                <span id="view-commit-text" class="text-sm sm:text-base"
-                  >View Commit History</span
-                >
-              </div>
-              <div
-                id="jump-to-latest-commit"
-                class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
-                    clip-rule="evenodd"></path>
-                </svg>
-                <span class="text-sm sm:text-base">Jump to Latest Commit</span>
-              </div>
-            </div>
-          </div>
+        <div class="flex flex-col gap-5">
+          <h3 class="leading-4 text-base text-[#4C4354]">Official Links</h3>
+          <div id="official-links" class="flex flex-wrap gap-x-6 min-h-7"></div>
         </div>
       </div>
     </div>
-    <div
-      id="commit-history-container"
-      class="mt-4 overflow-hidden transition-all duration-300 max-h-0"
-    >
-      <CommitHistory client:load />
-    </div>
+    <CommitHistory client:load />
   </div>
 </div>
 
-<Modal id="update-config-modal" title="Update Config">
+<Modal id="update-config-modal">
   <div
     id="modal-content"
-    class="space-y-4 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-[600px]"
+    class="flex flex-col gap-4 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-[600px]"
   >
     <h2
       id="update-modal-project-name"
@@ -249,11 +198,32 @@ import DonateModal from "./DonateModal.astro";
   </div>
 </Modal>
 
+<Modal id="read-more-modal">
+  <div class="p-9 w-[1048px] flex gap-12">
+    <img
+      class="project-thumbnail w-[220px] h-[220px]"
+      alt="project-thumbnail"
+      src=""
+    />
+    <div class="flex flex-col gap-[30px]">
+      <div class="flex flex-col gap-3">
+        <p class="project-name leading-6 text-xl font-medium text-[#311255]">
+        </p>
+        <p class="project-description text-base text-[#4C4354]"></p>
+      </div>
+      <ProjectReadme />
+    </div>
+  </div>
+</Modal>
+
 <DonateModal />
 
 <script>
-  import { loadedPublicKey } from "../../../service/walletService";
-  import { updateConfig } from "../../../service/WriteContractService";
+  import { navigate } from "astro:transitions/client";
+  import {
+    getLatestCommitData,
+    getTOMLFileHash,
+  } from "../../../service/GithubService";
   import { getProject } from "../../../service/ReadContractService";
   import {
     loadConfigData,
@@ -262,23 +232,44 @@ import DonateModal from "./DonateModal.astro";
     loadProjectName,
     setProject,
   } from "../../../service/StateService";
-  import { projectInfoLoaded } from "../../../utils/store";
+  import { loadedPublicKey } from "../../../service/walletService";
+  import { updateConfig } from "../../../service/WriteContractService";
   import { convertGitHubLink } from "../../../utils/editLinkFunctions";
-  import {
-    getLatestCommitData,
-    getTOMLFileHash,
-  } from "../../../service/GithubService";
+  import { projectInfoLoaded } from "../../../utils/store";
 
   document.addEventListener("astro:page-load", () => {
+    const backButton = document.getElementById("back-to-home");
+    if (backButton) {
+      backButton.addEventListener("click", () => navigate("/"));
+    }
+
     const modal = document.getElementById(
       "update-config-modal",
     ) as HTMLDialogElement;
+
+    const readMoreModal = document.getElementById(
+      "read-more-modal",
+    ) as HTMLDialogElement;
+    const readMoreButton = document.getElementById("read-more-button");
+
+    if (readMoreButton) {
+      readMoreButton.addEventListener("click", () => {
+        readMoreModal.showModal();
+      });
+    }
 
     let projectInfo: any;
 
     async function updateProjectInfo() {
       projectInfo = loadProjectInfo();
       if (projectInfo) {
+        const gotoDaoButton = document.getElementById("goto-dao");
+        if (gotoDaoButton) {
+          gotoDaoButton.addEventListener("click", () =>
+            navigate(`/governance?name=${projectInfo.name}`),
+          );
+        }
+
         const projectNameElement =
           document.getElementById("project-name-value");
         if (projectNameElement) {
@@ -320,28 +311,17 @@ import DonateModal from "./DonateModal.astro";
               configData.authorGithubNames.forEach(
                 (authorName: string, index: number) => {
                   const li = document.createElement("li");
-                  li.className = "relative";
+                  li.className = "flex flex-col gap-2";
 
                   const content = document.createElement("p");
-                  content.className = "truncate";
-                  content.textContent = authorName;
-
+                  content.className = "leading-6 text-xl text-[#311255]";
+                  content.textContent = `@${authorName}`;
                   li.appendChild(content);
 
-                  const popup = document.createElement("p");
-                  popup.className =
-                    "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-5 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
-                  popup.textContent =
-                    configData.maintainersAddresses[index] || "";
-                  li.appendChild(popup);
-
-                  li.addEventListener("mouseenter", () => {
-                    popup.classList.remove("hidden");
-                  });
-
-                  li.addEventListener("mouseleave", () => {
-                    popup.classList.add("hidden");
-                  });
+                  const address = document.createElement("p");
+                  address.className = "leading-[14px] text-sm text-[#4C4354]";
+                  address.textContent = `(${configData.maintainersAddresses[index]?.slice(0, 28) || ""}...)`;
+                  li.appendChild(address);
 
                   ul.appendChild(li);
                 },
@@ -388,24 +368,23 @@ import DonateModal from "./DonateModal.astro";
         }
 
         const officialLinks = document.getElementById("official-links");
-        const socialLinks = document.getElementById("social-links");
         if (officialLinks) {
           officialLinks.innerHTML = "";
           if (configData && configData.officials) {
-            if (configData.officials.websiteLink) {
-              addLinkButton(
-                officialLinks,
-                "Website",
-                configData.officials.websiteLink,
-                "web",
-              );
-            }
             if (configData.officials.githubLink) {
               addLinkButton(
                 officialLinks,
                 "GitHub",
                 configData.officials.githubLink,
                 "github",
+              );
+            }
+            if (configData.officials.websiteLink) {
+              addLinkButton(
+                officialLinks,
+                "Web-Site",
+                configData.officials.websiteLink,
+                "web",
               );
             }
           } else {
@@ -418,6 +397,7 @@ import DonateModal from "./DonateModal.astro";
           }
         }
 
+        const socialLinks = document.getElementById("social-links");
         if (socialLinks) {
           socialLinks.innerHTML = "";
           if (configData && configData.socialLinks) {
@@ -535,7 +515,7 @@ import DonateModal from "./DonateModal.astro";
 
           const configComponent = document.createElement("div");
           configComponent.className =
-            "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
+            "flex items-center space-x-2 rounded-full relative group";
 
           const icon = document.createElement("img");
           icon.className = "w-5 h-5";
@@ -545,15 +525,9 @@ import DonateModal from "./DonateModal.astro";
           text.textContent = "Configuration";
 
           if (tomlFileHash && projectConfigHash === tomlFileHash) {
-            configComponent.classList.add("bg-lime");
             icon.src = "/icons/check.svg";
             icon.alt = "Check";
-          } else if (tomlFileHash) {
-            configComponent.classList.add("bg-orange-200");
-            icon.src = "/icons/failed.svg";
-            icon.alt = "Failed";
           } else {
-            configComponent.classList.add("bg-red-200");
             icon.src = "/icons/failed.svg";
             icon.alt = "Failed";
           }
@@ -587,7 +561,7 @@ import DonateModal from "./DonateModal.astro";
           const latestSha = loadProjectLatestSha();
           const commitComponent = document.createElement("div");
           commitComponent.className =
-            "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
+            "flex items-center space-x-2 rounded-full relative group";
 
           const commitIcon = document.createElement("img");
           commitIcon.className = "w-5 h-5";
@@ -616,27 +590,23 @@ import DonateModal from "./DonateModal.astro";
                 latestCommit.sha &&
                 latestCommit.sha === latestSha
               ) {
-                commitComponent.classList.add("bg-lime");
                 commitIcon.src = "/icons/check.svg";
                 commitIcon.alt = "Check";
                 commitPopup.innerHTML =
                   '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain exists on GitHub</p>';
               } else {
-                commitComponent.classList.add("bg-orange-200");
-                commitIcon.src = "/icons/failed.svg";
+                commitIcon.src = "/icons/check.svg";
                 commitIcon.alt = "Failed";
                 commitPopup.innerHTML =
                   '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
               }
             } else {
-              commitComponent.classList.add("bg-orange-200");
               commitIcon.src = "/icons/failed.svg";
               commitIcon.alt = "Failed";
               commitPopup.innerHTML =
                 '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
             }
           } catch (error) {
-            commitComponent.classList.add("bg-orange-200");
             commitIcon.src = "/icons/failed.svg";
             commitIcon.alt = "Failed";
             commitPopup.innerHTML =
@@ -676,6 +646,32 @@ import DonateModal from "./DonateModal.astro";
         ) as HTMLInputElement;
         if (modalConfigHash) {
           modalConfigHash.value = projectInfo.config.hash;
+        }
+
+        // Read more modal content
+        const readMoreModal = document.getElementById("read-more-modal");
+        if (readMoreModal) {
+          console.log(configData);
+          const projectNameContainer =
+            readMoreModal.querySelector(".project-name");
+          if (projectNameContainer)
+            projectNameContainer.textContent = projectInfo.name;
+          const projectDescContainer = readMoreModal.querySelector(
+            ".project-description",
+          );
+          if (projectDescContainer && configData)
+            projectDescContainer.textContent = configData.description;
+
+          const projectThumbnail = readMoreModal.querySelector(
+            ".project-thumbnail",
+          ) as HTMLImageElement | null;
+          if (projectThumbnail) {
+            if (configData && configData.logoImageLink) {
+              projectThumbnail.src =
+                convertGitHubLink(configData.logoImageLink) ||
+                "/fallback-image.jpg";
+            } else projectThumbnail.src = "/fallback-image.jpg";
+          }
         }
 
         //Support modal content
@@ -794,81 +790,6 @@ import DonateModal from "./DonateModal.astro";
       });
     }
 
-    const viewCommitHistory = document.getElementById("view-commit-history");
-    const jumpToLatestCommit = document.getElementById("jump-to-latest-commit");
-    const viewCommitText = document.getElementById("view-commit-text");
-    const commitHistoryContainer = document.getElementById(
-      "commit-history-container",
-    );
-    const commitIconUp = document.getElementById("commit-icon-up");
-    const commitIconDown = document.getElementById("commit-icon-down");
-
-    if (viewCommitHistory && commitHistoryContainer) {
-      viewCommitHistory.addEventListener("click", () => {
-        if (
-          commitHistoryContainer.style.maxHeight === "0px" ||
-          !commitHistoryContainer.style.maxHeight
-        ) {
-          commitHistoryContainer.style.maxHeight = `${commitHistoryContainer.scrollHeight}px`;
-        } else {
-          commitHistoryContainer.style.maxHeight = "0px";
-        }
-      });
-    }
-
-    if (jumpToLatestCommit && commitHistoryContainer) {
-      jumpToLatestCommit.addEventListener("click", () => {
-        if (
-          commitHistoryContainer.style.maxHeight === "0px" ||
-          !commitHistoryContainer.style.maxHeight
-        ) {
-          commitHistoryContainer.style.maxHeight = `${commitHistoryContainer.scrollHeight}px`;
-        } else {
-          setTimeout(() => {
-            const latestCommit = document.getElementById(
-              "latest-commit-record",
-            );
-            if (latestCommit) {
-              latestCommit.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-              });
-            }
-          }, 10);
-        }
-      });
-    }
-
-    if (
-      viewCommitText &&
-      commitHistoryContainer &&
-      commitIconUp &&
-      commitIconDown
-    ) {
-      commitHistoryContainer.addEventListener("transitionend", () => {
-        if (commitHistoryContainer.style.maxHeight === "0px") {
-          viewCommitText.textContent = "View Commit History";
-          commitIconUp.classList.remove("hidden");
-          commitIconDown.classList.add("hidden");
-        } else {
-          viewCommitText.textContent = "Hide Commit History";
-          commitIconUp.classList.add("hidden");
-          commitIconDown.classList.remove("hidden");
-          setTimeout(() => {
-            const latestCommit = document.getElementById(
-              "latest-commit-record",
-            );
-            if (latestCommit) {
-              latestCommit.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-              });
-            }
-          }, 10);
-        }
-      });
-    }
-
     window.addEventListener("walletConnected", (_event: Event) => {
       updateUpgradeConfigButtonVisibility();
     });
@@ -883,8 +804,7 @@ import DonateModal from "./DonateModal.astro";
       button.href = url;
       button.target = "_blank";
       button.rel = "noopener noreferrer";
-      button.className =
-        "flex items-center space-x-1 bg-zinc-300 hover:bg-zinc-400 rounded-lg px-3 py-1 text-sm";
+      button.className = "flex items-center space-x-[10px]";
 
       const icon = document.createElement("img");
       icon.src = getIconSVG(iconName);
@@ -892,6 +812,7 @@ import DonateModal from "./DonateModal.astro";
       icon.className = "w-4 h-4";
 
       const text = document.createElement("span");
+      text.className = "leading-5 text-xl text-[#311255]";
       text.textContent = title;
 
       button.appendChild(icon);

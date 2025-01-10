@@ -22,7 +22,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
 
   return (
     <Modal id={id} title="" onClose={onClose}>
-      <div className="p-9 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-[984px]">
+      <div className="p-9 w-[1048px]">
         {projectInfo && Object.keys(projectInfo).length > 0 ? (
           <>
             <div className="flex gap-12">
@@ -30,16 +30,16 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                 id="project-thumbnail"
                 src={projectInfo?.logoImageLink || "/fallback-image.jpg"}
                 alt="Project Thumbnail"
-                className="object-cover rounded-lg"
+                className="w-[220px] h-[220px]"
               />
-              <div className="flex flex-col gap-[30px]">
+              <div className="flex-grow flex flex-col gap-[30px]">
                 <div className="flex gap-3">
-                  <div className="px-3 py-2">
+                  <div className="px-3 py-2 bg-[#EBE3F1] text-[#6600A5]">
                     <p className="text-sm leading-[14px] font-bold font-victorMono">
                       Active
                     </p>
                   </div>
-                  <div className="px-3 py-2">
+                  <div className="px-3 py-2 bg-[#F5EDD9] text-[#956E0A]">
                     <p className="text-sm leading-[14px] font-bold font-victorMono">
                       1244 users
                     </p>
@@ -59,7 +59,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                     {projectInfo?.description || "No description"}
                   </p>
                 </div>
-                <div className="flex gap-[30px]">
+                <div className="grid grid-cols-2 gap-[30px]">
                   <div className="flex flex-col gap-3">
                     <h3 className="text-base leading-4 font-firaMono text-zinc-800">
                       Official Links
