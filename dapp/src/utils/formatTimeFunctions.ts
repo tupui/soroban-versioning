@@ -26,11 +26,11 @@ export function formatTime(dateString: string): string {
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
   const dateOptions: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "short",
     day: "numeric",
+    month: "short",
+    year: "numeric",
   };
-  return date.toLocaleDateString(undefined, dateOptions);
+  return date.toLocaleDateString("en-GB", dateOptions);
 }
 
 export function calculateDateDifference(timestamp: number): string | null {
