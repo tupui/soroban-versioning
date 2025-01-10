@@ -1,4 +1,4 @@
-import React from "react";
+import { CloseIcon } from "components/icons";
 
 const Modal = ({ id, title, children, onClose }) => {
   return (
@@ -23,12 +23,7 @@ const Modal = ({ id, title, children, onClose }) => {
             onClose();
           }}
         >
-          <img
-            src="/icons/cancel-white.svg"
-            width={24}
-            height={24}
-            className="icon-cancel"
-          />
+          <CloseIcon />
         </div>
       </div>
     </div>

@@ -1,15 +1,14 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import CommitRecord from "./CommitRecord.jsx";
-import { formatDate } from "../../../utils/formatTimeFunctions.ts";
-import { projectInfoLoaded, latestCommit } from "../../../utils/store.js";
-import {
-  loadProjectRepoInfo,
-  loadConfigData,
-} from "../../../service/StateService.ts";
-import { getCommitHistory } from "../../../service/GithubService.ts";
 import { useStore } from "@nanostores/react";
-import Pagination from "components/utils/Pagination.tsx";
+import { useEffect, useState } from "react";
+import { getCommitHistory } from "../../../service/GithubService.ts";
+import {
+  loadConfigData,
+  loadProjectRepoInfo,
+} from "../../../service/StateService.ts";
+import { formatDate } from "../../../utils/formatTimeFunctions.ts";
+import { latestCommit, projectInfoLoaded } from "../../../utils/store.js";
+import CommitPeriod from "./CommitPeriod.jsx";
+import CommitRecord from "./CommitRecord.jsx";
 
 const CommitHistory = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
@@ -63,40 +62,58 @@ const CommitHistory = () => {
 
   return (
     <>
-      <div className="commit-history-container max-h-[560px] overflow-auto relative pl-8">
-        {commitHistory.map((day) => (
-          <div key={day.date} className="day-group relative">
-            <h3 className="text-lg font-semibold pb-4 relative before:content-[''] before:absolute before:-left-[1.5rem] before:top-0 before:bottom-0 before:w-0.5 before:bg-zinc-700">
-              <div className="commit-dot absolute left-[-2.2rem] top-0 w-[25px] h-[25px] bg-[#f3f3f3] rounded-full before:content-[''] before:absolute before:left-[50%] before:top-[50%] before:transform before:-translate-x-1/2 before:-translate-y-1/2 before:w-[15px] before:h-[15px] before:border-[2px] before:rounded-full"></div>
-              <span className="pr-2 relative z-10">{formatDate(day.date)}</span>
-            </h3>
-            <div className="space-y-4 pb-4 relative before:content-[''] before:absolute before:-left-[1.5rem] before:top-0 before:bottom-0 before:w-0.5 before:bg-zinc-700">
-              {day.commits.map((commit) => (
-                <div key={commit.sha} className="relative">
-                  <CommitRecord
-                    message={commit.message}
-                    date={commit.commit_date}
-                    authorName={commit.author.name}
-                    authorGithubLink={commit.author.html_url}
-                    sha={commit.sha}
-                    commitLink={commit.html_url}
-                    isMaintainer={
-                      authors
-                        ? authors.includes(commit.author.name.toLowerCase())
-                        : false
-                    }
-                  />
-                </div>
-              ))}
+      <div className="px-[72px] flex flex-col gap-12">
+        <div className="flex flex-col gap-[18px]">
+          <p className="leading-6 text-2xl font-medium text-[#311255]">
+            Commit History
+          </p>
+          <div className="border-t border-[#EEEEEE]" />
+        </div>
+        <CommitPeriod
+          startDate={commitHistory[0]?.date}
+          endDate={commitHistory[commitHistory.length - 1]?.date}
+          currentPage={currentPage}
+          onPageChange={(page) => fetchCommitHistory(page)}
+        />
+        <div className="commit-history-container pl-[54px] max-h-[560px] flex flex-col gap-6 overflow-auto">
+          {commitHistory.map((day) => (
+            <div key={day.date} className="day-group flex flex-col gap-6">
+              <h3 className="relative">
+                <div className="absolute -left-[50px] top-1/2 -translate-y-1/2 w-5 h-5 border-2 border-[#2D0F512E] rounded-full"></div>
+                <span className="leading-6 text-lg text-[#311255]">
+                  {formatDate(day.date)}
+                </span>
+              </h3>
+              <div className="space-y-4">
+                {day.commits.map((commit) => (
+                  <div key={commit.sha} className="relative">
+                    <div className="absolute left-[-41px] w-[2px] h-full bg-[#2D0F510D]" />
+                    <CommitRecord
+                      message={commit.message}
+                      date={commit.commit_date}
+                      authorName={commit.author.name}
+                      authorGithubLink={commit.author.html_url}
+                      sha={commit.sha}
+                      commitLink={commit.html_url}
+                      isMaintainer={
+                        authors
+                          ? authors.includes(commit.author.name.toLowerCase())
+                          : false
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        <CommitPeriod
+          startDate={commitHistory[0]?.date}
+          endDate={commitHistory[commitHistory.length - 1]?.date}
+          currentPage={currentPage}
+          onPageChange={(page) => fetchCommitHistory(page)}
+        />
       </div>
-
-      <Pagination
-        currentPage={currentPage}
-        onPageChange={(page) => fetchCommitHistory(page)}
-      />
     </>
   );
 };

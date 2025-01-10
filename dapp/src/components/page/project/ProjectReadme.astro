@@ -1,40 +1,29 @@
 ---
+import { ClipboardIcon, LinkIcon } from "components/icons";
 import ReadmeViewer from "./ReadmeViewer.tsx";
 ---
 
-<div
-  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
->
-  <div
-    class="row items-center pb-8 sm:pb-10 md:pb-14 px-4 sm:px-8 md:px-20 w-full"
-  >
-    <div class="w-full h-10 sm:h-14 md:h-18 flex items-center">
-      <div
+<div class="relative flex flex-col items-center">
+  <div class="flex flex-col gap-[30px]">
+    <div class="flex gap-[18px]">
+      <button
         id="copy-repo-link"
-        class="group w-[157px] sm:w-[173px] flex items-center space-x-2 cursor-pointer rounded-lg px-2 py-1"
+        class="p-[18px_30px] border border-[#4C4354] flex gap-3"
       >
-        <img
-          src="/icons/logos/git.svg"
-          alt="GitHub Icon"
-          class="h-4 w-4 m-0.5"
-        />
-        <span
-          id="copy-repo-text"
-          class="text-sm sm:text-base group-hover:text-blue-600"
-          >Clone repository</span
-        >
-      </div>
-      <div
+        <ClipboardIcon />
+        <span id="copy-repo-text" class="leading-5 text-xl text-[#311255]">
+          Clone Repository
+        </span>
+      </button>
+      <a
         id="move-to-releases"
-        class="group w-[157px] sm:w-[173px] flex items-center space-x-2 cursor-pointer rounded-lg px-2 py-1"
+        class="p-[18px_30px] border border-[#4C4354] flex gap-3"
       >
-        <img src="/icons/release.svg" alt="GitHub Icon" class="h-4 w-4 m-0.5" />
-        <span
-          id="copy-repo-text"
-          class="text-sm sm:text-base group-hover:text-blue-600"
-          >Go to releases</span
-        >
-      </div>
+        <LinkIcon />
+        <span class="leading-5 text-xl text-[#311255] cursor-pointer">
+          Go to Releases
+        </span>
+      </a>
     </div>
     <ReadmeViewer client:load />
   </div>
