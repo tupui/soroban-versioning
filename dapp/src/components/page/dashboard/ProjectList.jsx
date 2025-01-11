@@ -57,7 +57,7 @@ const ProjectList = () => {
         return () => clearTimeout(timer);
       }
     }
-  }, [projects]);
+  }, [projects, searchTerm]);
 
   useEffect(() => {
     setModalOpen(isProjectInfoModalOpen);
@@ -75,7 +75,7 @@ const ProjectList = () => {
   }, [isProjectInfoModalOpen]);
 
   const handleSearch = () => {
-    if (projects && searchTerm) {
+    if (projects) {
       setRegisterButtonVisible(false);
       const filtered = projects.filter((project) =>
         project?.projectName.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -125,7 +125,7 @@ const ProjectList = () => {
         setIsInOnChain(true);
       } else {
         setIsInOnChain(false);
-        alert(res.errorMessage || "Can not get project info.");
+        // alert(res.errorMessage || "Cannot get project info.");
       }
     } catch (error) {
       console.error("Error checking project on-chain:", error);
@@ -146,8 +146,8 @@ const ProjectList = () => {
 
   return (
     <div className="project-list-container relative  max-w-[984px] mx-auto">
-      <div className="flex flex-col items-center gap-[60px]">
-        <div className="flex justify-center items-center gap-6">
+      <div className="flex flex-col items-start lg:items-center gap-[60px]">
+        <div className="flex max-lg:flex-col justify-center items-start lg:items-center gap-6">
           <div
             className="px-[30px] py-[18px] flex gap-3 border border-zinc-800 cursor-pointer"
             onClick={() => openSearchBox()}
@@ -164,7 +164,7 @@ const ProjectList = () => {
             <img src="/icons/plus.svg" width={20} height={20} />
           </div>
         </div>
-        <div className="flex justify-center items-center gap-[18px]">
+        <div className="w-full flex justify-center items-center gap-[18px]">
           <p className="text-[26px] leading-[42px] font-firaMono text-pink">
             Featured Projects
           </p>
@@ -179,7 +179,7 @@ const ProjectList = () => {
         <div
           className={`w-full px-9 flex flex-col gap-8 items-center overflow-hidden transition-all duration-200 ${isFilterClose ? "h-0 py-0" : "h-fit py-9"}`}
         >
-          <div className="w-full flex gap-[10px]">
+          <div className="w-full flex max-lg:flex-col gap-[10px]">
             <div className="search-container relative w-full">
               <input
                 type="text"
@@ -194,11 +194,10 @@ const ProjectList = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <div
-                className="absolute right-1 sm:right-[18px] top-1/2 transform -translate-y-1/2 cursor-pointer"
+                className="absolute right-1 right-[18px] top-1/2 transform -translate-y-1/2 cursor-pointer"
                 onClick={() => {
                   setSearchTerm("");
                   setRegisterButtonVisible(false);
-                  setFilteredProjects(projects);
                 }}
               >
                 <img
