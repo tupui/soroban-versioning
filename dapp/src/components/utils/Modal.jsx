@@ -18,7 +18,7 @@ const Modal = ({ id, title, children, onClose }) => {
       >
         <div className="modal-content">{children}</div>
         <div
-          className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 p-[18px] bg-red cursor-pointer"
+          className="absolute top-0 right-0 lg:translate-x-1/2 -translate-y-1/2 p-[18px] bg-red cursor-pointer"
           onClick={() => {
             onClose();
           }}

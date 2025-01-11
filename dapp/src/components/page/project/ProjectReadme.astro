@@ -4,11 +4,11 @@ import ReadmeViewer from "./ReadmeViewer.tsx";
 ---
 
 <div class="relative flex flex-col items-center">
-  <div class="flex flex-col gap-[30px]">
-    <div class="flex gap-[18px]">
+  <div class="flex flex-col gap-[15px] lg:gap-[30px]">
+    <div class="flex max-lg:flex-col gap-[9px] lg:gap-[18px]">
       <button
         id="copy-repo-link"
-        class="p-[18px_30px] border border-[#4C4354] flex gap-3"
+        class="p-[9px_30px] lg:p-[18px_30px] border border-[#4C4354] flex gap-3"
       >
         <ClipboardIcon />
         <span id="copy-repo-text" class="leading-5 text-xl text-[#311255]">
@@ -17,7 +17,7 @@ import ReadmeViewer from "./ReadmeViewer.tsx";
       </button>
       <a
         id="move-to-releases"
-        class="p-[18px_30px] border border-[#4C4354] flex gap-3"
+        class="p-[9px_30px] lg:p-[18px_30px] border border-[#4C4354] flex gap-3"
       >
         <LinkIcon />
         <span class="leading-5 text-xl text-[#311255] cursor-pointer">
@@ -43,7 +43,7 @@ import ReadmeViewer from "./ReadmeViewer.tsx";
         if (copyRepoLink && copyRepoText) {
           copyRepoLink.addEventListener("click", async () => {
             try {
-              await navigator.clipboard.writeText(repositoryUrl);
+              await navigator.clipboard.writeText(`git clone ${repositoryUrl}`);
               copyRepoText.textContent = "Copied";
               setTimeout(() => {
                 copyRepoText.textContent = "Clone repository";

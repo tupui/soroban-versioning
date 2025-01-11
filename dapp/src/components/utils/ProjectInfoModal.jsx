@@ -22,10 +22,10 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
 
   return (
     <Modal id={id} title="" onClose={onClose}>
-      <div className="p-9 w-[1048px]">
+      <div className="p-9 w-[342px] lg:w-[1048px]">
         {projectInfo && Object.keys(projectInfo).length > 0 ? (
           <>
-            <div className="flex gap-12">
+            <div className="flex max-lg:flex-col gap-12">
               <img
                 id="project-thumbnail"
                 src={projectInfo?.logoImageLink || "/fallback-image.jpg"}
@@ -33,7 +33,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                 className="w-[220px] h-[220px]"
               />
               <div className="flex-grow flex flex-col gap-[30px]">
-                <div className="flex gap-3">
+                {/* <div className="flex gap-3">
                   <div className="px-3 py-2 bg-[#EBE3F1] text-[#6600A5]">
                     <p className="text-sm leading-[14px] font-bold font-victorMono">
                       Active
@@ -44,7 +44,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                       1244 users
                     </p>
                   </div>
-                </div>
+                </div> */}
                 <div className="flex flex-col gap-3">
                   <h2
                     id="view-modal-project-name"
@@ -59,7 +59,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                     {projectInfo?.description || "No description"}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-[30px]">
+                <div className="grid lg:grid-cols-2 gap-[30px]">
                   <div className="flex flex-col gap-3">
                     <h3 className="text-base leading-4 font-firaMono text-zinc-800">
                       Official Links
@@ -105,7 +105,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                     </p>
                   </div>
                 </div>
-                <div className="flex gap-[18px]">
+                <div className="flex max-lg:flex-col gap-[18px]">
                   <button
                     className="px-[30px] py-[18px] flex gap-3 bg-pink"
                     onClick={handleDetailClick}

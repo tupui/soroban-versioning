@@ -13,7 +13,7 @@ const CommitPeriod = ({ startDate, endDate, currentPage, onPageChange }) => {
           >
             <LeftArrowIcon />
           </button>
-          <p className="leading-5 text-lg text-[#311255]">
+          <p className="leading-5 text-base lg:text-lg text-[#311255]">
             {startDate} - {endDate}
           </p>
           <button onClick={() => onPageChange(currentPage + 1)}>
