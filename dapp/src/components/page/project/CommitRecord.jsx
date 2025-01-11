@@ -41,7 +41,7 @@ const CommitRecord = ({
 
   return (
     <div
-      className="commit-record relative p-[30px] flex justify-between items-start bg-white"
+      className="commit-record relative p-[15px] lg:p-[30px] flex justify-between items-start bg-white"
       data-sha={sha}
       id={isLatestCommit ? "latest-commit-record" : undefined}
     >
@@ -76,14 +76,14 @@ const CommitRecord = ({
           )}
         </div>
       )}
-      <div className="commit-info flex-grow flex flex-col gap-6 overflow-hidden">
+      <div className="commit-info flex-grow flex flex-col gap-3 lg:gap-6 overflow-hidden">
         <div className="flex justify-between">
-          <div className="w-[calc(100%-200px)] flex items-center gap-3">
+          <div className="w-[calc(100%-120px)] flex items-center gap-3">
             <a
               href={commitLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="commit-message leading-6 text-xl font-medium text-[#311255] hover:underline hover:text-blue-500 truncate"
+              className="commit-message text-base lg:text-xl font-medium text-[#311255] hover:underline hover:text-blue-500 truncate"
             >
               {firstLine}
             </a>
@@ -96,8 +96,8 @@ const CommitRecord = ({
               </button>
             )}
           </div>
-          <div className="commit-sha flex items-center gap-[10px]">
-            <img src="/icons/logos/github.svg" />
+          <div className="commit-sha flex items-center gap-[5px] lg:gap-[10px]">
+            {/* <img src="/icons/logos/github.svg" /> */}
             <button
               className="copy-button hover:bg-zinc-400 transition-colors duration-200 p-1 rounded"
               onClick={handleCopy}
@@ -108,7 +108,7 @@ const CommitRecord = ({
               href={commitLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="sha leading-[18px] text-lg text-[#311255] underline"
+              className="sha leading-[18px] text-sm lg:text-lg text-[#311255] underline"
             >
               {sha.substring(0, 7)}
             </a>

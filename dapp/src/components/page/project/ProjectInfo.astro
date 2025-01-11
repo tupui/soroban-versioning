@@ -3,7 +3,6 @@ import {
   BackIcon,
   BookIcon,
   EyeIcon,
-  GotoIcon,
   InfoIcon,
   SettingIcon,
 } from "components/icons";
@@ -17,27 +16,27 @@ import ProjectReadme from "./ProjectReadme.astro";
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
-  <div class="flex justify-between items-center">
-    <div class="flex">
-      <button id="back-to-home" class="flex gap-[14px]">
-        <BackIcon />
-        <p class="leading-5 text-xl text-[#311255]">Back to Home Page</p>
-      </button>
-    </div>
-    <div class="flex gap-3">
+  <!-- <div class="flex justify-between items-center"> -->
+  <div class="flex">
+    <button id="back-to-home" class="flex gap-[14px]">
+      <BackIcon />
+      <p class="leading-5 text-xl text-[#311255]">Back to Home Page</p>
+    </button>
+  </div>
+  <!-- <div class="flex gap-3">
       <div class="p-[12px_18px] bg-white">
         <p class="leading-5 text-xl text-[#311255]">Follow</p>
       </div>
       <div class="p-[11px] bg-white">
         <GotoIcon />
       </div>
-    </div>
-  </div>
+    </div> -->
+  <!-- </div> -->
   <div class="py-12 flex flex-col gap-12 bg-[#FFFFFFB8]">
-    <div class="px-[72px] flex flex-col gap-9">
+    <div class="px-[16px] lg:px-[72px] flex flex-col gap-9">
       <div class="flex flex-col gap-6">
         <div class="flex flex-col gap-12">
-          <div class="flex gap-6 items-center">
+          <div class="flex max-lg:flex-col gap-6 items-center">
             <img
               id="project-thumbnail"
               src="/fallback-image.jpg"
@@ -62,8 +61,8 @@ import ProjectReadme from "./ProjectReadme.astro";
                 >
                 </p>
               </div>
-              <div class="grid grid-cols-2 gap-9">
-                <div class="flex flex-col gap-[10px]">
+              <!-- <div class="grid grid-cols-2 gap-9"> -->
+              <!-- <div class="flex flex-col gap-[10px]">
                   <div class="flex gap-2">
                     <p class="text-[#4C4354]">Funding Progress</p>
                     <InfoIcon />
@@ -74,29 +73,29 @@ import ProjectReadme from "./ProjectReadme.astro";
                     </div>
                     <p class="font-medium text-[#311255]">$12,500 / $20,000</p>
                   </div>
+                </div> -->
+              <div class="flex flex-col gap-[10px]">
+                <div class="flex gap-2">
+                  <p class="text-[#4C4354]">Synchronization Status</p>
+                  <InfoIcon />
                 </div>
-                <div class="flex flex-col gap-[10px]">
-                  <div class="flex gap-2">
-                    <p class="text-[#4C4354]">Synchronization Status</p>
-                    <InfoIcon />
-                  </div>
-                  <div
-                    id="project-sync-status"
-                    class="flex flex-wrap gap-5 min-h-7"
-                  >
-                  </div>
+                <div
+                  id="project-sync-status"
+                  class="flex flex-wrap gap-5 min-h-7"
+                >
                 </div>
               </div>
+              <!-- </div> -->
             </div>
           </div>
         </div>
       </div>
-      <div class="flex gap-[18px]">
+      <div class="flex max-lg:flex-col gap-[18px]">
         <button id="goto-dao" class="p-[18px_30px] flex gap-3 bg-[#311255]">
           <SettingIcon />
           <p class="leading-5 text-xl text-white">DAO Management</p>
         </button>
-        <button class="p-[18px_30px] flex gap-3 bg-white">
+        <button class="p-[18px_30px] flex gap-3 bg-white" data-donate-modal>
           <img src="/icons/heart.svg" />
           <p class="leading-5 text-xl text-[#311255]">Support</p>
         </button>
@@ -110,15 +109,13 @@ import ProjectReadme from "./ProjectReadme.astro";
         </button>
       </div>
     </div>
-    <div class="p-[30px_72px] grid grid-cols-2 gap-12 bg-white">
+    <div
+      class="p-[15px_16px] lg:p-[30px_72px] grid lg:grid-cols-2 gap-12 bg-white"
+    >
       <div id="project-maintainers" class="flex flex-col gap-5">
         <p class="leading-4 text-base text-[#4C4354]">Maintainers</p>
         <ul class="flex flex-col gap-[18px]"></ul>
-        <button
-          class="leading-[18px] text-lg font-[450] text-[#311255] underline"
-        >
-          View All
-        </button>
+        <div class="flex view-all"></div>
       </div>
       <div class="flex flex-col gap-[30px]">
         <div id="project-organization" class="flex flex-col gap-5">
@@ -199,13 +196,15 @@ import ProjectReadme from "./ProjectReadme.astro";
 </Modal>
 
 <Modal id="read-more-modal">
-  <div class="p-9 w-[1048px] flex gap-12">
+  <div
+    class="p-4 lg:p-9 w-[342px] lg:w-[1048px] flex max-lg:flex-col gap-6 lg:gap-12"
+  >
     <img
-      class="project-thumbnail w-[220px] h-[220px]"
+      class="project-thumbnail w-[110px] h-[110px] lg:w-[220px] lg:h-[220px]"
       alt="project-thumbnail"
       src=""
     />
-    <div class="flex flex-col gap-[30px]">
+    <div class="flex flex-col gap-[15px] gap-[30px]">
       <div class="flex flex-col gap-3">
         <p class="project-name leading-6 text-xl font-medium text-[#311255]">
         </p>
@@ -220,6 +219,7 @@ import ProjectReadme from "./ProjectReadme.astro";
 
 <script>
   import { navigate } from "astro:transitions/client";
+  import type { ConfigData } from "types/projectConfig";
   import {
     getLatestCommitData,
     getTOMLFileHash,
@@ -257,6 +257,93 @@ import ProjectReadme from "./ProjectReadme.astro";
         readMoreModal.showModal();
       });
     }
+
+    const updateMaintainerList = (
+      projectInfo: any,
+      configData?: ConfigData,
+      viewAll?: boolean,
+    ) => {
+      const maintainersList = document.getElementById("project-maintainers");
+      if (maintainersList) {
+        const viewAllButtonContainer =
+          maintainersList.querySelector(".view-all");
+        if (viewAllButtonContainer) viewAllButtonContainer.innerHTML = "";
+        const viewAllButton = document.createElement("button");
+        viewAllButton.className =
+          "leading-[18px] text-lg font-[450] text-[#311255] underline";
+        viewAllButton.textContent = viewAll ? "Less" : "View All";
+        if (viewAll) {
+          viewAllButton.addEventListener("click", () =>
+            updateMaintainerList(projectInfo, configData, !viewAll),
+          );
+        }
+        const ul = maintainersList.querySelector("ul");
+        if (ul) {
+          ul.innerHTML = "";
+          if (
+            configData &&
+            configData.authorGithubNames &&
+            configData.maintainersAddresses
+          ) {
+            configData.authorGithubNames
+              .filter((_: string, index: number) => index <= 5 || viewAll)
+              .forEach((authorName: string, index: number) => {
+                const li = document.createElement("li");
+                li.className = "flex flex-col gap-2";
+
+                const content = document.createElement("p");
+                content.className = "leading-6 text-xl text-[#311255]";
+                content.textContent = `@${authorName}`;
+                li.appendChild(content);
+
+                const address = document.createElement("p");
+                address.className = "leading-[14px] text-sm text-[#4C4354]";
+                address.textContent = `(${configData.maintainersAddresses[index]?.slice(0, 28) || ""}...)`;
+                li.appendChild(address);
+
+                ul.appendChild(li);
+              });
+            if (
+              viewAllButtonContainer &&
+              configData.authorGithubNames.length > 5
+            ) {
+              viewAllButtonContainer.append(viewAllButton);
+            }
+          } else {
+            projectInfo.maintainers
+              .filter((_: string, index: number) => index <= 5 || viewAll)
+              .forEach((maintainer: string) => {
+                const li = document.createElement("li");
+                li.className = "relative";
+
+                const content = document.createElement("p");
+                content.className = "leading-6 text-xl text-[#311255] truncate";
+                content.textContent = maintainer;
+                li.appendChild(content);
+
+                const popup = document.createElement("p");
+                popup.className =
+                  "absolute left-0 bottom-full mb-1 p-1 bg-black text-center text-xs text-white rounded hidden max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
+                popup.textContent = maintainer;
+                li.appendChild(popup);
+
+                li.addEventListener("mouseenter", () => {
+                  popup.classList.remove("hidden");
+                });
+
+                li.addEventListener("mouseleave", () => {
+                  popup.classList.add("hidden");
+                });
+
+                ul.appendChild(li);
+              });
+            if (viewAllButtonContainer && projectInfo.maintainers.length > 5) {
+              viewAllButtonContainer.append(viewAllButton);
+            }
+          }
+        }
+      }
+    };
 
     let projectInfo: any;
 
@@ -298,64 +385,7 @@ import ProjectReadme from "./ProjectReadme.astro";
           }
         }
 
-        const maintainersList = document.getElementById("project-maintainers");
-        if (maintainersList) {
-          const ul = maintainersList.querySelector("ul");
-          if (ul) {
-            ul.innerHTML = "";
-            if (
-              configData &&
-              configData.authorGithubNames &&
-              configData.maintainersAddresses
-            ) {
-              configData.authorGithubNames.forEach(
-                (authorName: string, index: number) => {
-                  const li = document.createElement("li");
-                  li.className = "flex flex-col gap-2";
-
-                  const content = document.createElement("p");
-                  content.className = "leading-6 text-xl text-[#311255]";
-                  content.textContent = `@${authorName}`;
-                  li.appendChild(content);
-
-                  const address = document.createElement("p");
-                  address.className = "leading-[14px] text-sm text-[#4C4354]";
-                  address.textContent = `(${configData.maintainersAddresses[index]?.slice(0, 28) || ""}...)`;
-                  li.appendChild(address);
-
-                  ul.appendChild(li);
-                },
-              );
-            } else {
-              projectInfo.maintainers.forEach((maintainer: string) => {
-                const li = document.createElement("li");
-                li.className = "relative";
-
-                const content = document.createElement("p");
-                content.className = "truncate";
-                content.textContent = maintainer;
-
-                li.appendChild(content);
-
-                const popup = document.createElement("p");
-                popup.className =
-                  "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
-                popup.textContent = maintainer;
-                li.appendChild(popup);
-
-                li.addEventListener("mouseenter", () => {
-                  popup.classList.remove("hidden");
-                });
-
-                li.addEventListener("mouseleave", () => {
-                  popup.classList.add("hidden");
-                });
-
-                ul.appendChild(li);
-              });
-            }
-          }
-        }
+        updateMaintainerList(projectInfo, configData, false);
 
         const organizationElement = document.getElementById(
           "project-organization-name",

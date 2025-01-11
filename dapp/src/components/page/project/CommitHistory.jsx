@@ -62,24 +62,18 @@ const CommitHistory = () => {
 
   return (
     <>
-      <div className="px-[72px] flex flex-col gap-12">
+      <div className="px-[16px] lg:px-[72px] flex flex-col gap-12">
         <div className="flex flex-col gap-[18px]">
           <p className="leading-6 text-2xl font-medium text-[#311255]">
             Commit History
           </p>
           <div className="border-t border-[#EEEEEE]" />
         </div>
-        <CommitPeriod
-          startDate={commitHistory[0]?.date}
-          endDate={commitHistory[commitHistory.length - 1]?.date}
-          currentPage={currentPage}
-          onPageChange={(page) => fetchCommitHistory(page)}
-        />
-        <div className="commit-history-container pl-[54px] max-h-[560px] flex flex-col gap-6 overflow-auto">
+        <div className="commit-history-container pl-[44px] lg:pl-[54px] max-h-[560px] flex flex-col gap-6 overflow-auto">
           {commitHistory.map((day) => (
             <div key={day.date} className="day-group flex flex-col gap-6">
               <h3 className="relative">
-                <div className="absolute -left-[50px] top-1/2 -translate-y-1/2 w-5 h-5 border-2 border-[#2D0F512E] rounded-full"></div>
+                <div className="absolute -left-[40px] lg:-left-[50px] top-1/2 -translate-y-1/2 w-5 h-5 border-2 border-[#2D0F512E] rounded-full"></div>
                 <span className="leading-6 text-lg text-[#311255]">
                   {formatDate(day.date)}
                 </span>
@@ -87,7 +81,7 @@ const CommitHistory = () => {
               <div className="space-y-4">
                 {day.commits.map((commit) => (
                   <div key={commit.sha} className="relative">
-                    <div className="absolute left-[-41px] w-[2px] h-full bg-[#2D0F510D]" />
+                    <div className="absolute -left-[31px] lg:-left-[41px] w-[2px] h-full bg-[#2D0F510D]" />
                     <CommitRecord
                       message={commit.message}
                       date={commit.commit_date}

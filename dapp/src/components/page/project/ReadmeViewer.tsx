@@ -31,8 +31,8 @@ const ReadmeViewer = () => {
   }, [isProjectInfoLoaded]);
 
   return (
-    <div className="flex flex-col overflow-hidden">
-      <div className="markdown-body">
+    <div className="flex flex-col">
+      <div className="markdown-body max-h-80 overflow-auto">
         <Markdown>{readmeContent}</Markdown>
       </div>
     </div>
