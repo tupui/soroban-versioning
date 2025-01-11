@@ -12,7 +12,7 @@ const ProposalsSection: React.FC = () => {
   const projectName = useStore(projectNameForGovernance);
 
   return (
-    <div className="mx-auto w-[1048px] flex flex-col gap-9">
+    <div className="mx-auto max-w-[1048px] flex flex-col gap-9">
       <div className="flex">
         <button
           className="flex gap-[14px]"
@@ -25,7 +25,7 @@ const ProposalsSection: React.FC = () => {
         </button>
       </div>
       <div className="py-12 flex flex-col gap-12 bg-[#FFFFFFB8]">
-        <div className="px-[72px] flex flex-col gap-9">
+        <div className="px-[16px] lg:px-[72px] flex flex-col gap-9">
           <div className="flex flex-col gap-[18px]">
             <h2 className="leading-6 text-2xl font-medium text-[#311255]">
               Decentralized Autonomous Organization
@@ -50,7 +50,7 @@ const ProposalsSection: React.FC = () => {
             />
           </div>
         </div>
-        <div className="px-[72px] w-full">
+        <div className="px-[16px] lg:px-[72px] w-full">
           {proposalType === "proposal" && <ProposalList />}
           {proposalType === "idea" && <IdeaList />}
         </div>
