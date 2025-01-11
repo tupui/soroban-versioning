@@ -1,10 +1,10 @@
-import React from "react";
-import ProposalStatusShow from "./ProposalStatusShow";
-import { navigate } from "astro:transitions/client";
 import { useStore } from "@nanostores/react";
+import { navigate } from "astro:transitions/client";
+import React from "react";
+import type { ProposalCardView } from "types/proposal";
 import { calculateDateDifference } from "utils/formatTimeFunctions";
 import { projectNameForGovernance } from "utils/store";
-import type { ProposalCardView } from "types/proposal";
+import ProposalStatusShow from "./ProposalStatusShow";
 
 const ProposalCard: React.FC<ProposalCardView> = ({
   proposalNumber,
@@ -16,58 +16,44 @@ const ProposalCard: React.FC<ProposalCardView> = ({
 
   return (
     <div
-      className="w-full px-2 sm:px-4 md:pl-8 py-2 sm:py-3 md:py-4.5 bg-white border border-zinc-300 rounded-lg sm:rounded-xl cursor-pointer hover:border-lime hover:bg-zinc-500"
+      className="p-[30px] w-full flex flex-col gap-[30px] bg-white cursor-pointer"
       onClick={() =>
         navigate(`/proposal?id=${proposalNumber}&&name=${projectName}`)
       }
     >
-      <div className="w-full flex justify-between items-center">
-        <div className="lg:max-w-[calc(100%-240px)] flex items-start gap-2">
-          <div className="flex items-center gap-1">
-            <div className="text-base sm:text-xl md:text-2xl font-medium text-zinc-700 whitespace-nowrap">
-              {proposalNumber}
-            </div>
-          </div>
-          <div className="text-base sm:text-xl md:text-2xl font-medium text-gray-500">
-            {proposalTitle}
-          </div>
+      <div className="flex flex-col gap-[18px]">
+        <div className="flex items-center gap-[18px]">
+          {endDate && calculateDateDifference(endDate) && (
+            <p className="leading-[18px] text-[18px] text-[#311255]">
+              Ends in {calculateDateDifference(endDate)}
+            </p>
+          )}
+          <ProposalStatusShow proposalStatus={proposalStatus} />
         </div>
+        <p className="leading-6 text-xl font-medium text-[#311255]">
+          {proposalNumber} {proposalTitle}
+        </p>
+      </div>
+      {/* <div className="w-full flex justify-between items-center">
         <div className="flex items-center gap-2">
           <div className="hidden lg:block">
-            {proposalStatus === "active" &&
-              endDate &&
-              calculateDateDifference(endDate) && (
-                <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-                  Ends in {calculateDateDifference(endDate)}
-                </div>
-              )}
             {proposalStatus === "voted" && (
               <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
                 Pending execution
               </div>
             )}
           </div>
-          <div className="">
-            <ProposalStatusShow proposalStatus={proposalStatus} />
-          </div>
         </div>
-      </div>
-      <div className="flex lg:hidden">
+      </div> */}
+      {/* <div className="flex lg:hidden">
         <div className="pl-2 sm:pl-3 md:pl-4">
-          {proposalStatus === "active" &&
-            endDate &&
-            calculateDateDifference(endDate) && (
-              <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-                Ends in {calculateDateDifference(endDate)}
-              </div>
-            )}
           {proposalStatus === "voted" && (
             <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
               Pending execution
             </div>
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

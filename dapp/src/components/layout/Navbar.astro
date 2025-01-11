@@ -1,32 +1,68 @@
 ---
+import DiscoverTansu from "components/DiscoverTansu.astro";
 import ConnectWallet from "../ConnectWallet.astro";
+
+const { page } = Astro.props;
 ---
 
-<header class="mt-20 sm:mt-24 md:mt-32">
-  <nav class="w-full top-0 left-0 z-50 fixed bg-white">
-    <div class="max-w-screen-xl mx-auto px-6 md:px-14 xl:px-14">
-      <div class="flex flex-wrap items-center justify-between mx-auto py-3">
-        <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src="/logo.svg" class="h-8 sm:h-10 md:h-11" alt="Logo" />
-        </a>
-        <div
-          class="hidden w-full md:block md:w-auto font-medium"
-          id="navbar-default"
-        >
-          Tansu - <span
-            class="sm:text-sm px-1.5 font-medium bg-lime rounded-md"
-          >
-            Alpha
-          </span>
+<header class="z-10">
+  <nav class="hidden md:block w-full px-[120px]">
+    <div class="max-w-[1920px] mx-auto">
+      <div class="flex items-start justify-between pt-[81px]">
+        <div class="md:w-auto">
+          {page === "home" && <DiscoverTansu />}
         </div>
-        <div class="md:block md:w-auto" id="navbar-default">
-          <div
-            class="px-2.5 sm:px-4 md:px-6 py-1.5 sm:py-2 rounded-xl border border-zinc-900 bg-white cursor-pointer hover:bg-black text-black hover:text-white inline-flex"
-          >
-            <ConnectWallet />
-          </div>
+        <div class="mt-[13px] flex flex-col items-center gap-[30px]">
+          <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
+            <img src="/logo.svg" class="h-12 md:h-18" alt="Logo" />
+          </a>
+          {
+            page === "home" && (
+              <p class="text-lg text-zinc-800 font-victorMono">
+                <b class="text-pink">Tansu </b> - Unite developers, communities,
+                and users in open-source innovation.
+              </p>
+            )
+          }
+        </div>
+        <div class="md:w-auto" id="navbar-default">
+          <ConnectWallet />
         </div>
       </div>
+    </div>
+  </nav>
+  <nav class="md:hidden w-full px-8">
+    <div class="flex flex-col gap-[18px] pt-[60px]">
+      <div class="flex items-start justify-between">
+        <div class="ml-[10px]">
+          <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
+            <img src="/logo.svg" class="h-12" alt="Logo" />
+          </a>
+        </div>
+        <div class="flex items-center gap-[18px]">
+          <div class="" id="navbar-default">
+            <ConnectWallet />
+          </div>
+          {
+            page === "home" && (
+              <div class="">
+                <DiscoverTansu />
+              </div>
+            )
+          }
+        </div>
+      </div>
+      {
+        page === "home" && (
+          <div class="flex flex-col gap-[10px] font-victorMono">
+            <b class="text-lg text-pink">Tansu </b>
+            <p class="text-base text-zinc-800">
+              Unite developers, communities, and users in open-source
+              innovation.
+            </p>
+          </div>
+        )
+      }
     </div>
   </nav>
 </header>
