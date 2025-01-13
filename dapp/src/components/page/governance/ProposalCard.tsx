@@ -18,7 +18,7 @@ const ProposalCard: React.FC<ProposalCardView> = ({
     <div
       className="w-full px-2 sm:px-4 md:pl-8 py-2 sm:py-3 md:py-4.5 bg-white border border-zinc-300 rounded-lg sm:rounded-xl cursor-pointer hover:border-lime hover:bg-zinc-500"
       onClick={() =>
-        navigate(`/proposal?id=${proposalNumber}&&name=${projectName}`)
+        navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
       }
     >
       <div className="w-full flex justify-between items-center">
