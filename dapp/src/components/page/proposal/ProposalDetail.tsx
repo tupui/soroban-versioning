@@ -5,7 +5,6 @@ import Markdown from "markdown-to-jsx";
 import "github-markdown-css";
 import JsonView from "react18-json-view";
 import "react18-json-view/src/style.css";
-import clsx from "clsx";
 import {
   capitalizeFirstLetter,
   modifySlashInXdr,
@@ -152,20 +151,7 @@ export const OutcomeDetail: React.FC<{
     <div className="flex flex-col gap-1 sm:gap-4 md:gap-6">
       <div className="flex flex-col items-start gap-1 sm:gap-2 md:gap-3">
         <div
-          className={clsx(
-            "text-base sm:text-xl md:text-2xl text-white md:py-0.5 px-1 md:px-2 rounded md:rounded-md",
-            type === "approved"
-              ? "bg-approved"
-              : type === "rejected"
-                ? "bg-conflict"
-                : type === "cancelled"
-                  ? "bg-abstain"
-                  : type === "voted"
-                    ? "bg-voted"
-                    : "bg-gray-300",
-            // type === proposalStatus || (type === "approved" && proposalStatus === "voted") && "shadow-vote",
-            // proposalStatus !== "active" && !(type === "approved" && proposalStatus === "voted") && "bg-zinc-700"
-          )}
+          className={`text-base sm:text-xl md:text-2xl text-white md:py-0.5 px-1 md:px-2 rounded md:rounded-md" ${type === "approved" ? "bg-approved" : type === "rejected" ? "bg-conflict" : type === "cancelled" ? "bg-abstain" : type === "voted" ? "bg-voted" : "bg-gray-300"}`}
         >
           {capitalizeFirstLetter(type)}
         </div>
