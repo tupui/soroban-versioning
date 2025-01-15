@@ -77,11 +77,6 @@ const VotersModal: React.FC<VotersModalProps> = ({
       return;
     }
 
-    if (!voteResultAndXdr.xdr) {
-      alert("XDR is required");
-      return;
-    }
-
     const { executeProposal } = await import("@service/WriteContractService");
     const res = await executeProposal(
       projectName,
