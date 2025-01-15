@@ -26,6 +26,8 @@
     "typescript": "^5.7.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.6",
     "@web3-storage/w3cli": "^7.9.1",
     "dotenv": "^16.4.7",
     "glob": "^11.0.0",
@@ -36,7 +38,7 @@
   "scripts": {
     "check": "astro check",
     "build": "astro build",
-    "dev": "astro dev",
+    "dev": "astro dev --host",
     "preview": "astro preview",
     "start": "astro dev",
     "formatter": "prettier --write .",

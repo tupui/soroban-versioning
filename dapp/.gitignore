@@ -33,3 +33,9 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
