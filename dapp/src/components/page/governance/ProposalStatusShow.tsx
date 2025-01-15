@@ -10,11 +10,13 @@ const ProposalStatusShow: React.FC<ProposalStatusShowProps> = ({
 }) => {
   let title;
   let backgroundColorClass;
+  let textColorClass = "text-white";
 
   switch (proposalStatus) {
     case "active":
       title = "Active";
-      backgroundColorClass = "bg-active";
+      backgroundColorClass = "bg-[#E6F4E9]";
+      textColorClass = "text-[#007D1B]";
       break;
     case "rejected":
       title = "Rejected";
@@ -38,10 +40,8 @@ const ProposalStatusShow: React.FC<ProposalStatusShowProps> = ({
   }
 
   return (
-    <div
-      className={`${backgroundColorClass} text-sm sm:text-base font-bold text-white px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 md:py-2 rounded-lg`}
-    >
-      <h1 className="text-white">{title}</h1>
+    <div className={`p-[6px_15.5px] ${backgroundColorClass}`}>
+      <p className={`text-xs ${textColorClass}`}>{title}</p>
     </div>
   );
 };
