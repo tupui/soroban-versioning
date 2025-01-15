@@ -139,20 +139,20 @@ const VotersModal: React.FC<VotersModalProps> = ({
                 View in Stellar Lab
               </span>
             </a>
-              <div className="transition-all duration-300 max-h-24 overflow-hidden flex flex-col bg-zinc-100 border border-zinc-400 rounded-xl">
-                <div className="jsonview-body w-full">
-                  <div className="max-h-40 md:max-h-96 overflow-y-auto px-1 sm:px-3 md:px-5 py-2 sm:py-3 md:py-4">
-                    <JsonView src={content} theme="vscode" />
-                  </div>
+            <div className="transition-all duration-300 max-h-24 overflow-hidden flex flex-col bg-zinc-100 border border-zinc-400 rounded-xl">
+              <div className="jsonview-body w-full">
+                <div className="max-h-40 md:max-h-96 overflow-y-auto px-1 sm:px-3 md:px-5 py-2 sm:py-3 md:py-4">
+                  <JsonView src={content} theme="vscode" />
                 </div>
               </div>
+            </div>
           </div>
-            <button
-              className="bg-black text-white mt-4 mb-1 py-1 px-4 rounded-lg text-lg"
-              onClick={signAndExecute}
-            >
-              Sign
-            </button>
+          <button
+            className="bg-black text-white mt-4 mb-1 py-1 px-4 rounded-lg text-lg"
+            onClick={signAndExecute}
+          >
+            Sign
+          </button>
         </div>
       </div>
     </div>
