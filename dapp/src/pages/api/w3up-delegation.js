@@ -58,7 +58,7 @@ export const POST = async ({ request }) => {
       });
     } catch (err) {
       console.error("Error creating delegation:", err);
-      return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+      return new Response(JSON.stringify({ error: err.message }), {
         status: 500,
       });
     }
