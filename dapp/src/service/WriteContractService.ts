@@ -354,10 +354,9 @@ async function executeProposal(
 
   const executorAccount = await server.getAccount(publicKey);
   try {
-    const outcomeTransactionEnvelope = executeXdr ? xdr.TransactionEnvelope.fromXDR(
-      executeXdr,
-      "base64",
-    ) : undefined;
+    const outcomeTransactionEnvelope = executeXdr
+      ? xdr.TransactionEnvelope.fromXDR(executeXdr, "base64")
+      : undefined;
 
     const outcomeTransaction = outcomeTransactionEnvelope?.v1().tx();
 
