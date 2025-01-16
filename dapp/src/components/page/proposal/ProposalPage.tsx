@@ -88,8 +88,6 @@ const ProposalPage: React.FC = () => {
         alert(response.errorMessage);
       }
       setIsLoading(false);
-    } else {
-      alert("Project name or proposal id is not provided");
     }
   };
 

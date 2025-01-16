@@ -120,7 +120,7 @@ export const OutcomeDetail: React.FC<{
   detail: { description: string; xdr: string };
   proposalStatus: ProposalViewStatus | null;
   isXdrInit: boolean;
-}> = ({ type, detail, proposalStatus, isXdrInit }) => {
+}> = ({ type, detail /*, proposalStatus*/, isXdrInit }) => {
   const [content, setContent] = useState<any>(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -151,9 +151,7 @@ export const OutcomeDetail: React.FC<{
     <div className="flex flex-col gap-1 sm:gap-4 md:gap-6">
       <div className="flex flex-col items-start gap-1 sm:gap-2 md:gap-3">
         <div
-          className={`text-base sm:text-xl md:text-2xl text-white md:py-0.5 px-1 md:px-2 rounded md:rounded-md 
-            ${type === "approved" ? "bg-approved" : type === "rejected" ? "bg-conflict" : type === "cancelled" ? "bg-abstain" : type === "voted" ? "bg-voted" : "bg-gray-300"}
-            ${type === proposalStatus || (type === "approved" && proposalStatus === "voted") ? "shadow-vote" : `${proposalStatus !== "active" && !(type === "approved" && proposalStatus === "voted") && "bg-zinc-700"}`}`}
+          className={`text-base sm:text-xl md:text-2xl text-white md:py-0.5 px-1 md:px-2 rounded md:rounded-md" ${type === "approved" ? "bg-approved" : type === "rejected" ? "bg-conflict" : type === "cancelled" ? "bg-abstain" : type === "voted" ? "bg-voted" : "bg-gray-300"}`}
         >
           {capitalizeFirstLetter(type)}
         </div>
