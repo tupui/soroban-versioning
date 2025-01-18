@@ -99,6 +99,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
             disabled={isLoading}
             className="bg-black w-[94px] mt-4 mb-1 py-1 px-2 rounded-lg text-lg"
             onClick={handleVote}
+            data-testid="vote-button"
           >
             {isLoading ? (
               <span className="text-center text-white text-xl font-normal leading-7">
@@ -133,6 +134,7 @@ const CheckBox: React.FC<{
         checked={option === value}
         className="opacity-0 absolute left-0 right-0 cursor-pointer"
         onChange={(e) => setOption(e.target.value)}
+        data-testid={`vote-option-${value}`}
       />
       <span className="rounded-full w-4 h-4 bg-zinc-200 border border-zinc-600 flex justify-center items-center">
         <span

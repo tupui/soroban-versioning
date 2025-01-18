@@ -139,6 +139,7 @@ const ProjectList = () => {
             className="w-full border rounded-2xl pl-3 sm:pl-4 pr-6 sm:pr-8 py-1 sm:py-2"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            data-testid="project-search-input"
           />
           <div
             className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 rounded-full hover:bg-zinc-300 cursor-pointer flex justify-center items-center p-0.5 pl-[3px]"
@@ -187,6 +188,7 @@ const ProjectList = () => {
               <button
                 className="register-btn mr-2 px-3 sm:px-4 py-2 bg-black text-white text-2xl sm:text-3xl rounded-lg"
                 onClick={handleRegister}
+                data-testid="register-new-project-button"
               >
                 Register
               </button>
