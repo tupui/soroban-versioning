@@ -294,6 +294,7 @@ const ProposalForm: React.FC = () => {
         onChange={(e) => setProposalName(e.target.value)}
         className="w-full p-2 border border-zinc-700 rounded-md focus:outline-none"
         placeholder="Enter your proposal name here..."
+        data-testid="proposal-name"
       />
       <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-3">
         Description
@@ -406,6 +407,7 @@ const ProposalForm: React.FC = () => {
           <button
             className="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
             onClick={() => submitProposal()}
+            data-testid="submit-proposal-button"
           >
             {isLoading ? (
               <Loading theme="dark" />
@@ -459,6 +461,7 @@ const OutcomeInput = ({
               setDescription(e.target.value);
             }}
             className="w-[calc(100%-80px)] sm:w-[calc(100%-90px)] md:w-[calc(100%-105px)] h-max text-sm sm:text-base rounded-md border border-zinc-700 outline-none resize-y"
+            data-testid={`proposal-${type}-description`}
           />
         </div>
         <div className="flex items-start">
@@ -471,6 +474,7 @@ const OutcomeInput = ({
               setXdr(e.target.value);
             }}
             className="w-[calc(100%-80px)] sm:w-[calc(100%-90px)] md:w-[calc(100%-105px)] h-max text-sm sm:text-base rounded-md border border-zinc-700 outline-none resize-y"
+            data-testid={`proposal-${type}-xdr`}
           />
         </div>
       </div>
