@@ -18,7 +18,7 @@ const ProposalCard: React.FC<ProposalCardView> = ({
     <div
       className="p-[30px] w-full flex flex-col gap-[30px] bg-white cursor-pointer"
       onClick={() =>
-        navigate(`/proposal?id=${proposalNumber}&&name=${projectName}`)
+        navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
       }
     >
       <div className="flex flex-col gap-[18px]">

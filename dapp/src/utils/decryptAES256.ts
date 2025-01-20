@@ -1,8 +1,10 @@
 import { promises as fs } from "fs";
+import { join } from "path";
 
 export default async function decryptProof(keyHex: string): Promise<string> {
   const key = await getKeyFromHex(keyHex);
-  const fileContent = await fs.readFile("encrypted_proof.bin", "utf-8");
+  const filePath = join(process.cwd(), "encrypted_proof.bin");
+  const fileContent = await fs.readFile(filePath, "utf-8");
   const payload: {
     nonce: string;
     header: string;
