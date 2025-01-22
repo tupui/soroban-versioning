@@ -147,8 +147,9 @@ import Loading from "../../utils/Loading.astro";
 </div>
 
 <script>
-  import { sendXLM } from "../../../service/PaymentService";
-  import { getAddressFromDomain } from "../../../service/SorobanDomainContractService";
+  import { loadProjectName } from "@service/StateService";
+import { sendXLM } from "../../../service/PaymentService";
+import { getAddressFromDomain } from "../../../service/SorobanDomainContractService";
 
   document.addEventListener("astro:page-load", () => {
     const amountButtons = document.querySelectorAll(".amount-button");
@@ -253,33 +254,27 @@ import Loading from "../../utils/Loading.astro";
         ).value;
 
         try {
-          const domainInfo = await getAddressFromDomain("tansu");
-          if (
-            domainInfo &&
-            !domainInfo.error &&
-            typeof domainInfo.message === "object" &&
-            "owner" in domainInfo.message.value
-          ) {
-            const domainOwnerAddress = domainInfo.message.value.owner;
-            const payment = await sendXLM(
-              amount.toString(),
-              domainOwnerAddress as string,
-              tipAmount.toString(),
-              donateMessage,
-            );
-            if (payment) {
-              alert("You successfully donated.");
-              if (modal) {
-                modal.classList.add("hidden");
-              }
-            } else {
-              alert("Donation failed.");
+          const projectName = loadProjectName();
+          const domainInfo = await getAddressFromDomain(projectName || '');
+          
+          const domainOwnerAddress = domainInfo.value.address;
+          const payment = await sendXLM(
+            amount.toString(),
+            domainOwnerAddress as string,
+            tipAmount.toString(),
+            donateMessage,
+          );
+          if (payment) {
+            alert("You successfully donated.");
+            if (modal) {
+              modal.classList.add("hidden");
             }
           } else {
-            alert("Cannot read domain information.");
+            alert("Donation failed.");
           }
-        } catch (error) {
-          alert("An error occurred during the contribution process.");
+        } catch (err:any) {
+          console.error(err.message);
+          alert(`Error occurred: ${err.message}`);
         } finally {
           // Hide loader and show text again
           contributeLoader?.classList.add("hidden");
