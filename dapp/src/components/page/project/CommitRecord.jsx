@@ -83,7 +83,7 @@ const CommitRecord = ({
               href={commitLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="commit-message text-base lg:text-xl font-medium text-[#311255] hover:underline hover:text-blue-500 truncate"
+              className="commit-message text-base lg:text-xl font-medium text-primary hover:underline hover:text-blue-500 truncate"
             >
               {firstLine}
             </a>
@@ -108,14 +108,14 @@ const CommitRecord = ({
               href={commitLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="sha leading-[18px] text-sm lg:text-lg text-[#311255] underline"
+              className="sha leading-[18px] text-sm lg:text-lg text-primary underline"
             >
               {sha.substring(0, 7)}
             </a>
           </div>
         </div>
         {hasMoreLines && isExpanded && (
-          <div className="expanded-message text-base text-[#4C4354] whitespace-pre-wrap">
+          <div className="expanded-message text-base text-secondary whitespace-pre-wrap">
             {formattedMessage.slice(1).join("\n")}
           </div>
         )}
@@ -128,7 +128,7 @@ const CommitRecord = ({
           >
             @{authorName}
           </a>
-          <span className="leading-4 text-base font-bold text-[#4C4354]">
+          <span className="leading-4 text-base font-bold text-secondary">
             {" "}
             committed on
           </span>

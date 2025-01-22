@@ -64,7 +64,7 @@ const CommitHistory = () => {
     <>
       <div className="px-[16px] lg:px-[72px] flex flex-col gap-12">
         <div className="flex flex-col gap-[18px]">
-          <p className="leading-6 text-2xl font-medium text-[#311255]">
+          <p className="leading-6 text-2xl font-medium text-primary">
             Commit History
           </p>
           <div className="border-t border-[#EEEEEE]" />
@@ -74,7 +74,7 @@ const CommitHistory = () => {
             <div key={day.date} className="day-group flex flex-col gap-6">
               <h3 className="relative">
                 <div className="absolute -left-[40px] lg:-left-[50px] top-1/2 -translate-y-1/2 w-5 h-5 border-2 border-[#2D0F512E] rounded-full"></div>
-                <span className="leading-6 text-lg text-[#311255]">
+                <span className="leading-6 text-lg text-primary">
                   {formatDate(day.date)}
                 </span>
               </h3>
