@@ -10,6 +10,8 @@ export default {
     },
     extend: {
       colors: {
+        primary: "#311255",
+        secondary: "#4C4354",
         black: "#000000",
         white: "#FFFFFF",
         pink: "#311255",
@@ -21,10 +23,10 @@ export default {
         yellow: "#E0D911",
         active: "#ED9033",
         interest: "#A9EE72",
-        conflict: "#FF8383",
-        abstain: "#C2C2C2",
+        conflict: "#DE2020",
+        abstain: "#D47901",
         voted: "#B40BF6",
-        approved: "#43B369",
+        approved: "#22A142",
         zinc: {
           100: "#F3F3F3",
           200: "#F0F0F0",
