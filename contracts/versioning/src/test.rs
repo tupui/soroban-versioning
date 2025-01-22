@@ -4,10 +4,12 @@ use super::{domain_contract, Tansu, TansuClient};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
 use crate::types::{Dao, ProposalStatus, Vote};
+use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
 use soroban_sdk::{
-    symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
+    bytesn, symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, Map, String,
+    Vec, U256,
 };
 
 #[test]
@@ -281,4 +283,112 @@ fn test_utils() {
     let node_official = domain_client.parse_domain(&name_b, &tld_b);
 
     assert_eq!(node, node_official);
+}
+
+fn commitment(env: &Env, vote: &i32, seed: &str, pk: &str) -> G1Affine {
+    let vote = Bytes::from_slice(&env, &vote.to_be_bytes());
+    let seed = Bytes::from_slice(&env, &seed.as_bytes());
+    let pk = Bytes::from_slice(&env, &pk.as_bytes());
+
+    let vote_dst = Bytes::from_slice(&env, "VOTE_COMMITMENT".as_bytes());
+    let pk_dst = Bytes::from_slice(&env, "VOTE_PK".as_bytes());
+    let seed_dst = Bytes::from_slice(&env, "VOTE_SEED".as_bytes());
+
+    let bls12_381 = env.crypto().bls12_381();
+
+    let vote_point = bls12_381.hash_to_g1(&vote, &vote_dst);
+    let seed_point = bls12_381.hash_to_g1(&seed, &seed_dst);
+    let pk_point = bls12_381.hash_to_g1(&pk, &pk_dst);
+
+    // C1 = g^v * h^r (in additive notation: g*v + h*r)
+    let vote_commitment = bls12_381.g1_add(&vote_point, &seed_point);
+
+    bls12_381.g1_add(&vote_commitment, &pk_point)
+}
+
+fn neg_value(env: &Env, value: G1Affine) -> G1Affine {
+    // Create -1 in Fr field using fr_sub(0, 1)
+    let bls12_381 = env.crypto().bls12_381();
+    let zero = U256::from_u32(&env, 0);
+    let one = U256::from_u32(&env, 1);
+    let neg_one = bls12_381.fr_sub(&zero.into(), &one.into());
+
+    // negate the value
+    bls12_381.g1_mul(&value, &neg_one)
+}
+
+fn add_commitment(
+    env: &Env,
+    tally: &G1Affine,
+    commitment: &G1Affine,
+    seed: &str,
+    pk: &str,
+) -> G1Affine {
+    let seed = Bytes::from_slice(&env, &seed.as_bytes());
+    let pk = Bytes::from_slice(&env, &pk.as_bytes());
+
+    let pk_dst = Bytes::from_slice(&env, "VOTE_PK".as_bytes());
+    let seed_dst = Bytes::from_slice(&env, "VOTE_SEED".as_bytes());
+
+    let bls12_381 = env.crypto().bls12_381();
+
+    let seed_point = bls12_381.hash_to_g1(&seed, &seed_dst);
+    let pk_point = bls12_381.hash_to_g1(&pk, &pk_dst);
+
+    let neg_seed = neg_value(&env, seed_point);
+    let neg_pk = neg_value(&env, pk_point);
+
+    // Remove randomization
+    let mut recovered_vote = bls12_381.g1_add(&commitment, &neg_seed);
+    recovered_vote = bls12_381.g1_add(&recovered_vote, &neg_pk);
+
+    // tally
+    bls12_381.g1_add(&tally, &recovered_vote)
+}
+
+fn mapping_point_to_value(env: &Env) -> Map<G1Affine, i32> {
+    let mut mapping = Map::new(env);
+
+    let vote_dst = Bytes::from_slice(&env, "VOTE_COMMITMENT".as_bytes());
+    let bls12_381 = env.crypto().bls12_381();
+
+    for value in -1_000_000_i32..=1_000_000_i32 {
+        let value_ = Bytes::from_slice(&env, &value.to_be_bytes());
+        let value_point = bls12_381.hash_to_g1(&value_, &vote_dst);
+        mapping.set(value_point, value);
+    }
+
+    mapping
+}
+
+#[test]
+fn test_anon() {
+    let env = Env::default();
+
+    // pk a public key which we store on the proposal
+    let pk = "public key";
+
+    // casting some votes in the frontend
+    let vote_a = 1_i32;
+    let seed_a = "seed value a";
+    let vote_commitment_a = commitment(&env, &vote_a, &seed_a, &pk);
+
+    let vote_b = 1_i32;
+    let seed_b = "seed value b";
+    let vote_commitment_b = commitment(&env, &vote_b, &seed_b, &pk);
+
+    // voting ends, we retrieve the commitments and the
+    // seeds are decrypted on the frontend with the secret key
+    //let mut tally: G1Affine = U256::from_u32(&env, 0).into();
+    let mut tally = G1Affine::from_bytes(bytesn!(&env, 0x400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000));
+    tally = add_commitment(&env, &tally, &vote_commitment_a, &seed_a, &pk);
+    tally = add_commitment(&env, &tally, &vote_commitment_b, &seed_b, &pk);
+
+    // check the tally
+    let bls12_381 = env.crypto().bls12_381();
+    let vote_dst = Bytes::from_slice(&env, "VOTE_COMMITMENT".as_bytes());
+    let one_vote = Bytes::from_slice(&env, &1_i32.to_be_bytes());
+    let one_vote_point = bls12_381.hash_to_g1(&one_vote, &vote_dst);
+    let ref_tally = bls12_381.g1_add(&one_vote_point, &one_vote_point);
+    assert_eq!(tally, ref_tally);
 }
