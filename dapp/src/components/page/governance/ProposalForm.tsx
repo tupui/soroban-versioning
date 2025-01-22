@@ -1,66 +1,71 @@
-import React from "react";
-import { useState, useEffect } from "react";
 import {
-  MDXEditor,
-  headingsPlugin,
-  listsPlugin,
-  quotePlugin,
-  thematicBreakPlugin,
-  markdownShortcutPlugin,
-  linkPlugin,
-  linkDialogPlugin,
-  imagePlugin,
-  tablePlugin,
-  codeBlockPlugin,
-  codeMirrorPlugin,
-  diffSourcePlugin,
-  frontmatterPlugin,
-  toolbarPlugin,
-  Separator,
-  UndoRedo,
-  BoldItalicUnderlineToggles,
   BlockTypeSelect,
+  BoldItalicUnderlineToggles,
   CodeToggle,
   CreateLink,
   DiffSourceToggleWrapper,
   InsertAdmonition,
+  InsertCodeBlock,
+  InsertFrontmatter,
   InsertImage,
   InsertTable,
-  InsertFrontmatter,
   InsertThematicBreak,
-  InsertCodeBlock,
   ListsToggle,
-  type CodeBlockEditorDescriptor,
+  MDXEditor,
+  Separator,
+  UndoRedo,
+  codeBlockPlugin,
+  codeMirrorPlugin,
+  diffSourcePlugin,
+  frontmatterPlugin,
+  headingsPlugin,
+  imagePlugin,
+  linkDialogPlugin,
+  linkPlugin,
+  listsPlugin,
+  markdownShortcutPlugin,
+  quotePlugin,
+  tablePlugin,
+  thematicBreakPlugin,
+  toolbarPlugin,
   useCodeBlockEditorContext,
+  type CodeBlockEditorDescriptor,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import { useStore } from "@nanostores/react";
-import * as Delegation from "@web3-storage/w3up-client/delegation";
-import * as Client from "@web3-storage/w3up-client";
-import { capitalizeFirstLetter, getIpfsBasicLink } from "utils/utils";
-import type { ProposalOutcome } from "types/proposal";
-import Loading from "components/utils/Loading";
-import { connectedPublicKey, projectNameForGovernance } from "utils/store";
 import { getProjectFromName } from "@service/ReadContractService";
+import * as Client from "@web3-storage/w3up-client";
+import * as Delegation from "@web3-storage/w3up-client/delegation";
+import { navigate } from "astro:transitions/client";
+import Button from "components/utils/Button";
+import Input from "components/utils/Input";
+import Modal from "components/utils/Modal";
+import Textarea from "components/utils/Textarea";
+import React, { useEffect, useState } from "react";
+import type { ProposalOutcome } from "types/proposal";
+import { connectedPublicKey, projectNameForGovernance } from "utils/store";
+import { capitalizeFirstLetter, getIpfsBasicLink } from "utils/utils";
 
 const ProposalForm: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [mdText, setMdText] = useState("");
+  const connectedAddress = useStore(connectedPublicKey);
+  const projectName = useStore(projectNameForGovernance);
+  const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [proposalName, setProposalName] = useState("");
+  const [mdText, setMdText] = useState("");
   const [approveDescription, setApproveDescription] = useState("");
   const [rejectDescription, setRejectDescription] = useState("");
   const [cancelledDescription, setCancelledDescription] = useState("");
   const [approveXdr, setApproveXdr] = useState("");
   const [rejectXdr, setRejectXdr] = useState("");
   const [cancelledXdr, setCancelledXdr] = useState("");
+  const [votingDays, setVotingDays] = useState<number>(5);
   const [imageFiles, setImageFiles] = useState<
     { localUrl: string; publicUrl: string; source: File }[]
   >([]);
-  const connectedAddress = useStore(connectedPublicKey);
-  const projectName = useStore(projectNameForGovernance);
-  const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
-  const [proposalName, setProposalName] = useState("");
-  const [votingDays, setVotingDays] = useState<number>(5);
+  const [submittingStatus, setSubmittingStatus] = useState(0);
+  const [showClearAllModal, setShowClearAllModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -122,59 +127,39 @@ const ProposalForm: React.FC = () => {
   };
 
   const submitProposal = async () => {
-    if (!projectName) {
-      alert("Project name is required");
-      return;
-    }
-
-    if (
-      !proposalName ||
-      proposalName.length < 10 ||
-      proposalName.length > 256
-    ) {
-      alert("Proposal name is required");
-      return;
-    }
-
-    if (votingDays < 1 || votingDays > 30) {
-      alert("Voting days must be between 5 and 30");
-      return;
-    }
-
-    if (!isDescriptionValid(mdText, 10)) {
-      alert("Proposal description must contain at least 10 words.");
-      return;
-    }
-
-    if (!isDescriptionValid(approveDescription)) {
-      alert("Approved description must contain at least 3 words.");
-      return;
-    }
-
-    if (rejectXdr && !isDescriptionValid(rejectDescription)) {
-      alert("Rejected description must contain at least 3 words.");
-      return;
-    }
-
-    if (cancelledXdr && !isDescriptionValid(cancelledDescription)) {
-      alert("Cancelled description must contain at least 3 words.");
-      return;
-    }
-
-    if (!connectedAddress) {
-      alert("Please connect your wallet first");
-      return;
-    }
-
-    if (!projectMaintainers.includes(connectedAddress)) {
-      alert("You are not a maintainer of this project");
-      return;
-    }
-
     try {
-      setIsLoading(true);
+      if (!projectName)
+        throw new Error('No project is selected');
+
+      if (proposalName.length < 10 || proposalName.length > 256)
+        throw new Error("Proposal name is required");
+
+      if (votingDays < 1 || votingDays > 30)
+        throw new Error("Voting days must be between 5 and 30");
+
+      if (!isDescriptionValid(mdText, 10))
+        throw new Error("Proposal description must contain at least 10 words.");
+
+      if (!isDescriptionValid(approveDescription))
+        throw new Error("Approved description must contain at least 3 words.");
+
+      if (rejectXdr && !isDescriptionValid(rejectDescription))
+        throw new Error("Rejected description must contain at least 3 words.");
+
+      if (cancelledXdr && !isDescriptionValid(cancelledDescription))
+        throw new Error("Cancelled description must contain at least 3 words.");
+
+      if (!connectedAddress)
+        throw new Error("Please connect your wallet first");
+
+      if (!projectMaintainers.includes(connectedAddress))
+        throw new Error("You are not a maintainer of this project");
+
+      setSubmittingStatus(1);
+
       const client = await Client.create();
       const apiUrl = `/api/w3up-delegation`;
+
 
       const { generateChallengeTransaction } = await import(
         "@service/ChallengeService"
@@ -184,6 +169,8 @@ const ProposalForm: React.FC = () => {
 
       const signedTxXdr = await generateChallengeTransaction(did);
 
+      setSubmittingStatus(2);
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -191,10 +178,10 @@ const ProposalForm: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        alert(`Error: ${errorData.error}`);
-        throw new Error(errorData.error);
+        const data = await response.json();
+        throw new Error(data.error);
       }
+
       const data = await response.arrayBuffer();
 
       const delegation = await Delegation.extract(new Uint8Array(data));
@@ -241,18 +228,14 @@ const ProposalForm: React.FC = () => {
       });
 
       files.push(new File([description], "proposal.md"));
-
-      if (!files) {
-        alert("Failed to create proposal files");
-        return;
-      }
+      if (!files)
+        throw new Error('Failed to create proposal files');
 
       const directoryCid = await client.uploadDirectory(files);
+      if (!directoryCid)
+        throw new Error("Failed to upload proposal");
 
-      if (!directoryCid) {
-        alert("Failed to upload proposal");
-        return;
-      }
+      setSubmittingStatus(3);
 
       const { createProposal } = await import("@service/WriteContractService");
 
@@ -263,111 +246,112 @@ const ProposalForm: React.FC = () => {
         Math.floor(Date.now() / 1000) + 86400 * votingDays,
       );
 
-      setIsLoading(false);
-      if (res.error) {
-        alert(res.errorMessage);
-      } else {
-        alert(
-          `Proposal submitted successfully! Proposal ID: ${res.data}, CID: ${getIpfsBasicLink(directoryCid.toString())}`,
-        );
+      if (res.error)
+        throw new Error(res.errorMessage);
 
-        window.location.href = `/governance?name=${projectName}`;
-      }
-    } catch (error: any) {
-      setIsLoading(false);
-      console.error(
-        "submit proposal error:",
-        error?.cause ? error.cause : error,
+      setSubmittingStatus(4);
+
+      alert(
+        `Proposal submitted successfully! Proposal ID: ${res.data}, CID: ${getIpfsBasicLink(directoryCid.toString())}`,
       );
-      alert("Error submitting proposal.");
+
+      window.location.href = `/governance?name=${projectName}`;
+    } catch (err: any) {
+      console.error(err.message);
+      alert(err.message);
     }
+    setSubmittingStatus(0);
   };
 
   return (
-    <div>
-      <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-3">
-        Name
-      </h3>
-      <input
-        type="text"
-        value={proposalName}
-        onChange={(e) => setProposalName(e.target.value)}
-        className="w-full p-2 border border-zinc-700 rounded-md focus:outline-none"
-        placeholder="Enter your proposal name here..."
-      />
-      <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-3">
-        Description
-      </h3>
-      <div className="rounded-md border border-zinc-700 overflow-hidden">
-        <MDXEditor
-          plugins={[
-            markdownShortcutPlugin(),
-            headingsPlugin(),
-            listsPlugin(),
-            quotePlugin(),
-            thematicBreakPlugin(),
-            linkPlugin(),
-            linkDialogPlugin(),
-            imagePlugin({
-              imageUploadHandler,
-            }),
-            tablePlugin(),
-            codeBlockPlugin({
-              defaultCodeBlockLanguage: "ts",
-              codeBlockEditorDescriptors: [PlainTextCodeEditorDescriptor],
-            }),
-            codeMirrorPlugin({
-              codeBlockLanguages: {
-                js: "JavaScript",
-                css: "CSS",
-                rust: "Rust",
-                html: "HTML",
-                json: "JSON",
-                ts: "TypeScript",
-              },
-            }),
-            diffSourcePlugin({
-              diffMarkdown: "boo",
-            }),
-            frontmatterPlugin(),
-            toolbarPlugin({
-              toolbarClassName: "my-classname",
-              toolbarContents: () => (
-                <>
-                  <UndoRedo />
-                  <Separator />
-                  <BoldItalicUnderlineToggles />
-                  <CodeToggle />
-                  <BlockTypeSelect />
-                  <Separator />
-                  <ListsToggle />
-                  <Separator />
-                  <CreateLink />
-                  <InsertImage />
-                  <InsertTable />
-                  <Separator />
-                  <InsertAdmonition />
-                  <InsertThematicBreak />
-                  <InsertCodeBlock />
-                  <Separator />
-                  <InsertFrontmatter />
-                  <DiffSourceToggleWrapper>
-                    <div></div>
-                  </DiffSourceToggleWrapper>
-                  <BoldItalicUnderlineToggles />
-                </>
-              ),
-            }),
-          ]}
-          markdown={mdText}
-          onChange={(value) => setMdText(value || "")}
-          placeholder="Input your proposal description here..."
-        />
-      </div>
-      <h3 className="text-base sm:text-lg md:text-[26px] font-semibold my-10 mb-8">
-        Outcome
-      </h3>
-      <div className="w-full max-w-[840px] mx-auto flex flex-col gap-4 sm:gap-6 md:gap-10">
+    <>
+      <div className="w-full flex flex-col gap-9">
+        <div className="flex flex-col gap-3">
+          <h3 className="text-2xl font-medium text-primary">Create Proposal</h3>
+          <p className="text-base text-secondary">
+            Draft and share your proposal for consideration, innovation, and
+            collective action.
+          </p>
+        </div>
+        <div className="flex flex-col gap-[18px]">
+          <p className="text-xl font-medium text-primary">Basic Information</p>
+          <div className="flex flex-col gap-[18px]">
+            <p className="text-base font-[600] text-primary">Proposal Name</p>
+            <Input
+              placeholder="Enter your proposal name here..."
+              value={proposalName}
+              onChange={(e: any) => setProposalName(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-[18px]">
+            <p className="text-base font-[600] text-primary">Description</p>
+            <div className="rounded-md border border-zinc-700 overflow-hidden">
+              <MDXEditor
+                plugins={[
+                  markdownShortcutPlugin(),
+                  headingsPlugin(),
+                  listsPlugin(),
+                  quotePlugin(),
+                  thematicBreakPlugin(),
+                  linkPlugin(),
+                  linkDialogPlugin(),
+                  imagePlugin({
+                    imageUploadHandler,
+                  }),
+                  tablePlugin(),
+                  codeBlockPlugin({
+                    defaultCodeBlockLanguage: "ts",
+                    codeBlockEditorDescriptors: [PlainTextCodeEditorDescriptor],
+                  }),
+                  codeMirrorPlugin({
+                    codeBlockLanguages: {
+                      js: "JavaScript",
+                      css: "CSS",
+                      rust: "Rust",
+                      html: "HTML",
+                      json: "JSON",
+                      ts: "TypeScript",
+                    },
+                  }),
+                  diffSourcePlugin({
+                    diffMarkdown: "boo",
+                  }),
+                  frontmatterPlugin(),
+                  toolbarPlugin({
+                    toolbarClassName: "my-classname",
+                    toolbarContents: () => (
+                      <>
+                        <UndoRedo />
+                        <Separator />
+                        <BoldItalicUnderlineToggles />
+                        <CodeToggle />
+                        <BlockTypeSelect />
+                        <Separator />
+                        <ListsToggle />
+                        <Separator />
+                        <CreateLink />
+                        <InsertImage />
+                        <InsertTable />
+                        <Separator />
+                        <InsertAdmonition />
+                        <InsertThematicBreak />
+                        <InsertCodeBlock />
+                        <Separator />
+                        <InsertFrontmatter />
+                        <DiffSourceToggleWrapper>
+                          <div></div>
+                        </DiffSourceToggleWrapper>
+                      </>
+                    ),
+                  }),
+                ]}
+                markdown={mdText}
+                onChange={(value) => setMdText(value || "")}
+                placeholder="Input your proposal description here..."
+              />
+            </div>
+          </div>
+        </div>
         <OutcomeInput
           type="approved"
           description={approveDescription}
@@ -389,35 +373,106 @@ const ProposalForm: React.FC = () => {
           xdr={cancelledXdr}
           setXdr={setCancelledXdr}
         />
-        <div className="w-full flex items-center">
-          <h5 className="w-[80px] sm:w-[90px] md:w-[105px] pr-1.5 text-right text-base text-nowrap">
-            Voting dates:
-          </h5>
-          <input
-            type="number"
-            value={votingDays}
-            onChange={(e) => setVotingDays(Number(e.target.value))}
-            className="w-14 pr-2 text-right text-base border border-zinc-700 rounded-md focus:outline-none"
-            placeholder=""
-          />
-          <div className="pl-1.5 text-base">days</div>
+        <div className="flex flex-col gap-[18px]">
+          <p className="text-xl font-medium text-primary">Basic Information</p>
+          <div className="flex flex-col gap-[18px]">
+            <p className="leading-[16px] text-base font-[600] text-primary">
+              Set the duration for the voting period
+            </p>
+            <Input
+              className="w-[440px]"
+              placeholder="Enter the number of days"
+              value={votingDays}
+              onChange={(e) => setVotingDays(Number(e.target.value))}
+            />
+            <p className="leading-[16px] text-base text-[#5D4E6B]">
+              Minimum duration:{" "}
+              <span className="font-[600] text-primary">1 day</span>
+            </p>
+          </div>
         </div>
-        <div className="ml-[80px] sm:ml-[90px] md:ml-[105px]">
-          <button
-            className="w-full py-5 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex"
-            onClick={() => submitProposal()}
+        <div className="grid grid-cols-4 gap-[18px]">
+          <Button className="relative col-span-2" onClick={submitProposal}>
+            <div className="absolute left-0 top-0 h-full" style={{ width: `${submittingStatus * 25}%`, backgroundColor: '#FFB21E' }} />
+            <p className="z-10">
+              {submittingStatus == 0 ?
+                "Submit Proposals" :
+                submittingStatus == 1 ?
+                  "Signing Authorization..." :
+                  submittingStatus == 2 ?
+                    "Uploading to IPFS..." :
+                    submittingStatus == 3 ?
+                      "Registering Proposal..." :
+                      "Finalizing Smart Contract..."
+              }
+            </p>
+          </Button>
+          <Button
+            type="secondary"
+            className="col-span-1"
+            onClick={() => setShowClearAllModal(true)}
           >
-            {isLoading ? (
-              <Loading theme="dark" />
-            ) : (
-              <span className="text-center text-white text-xl font-normal leading-7">
-                Submit Proposal
-              </span>
-            )}
-          </button>
+            Clear All
+          </Button>
+          <Button
+            type="secondary"
+            className="col-span-1"
+            onClick={() => setShowCancelModal(true)}
+          >
+            Cancel
+          </Button>
         </div>
       </div>
-    </div>
+      {showClearAllModal && (
+        <Modal onClose={() => setShowClearAllModal(false)}>
+          <div className="flex flex-col gap-12">
+            <div className="flex flex-col gap-[18px]">
+              <h6 className="text-2xl font-medium text-primary">
+                Clear All Fields
+              </h6>
+              <p className="text-lg text-secondary">
+                Are you sure you want to clear all fields? This will erase all
+                the information you've entered in this form.
+              </p>
+            </div>
+            <div className="flex gap-[18px]">
+              <Button onClick={() => setShowClearAllModal(false)}>Go Back</Button>
+              <Button type="secondary" onClick={() => {
+                setProposalName("");
+                setMdText("");
+                setApproveDescription("");
+                setApproveXdr("");
+                setRejectDescription("");
+                setRejectXdr("");
+                setCancelledDescription("");
+                setCancelledXdr("");
+                setVotingDays(5);
+                setShowClearAllModal(false);
+              }}>Clear Fields</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {showCancelModal && (
+        <Modal onClose={() => setShowCancelModal(false)}>
+          <div className="flex flex-col gap-12">
+            <div className="flex flex-col gap-[18px]">
+              <h6 className="text-2xl font-medium text-primary">
+                Cancel Proposal Creation
+              </h6>
+              <p className="text-lg text-secondary">
+                Are you sure you want to cancel creating this proposal? All
+                entered information will be lost.
+              </p>
+            </div>
+            <div className="flex gap-[18px]">
+              <Button onClick={() => setShowCancelModal(false)}>Go Back</Button>
+              <Button type="secondary" onClick={() => navigate(`/governance?name=${projectName}`)}>Cancel Proposal</Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </>
   );
 };
 
@@ -439,40 +494,36 @@ const OutcomeInput = ({
   setXdr,
 }: OutcomeInputProps) => {
   return (
-    <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
-      <div className="w-min">
-        <div
-          className={`text-sm sm:text-base md:text-lg text-white md:py-0.5 px-1 md:px-2 rounded-sm md:rounded 
-            ${type === "approved" ? "bg-approved" : type === "rejected" ? "bg-conflict" : type === "cancelled" && "bg-abstain"}`}
-        >
-          {capitalizeFirstLetter(type)}
-        </div>
+    <div className="flex flex-col gap-[18px]">
+      <div
+        className={`text-xl font-medium ${type === "approved" ? "text-approved" : type === "rejected" ? "text-conflict" : type === "cancelled" && "text-abstain"}`}
+      >
+        {capitalizeFirstLetter(type)} Outcome
       </div>
-      <div className="flex flex-col gap-3 sm:gap-4 md:gap-6">
-        <div className="flex items-start">
-          <div className="w-[80px] sm:w-[90px] md:w-[105px] pr-1.5 flex justify-end">
-            <div className="text-sm sm:text-base">Description:</div>
-          </div>
-          <textarea
-            value={description}
-            onChange={(e) => {
-              setDescription(e.target.value);
-            }}
-            className="w-[calc(100%-80px)] sm:w-[calc(100%-90px)] md:w-[calc(100%-105px)] h-max text-sm sm:text-base rounded-md border border-zinc-700 outline-none resize-y"
-          />
-        </div>
-        <div className="flex items-start">
-          <div className="w-[80px] sm:w-[90px] md:w-[105px] pr-1.5 flex justify-end">
-            <div className="text-sm sm:text-base">XDR:</div>
-          </div>
-          <textarea
-            value={xdr}
-            onChange={(e) => {
-              setXdr(e.target.value);
-            }}
-            className="w-[calc(100%-80px)] sm:w-[calc(100%-90px)] md:w-[calc(100%-105px)] h-max text-sm sm:text-base rounded-md border border-zinc-700 outline-none resize-y"
-          />
-        </div>
+      <div className="flex flex-col gap-[18px]">
+        <p className="leading-[16px] text-base font-[600] text-primary">
+          Description
+        </p>
+        <Textarea
+          placeholder="Write the description"
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value);
+          }}
+        />
+      </div>
+      <div className="flex flex-col gap-[18px]">
+        <p className="leading-[16px] text-base font-[600] text-primary">
+          XDR (Optional)
+        </p>
+        <Textarea
+          className="h-[64px]"
+          placeholder="Write the XDR"
+          value={xdr}
+          onChange={(e) => {
+            setXdr(e.target.value);
+          }}
+        />
       </div>
     </div>
   );

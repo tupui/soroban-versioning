@@ -1,20 +1,18 @@
 ---
+import { BackIcon } from "components/icons";
 import PrimaryButton from "../../utils/PrimaryButton.astro";
-import Topic from "../../utils/Topic.astro";
 ---
 
 <div
-  class="relative flex flex-col items-center md:flex-row justify-between mb-1.5 mt-4 sm:mt-8 md:mt-12 gap-y-4"
+  class="z-10 mx-auto w-full max-w-[1048px] flex justify-between items-center"
 >
-  <Topic title="" description="" id="proposal-page-topic" />
-  <div id="create-proposal-button" class="">
-    <PrimaryButton
-      wrapId="wrap-create-proposal-button"
-      dataAttr="data-create-proposal-button"
-      ariaControls="create-proposal-modal"
-      buttonText="Submit Proposal"
-    />
-  </div>
+  <button id="back-button" class="flex gap-[14px]">
+    <BackIcon />
+    <p class="leading-5 text-xl text-primary">Back to Project Page</p>
+  </button>
+  <PrimaryButton id="create-proposal-button" icon="/icons/send.svg">
+    Submit Proposal
+  </PrimaryButton>
 </div>
 
 <script>
@@ -50,8 +48,15 @@ import Topic from "../../utils/Topic.astro";
       connectedAddress = publicKey;
     });
 
+    const backButton = document.getElementById("back-button");
+    if (backButton) {
+      backButton.addEventListener("click", () => {
+        navigate(`/project?name=${projectName}`);
+      });
+    }
+
     const submitProposalButton = document.getElementById(
-      "wrap-create-proposal-button",
+      "create-proposal-button",
     );
 
     if (submitProposalButton) {
