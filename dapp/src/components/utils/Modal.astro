@@ -24,15 +24,3 @@ const { id } = Astro.props;
     backdrop-filter: blur(24px);
   }
 </style>
-
-<script>
-  document.addEventListener("astro:page-load", () => {
-    const modals = document.querySelectorAll(".modal");
-    modals.forEach((modal) => {
-      if (modal instanceof HTMLDialogElement) {
-        const closeBtn = modal.querySelector("button");
-        closeBtn?.addEventListener("click", () => modal.close());
-      }
-    });
-  });
-</script>
