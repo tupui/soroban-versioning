@@ -1,8 +1,8 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import Container from "../../components/layout/Container.astro";
-import NewProposalPageTitle from "components/page/governance/NewProposalPageTitle.astro";
 import NewProposalPage from "components/page/governance/NewProposalPage.astro";
+import NewProposalPageTitle from "components/page/governance/NewProposalPageTitle.astro";
+import Container from "../../components/layout/Container.astro";
+import Layout from "../../layouts/Layout.astro";
 ---
 
 <script is:inline>
@@ -10,12 +10,10 @@ import NewProposalPage from "components/page/governance/NewProposalPage.astro";
 </script>
 
 <Layout title="Tansu" page="new_proposal">
-  <main class="space-y-20">
-    <Container>
-      <NewProposalPageTitle />
-      <NewProposalPage />
-    </Container>
-  </main>
+  <Container>
+    <NewProposalPageTitle />
+    <NewProposalPage />
+  </Container>
 </Layout>
 
 <script>
