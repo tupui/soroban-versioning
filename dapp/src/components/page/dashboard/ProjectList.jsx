@@ -97,7 +97,7 @@ const ProjectList = () => {
       if (project && project.name && project.config && project.maintainers) {
         const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
         if (tomlData) {
-          const configData = extractConfigData(tomlData, project.name);
+          const configData = extractConfigData(tomlData, project);
           setConfigInfo(configData);
         } else {
           // alert("Can not read config data.");
