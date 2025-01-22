@@ -6,63 +6,30 @@ const { page } = Astro.props;
 ---
 
 <header class="z-10">
-  <nav class="hidden md:block w-full px-[120px]">
+  <nav class="w-full px-[24px] md:px-[120px]">
     <div class="max-w-[1920px] mx-auto">
-      <div class="flex items-start justify-between pt-[81px]">
-        <div class="md:w-auto">
-          {page === "home" && <DiscoverTansu />}
-        </div>
-        <div class="mt-[13px] flex flex-col items-center gap-[30px]">
-          <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
-            <img src="/logo.svg" class="h-12 md:h-18" alt="Logo" />
-          </a>
+      <div class="pt-[60px] md:pt-[80px] flex gap-[18px]">
+        <div class="md:order-1 ml-auto flex flex-col gap-[30px]">
+          <img alt="logo" src="/logo.svg" class="h-12" />
           {
             page === "home" && (
-              <p class="text-lg text-zinc-800 font-victorMono">
-                <b class="text-pink">Tansu </b> - Unite developers, communities,
-                and users in open-source innovation.
-              </p>
-            )
-          }
-        </div>
-        <div class="md:w-auto" id="navbar-default">
-          <ConnectWallet />
-        </div>
-      </div>
-    </div>
-  </nav>
-  <nav class="md:hidden w-full px-8">
-    <div class="flex flex-col gap-[18px] pt-[60px]">
-      <div class="flex items-start justify-between">
-        <div class="ml-[10px]">
-          <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
-            <img src="/logo.svg" class="h-12" alt="Logo" />
-          </a>
-        </div>
-        <div class="flex items-center gap-[18px]">
-          <div class="" id="navbar-default">
-            <ConnectWallet />
-          </div>
-          {
-            page === "home" && (
-              <div class="">
-                <DiscoverTansu />
+              <div class="hidden md:flex gap-[12px]">
+                <p class="text-lg font-bold text-primary">Tansu</p>
+                <p class="text-lg font-bold text-secondary">
+                  - Unite developers, communities, and users in open-source
+                  innovation.
+                </p>
               </div>
             )
           }
         </div>
+        <div class="md:order-2 ml-auto md:w-auto" id="navbar-default">
+          <ConnectWallet />
+        </div>
+        <div class="md:order-0 md:w-auto">
+          {page === "home" && <DiscoverTansu />}
+        </div>
       </div>
-      {
-        page === "home" && (
-          <div class="flex flex-col gap-[10px] font-victorMono">
-            <b class="text-lg text-pink">Tansu </b>
-            <p class="text-base text-zinc-800">
-              Unite developers, communities, and users in open-source
-              innovation.
-            </p>
-          </div>
-        )
-      }
     </div>
   </nav>
 </header>
