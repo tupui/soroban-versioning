@@ -43,7 +43,7 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
       <div className="w-full flex flex-col gap-4 sm:gap-6 md:gap-8">
         <div className="">
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-            <div className="text-xl sm:text-2xl md:text-3xl font-semibold">
+            <div className="text-xl sm:text-2xl md:text-3xl font-medium">
               Proposal Description
             </div>
             <a
@@ -72,7 +72,7 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
         </div>
         <div className="">
           <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
-            <div className="text-xl sm:text-2xl md:text-3xl font-semibold">
+            <div className="text-xl sm:text-2xl md:text-3xl font-medium">
               Proposal Outcome
             </div>
             <a
