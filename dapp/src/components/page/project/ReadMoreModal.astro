@@ -1,0 +1,23 @@
+---
+import Modal from "components/utils/Modal.astro";
+import ProjectReadme from "./ProjectReadme.astro";
+---
+
+<Modal id="read-more-modal">
+  <div
+    class="p-4 lg:p-9 w-[342px] lg:w-[1048px] flex max-lg:flex-col gap-6 lg:gap-12"
+  >
+    <img
+      class="project-thumbnail w-[110px] h-[110px] lg:w-[220px] lg:h-[220px]"
+      alt="project-thumbnail"
+      src=""
+    />
+    <div class="flex flex-col gap-[15px] gap-[30px]">
+      <div class="flex flex-col gap-3">
+        <p class="project-name leading-6 text-xl font-medium text-primary"></p>
+        <p class="project-description text-base text-secondary"></p>
+      </div>
+      <ProjectReadme />
+    </div>
+  </div>
+</Modal>

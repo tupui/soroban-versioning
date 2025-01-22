@@ -1,150 +1,106 @@
 ---
-import Loading from "../../utils/Loading.astro";
+import Modal from "components/utils/Modal.astro";
+import Tooltip from "components/utils/Tooltip.astro";
 ---
 
-<div
-  id="donate-modal"
-  class="fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50 hidden"
->
+<Modal id="donate-modal">
   <div
-    class="bg-white px-4 sm:px-8 md:px-12 py-8 rounded-2xl relative w-[530px] max-w-[90%]"
+    class="p-4 lg:p-9 w-[342px] lg:w-[1048px] flex flex-col gap-[18px] md:gap-9"
   >
-    <button
-      id="close-donate-modal"
-      class="absolute top-3 right-3 text-zinc-700 hover:text-zinc-700"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M6 18L18 6M6 6l12 12"></path>
-      </svg>
-    </button>
-
-    <div class="flex flex-col space-y-3 sm:space-y-6 md:space-y-8">
-      <div>
-        <h2
-          id="donate-modal-title"
-          class="text-xl sm:text-2xl font-bold bg-lime py-1 sm:py-2 px-2 rounded-xl w-min"
+    <div class="flex flex-col gap-3">
+      <h6 class="text-2xl font-medium text-primary">Support</h6>
+      <p class="text-base text-secondary">
+        Help bring this project to life with your contribution.
+      </p>
+    </div>
+    <div class="flex flex-col gap-3">
+      <p class="text-base font-[600] text-primary">Contribute</p>
+      <div class="flex max-md:flex-col items-center gap-[8px] md:gap-[30px]">
+        <div
+          id="amount-input-container"
+          class="max-md:w-full flex-grow flex border border-[#978AA1]"
         >
-          Contribute
-        </h2>
-      </div>
-
-      <div class="flex flex-col gap-3 w-full">
-        <div class="flex w-full">
-          <button
-            class="amount-button flex-1 bg-zinc-800 border border-zinc-800 text-lg sm:text-xl md:text-2xl font-semibold text-white py-1 rounded-l-lg"
-            >10 XLM</button
-          >
-          <button
-            class="amount-button flex-1 bg-zinc-200 border border-zinc-300 text-lg sm:text-xl md:text-2xl font-semibold text-zinc-700 py-1"
-            >100 XLM</button
-          >
-          <button
-            class="amount-button flex-1 bg-zinc-200 border border-zinc-300 text-lg sm:text-xl md:text-2xl font-semibold text-zinc-700 py-1 rounded-r-lg"
-            >Other</button
-          >
-        </div>
-        <div class="w-full h-[30px] sm:h-[38px]">
-          <div id="amount-input-container" class="hidden items-center">
-            <div class="flex items-center relative">
-              <span
-                class="absolute left-2 sm:left-3 sm:py-0.5 pr-1 border-r-2 border-zinc-700"
-                >XLM</span
-              >
-              <input
-                id="amount-input"
-                type="number"
-                class="w-[120px] sm:w-40 flex-1 border rounded-lg pl-12 sm:pl-14 pr-3 py-0.5 sm:py-1 text-base sm:text-lg text-right"
-                value="10"
-              />
-            </div>
-            <div class="flex w-full justify-center items-center">
-              <p class="text-sm sm:text-base">Minimum amount: 1 XLM</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <textarea
-        id="donate-message"
-        placeholder="Say something nice..."
-        rows="4"
-        class="w-full border border-zinc-400 bg-zinc-200 rounded-xl p-2 resize-none focus:outline-none"
-      ></textarea>
-
-      <div class="flex items-center">
-        <span class="mr-2 flex items-center">
-          Platform tip:
-          <span class="relative group ml-1">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5"
-              viewBox="0 0 24 24"
-            >
-              <rect width="24" height="24" rx="2" fill="#3b82f6"></rect>
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.8"
-                d="M12.5 16h-1v-4h-1m1-4h.01M12 8v.01"
-                stroke="white"
-                fill="none"></path>
-            </svg>
-            <div
-              class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block w-max max-w-[330px] sm:max-w-none"
-            >
-              <div
-                id="donate-tip-popup"
-                class="bg-zinc-800 text-white text-sm py-2 px-4 rounded-lg shadow-lg relative"
-              >
-                Help us run the Tansu platform sustainability
-                <div
-                  class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"
-                >
-                </div>
-              </div>
-            </div>
-          </span>
-        </span>
-        <div class="flex items-center relative">
-          <span
-            class="absolute left-2 sm:left-3 sm:py-0.5 pr-1 border-r-2 border-zinc-700"
-            >XLM</span
-          >
           <input
-            id="tip-amount-input"
-            type="number"
-            class="w-28 sm:w-36 flex-1 border rounded-lg pl-12 sm:pl-14 pr-3 py-0.5 sm:py-1 text-sm sm:text-base text-right"
-            value="0"
+            id="amount-input"
+            class="flex-grow max-w-[458px] p-[18px] outline-none"
+            placeholder="Enter the amount"
           />
+          <div class="px-[18px] flex items-center">
+            <p class="text-xl text-primary">XLM</p>
+          </div>
+        </div>
+        <p class="text-base text-[#5D4E6B]">or</p>
+        <div class="max-md:w-full h-[56px] flex">
+          <button
+            class="amount-button w-1/3 md:w-[146px] flex justify-center items-center text-xl text-primary border border-r-0 border-[#978AA1]"
+            data-amount="10"
+          >
+            10 XLM
+          </button>
+          <button
+            class="amount-button w-1/3 md:w-[146px] flex justify-center items-center text-xl text-primary border border-r-0 border-[#978AA1]"
+            data-amount="100"
+          >
+            100 XLM
+          </button>
+          <button
+            class="amount-button w-1/3 md:w-[146px] flex justify-center items-center text-xl text-primary border border-[#978AA1]"
+            data-amount="1000"
+          >
+            1000 XLM
+          </button>
         </div>
       </div>
-
-      <div class="flex justify-center">
-        <button
-          id="contribute-button"
-          class="bg-zinc-800 text-white text-base sm:text-lg py-2 rounded-xl px-8 sm:px-12 w-max"
-        >
-          <span id="contribute-text"
-            >Contribute to <span id="project-name"></span>.xlm</span
-          >
-          <div id="contribute-loader" class="hidden">
-            <Loading theme="dark" />
-          </div>
-        </button>
+      <div class="flex gap-3">
+        <p class="text-base text-[#5D4E6B]">Minimum amount:</p>
+        <p class="text-base font-[600] text-primary">1 XLM</p>
       </div>
     </div>
+    <div class="flex flex-col gap-3">
+      <p class="text-base font-[600] text-primary">
+        Say Something to Support the Project (optional)
+      </p>
+      <textarea
+        id="donate-message"
+        class="p-[18px] w-full border border-[#978AA1] outline-none"
+        placeholder="Write your message here"></textarea>
+    </div>
+    <div class="flex flex-col gap-3">
+      <div class="flex gap-3">
+        <p class="text-base font-[600] text-primary">
+          Platform trip (optional)
+        </p>
+        <Tooltip text="Help us run the Tansu platform sustainability">
+          <img src="/icons/info.svg" />
+        </Tooltip>
+      </div>
+      <div class="max-w-[458px] flex border border-[#978AA1]">
+        <input
+          id="tip-amount-input"
+          class="flex-grow max-w-[458px] p-[18px] outline-none"
+          placeholder="Enter the amount"
+        />
+        <div class="px-[18px] flex items-center">
+          <p class="text-xl text-primary">XLM</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-[18px]">
+      <button
+        id="contribute-button"
+        class="w-[220px] h-[56px] bg-primary text-white"
+      >
+        Contribute
+      </button>
+      <button
+        class="w-[220px] h-[56px] bg-[#F5F1F9] text-primary"
+        onclick="this.closest('dialog').close()"
+      >
+        Cancel
+      </button>
+    </div>
   </div>
-</div>
+</Modal>
 
 <script>
   import { loadProjectName } from "@service/StateService";
@@ -152,7 +108,6 @@ import Loading from "../../utils/Loading.astro";
   import { getAddressFromDomain } from "../../../service/SorobanDomainContractService";
 
   document.addEventListener("astro:page-load", () => {
-    const amountButtons = document.querySelectorAll(".amount-button");
     const amountInputContainer = document.getElementById(
       "amount-input-container",
     );
@@ -162,96 +117,57 @@ import Loading from "../../utils/Loading.astro";
     const platformTipInput = document.getElementById(
       "tip-amount-input",
     ) as HTMLInputElement;
-    let selectedAmount = 10; // Default amount
 
-    amountButtons.forEach((button) => {
-      button.addEventListener("click", () => {
-        amountButtons.forEach((btn) =>
-          btn.classList.remove("bg-zinc-800", "border-zinc-800", "text-white"),
-        );
-        amountButtons.forEach((btn) =>
-          btn.classList.add("bg-zinc-200", "border-zinc-300", "text-zinc-700"),
-        );
-        button.classList.remove(
-          "bg-zinc-200",
-          "border-zinc-300",
-          "text-zinc-700",
-        );
-        button.classList.add("bg-zinc-800", "border-zinc-800", "text-white");
+    let amount = 10;
 
-        const buttonText = button.textContent?.trim();
-        if (buttonText === "Other") {
-          amountInputContainer?.classList.remove("hidden");
-          amountInputContainer?.classList.add("flex");
-          selectedAmount = parseFloat(amountInput.value) || 0;
+    const amountButtons = document.querySelectorAll(".amount-button");
+
+    const updateButtonStatus = (activeIndex?: number) => {
+      amountButtons.forEach((btn, index) => {
+        if (index == activeIndex) {
+          btn.classList.add("bg-primary", "text-white");
+          btn.classList.remove("text-primary");
         } else {
-          amountInputContainer?.classList.remove("flex");
-          amountInputContainer?.classList.add("hidden");
-          selectedAmount = buttonText === "100 XLM" ? 100 : 10;
+          btn.classList.remove("bg-primary", "text-white");
+          btn.classList.add("text-primary");
         }
+      });
+    };
+
+    amountInput.addEventListener("input", () => {
+      amount = Number(amountInput.value);
+      updateButtonStatus();
+    });
+
+    amountButtons.forEach((button, index) => {
+      button.addEventListener("click", () => {
+        amount = Number(button.getAttribute("data-amount"));
+        updateButtonStatus(index);
       });
     });
 
-    const modal = document.getElementById("donate-modal");
-    const closeButton = document.getElementById("close-donate-modal");
-    const modalContent = modal?.querySelector("div");
-
-    if (closeButton && modal) {
-      closeButton.addEventListener("click", () => {
-        modal.classList.add("hidden");
-      });
-
-      // Add click event listener to the modal
-      modal.addEventListener("click", (event) => {
-        if (event.target === modal) {
-          modal.classList.add("hidden");
-        }
-      });
-
-      // Prevent closing when clicking inside the modal content
-      modalContent?.addEventListener("click", (event) => {
-        event.stopPropagation();
-      });
-    }
+    const modal = document.getElementById("donate-modal") as HTMLDialogElement;
 
     const contributeButton = document.getElementById("contribute-button");
-    const contributeText = document.getElementById("contribute-text");
-    const contributeLoader = document.getElementById("contribute-loader");
-
-    if (contributeButton && contributeText && contributeLoader) {
+    if (contributeButton) {
       contributeButton.addEventListener("click", async () => {
-        // Show loader and hide text
-        contributeText.classList.add("hidden");
-        contributeLoader.classList.remove("hidden");
-
-        const amount = amountInputContainer?.classList.contains("flex")
-          ? parseFloat(amountInput.value) || 0
-          : selectedAmount;
-        const tipAmount = parseFloat(platformTipInput.value) || 0;
-
-        if (amount < 1) {
-          amountInput.style.border = "2px solid red";
-          const minAmountText = document.querySelector(
-            "#amount-input-container p",
-          ) as HTMLElement;
-          if (minAmountText) {
-            minAmountText.style.color = "red";
-          }
-          setTimeout(() => {
-            amountInput.style.border = "";
-            if (minAmountText) {
-              minAmountText.style.color = "";
-            }
-          }, 2000);
-          // Hide loader and show text again
-          contributeLoader?.classList.add("hidden");
-          contributeText?.classList.remove("hidden");
-          return;
-        }
-
         const donateMessage = (
           document.getElementById("donate-message") as HTMLTextAreaElement
         ).value;
+
+        const tipAmount = platformTipInput.value;
+
+        if (amount < 1) {
+          if (amountInputContainer) {
+            amountInputContainer.classList.remove("border-[#978AA1]");
+            amountInputContainer.classList.add("border-red");
+            setTimeout(() => {
+              amountInputContainer.classList.add("border-[#978AA1]");
+              amountInputContainer.classList.remove("border-red");
+            }, 2500);
+          }
+          return;
+        }
 
         try {
           const projectName = loadProjectName();
@@ -276,11 +192,13 @@ import Loading from "../../utils/Loading.astro";
           console.error(err.message);
           alert(`Error occurred: ${err.message}`);
         } finally {
-          // Hide loader and show text again
-          contributeLoader?.classList.add("hidden");
-          contributeText?.classList.remove("hidden");
         }
       });
+    }
+
+    const cancelButton = document.getElementById("cancel-button");
+    if (cancelButton) {
+      modal.close();
     }
 
     // Function to allow only positive integers

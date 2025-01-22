@@ -6,13 +6,10 @@ import {
   InfoIcon,
   SettingIcon,
 } from "components/icons";
-import Loading from "../../utils/Loading.astro";
-import Modal from "../../utils/Modal.astro";
-import ModalInput from "../../utils/ModalInput.astro";
-import PrimaryButton from "../../utils/PrimaryButton.astro";
 import CommitHistory from "./CommitHistory.jsx";
 import DonateModal from "./DonateModal.astro";
-import ProjectReadme from "./ProjectReadme.astro";
+import ReadMoreModal from "./ReadMoreModal.astro";
+import UpdateConfigModal from "./UpdateConfigModal.astro";
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
@@ -20,12 +17,12 @@ import ProjectReadme from "./ProjectReadme.astro";
   <div class="flex">
     <button id="back-to-home" class="flex gap-[14px]">
       <BackIcon />
-      <p class="leading-5 text-xl text-[#311255]">Back to Home Page</p>
+      <p class="leading-5 text-xl text-primary">Back to Home Page</p>
     </button>
   </div>
   <!-- <div class="flex gap-3">
       <div class="p-[12px_18px] bg-white">
-        <p class="leading-5 text-xl text-[#311255]">Follow</p>
+        <p class="leading-5 text-xl text-primary">Follow</p>
       </div>
       <div class="p-[11px] bg-white">
         <GotoIcon />
@@ -44,7 +41,7 @@ import ProjectReadme from "./ProjectReadme.astro";
               class="w-[220px] object-cover rounded-lg"
             />
             <div class="flex flex-col gap-9">
-              <div class="flex flex-col gap-1.5">
+              <div class="flex flex-col gap-3">
                 <div
                   id="project-name"
                   class="flex justify-between items-end space-x-2"
@@ -57,26 +54,26 @@ import ProjectReadme from "./ProjectReadme.astro";
                 </div>
                 <p
                   id="project-description"
-                  class="flex-1 text-base sm:text-lg text-[#4C4354]"
+                  class="flex-1 text-base sm:text-lg text-secondary"
                 >
                 </p>
               </div>
               <!-- <div class="grid grid-cols-2 gap-9"> -->
               <!-- <div class="flex flex-col gap-[10px]">
                   <div class="flex gap-2">
-                    <p class="text-[#4C4354]">Funding Progress</p>
+                    <p class="text-secondary">Funding Progress</p>
                     <InfoIcon />
                   </div>
                   <div class="flex items-center gap-3">
                     <div class="w-[134px] bg-[#EFEBF4]">
                       <div class="w-[68px] h-2 bg-[#FFBD1E]"></div>
                     </div>
-                    <p class="font-medium text-[#311255]">$12,500 / $20,000</p>
+                    <p class="font-medium text-primary">$12,500 / $20,000</p>
                   </div>
                 </div> -->
               <div class="flex flex-col gap-[10px]">
                 <div class="flex gap-2">
-                  <p class="text-[#4C4354]">Synchronization Status</p>
+                  <p class="text-secondary">Synchronization Status</p>
                   <InfoIcon />
                 </div>
                 <div
@@ -91,21 +88,21 @@ import ProjectReadme from "./ProjectReadme.astro";
         </div>
       </div>
       <div class="flex max-lg:flex-col gap-[18px]">
-        <button id="goto-dao" class="p-[18px_30px] flex gap-3 bg-[#311255]">
+        <button id="goto-dao" class="p-[18px_30px] flex gap-3 bg-primary">
           <SettingIcon />
           <p class="leading-5 text-xl text-white">DAO Management</p>
         </button>
         <button class="p-[18px_30px] flex gap-3 bg-white" data-donate-modal>
           <img src="/icons/heart.svg" />
-          <p class="leading-5 text-xl text-[#311255]">Support</p>
+          <p class="leading-5 text-xl text-primary">Support</p>
         </button>
         <button id="read-more-button" class="p-[18px_30px] flex gap-3 bg-white">
           <BookIcon />
-          <p class="leading-5 text-xl text-[#311255]">Read More</p>
+          <p class="leading-5 text-xl text-primary">Read More</p>
         </button>
         <button class="p-[18px_30px] flex gap-3 bg-white">
           <EyeIcon />
-          <p class="leading-5 text-xl text-[#311255]">Last Hash</p>
+          <p class="leading-5 text-xl text-primary">Last Hash</p>
         </button>
       </div>
     </div>
@@ -113,21 +110,21 @@ import ProjectReadme from "./ProjectReadme.astro";
       class="p-[15px_16px] lg:p-[30px_72px] grid lg:grid-cols-2 gap-12 bg-white"
     >
       <div id="project-maintainers" class="flex flex-col gap-5">
-        <p class="leading-4 text-base text-[#4C4354]">Maintainers</p>
+        <p class="leading-4 text-base text-secondary">Maintainers</p>
         <ul class="flex flex-col gap-[18px]"></ul>
         <div class="flex view-all"></div>
       </div>
       <div class="flex flex-col gap-[30px]">
         <div id="project-organization" class="flex flex-col gap-5">
-          <h3 class="leading-4 text-base text-[#4C4354]">Organization</h3>
+          <h3 class="leading-4 text-base text-secondary">Organization</h3>
           <p
             id="project-organization-name"
-            class="leading-5 text-xl text-[#311255]"
+            class="leading-5 text-xl text-primary"
           >
           </p>
         </div>
         <div class="flex flex-col gap-5">
-          <h3 class="leading-4 text-base text-[#4C4354]">Official Links</h3>
+          <h3 class="leading-4 text-base text-secondary">Official Links</h3>
           <div id="official-links" class="flex flex-wrap gap-x-6 min-h-7"></div>
         </div>
       </div>
@@ -136,84 +133,9 @@ import ProjectReadme from "./ProjectReadme.astro";
   </div>
 </div>
 
-<Modal id="update-config-modal">
-  <div
-    id="modal-content"
-    class="flex flex-col gap-4 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-[600px]"
-  >
-    <h2
-      id="update-modal-project-name"
-      class="text-2xl sm:text-3xl font-bold mb-4"
-    >
-      Project Name
-    </h2>
+<UpdateConfigModal />
 
-    <label class="block mb-2 text-base font-medium text-black">
-      Maintainers
-      <ModalInput
-        id="modal-maintainers"
-        placeholder="List of maintainers' addresses as G...,G..."
-        required
-      />
-    </label>
-
-    <label class="block mb-2 text-base font-medium text-black">
-      GitHub repository URL
-      <ModalInput
-        id="modal-config-url"
-        placeholder="GitHub repository URL"
-        required
-      />
-    </label>
-
-    <label class="block mb-2 text-base font-medium text-black">
-      Information file hash
-      <ModalInput
-        id="modal-config-hash"
-        placeholder="Information file hash"
-        required
-        minlength="64"
-        maxlength="64"
-      />
-    </label>
-
-    <div id="wrap-update-button" class="relative">
-      <PrimaryButton
-        wrapId="wrap-update-config-button"
-        dataAttr="update-config-button"
-        buttonId="update-config-button"
-        ariaControls="update-config-button"
-        buttonText="Update Config"
-      />
-      <div
-        id="update-config-loader"
-        class="absolute top-0 left-0 w-full h-full bg-zinc-900 rounded-[14px] justify-center items-center hidden"
-      >
-        <Loading theme="dark" />
-      </div>
-    </div>
-  </div>
-</Modal>
-
-<Modal id="read-more-modal">
-  <div
-    class="p-4 lg:p-9 w-[342px] lg:w-[1048px] flex max-lg:flex-col gap-6 lg:gap-12"
-  >
-    <img
-      class="project-thumbnail w-[110px] h-[110px] lg:w-[220px] lg:h-[220px]"
-      alt="project-thumbnail"
-      src=""
-    />
-    <div class="flex flex-col gap-[15px] gap-[30px]">
-      <div class="flex flex-col gap-3">
-        <p class="project-name leading-6 text-xl font-medium text-[#311255]">
-        </p>
-        <p class="project-description text-base text-[#4C4354]"></p>
-      </div>
-      <ProjectReadme />
-    </div>
-  </div>
-</Modal>
+<ReadMoreModal />
 
 <DonateModal />
 
@@ -270,7 +192,7 @@ import ProjectReadme from "./ProjectReadme.astro";
         if (viewAllButtonContainer) viewAllButtonContainer.innerHTML = "";
         const viewAllButton = document.createElement("button");
         viewAllButton.className =
-          "leading-[18px] text-lg font-[450] text-[#311255] underline";
+          "leading-[18px] text-lg font-[450] text-primary underline";
         viewAllButton.textContent = viewAll ? "Less" : "View All";
         if (viewAll) {
           viewAllButton.addEventListener("click", () =>
@@ -292,12 +214,12 @@ import ProjectReadme from "./ProjectReadme.astro";
                 li.className = "flex flex-col gap-2";
 
                 const content = document.createElement("p");
-                content.className = "leading-6 text-xl text-[#311255]";
+                content.className = "leading-6 text-xl text-primary";
                 content.textContent = `@${authorName}`;
                 li.appendChild(content);
 
                 const address = document.createElement("p");
-                address.className = "leading-[14px] text-sm text-[#4C4354]";
+                address.className = "leading-[14px] text-sm text-secondary";
                 address.textContent = `(${configData.maintainersAddresses[index]?.slice(0, 28) || ""}...)`;
                 li.appendChild(address);
 
@@ -317,7 +239,7 @@ import ProjectReadme from "./ProjectReadme.astro";
                 li.className = "relative";
 
                 const content = document.createElement("p");
-                content.className = "leading-6 text-xl text-[#311255] truncate";
+                content.className = "leading-6 text-xl text-primary truncate";
                 content.textContent = maintainer;
                 li.appendChild(content);
 
@@ -811,12 +733,13 @@ import ProjectReadme from "./ProjectReadme.astro";
     }
 
     const supportButton = document.querySelector("[data-donate-modal]");
-    const donateModal = document.getElementById("donate-modal");
+    const donateModal = document.getElementById(
+      "donate-modal",
+    ) as HTMLDialogElement;
 
     if (supportButton && donateModal) {
       supportButton.addEventListener("click", () => {
-        donateModal.classList.remove("hidden");
-        donateModal.classList.add("flex");
+        donateModal.showModal();
       });
     }
 
@@ -842,7 +765,7 @@ import ProjectReadme from "./ProjectReadme.astro";
       icon.className = "w-4 h-4";
 
       const text = document.createElement("span");
-      text.className = "leading-5 text-xl text-[#311255]";
+      text.className = "leading-5 text-xl text-primary";
       text.textContent = title;
 
       button.appendChild(icon);

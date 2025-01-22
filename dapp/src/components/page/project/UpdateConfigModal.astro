@@ -1,0 +1,65 @@
+---
+import Loading from "components/utils/Loading.astro";
+import Modal from "components/utils/Modal.astro";
+import ModalInput from "components/utils/ModalInput.astro";
+import PrimaryButton from "components/utils/PrimaryButton.astro";
+---
+
+<Modal id="update-config-modal">
+  <div
+    id="modal-content"
+    class="flex flex-col gap-4 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-[600px]"
+  >
+    <h2
+      id="update-modal-project-name"
+      class="text-2xl sm:text-3xl font-bold mb-4"
+    >
+      Project Name
+    </h2>
+
+    <label class="block mb-2 text-base font-medium text-black">
+      Maintainers
+      <ModalInput
+        id="modal-maintainers"
+        placeholder="List of maintainers' addresses as G...,G..."
+        required
+      />
+    </label>
+
+    <label class="block mb-2 text-base font-medium text-black">
+      GitHub repository URL
+      <ModalInput
+        id="modal-config-url"
+        placeholder="GitHub repository URL"
+        required
+      />
+    </label>
+
+    <label class="block mb-2 text-base font-medium text-black">
+      Information file hash
+      <ModalInput
+        id="modal-config-hash"
+        placeholder="Information file hash"
+        required
+        minlength="64"
+        maxlength="64"
+      />
+    </label>
+
+    <div id="wrap-update-button" class="relative">
+      <PrimaryButton
+        wrapId="wrap-update-config-button"
+        dataAttr="update-config-button"
+        buttonId="update-config-button"
+        ariaControls="update-config-button"
+        buttonText="Update Config"
+      />
+      <div
+        id="update-config-loader"
+        class="absolute top-0 left-0 w-full h-full bg-zinc-900 rounded-[14px] justify-center items-center hidden"
+      >
+        <Loading theme="dark" />
+      </div>
+    </div>
+  </div>
+</Modal>
