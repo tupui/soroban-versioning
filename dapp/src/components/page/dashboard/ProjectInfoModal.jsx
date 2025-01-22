@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Modal from "./Modal";
+import Modal from "../../utils/Modal";
 import { loadProjectName } from "@service/StateService";
 
 const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
@@ -121,7 +121,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                   >
                     <img src="/icons/heart.svg" alt="" className="w-5" />
                     <p className="text-xl leading-5 font-firacode text-pink">
-                      Provide Support
+                      Support
                     </p>
                   </button>
                 </div>
