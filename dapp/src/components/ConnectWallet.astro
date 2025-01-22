@@ -10,7 +10,7 @@
   <button
     data-connect
     aria-controls="connect-wrap"
-    class="bg-white w-[162px] md:w-[195px] h-12 md:h-14 shadow-button flex justify-center items-center gap-3"
+    class="w-[162px] md:w-[195px] h-12 md:h-14 flex justify-center items-center gap-3 bg-white text-white shadow-button"
   >
     <p class="text-base md:text-xl leading-4 md:leading-5 text-pink">Connect</p>
     <img src="/icons/connect.png" alt="" class="w-4 md:w-5 h-4 md:h-5" />
@@ -36,6 +36,8 @@
       const truncatedKey = truncateMiddle(publicKey, 13);
       button.innerHTML = truncatedKey;
       button.title = publicKey;
+      button.classList.toggle("bg-white", false);
+      button.classList.toggle("bg-primary", true);
     }
 
     const connectedPublicKey = loadedPublicKey();
