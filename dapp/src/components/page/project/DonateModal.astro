@@ -148,8 +148,8 @@ import Loading from "../../utils/Loading.astro";
 
 <script>
   import { loadProjectName } from "@service/StateService";
-import { sendXLM } from "../../../service/PaymentService";
-import { getAddressFromDomain } from "../../../service/SorobanDomainContractService";
+  import { sendXLM } from "../../../service/PaymentService";
+  import { getAddressFromDomain } from "../../../service/SorobanDomainContractService";
 
   document.addEventListener("astro:page-load", () => {
     const amountButtons = document.querySelectorAll(".amount-button");
@@ -255,8 +255,8 @@ import { getAddressFromDomain } from "../../../service/SorobanDomainContractServ
 
         try {
           const projectName = loadProjectName();
-          const domainInfo = await getAddressFromDomain(projectName || '');
-          
+          const domainInfo = await getAddressFromDomain(projectName || "");
+
           const domainOwnerAddress = domainInfo.value.address;
           const payment = await sendXLM(
             amount.toString(),
@@ -272,7 +272,7 @@ import { getAddressFromDomain } from "../../../service/SorobanDomainContractServ
           } else {
             alert("Donation failed.");
           }
-        } catch (err:any) {
+        } catch (err: any) {
           console.error(err.message);
           alert(`Error occurred: ${err.message}`);
         } finally {
