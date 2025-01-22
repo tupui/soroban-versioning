@@ -24,13 +24,13 @@ const ProposalCard: React.FC<ProposalCardView> = ({
       <div className="flex flex-col gap-[18px]">
         <div className="flex items-center gap-[18px]">
           {endDate && calculateDateDifference(endDate) && (
-            <p className="leading-[18px] text-[18px] text-[#311255]">
+            <p className="leading-[18px] text-lg text-primary">
               Ends in {calculateDateDifference(endDate)}
             </p>
           )}
           <ProposalStatusShow proposalStatus={proposalStatus} />
         </div>
-        <p className="leading-6 text-xl font-medium text-[#311255]">
+        <p className="leading-6 text-xl font-medium text-primary">
           {proposalNumber} {proposalTitle}
         </p>
       </div>

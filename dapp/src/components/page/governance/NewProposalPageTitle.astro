@@ -1,9 +1,10 @@
 ---
-import Topic from "components/utils/Topic.astro";
+import { BackIcon } from "components/icons";
 ---
 
-<div
-  class="relative flex flex-col items-center md:flex-row justify-between mb-1.5 mt-4 sm:mt-8 md:mt-12 gap-y-4"
->
-  <Topic title="Create Proposal" description="" id="new-proposal-topic" />
+<div class="z-10 w-full">
+  <button id="back-button" class="flex gap-[14px]">
+    <BackIcon />
+    <p class="leading-5 text-xl text-primary">Back to DAO Page</p>
+  </button>
 </div>
