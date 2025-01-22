@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useStore } from "@nanostores/react";
 import ProjectCard from "./ProjectCard.jsx";
-import ProjectInfoModal from "../../utils/ProjectInfoModal.jsx";
+import ProjectInfoModal from "./ProjectInfoModal.jsx";
 import { getDemoConfigData } from "../../../constants/demoConfigData";
 import { projectCardModalOpen } from "../../../utils/store";
 import { getProjectFromName } from "../../../service/ReadContractService.ts";
@@ -153,12 +153,12 @@ const ProjectList = () => {
             onClick={() => openSearchBox()}
           >
             <img src="/icons/search.svg" width={20} height={20} />
-            <p className="text-[20px] leading-5 font-firacode text-pink">
+            <p className="text-xl leading-5 font-firacode text-pink">
               Explore Projects
             </p>
           </div>
           <div className="px-[30px] py-[18px] flex gap-3 bg-white cursor-pointer">
-            <p className="text-[20px] leading-5 font-firacode text-pink">
+            <p className="text-xl leading-5 font-firacode text-pink">
               Add Project
             </p>
             <img src="/icons/plus.svg" width={20} height={20} />
@@ -184,7 +184,7 @@ const ProjectList = () => {
               <input
                 type="text"
                 placeholder="What Are You Looking For?"
-                className="w-full font-firacode text-[20px] leading-5 border border-zinc-800 p-[18px] pr-10"
+                className="w-full font-firacode text-xl leading-5 border border-zinc-800 p-[18px] pr-10"
                 value={searchTerm}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -218,7 +218,7 @@ const ProjectList = () => {
                 height={20}
                 className="icon-search"
               />
-              <p className="text-[20px] leading-5 font-firacode text-white">
+              <p className="text-xl leading-5 font-firacode text-white">
                 Search
               </p>
             </button>
@@ -254,7 +254,7 @@ const ProjectList = () => {
           </div>
         ) : isLoading ? (
           <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
-            <p className="px-3 py-1 text-base sm:text-lg font-semibold border-2 border-zinc-700 rounded-lg">
+            <p className="px-3 py-1 text-base sm:text-lg font-medium border-2 border-zinc-700 rounded-lg">
               {" "}
               looking if the project is registered on chain...
             </p>
