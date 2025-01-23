@@ -32,7 +32,7 @@ const ProjectCard = ({ config }) => {
         }
         const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
         if (tomlData) {
-          const configData = extractConfigData(tomlData, project.name);
+          const configData = extractConfigData(tomlData, project);
           setConfigData(configData);
         } else {
           setConfigData({});
