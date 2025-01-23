@@ -8,8 +8,8 @@ use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
 use soroban_sdk::{
-    bytesn, symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, Map, String,
-    Vec, U256,
+    bytesn, symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
+    U256,
 };
 
 #[test]
@@ -344,21 +344,6 @@ fn add_commitment(
 
     // tally
     bls12_381.g1_add(&tally, &recovered_vote)
-}
-
-fn mapping_point_to_value(env: &Env) -> Map<G1Affine, i32> {
-    let mut mapping = Map::new(env);
-
-    let vote_dst = Bytes::from_slice(&env, "VOTE_COMMITMENT".as_bytes());
-    let bls12_381 = env.crypto().bls12_381();
-
-    for value in -1_000_000_i32..=1_000_000_i32 {
-        let value_ = Bytes::from_slice(&env, &value.to_be_bytes());
-        let value_point = bls12_381.hash_to_g1(&value_, &vote_dst);
-        mapping.set(value_point, value);
-    }
-
-    mapping
 }
 
 #[test]
