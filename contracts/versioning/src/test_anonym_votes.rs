@@ -5,7 +5,7 @@ use soroban_sdk::crypto::bls12_381::{Fr, G1Affine};
 
 use soroban_sdk::{bytesn, Bytes, Env, U256};
 
-fn commitment(env: &Env, vote: &i32, seed: &str, pk: &str) -> G1Affine {
+fn commitment(env: &Env, vote: &u32, seed: &str, pk: &str) -> G1Affine {
     let vote = Bytes::from_slice(&env, &vote.to_be_bytes());
     let seed = Bytes::from_slice(&env, &seed.as_bytes());
     let pk = Bytes::from_slice(&env, &pk.as_bytes());
@@ -99,11 +99,11 @@ fn test_commitment() {
     let pk = "public key";
 
     // casting some votes in the frontend
-    let vote_a = 1_i32;
+    let vote_a = 1_u32;
     let seed_a = "seed value a";
     let vote_commitment_a = commitment(&env, &vote_a, &seed_a, &pk);
 
-    let vote_b = 1_i32;
+    let vote_b = 1_u32;
     let seed_b = "seed value b";
     let vote_commitment_b = commitment(&env, &vote_b, &seed_b, &pk);
 
@@ -117,7 +117,7 @@ fn test_commitment() {
     // check the tally
     let bls12_381 = env.crypto().bls12_381();
     let vote_dst = Bytes::from_slice(&env, "VOTE_COMMITMENT".as_bytes());
-    let one_vote = Bytes::from_slice(&env, &1_i32.to_be_bytes());
+    let one_vote = Bytes::from_slice(&env, &1_u32.to_be_bytes());
     let one_vote_point = bls12_381.hash_to_g1(&one_vote, &vote_dst);
     let ref_tally = bls12_381.g1_add(&one_vote_point, &one_vote_point);
     assert_eq!(tally, ref_tally);
@@ -127,7 +127,8 @@ fn test_commitment() {
 fn test_vote() {
     let env = Env::default();
 
-    // let bls12_381 = env.crypto().bls12_381();
+    // pk a public key which we store on the proposal
+    let pk = "public key";
 
     let mut middle_tally = Fr::from_u256(U256::from_u32(&env, 2).clone());
     middle_tally = middle_tally.pow(255);
@@ -138,14 +139,20 @@ fn test_vote() {
 
     let vote_a = 1_u32;
     let seed_a = 60_u32;
+    let seed_commitment_a = "seed value a";
+    let vote_commitment_a = commitment(&env, &vote_a, &seed_commitment_a, &pk);
     (tally_votes, tally_seed) = add_vote(&env, &vote_a, &seed_a, true, &tally_votes, &tally_seed);
 
     let vote_b = 2_u32;
     let seed_b = 30_u32;
+    let seed_commitment_b = "seed value b";
+    let vote_commitment_b = commitment(&env, &vote_b, &seed_commitment_b, &pk);
     (tally_votes, tally_seed) = add_vote(&env, &vote_b, &seed_b, true, &tally_votes, &tally_seed);
 
     let vote_c = 5_u32;
     let seed_c = 10_u32;
+    let seed_commitment_c = "seed value c";
+    let vote_commitment_c = commitment(&env, &vote_c, &seed_commitment_c, &pk);
     (tally_votes, tally_seed) = add_vote(&env, &vote_c, &seed_c, true, &tally_votes, &tally_seed);
 
     let ref_tally = U256::from_u32(&env, vote_a + vote_b + vote_c);
