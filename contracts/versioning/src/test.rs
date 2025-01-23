@@ -68,6 +68,20 @@ fn test() {
         &domain_contract_id,
     );
 
+    let mut all_events = env.events().all();
+    all_events.pop_front(); // transfer event from the domain contract
+    assert_eq!(
+        all_events,
+        vec![
+            &env,
+            (
+                contract_id.clone(),
+                (symbol_short!("register"), id.clone()).into_val(&env),
+                name.into_val(&env)
+            ),
+        ]
+    );
+
     let expected_id = [
         55, 174, 131, 192, 111, 222, 16, 67, 114, 71, 67, 51, 90, 194, 243, 145, 147, 7, 137, 46,
         230, 48, 124, 206, 140, 12, 99, 234, 165, 73, 225, 86,
@@ -81,23 +95,11 @@ fn test() {
     let hash_commit = String::from_str(&env, "6663520bd9e6ede248fef8157b2af0b6b6b41046");
     contract.commit(&mando, &id, &hash_commit);
 
-    let res_hash_commit = contract.get_commit(&id);
-    assert_eq!(res_hash_commit, hash_commit);
-
-    // events-events
-    let mut all_events = env.events().all();
-    all_events.pop_front(); // set_admin
-    all_events.pop_front(); // mint
-    all_events.pop_front(); // transfer
+    let all_events = env.events().all();
     assert_eq!(
         all_events,
         vec![
             &env,
-            (
-                contract_id.clone(),
-                (symbol_short!("register"), id.clone()).into_val(&env),
-                name.into_val(&env)
-            ),
             (
                 contract_id.clone(),
                 (symbol_short!("commit"), id.clone()).into_val(&env),
@@ -105,6 +107,9 @@ fn test() {
             ),
         ]
     );
+
+    let res_hash_commit = contract.get_commit(&id);
+    assert_eq!(res_hash_commit, hash_commit);
 
     // error handling
 

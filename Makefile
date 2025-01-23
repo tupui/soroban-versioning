@@ -24,7 +24,7 @@ install:  ## install Rust and Soroban-CLI
 	# install Rust
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && \
 	# install Soroban and config
-	rustup target add wasm32-unknown-unknown && \
+	rustup target add wasm32v1-none && \
 	cargo install --locked soroban-cli --features opt
 
 prepare-network:  ## Setup network
@@ -47,8 +47,8 @@ rust-lint:
 	cargo fmt -- --emit files
 
 clean:
-	rm target/wasm32-unknown-unknown/release/*.wasm
-	rm target/wasm32-unknown-unknown/release/*.d
+	rm target/wasm32v1-none/release/*.wasm
+	rm target/wasm32v1-none/release/*.d
 	cargo clean
 
 # --------- Events --------- #
@@ -65,21 +65,21 @@ local-stack:  ## local stack
 
 contract_build:
 	stellar contract build
-	@ls -l target/wasm32-unknown-unknown/release/*.wasm
+	@ls -l target/wasm32v1-none/release/*.wasm
 
 contract_test:
 	cargo test
 
 contract_build-release: contract_build
-	stellar contract optimize --wasm target/wasm32-unknown-unknown/release/versioning.wasm
-	@ls -l target/wasm32-unknown-unknown/release/*.wasm
+	stellar contract optimize --wasm target/wasm32v1-none/release/versioning.wasm
+	@ls -l target/wasm32v1-none/release/*.wasm
 
 
 contract_bindings: contract_build-release  ## Create bindings
 	stellar contract bindings typescript \
 		--network $(network) \
 		--contract-id $(shell cat .soroban/soroban_versioning_id) \
-		--wasm target/wasm32-unknown-unknown/release/versioning.wasm \
+		--wasm target/wasm32v1-none/release/versioning.wasm \
 		--output-dir dapp/packages/soroban_versioning \
 		--overwrite && \
 	cd dapp/packages/soroban_versioning && \
@@ -89,7 +89,7 @@ contract_bindings: contract_build-release  ## Create bindings
 
 contract_deploy:  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
-  		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
+  		--wasm target/wasm32v1-none/release/versioning.optimized.wasm \
   		--source-account mando-$(network) \
   		--network $(network) \
   		-- \
