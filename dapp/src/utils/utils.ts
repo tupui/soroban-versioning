@@ -5,7 +5,7 @@ import type {
   ProposalView,
   ProposalViewStatus,
 } from "types/proposal";
-import type { Proposal as ContractProposal } from "soroban_versioning";
+import type { Proposal as ContractProposal, Project } from "soroban_versioning";
 
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
@@ -20,16 +20,16 @@ export function truncateMiddle(str: string, maxLength: number): string {
   );
 }
 
-export function extractConfigData(tomlData: any, projectName: string) {
+export function extractConfigData(tomlData: any, project: Project) {
   return {
-    projectName: projectName,
+    projectName: project.name,
     logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
     thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
     description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
     organizationName: tomlData.DOCUMENTATION?.ORG_NAME || "",
     officials: {
       websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
-      githubLink: tomlData.DOCUMENTATION?.ORG_GITHUB || "",
+      githubLink: project.config.url || "",
     },
     socialLinks: {
       ...(tomlData.DOCUMENTATION?.ORG_TWITTER && {
