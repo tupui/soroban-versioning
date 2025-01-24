@@ -136,13 +136,37 @@ fn test_vote() {
 
     let mut tally_votes = middle_tally.clone();
     let mut tally_seed = middle_seed.clone();
-    let mut tally_commitment = G1Affine::from_bytes(bytesn!(&env, 0x400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000));
 
     let vote_a = 1_u32;
     let seed_a = 60_u32;
     let seed_commitment_a = "seed value a";
     let vote_commitment_a = commitment(&env, &vote_a, seed_commitment_a, pk);
     (tally_votes, tally_seed) = add_vote(&env, &vote_a, &seed_a, true, &tally_votes, &tally_seed);
+
+    let vote_b = 2_u32;
+    let seed_b = 30_u32;
+    let seed_commitment_b = "seed value b";
+    let vote_commitment_b = commitment(&env, &vote_b, seed_commitment_b, pk);
+    (tally_votes, tally_seed) = add_vote(&env, &vote_b, &seed_b, true, &tally_votes, &tally_seed);
+
+    let vote_c = 5_u32;
+    let seed_c = 10_u32;
+    let seed_commitment_c = "seed value c";
+    let vote_commitment_c = commitment(&env, &vote_c, seed_commitment_c, pk);
+    (tally_votes, tally_seed) = add_vote(&env, &vote_c, &seed_c, true, &tally_votes, &tally_seed);
+
+    // voting ends
+    let ref_tally = U256::from_u32(&env, vote_a + vote_b + vote_c);
+
+    let mut tally = (tally_votes - middle_tally).to_u256();
+    let seed = (tally_seed - middle_seed).to_u256();
+    tally = tally.sub(&seed);
+
+    assert_eq!(tally, ref_tally);
+
+    // we retrieve the commitments and the
+    // seeds are decrypted on the frontend with the secret key
+    let mut tally_commitment = G1Affine::from_bytes(bytesn!(&env, 0x400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000));
     tally_commitment = add_commitment(
         &env,
         &tally_commitment,
@@ -150,12 +174,6 @@ fn test_vote() {
         seed_commitment_a,
         pk,
     );
-
-    let vote_b = 2_u32;
-    let seed_b = 30_u32;
-    let seed_commitment_b = "seed value b";
-    let vote_commitment_b = commitment(&env, &vote_b, seed_commitment_b, pk);
-    (tally_votes, tally_seed) = add_vote(&env, &vote_b, &seed_b, true, &tally_votes, &tally_seed);
     tally_commitment = add_commitment(
         &env,
         &tally_commitment,
@@ -163,12 +181,6 @@ fn test_vote() {
         seed_commitment_b,
         pk,
     );
-
-    let vote_c = 5_u32;
-    let seed_c = 10_u32;
-    let seed_commitment_c = "seed value c";
-    let vote_commitment_c = commitment(&env, &vote_c, seed_commitment_c, pk);
-    (tally_votes, tally_seed) = add_vote(&env, &vote_c, &seed_c, true, &tally_votes, &tally_seed);
     tally_commitment = add_commitment(
         &env,
         &tally_commitment,
@@ -177,12 +189,5 @@ fn test_vote() {
         pk,
     );
 
-    let ref_tally = U256::from_u32(&env, vote_a + vote_b + vote_c);
-
-    let mut tally = (tally_votes - middle_tally).to_u256();
-    let seed = (tally_seed - middle_seed).to_u256();
-    tally = tally.sub(&seed);
-
-    assert_eq!(tally, ref_tally);
     assert_eq!(tally_commitment, tally_commitment);
 }
