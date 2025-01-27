@@ -33,6 +33,18 @@ export function formatDate(dateString: string): string {
   return date.toLocaleDateString("en-GB", dateOptions);
 }
 
+export function formatDateTime(dateString: string): string {
+  const date = new Date(dateString);
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+  };
+  return date.toLocaleString("en-GB", dateOptions);
+}
+
 export function calculateDateDifference(timestamp: number): string | null {
   const inputDate = new Date(timestamp * 1000);
   const now = new Date();
