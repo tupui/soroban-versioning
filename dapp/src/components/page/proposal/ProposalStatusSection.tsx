@@ -1,7 +1,7 @@
 import React from "react";
-import { calculateDateDifference } from "../../../utils/formatTimeFunctions";
-import ProposalStatusShow from "../governance/ProposalStatusShow";
 import type { ProposalViewStatus } from "types/proposal";
+import { capitalizeFirstLetter } from "utils/utils";
+import { calculateDateDifference } from "../../../utils/formatTimeFunctions";
 
 interface Props {
   status: ProposalViewStatus | null;
@@ -10,17 +10,21 @@ interface Props {
 
 const ProposalStatusSection: React.FC<Props> = ({ status, endDate }) => {
   return (
-    <div className="flex items-center mt-3 sm:mt-5 md:mt-8 gap-2 sm:gap-3 md:gap-4">
-      <div className="">
-        {status && <ProposalStatusShow proposalStatus={status} />}
+    <div className="flex gap-[42px]">
+      <div className="flex flex-col gap-3">
+        <p className="text-tertiary">Status</p>
+        <p className={`text-lg font-medium text-${status}`}>
+          {capitalizeFirstLetter(status || "")}
+        </p>
       </div>
-      <div className="">
-        {status === "active" && endDate && (
-          <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-            Ends in {calculateDateDifference(endDate)}
-          </div>
-        )}
-      </div>
+      {status === "active" && endDate && (
+        <div className="flex flex-col gap-3">
+          <p className="text-tertiary">End date</p>
+          <p className="text-lg font-medium text-primary">
+            {calculateDateDifference(endDate)}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

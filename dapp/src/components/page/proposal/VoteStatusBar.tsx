@@ -20,19 +20,19 @@ const VoteStatusBar: React.FC<VoteStatusBarProps> = ({
   const abstainPercent = total ? (abstain / total) * 100 : 0;
 
   return (
-    <div className="flex h-4 bg-gray-200 rounded-md overflow-hidden">
+    <div className="h-[18px] flex gap-3">
       <div
-        className="bg-interest cursor-pointer"
+        className="bg-[#93F4A8] cursor-pointer"
         style={{ width: `${interestPercent}%` }}
         onClick={() => onClick?.("approve")}
       ></div>
       <div
-        className="bg-abstain cursor-pointer"
+        className="bg-[#FBDE7E] cursor-pointer"
         style={{ width: `${abstainPercent}%` }}
         onClick={() => onClick?.("abstain")}
       ></div>
       <div
-        className="bg-conflict cursor-pointer"
+        className="bg-[#F79FB1] cursor-pointer"
         style={{ width: `${conflictPercent}%` }}
         onClick={() => onClick?.("reject")}
       ></div>

@@ -1,0 +1,27 @@
+---
+import { BackIcon } from "components/icons";
+---
+
+<div class="z-10 w-full">
+  <button id="back-button" class="flex gap-[14px]">
+    <BackIcon />
+    <p class="leading-5 text-xl text-primary">Back to DAO Page</p>
+  </button>
+</div>
+
+<script>
+  import { navigate } from "astro:transitions/client";
+
+  document.addEventListener("astro:page-load", async () => {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+    const name = params.get("name");
+
+    const backButton = document.getElementById("back-button");
+    if (backButton) {
+      backButton.addEventListener("click", () => {
+        navigate(`/governance?name=${name}`);
+      });
+    }
+  });
+</script>
