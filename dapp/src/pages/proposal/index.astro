@@ -1,7 +1,8 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import ProposalPageTitle from "components/page/proposal/ProposalPageTitle.astro";
 import Container from "../../components/layout/Container.astro";
 import ProposalPage from "../../components/page/proposal/ProposalPage.tsx";
+import Layout from "../../layouts/Layout.astro";
 ---
 
 <script is:inline>
@@ -9,11 +10,10 @@ import ProposalPage from "../../components/page/proposal/ProposalPage.tsx";
 </script>
 
 <Layout title="Tansu" page="proposal">
-  <main class="space-y-20">
-    <Container>
-      <ProposalPage client:load />
-    </Container>
-  </main>
+  <Container>
+    <ProposalPageTitle />
+    <ProposalPage client:load />
+  </Container>
 </Layout>
 
 <script>
