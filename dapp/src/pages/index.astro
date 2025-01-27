@@ -5,13 +5,12 @@ import Container from "../components/layout/Container.astro";
 import ProjectList from "../components/page/dashboard/ProjectList.jsx";
 ---
 
+<!-- bg-conflict bg-rejected bg-cancelled bg-voted bg-approved --><!-- text-conflict text-rejected text-cancelled text-voted text-approved --><!-- border-conflict border-rejected border-cancelled border-voted border-approved -->
 <script is:inline>
   var global = global || window;
 </script>
 <Layout title="Tansu" page="home">
-  <main class="pt-12">
-    <Container>
-      <ProjectList client:load />
-    </Container>
-  </main>
+  <Container>
+    <ProjectList client:load />
+  </Container>
 </Layout>

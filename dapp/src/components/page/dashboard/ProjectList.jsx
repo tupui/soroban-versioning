@@ -145,7 +145,7 @@ const ProjectList = () => {
   };
 
   return (
-    <div className="project-list-container relative  max-w-[984px] mx-auto">
+    <div className="project-list-container relative mx-auto w-full max-w-[984px]">
       <div className="flex flex-col items-start lg:items-center gap-[60px]">
         <div className="flex max-lg:flex-col justify-center items-start lg:items-center gap-6">
           <div
