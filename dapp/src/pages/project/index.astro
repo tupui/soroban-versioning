@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import Container from "../../components/layout/Container.astro";
 import ProjectInfo from "../../components/page/project/ProjectInfo.astro";
+import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.astro";
 ---
 
 <script is:inline>
@@ -9,11 +10,10 @@ import ProjectInfo from "../../components/page/project/ProjectInfo.astro";
 </script>
 
 <Layout title="Tansu" page="project">
-  <main class="space-y-20">
-    <Container>
-      <ProjectInfo />
-    </Container>
-  </main>
+  <Container>
+    <ProjectInfoTitle />
+    <ProjectInfo />
+  </Container>
 </Layout>
 
 <script>

@@ -1,0 +1,33 @@
+---
+import { BackIcon } from "components/icons";
+---
+
+<!-- <div class="flex justify-between items-center"> -->
+<div class="flex">
+  <button id="back-button" class="flex gap-[14px]">
+    <BackIcon />
+    <p class="leading-5 text-xl text-primary">Back to Home Page</p>
+  </button>
+</div>
+<!-- <div class="flex gap-3">
+    <div class="p-[12px_18px] bg-white">
+    <p class="leading-5 text-xl text-primary">Follow</p>
+    </div>
+    <div class="p-[11px] bg-white">
+    <GotoIcon />
+    </div>
+</div> -->
+<!-- </div> -->
+
+<script>
+  import { navigate } from "astro:transitions/client";
+
+  document.addEventListener("astro:page-load", async () => {
+    const backButton = document.getElementById("back-button");
+    if (backButton) {
+      backButton.addEventListener("click", () => {
+        navigate("/");
+      });
+    }
+  });
+</script>
