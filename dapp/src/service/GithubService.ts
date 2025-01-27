@@ -1,4 +1,4 @@
-import axios from "axios";
+// import axios from "axios";
 import toml from "toml";
 
 import type { FormattedCommit } from "../types/github";
@@ -8,53 +8,53 @@ import {
   getGithubContentUrlFromReadmeUrl,
 } from "../utils/editLinkFunctions";
 
-async function getCommitHistory(
-  username: string,
-  repo: string,
-  page: number = 1,
-  perPage: number = 30,
-): Promise<{ date: string; commits: FormattedCommit[] }[]> {
-  const response = await axios.get(
-    `https://api.github.com/repos/${username}/${repo}/commits`,
-    {
-      params: { per_page: perPage, page: page },
-      headers: { Accept: "application/vnd.github.v3+json" },
-    },
-  );
+// async function getCommitHistory(
+//   username: string,
+//   repo: string,
+//   page: number = 1,
+//   perPage: number = 30,
+// ): Promise<{ date: string; commits: FormattedCommit[] }[]> {
+//   const response = await axios.get(
+//     `https://api.github.com/repos/${username}/${repo}/commits`,
+//     {
+//       params: { per_page: perPage, page: page },
+//       headers: { Accept: "application/vnd.github.v3+json" },
+//     },
+//   );
 
-  const formattedCommits = response.data.map((commit: any) => ({
-    message: commit.commit.message,
-    author: {
-      name: commit.commit.author.name,
-      html_url: commit.author ? commit.author.html_url : "",
-    },
-    commit_date: commit.commit.author.date,
-    html_url: commit.html_url,
-    sha: commit.sha,
-  }));
+//   const formattedCommits = response.data.map((commit: any) => ({
+//     message: commit.commit.message,
+//     author: {
+//       name: commit.commit.author.name,
+//       html_url: commit.author ? commit.author.html_url : "",
+//     },
+//     commit_date: commit.commit.author.date,
+//     html_url: commit.html_url,
+//     sha: commit.sha,
+//   }));
 
-  // Group commits by date
-  const groupedCommits = formattedCommits.reduce(
-    (acc: Record<string, FormattedCommit[]>, commit: FormattedCommit) => {
-      const date = new Date(commit.commit_date).toISOString().split("T")[0];
-      if (!date) {
-        return acc;
-      }
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(commit);
-      return acc;
-    },
-    {},
-  );
+//   // Group commits by date
+//   const groupedCommits = formattedCommits.reduce(
+//     (acc: Record<string, FormattedCommit[]>, commit: FormattedCommit) => {
+//       const date = new Date(commit.commit_date).toISOString().split("T")[0];
+//       if (!date) {
+//         return acc;
+//       }
+//       if (!acc[date]) {
+//         acc[date] = [];
+//       }
+//       acc[date].push(commit);
+//       return acc;
+//     },
+//     {},
+//   );
 
-  // Convert grouped commits to array format
-  return Object.entries(groupedCommits).map(([date, commits]) => ({
-    date,
-    commits: commits as FormattedCommit[],
-  }));
-}
+//   // Convert grouped commits to array format
+//   return Object.entries(groupedCommits).map(([date, commits]) => ({
+//     date,
+//     commits: commits as FormattedCommit[],
+//   }));
+// }
 
 async function fetchTOMLFromConfigUrl(configUrl: string) {
   const url = getGithubContentUrlFromConfigUrl(configUrl);
@@ -144,7 +144,7 @@ async function fetchReadmeContentFromConfigUrl(configUrl: string) {
 }
 
 export {
-  getCommitHistory,
+  // getCommitHistory,
   fetchTOMLFromConfigUrl,
   fetchReadmeContentFromConfigUrl,
   getTOMLFileHash,
