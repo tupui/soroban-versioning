@@ -1,34 +1,13 @@
 ---
-import {
-  BackIcon,
-  BookIcon,
-  EyeIcon,
-  InfoIcon,
-  SettingIcon,
-} from "components/icons";
+import { BookIcon, EyeIcon, SettingIcon } from "components/icons";
 import CommitHistory from "./CommitHistory.jsx";
 import DonateModal from "./DonateModal.astro";
 import ReadMoreModal from "./ReadMoreModal.astro";
-import UpdateConfigModal from "./UpdateConfigModal.astro";
+import LastHashModal from "./LastHashModal.astro";
+import LatestCommit from "./LatestCommit";
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
-  <!-- <div class="flex justify-between items-center"> -->
-  <div class="flex">
-    <button id="back-to-home" class="flex gap-[14px]">
-      <BackIcon />
-      <p class="leading-5 text-xl text-primary">Back to Home Page</p>
-    </button>
-  </div>
-  <!-- <div class="flex gap-3">
-      <div class="p-[12px_18px] bg-white">
-        <p class="leading-5 text-xl text-primary">Follow</p>
-      </div>
-      <div class="p-[11px] bg-white">
-        <GotoIcon />
-      </div>
-    </div> -->
-  <!-- </div> -->
   <div class="py-12 flex flex-col gap-12 bg-[#FFFFFFB8]">
     <div class="px-[16px] lg:px-[72px] flex flex-col gap-9">
       <div class="flex flex-col gap-6">
@@ -36,53 +15,29 @@ import UpdateConfigModal from "./UpdateConfigModal.astro";
           <div class="flex max-lg:flex-col gap-6 items-center">
             <img
               id="project-thumbnail"
-              src="/fallback-image.jpg"
               alt="Project Thumbnail"
-              class="w-[220px] object-cover rounded-lg"
+              src="/fallback-image.jpg"
+              class="w-[220px] object-cover"
             />
             <div class="flex flex-col gap-9">
               <div class="flex flex-col gap-3">
-                <div
-                  id="project-name"
-                  class="flex justify-between items-end space-x-2"
+                <p
+                  id="project-organization-name"
+                  class="text-base sm:text-lg text-secondary"
                 >
-                  <p
-                    id="project-name-value"
-                    class="text-2xl sm:text-4xl font-bold"
-                  >
-                  </p>
+                </p>
+                <div class="flex gap-[18px]">
+                  <p id="project-name" class="text-2xl text-primary"></p>
+                  <div id="official-links" class="flex items-center gap-3">
+                  </div>
                 </div>
                 <p
                   id="project-description"
-                  class="flex-1 text-base sm:text-lg text-secondary"
+                  class="text-base sm:text-lg text-secondary"
                 >
                 </p>
               </div>
-              <!-- <div class="grid grid-cols-2 gap-9"> -->
-              <!-- <div class="flex flex-col gap-[10px]">
-                  <div class="flex gap-2">
-                    <p class="text-secondary">Funding Progress</p>
-                    <InfoIcon />
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <div class="w-[134px] bg-[#EFEBF4]">
-                      <div class="w-[68px] h-2 bg-[#FFBD1E]"></div>
-                    </div>
-                    <p class="font-medium text-primary">$12,500 / $20,000</p>
-                  </div>
-                </div> -->
-              <div class="flex flex-col gap-[10px]">
-                <div class="flex gap-2">
-                  <p class="text-secondary">Synchronization Status</p>
-                  <InfoIcon />
-                </div>
-                <div
-                  id="project-sync-status"
-                  class="flex flex-wrap gap-5 min-h-7"
-                >
-                </div>
-              </div>
-              <!-- </div> -->
+              <LatestCommit client:load />
             </div>
           </div>
         </div>
@@ -96,87 +51,90 @@ import UpdateConfigModal from "./UpdateConfigModal.astro";
           <img src="/icons/heart.svg" />
           <p class="leading-5 text-xl text-primary">Support</p>
         </button>
-        <button id="read-more-button" class="p-[18px_30px] flex gap-3 bg-white">
+        <button class="p-[18px_30px] flex gap-3 bg-white" data-read-more>
           <BookIcon />
           <p class="leading-5 text-xl text-primary">Read More</p>
         </button>
-        <button class="p-[18px_30px] flex gap-3 bg-white">
+        <button class="p-[18px_30px] flex gap-3 bg-white" data-last-hash>
           <EyeIcon />
           <p class="leading-5 text-xl text-primary">Last Hash</p>
         </button>
       </div>
     </div>
     <div
-      class="p-[15px_16px] lg:p-[30px_72px] grid lg:grid-cols-2 gap-12 bg-white"
+      id="project-maintainers"
+      class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
     >
-      <div id="project-maintainers" class="flex flex-col gap-5">
-        <p class="leading-4 text-base text-secondary">Maintainers</p>
-        <ul class="flex flex-col gap-[18px]"></ul>
-        <div class="flex view-all"></div>
-      </div>
-      <div class="flex flex-col gap-[30px]">
-        <div id="project-organization" class="flex flex-col gap-5">
-          <h3 class="leading-4 text-base text-secondary">Organization</h3>
-          <p
-            id="project-organization-name"
-            class="leading-5 text-xl text-primary"
-          >
-          </p>
-        </div>
-        <div class="flex flex-col gap-5">
-          <h3 class="leading-4 text-base text-secondary">Official Links</h3>
-          <div id="official-links" class="flex flex-wrap gap-x-6 min-h-7"></div>
-        </div>
-      </div>
+      <p class="leading-4 text-base text-secondary">Maintainers</p>
+      <ul class="grid grid-cols-3 gap-9"></ul>
+      <div class="flex view-all"></div>
     </div>
     <CommitHistory client:load />
   </div>
 </div>
 
-<UpdateConfigModal />
+<DonateModal />
 
 <ReadMoreModal />
 
-<DonateModal />
+<LastHashModal />
 
 <script>
   import { navigate } from "astro:transitions/client";
   import type { ConfigData } from "types/projectConfig";
   import {
-    getLatestCommitData,
-    getTOMLFileHash,
-  } from "../../../service/GithubService";
-  import { getProject } from "../../../service/ReadContractService";
-  import {
     loadConfigData,
     loadProjectInfo,
     loadProjectLatestSha,
     loadProjectName,
-    setProject,
   } from "../../../service/StateService";
-  import { loadedPublicKey } from "../../../service/walletService";
-  import { updateConfig } from "../../../service/WriteContractService";
   import { convertGitHubLink } from "../../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../../utils/store";
+import { getLatestCommitData } from "@service/GithubService";
+import { formatDateTime } from "utils/formatTimeFunctions";
 
   document.addEventListener("astro:page-load", () => {
-    const backButton = document.getElementById("back-to-home");
-    if (backButton) {
-      backButton.addEventListener("click", () => navigate("/"));
-    }
-
-    const modal = document.getElementById(
+    const updateConfigButton = document.querySelector("[data-update-config]");
+    const udpateConfigModal = document.getElementById(
       "update-config-modal",
     ) as HTMLDialogElement;
 
+    if (updateConfigButton) {
+      updateConfigButton.addEventListener("click", () => {
+        udpateConfigModal.showModal();
+      });
+    }
+
+    const donateButton = document.querySelector("[data-donate-modal]");
+    const donateModal = document.getElementById(
+      "donate-modal",
+    ) as HTMLDialogElement;
+
+    if (donateButton && donateModal) {
+      donateButton.addEventListener("click", () => {
+        donateModal.showModal();
+      });
+    }
+
+    const readMoreButton = document.querySelector("[data-read-more]");
     const readMoreModal = document.getElementById(
       "read-more-modal",
     ) as HTMLDialogElement;
-    const readMoreButton = document.getElementById("read-more-button");
 
-    if (readMoreButton) {
+    if (readMoreButton && readMoreModal) {
       readMoreButton.addEventListener("click", () => {
         readMoreModal.showModal();
+      });
+    }
+
+    const lastHashButton = document.querySelector("[data-last-hash]");
+    const lastHashModal = document.getElementById(
+      "last-hash-modal",
+    ) as HTMLDialogElement;
+
+    if (lastHashButton && lastHashModal) {
+      lastHashButton.addEventListener("click", () => {
+        lastHashModal.showModal();
       });
     }
 
@@ -279,8 +237,7 @@ import UpdateConfigModal from "./UpdateConfigModal.astro";
           );
         }
 
-        const projectNameElement =
-          document.getElementById("project-name-value");
+        const projectNameElement = document.getElementById("project-name");
         if (projectNameElement) {
           projectNameElement.textContent = projectInfo.name;
         }
@@ -326,7 +283,6 @@ import UpdateConfigModal from "./UpdateConfigModal.astro";
             if (configData.officials.githubLink) {
               addLinkButton(
                 officialLinks,
-                "GitHub",
                 configData.officials.githubLink,
                 "github",
               );
@@ -334,276 +290,33 @@ import UpdateConfigModal from "./UpdateConfigModal.astro";
             if (configData.officials.websiteLink) {
               addLinkButton(
                 officialLinks,
-                "Web-Site",
                 configData.officials.websiteLink,
                 "web",
               );
             }
           } else {
-            addLinkButton(
-              officialLinks,
-              "GitHub",
-              projectInfo.config.url,
-              "github",
-            );
+            addLinkButton(officialLinks, "GitHub", projectInfo.config.url);
           }
         }
 
-        const socialLinks = document.getElementById("social-links");
-        if (socialLinks) {
-          socialLinks.innerHTML = "";
-          if (configData && configData.socialLinks) {
-            if (configData.socialLinks.twitter) {
-              addLinkButton(
-                socialLinks,
-                "Twitter",
-                configData.socialLinks.twitter,
-                "twitter",
-              );
-            }
-            if (configData.socialLinks.telegram) {
-              addLinkButton(
-                socialLinks,
-                "Telegram",
-                configData.socialLinks.telegram,
-                "telegram",
-              );
-            }
-            if (configData.socialLinks.discord) {
-              addLinkButton(
-                socialLinks,
-                "Discord",
-                configData.socialLinks.discord,
-                "discord",
-              );
-            }
-          }
-        }
-
-        const links = document.getElementById("links");
-        if (links) {
-          links.innerHTML = "";
-          if (configData && configData.officials) {
-            if (configData.officials.websiteLink) {
-              const websiteLink = document.createElement("a");
-              websiteLink.href = configData.officials.websiteLink;
-              websiteLink.target = "_blank";
-              websiteLink.rel = "noopener noreferrer";
-
-              const websiteIcon = document.createElement("img");
-              websiteIcon.src = "/icons/logos/web.svg";
-              websiteIcon.alt = "Website";
-              websiteIcon.className = "w-6 h-6";
-
-              websiteLink.appendChild(websiteIcon);
-              links.appendChild(websiteLink);
-            }
-
-            if (configData.officials.githubLink) {
-              const githubLink = document.createElement("a");
-              githubLink.href = configData.officials.githubLink;
-              githubLink.target = "_blank";
-              githubLink.rel = "noopener noreferrer";
-
-              const githubIcon = document.createElement("img");
-              githubIcon.src = "/icons/logos/github.svg";
-              githubIcon.alt = "Website";
-              githubIcon.className = "w-5 h-5";
-
-              githubLink.appendChild(githubIcon);
-              links.appendChild(githubLink);
-            }
-          } else {
-            const githubLink = document.createElement("a");
-            githubLink.href = projectInfo.config.url;
-            githubLink.target = "_blank";
-            githubLink.rel = "noopener noreferrer";
-
-            const githubIcon = document.createElement("img");
-            githubIcon.src = "/icons/logos/github.svg";
-            githubIcon.alt = "Website";
-            githubIcon.className = "w-5 h-5";
-
-            githubLink.appendChild(githubIcon);
-            links.appendChild(githubLink);
+        //Support modal content
+        const loadedName = loadProjectName();
+        if (loadedName) {
+          const projectNameSpan = document.getElementById("contribute-text");
+          if (projectNameSpan) {
+            projectNameSpan.innerHTML = `Contribute to <span id="project-name">${loadedName}</span>.xlm`;
           }
 
-          if (configData && configData.socialLinks) {
-            Object.entries(configData.socialLinks).forEach(
-              ([socialName, socialLink]) => {
-                if (socialLink) {
-                  const linkElement = document.createElement("a");
-                  linkElement.href = socialLink;
-                  linkElement.target = "_blank";
-                  linkElement.rel = "noopener noreferrer";
-
-                  const iconElement = document.createElement("img");
-                  iconElement.src = `/icons/logos/${socialName}.svg`;
-                  iconElement.alt = socialName;
-                  iconElement.className = "w-6 h-6";
-
-                  linkElement.appendChild(iconElement);
-                  links.appendChild(linkElement);
-                }
-              },
-            );
+          const donateTipPopup = document.getElementById("donate-tip-popup");
+          if (donateTipPopup) {
+            donateTipPopup.innerHTML = `Help us run the Tansu platform sustainability
+                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>`;
           }
-        }
-
-        const syncStatusContainer = document.getElementById(
-          "project-sync-status",
-        );
-        if (syncStatusContainer) {
-          syncStatusContainer.innerHTML = "";
-
-          // Add configuration badge
-          const projectConfigHash = projectInfo.config.hash;
-          if (!projectConfigHash || typeof projectConfigHash !== "string") {
-            alert("Error: Invalid project configuration hash");
-            return;
-          }
-
-          let tomlFileHash = await getTOMLFileHash(projectInfo.config.url);
-
-          const configComponent = document.createElement("div");
-          configComponent.className =
-            "flex items-center space-x-2 rounded-full relative group";
-
-          const icon = document.createElement("img");
-          icon.className = "w-5 h-5";
-
-          const text = document.createElement("span");
-          text.className = "text-sm sm:text-base";
-          text.textContent = "Configuration";
-
-          if (tomlFileHash && projectConfigHash === tomlFileHash) {
-            icon.src = "/icons/check.svg";
-            icon.alt = "Check";
-          } else {
-            icon.src = "/icons/failed.svg";
-            icon.alt = "Failed";
-          }
-
-          const popup = document.createElement("div");
-          popup.className =
-            "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
-          if (tomlFileHash && projectConfigHash === tomlFileHash) {
-            popup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> on-chain hash matches the hash of the file on GitHub</p>';
-          } else if (tomlFileHash) {
-            popup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> on-chain hash does not match the hash of the file on GitHub</p>';
-          } else {
-            popup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> not found on GitHub</p>';
-          }
-
-          const triangle = document.createElement("div");
-          triangle.className =
-            "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
-          popup.appendChild(triangle);
-
-          configComponent.appendChild(icon);
-          configComponent.appendChild(text);
-          configComponent.appendChild(popup);
-
-          syncStatusContainer.appendChild(configComponent);
-
-          // Add commit badge
-          const latestSha = loadProjectLatestSha();
-          const commitComponent = document.createElement("div");
-          commitComponent.className =
-            "flex items-center space-x-2 rounded-full relative group";
-
-          const commitIcon = document.createElement("img");
-          commitIcon.className = "w-5 h-5";
-
-          const commitText = document.createElement("span");
-          commitText.className = "text-sm sm:text-base";
-          commitText.textContent = "Commit";
-
-          const commitPopup = document.createElement("div");
-          commitPopup.className =
-            "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
-
-          const commitTriangle = document.createElement("div");
-          commitTriangle.className =
-            "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
-
-          try {
-            if (projectInfo.config.url && latestSha) {
-              const latestCommit = await getLatestCommitData(
-                projectInfo.config.url,
-                latestSha,
-              );
-
-              if (
-                latestCommit &&
-                latestCommit.sha &&
-                latestCommit.sha === latestSha
-              ) {
-                commitIcon.src = "/icons/check.svg";
-                commitIcon.alt = "Check";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain exists on GitHub</p>';
-              } else {
-                commitIcon.src = "/icons/check.svg";
-                commitIcon.alt = "Failed";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
-              }
-            } else {
-              commitIcon.src = "/icons/failed.svg";
-              commitIcon.alt = "Failed";
-              commitPopup.innerHTML =
-                '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
-            }
-          } catch (error) {
-            commitIcon.src = "/icons/failed.svg";
-            commitIcon.alt = "Failed";
-            commitPopup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
-          }
-
-          commitPopup.appendChild(commitTriangle);
-          commitComponent.appendChild(commitIcon);
-          commitComponent.appendChild(commitText);
-          commitComponent.appendChild(commitPopup);
-
-          syncStatusContainer.appendChild(commitComponent);
-        }
-
-        // Update modal content
-        const modalProjectName = document.getElementById(
-          "update-modal-project-name",
-        );
-        if (modalProjectName) {
-          modalProjectName.textContent = projectInfo.name;
-        }
-
-        const modalMaintainers = document.getElementById(
-          "modal-maintainers",
-        ) as HTMLInputElement;
-        if (modalMaintainers) {
-          modalMaintainers.value = projectInfo.maintainers.join(",");
-        }
-        const modalConfigUrl = document.getElementById(
-          "modal-config-url",
-        ) as HTMLInputElement;
-        if (modalConfigUrl) {
-          modalConfigUrl.value = projectInfo.config.url;
-        }
-        const modalConfigHash = document.getElementById(
-          "modal-config-hash",
-        ) as HTMLInputElement;
-        if (modalConfigHash) {
-          modalConfigHash.value = projectInfo.config.hash;
         }
 
         // Read more modal content
         const readMoreModal = document.getElementById("read-more-modal");
         if (readMoreModal) {
-          console.log(configData);
           const projectNameContainer =
             readMoreModal.querySelector(".project-name");
           if (projectNameContainer)
@@ -626,36 +339,29 @@ import UpdateConfigModal from "./UpdateConfigModal.astro";
           }
         }
 
-        //Support modal content
-        const loadedName = loadProjectName();
-        if (loadedName) {
-          const projectNameSpan = document.getElementById("contribute-text");
-          if (projectNameSpan) {
-            projectNameSpan.innerHTML = `Contribute to <span id="project-name">${loadedName}</span>.xlm`;
+        // Last hash modal content
+        const latestSha = loadProjectLatestSha();
+        if (latestSha) {
+          const latestCommit = await getLatestCommitData(
+            projectInfo.config.url,
+            latestSha,
+          );
+          console.log(latestCommit);
+          const lastHashModal = document.getElementById("last-hash-modal");
+          if (lastHashModal) {
+            const copyButton = lastHashModal.querySelector(".commit-link-copy") as HTMLButtonElement;
+            copyButton.addEventListener("click", () => {
+              navigator.clipboard.writeText(latestCommit.html_url);
+            });
+            const commitLink = lastHashModal.querySelector(".commit-link") as HTMLLinkElement;
+            commitLink.href = latestCommit.html_url;
+            const commitHash = lastHashModal.querySelector(".commit-hash") as HTMLParagraphElement;
+            commitHash.textContent = `${latestCommit.sha.slice(0, 24)}...`;
+            const commitDate = lastHashModal.querySelector(".commit-date") as HTMLParagraphElement;
+            commitDate.textContent = formatDateTime(latestCommit?.commit.committer.date);
+            const commitAuthor = lastHashModal.querySelector(".commit-author") as HTMLParagraphElement;
+            commitAuthor.textContent = `@${latestCommit?.commit.author.name}`;
           }
-
-          const donateTipPopup = document.getElementById("donate-tip-popup");
-          if (donateTipPopup) {
-            donateTipPopup.innerHTML = `Help us run the Tansu platform sustainability
-                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>`;
-          }
-        }
-      }
-    }
-
-    function updateUpgradeConfigButtonVisibility() {
-      const projectInfo = loadProjectInfo();
-
-      if (projectInfo) {
-        const connectedPublicKey = loadedPublicKey();
-        const isMaintainer = connectedPublicKey
-          ? projectInfo.maintainers.includes(connectedPublicKey)
-          : false;
-        const updateConfigButton = document.getElementById(
-          "open-update-config-modal-button",
-        );
-        if (updateConfigButton) {
-          updateConfigButton.classList.toggle("hidden", !isMaintainer);
         }
       }
     }
@@ -663,93 +369,11 @@ import UpdateConfigModal from "./UpdateConfigModal.astro";
     projectInfoLoaded.subscribe((loaded) => {
       if (loaded) {
         updateProjectInfo();
-        updateUpgradeConfigButtonVisibility();
       }
-    });
-
-    const button = document.querySelector(
-      "[data-update-config]",
-    ) as HTMLButtonElement;
-    if (button) {
-      button.addEventListener("click", async () => {
-        modal.showModal();
-      });
-    }
-
-    const updateConfigButton = document.getElementById("update-config-button");
-    const updateConfigLoader = document.getElementById("update-config-loader");
-    if (updateConfigButton && updateConfigLoader) {
-      updateConfigButton.addEventListener("click", async () => {
-        const modalMaintainers = (
-          document.getElementById("modal-maintainers") as HTMLInputElement
-        ).value;
-        const modalConfigUrl = (
-          document.getElementById("modal-config-url") as HTMLInputElement
-        ).value;
-        const modalConfigHash = (
-          document.getElementById("modal-config-hash") as HTMLInputElement
-        ).value;
-
-        updateConfigLoader.style.display = "inline-flex";
-
-        try {
-          const updateStatus = await updateConfig(
-            modalMaintainers,
-            modalConfigUrl,
-            modalConfigHash,
-          );
-
-          if (updateStatus.data && !updateStatus.error) {
-            const res = await getProject();
-            const project = res.data;
-            if (
-              project &&
-              project.name &&
-              project.config &&
-              project.maintainers
-            ) {
-              setProject(project);
-            } else if (res.error) {
-              alert(res.errorMessage);
-            }
-            updateProjectInfo();
-            (
-              document.getElementById(
-                "update-config-modal",
-              ) as HTMLDialogElement
-            ).close();
-          } else if (updateStatus.error) {
-            alert(updateStatus.errorMessage);
-          }
-        } catch (error) {
-          console.error("Error updating config:", error);
-          alert(
-            "An error occurred while updating the project configuration. Please try again.",
-          );
-        } finally {
-          updateConfigLoader.style.display = "none";
-        }
-      });
-    }
-
-    const supportButton = document.querySelector("[data-donate-modal]");
-    const donateModal = document.getElementById(
-      "donate-modal",
-    ) as HTMLDialogElement;
-
-    if (supportButton && donateModal) {
-      supportButton.addEventListener("click", () => {
-        donateModal.showModal();
-      });
-    }
-
-    window.addEventListener("walletConnected", (_event: Event) => {
-      updateUpgradeConfigButtonVisibility();
     });
 
     function addLinkButton(
       container: HTMLElement,
-      title: string,
       url: string,
       iconName: string,
     ) {
@@ -757,19 +381,13 @@ import UpdateConfigModal from "./UpdateConfigModal.astro";
       button.href = url;
       button.target = "_blank";
       button.rel = "noopener noreferrer";
-      button.className = "flex items-center space-x-[10px]";
 
       const icon = document.createElement("img");
       icon.src = getIconSVG(iconName);
       icon.alt = iconName;
       icon.className = "w-4 h-4";
 
-      const text = document.createElement("span");
-      text.className = "leading-5 text-xl text-primary";
-      text.textContent = title;
-
       button.appendChild(icon);
-      button.appendChild(text);
       container.appendChild(button);
     }
 
@@ -782,16 +400,6 @@ import UpdateConfigModal from "./UpdateConfigModal.astro";
         discord: "/icons/logos/discord.svg",
       };
       return icons[iconName] || "";
-    }
-
-    const proposalsButton = document.getElementById("go-to-proposals-button");
-    if (proposalsButton) {
-      proposalsButton.addEventListener("click", () => {
-        if (projectInfo) {
-          const name = projectInfo.name;
-          window.location.href = `/governance?name=${name}`;
-        }
-      });
     }
   });
 </script>
