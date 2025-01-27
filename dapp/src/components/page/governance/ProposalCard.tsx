@@ -1,10 +1,11 @@
 import { useStore } from "@nanostores/react";
 import { navigate } from "astro:transitions/client";
+import Button from "components/utils/Button";
 import React from "react";
 import type { ProposalCardView } from "types/proposal";
 import { calculateDateDifference } from "utils/formatTimeFunctions";
 import { projectNameForGovernance } from "utils/store";
-import ProposalStatusShow from "./ProposalStatusShow";
+import { capitalizeFirstLetter } from "utils/utils";
 
 const ProposalCard: React.FC<ProposalCardView> = ({
   proposalNumber,
@@ -15,45 +16,57 @@ const ProposalCard: React.FC<ProposalCardView> = ({
   const projectName = useStore(projectNameForGovernance);
 
   return (
-    <div
-      className="p-[30px] w-full flex flex-col gap-[30px] bg-white cursor-pointer"
-      onClick={() =>
-        navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
-      }
-    >
-      <div className="flex flex-col gap-[18px]">
-        <div className="flex items-center gap-[18px]">
-          {endDate && calculateDateDifference(endDate) && (
-            <p className="leading-[18px] text-lg text-primary">
-              Ends in {calculateDateDifference(endDate)}
-            </p>
-          )}
-          <ProposalStatusShow proposalStatus={proposalStatus} />
+    <div className="p-[30px] flex flex-col gap-6 bg-white">
+      <div className="flex justify-between">
+        <p className="text-xl font-medium text-primary">{proposalTitle}</p>
+        <div className="w-[220px] flex gap-[18px] text-xl">
+          <span className="text-tertiary">ID:</span>
+          <span className="text-primary">{proposalNumber}</span>
         </div>
-        <p className="leading-6 text-xl font-medium text-primary">
-          {proposalNumber} {proposalTitle}
-        </p>
       </div>
-      {/* <div className="w-full flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="hidden lg:block">
-            {proposalStatus === "voted" && (
-              <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-                Pending execution
-              </div>
-            )}
-          </div>
+      <div className="flex justify-between">
+        <div className="flex gap-3">
+          {proposalStatus == "active" && (
+            <Button icon="/icons/vote.svg">Vote</Button>
+          )}
+          <Button
+            type="secondary"
+            onClick={() =>
+              navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
+            }
+          >
+            View Details
+          </Button>
         </div>
-      </div> */}
-      {/* <div className="flex lg:hidden">
-        <div className="pl-2 sm:pl-3 md:pl-4">
-          {proposalStatus === "voted" && (
-            <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-              Pending execution
+        <div className="w-[220px] grid grid-cols-2 gap-[18px]">
+          <div className="flex flex-col gap-3">
+            <p className="text-sm text-tertiary">Status</p>
+            <p className="text-lg text-tertiary">
+              {proposalStatus == "voted"
+                ? "Executing"
+                : ["approved", "rejected", "cancelled"].includes(proposalStatus)
+                  ? "Finished"
+                  : capitalizeFirstLetter(proposalStatus)}
+            </p>
+          </div>
+          {["approved", "rejected", "cancelled"].includes(proposalStatus) && (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-tertiary">Result</p>
+              <p className={`text-lg text-${proposalStatus}`}>
+                {capitalizeFirstLetter(proposalStatus)}
+              </p>
+            </div>
+          )}
+          {proposalStatus == "active" && (
+            <div className="flex flex-col gap-3">
+              <p className="text-sm text-tertiary">End date</p>
+              <p className={`text-lg text-${proposalStatus}`}>
+                {calculateDateDifference(endDate)}
+              </p>
             </div>
           )}
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };

@@ -41,8 +41,8 @@ const ProposalList: React.FC = () => {
       {isLoading ? (
         <Loading />
       ) : (
-        <div className="w-full">
-          <div className="flex flex-col gap-2 sm:gap-3 md:gap-5">
+        <div className="w-full flex flex-col gap-12">
+          <div className="flex flex-col gap-[18px]">
             {proposalData.map((proposal) => (
               <ProposalCard
                 key={proposal.id}
@@ -53,12 +53,10 @@ const ProposalList: React.FC = () => {
               />
             ))}
           </div>
-          <div>
-            <Pagination
-              currentPage={currentPage + 1}
-              onPageChange={(page: number) => setCurrentPage(page - 1)}
-            />
-          </div>
+          <Pagination
+            currentPage={currentPage + 1}
+            onPageChange={(page: number) => setCurrentPage(page - 1)}
+          />
         </div>
       )}
     </>
