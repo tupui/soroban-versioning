@@ -128,8 +128,7 @@ const ProposalForm: React.FC = () => {
 
   const submitProposal = async () => {
     try {
-      if (!projectName)
-        throw new Error('No project is selected');
+      if (!projectName) throw new Error("No project is selected");
 
       if (proposalName.length < 10 || proposalName.length > 256)
         throw new Error("Proposal name is required");
@@ -159,7 +158,6 @@ const ProposalForm: React.FC = () => {
 
       const client = await Client.create();
       const apiUrl = `/api/w3up-delegation`;
-
 
       const { generateChallengeTransaction } = await import(
         "@service/ChallengeService"
@@ -228,12 +226,10 @@ const ProposalForm: React.FC = () => {
       });
 
       files.push(new File([description], "proposal.md"));
-      if (!files)
-        throw new Error('Failed to create proposal files');
+      if (!files) throw new Error("Failed to create proposal files");
 
       const directoryCid = await client.uploadDirectory(files);
-      if (!directoryCid)
-        throw new Error("Failed to upload proposal");
+      if (!directoryCid) throw new Error("Failed to upload proposal");
 
       setSubmittingStatus(3);
 
@@ -246,8 +242,7 @@ const ProposalForm: React.FC = () => {
         Math.floor(Date.now() / 1000) + 86400 * votingDays,
       );
 
-      if (res.error)
-        throw new Error(res.errorMessage);
+      if (res.error) throw new Error(res.errorMessage);
 
       setSubmittingStatus(4);
 
@@ -385,29 +380,39 @@ const ProposalForm: React.FC = () => {
               value={votingDays}
               onChange={(e) => setVotingDays(Number(e.target.value))}
             />
-            <p className="leading-[16px] text-base text-[#5D4E6B]">
+            <p className="leading-[16px] text-base text-tertiary">
               Minimum duration:{" "}
               <span className="font-[600] text-primary">1 day</span>
             </p>
           </div>
         </div>
         <div className="grid grid-cols-4 gap-[18px]">
-          <Button className="relative col-span-2" onClick={submitProposal}>
-            <div className="absolute left-0 top-0 h-full" style={{ width: `${submittingStatus * 25}%`, backgroundColor: '#FFB21E' }} />
+          <Button
+            size="lg"
+            className="relative col-span-2"
+            onClick={submitProposal}
+          >
+            <div
+              className="absolute left-0 top-0 h-full"
+              style={{
+                width: `${submittingStatus * 25}%`,
+                backgroundColor: "#FFB21E",
+              }}
+            />
             <p className="z-10">
-              {submittingStatus == 0 ?
-                "Submit Proposals" :
-                submittingStatus == 1 ?
-                  "Signing Authorization..." :
-                  submittingStatus == 2 ?
-                    "Uploading to IPFS..." :
-                    submittingStatus == 3 ?
-                      "Registering Proposal..." :
-                      "Finalizing Smart Contract..."
-              }
+              {submittingStatus == 0
+                ? "Submit Proposals"
+                : submittingStatus == 1
+                  ? "Signing Authorization..."
+                  : submittingStatus == 2
+                    ? "Uploading to IPFS..."
+                    : submittingStatus == 3
+                      ? "Registering Proposal..."
+                      : "Finalizing Smart Contract..."}
             </p>
           </Button>
           <Button
+            size="lg"
             type="secondary"
             className="col-span-1"
             onClick={() => setShowClearAllModal(true)}
@@ -415,6 +420,7 @@ const ProposalForm: React.FC = () => {
             Clear All
           </Button>
           <Button
+            size="lg"
             type="secondary"
             className="col-span-1"
             onClick={() => setShowCancelModal(true)}
@@ -436,19 +442,27 @@ const ProposalForm: React.FC = () => {
               </p>
             </div>
             <div className="flex gap-[18px]">
-              <Button onClick={() => setShowClearAllModal(false)}>Go Back</Button>
-              <Button type="secondary" onClick={() => {
-                setProposalName("");
-                setMdText("");
-                setApproveDescription("");
-                setApproveXdr("");
-                setRejectDescription("");
-                setRejectXdr("");
-                setCancelledDescription("");
-                setCancelledXdr("");
-                setVotingDays(5);
-                setShowClearAllModal(false);
-              }}>Clear Fields</Button>
+              <Button size="lg" onClick={() => setShowClearAllModal(false)}>
+                Go Back
+              </Button>
+              <Button
+                size="lg"
+                type="secondary"
+                onClick={() => {
+                  setProposalName("");
+                  setMdText("");
+                  setApproveDescription("");
+                  setApproveXdr("");
+                  setRejectDescription("");
+                  setRejectXdr("");
+                  setCancelledDescription("");
+                  setCancelledXdr("");
+                  setVotingDays(5);
+                  setShowClearAllModal(false);
+                }}
+              >
+                Clear Fields
+              </Button>
             </div>
           </div>
         </Modal>
@@ -466,8 +480,16 @@ const ProposalForm: React.FC = () => {
               </p>
             </div>
             <div className="flex gap-[18px]">
-              <Button onClick={() => setShowCancelModal(false)}>Go Back</Button>
-              <Button type="secondary" onClick={() => navigate(`/governance?name=${projectName}`)}>Cancel Proposal</Button>
+              <Button size="lg" onClick={() => setShowCancelModal(false)}>
+                Go Back
+              </Button>
+              <Button
+                size="lg"
+                type="secondary"
+                onClick={() => navigate(`/governance?name=${projectName}`)}
+              >
+                Cancel Proposal
+              </Button>
             </div>
           </div>
         </Modal>
@@ -495,9 +517,7 @@ const OutcomeInput = ({
 }: OutcomeInputProps) => {
   return (
     <div className="flex flex-col gap-[18px]">
-      <div
-        className={`text-xl font-medium ${type === "approved" ? "text-approved" : type === "rejected" ? "text-conflict" : type === "cancelled" && "text-abstain"}`}
-      >
+      <div className={`text-xl font-medium text-${type}`}>
         {capitalizeFirstLetter(type)} Outcome
       </div>
       <div className="flex flex-col gap-[18px]">
