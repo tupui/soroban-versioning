@@ -39,3 +39,5 @@ pnpm-debug.log*
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/e2e/freighter.zip
+/e2e/freighter
