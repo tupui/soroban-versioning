@@ -1,28 +1,31 @@
-name: Playwright Tests
+name: Frontend Tests
+permissions:
+  contents: read
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - name: Download freighter wallet extension
-        run: curl -L https://github.com/stellar/freighter/releases/download/5.27.1/build-5.27.1.zip -o dapp/e2e/freighter.zip
-      - name: Extract freighter wallet extension
-        run: unzip dapp/e2e/freighter.zip -d dapp/e2e/freighter
-      - name: Install dependencies
-        run: npm ci
+      - uses: oven-sh/setup-bun@v2
+      - name: Install App dependencies
+        run: cd dapp && bun install
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run: bun run playwright install --with-deps
+      - name: Download freighter wallet extension
+        run: curl -L https://github.com/stellar/freighter/releases/download/5.27.1/build-5.27.1.zip -o e2e/freighter.zip
+      - name: Extract freighter wallet extension
+        run: unzip e2e/freighter.zip -d e2e/freighter
       - name: Run Playwright tests
-        run: npx playwright test
+        run: bun run playwright test
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
