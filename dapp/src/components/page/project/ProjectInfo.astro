@@ -620,27 +620,27 @@ import DonateModal from "./DonateModal.astro";
                 commitIcon.src = "/icons/check.svg";
                 commitIcon.alt = "Check";
                 commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain exists on GitHub</p>';
+                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain exists on GitHub</p>';
               } else {
                 commitComponent.classList.add("bg-orange-200");
                 commitIcon.src = "/icons/failed.svg";
                 commitIcon.alt = "Failed";
                 commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
+                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain cannot be found on GitHub</p>';
               }
             } else {
               commitComponent.classList.add("bg-orange-200");
               commitIcon.src = "/icons/failed.svg";
               commitIcon.alt = "Failed";
               commitPopup.innerHTML =
-                '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
+                '<p class="text-sm w-36 sm:w-max">No commit SHA on-chain yet</p>';
             }
           } catch (error) {
             commitComponent.classList.add("bg-orange-200");
             commitIcon.src = "/icons/failed.svg";
             commitIcon.alt = "Failed";
             commitPopup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max">Latest SHA on-chain cannot be found on GitHub</p>';
+              '<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on GitHub</p>';
           }
 
           commitPopup.appendChild(commitTriangle);
