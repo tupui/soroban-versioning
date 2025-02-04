@@ -14,8 +14,8 @@ test("Create project", async () => {
   if (page) {
     // Search for non-existent projects
     const projectName = generateRandomProjectName();
-    await page.getByTestId("project-search-input").fill(projectName);
-    await page.getByTestId("project-search-input").press("Enter");
+    await page.getByTestId("project-search").fill(projectName);
+    await page.getByTestId("project-search").press("Enter");
     await page.getByTestId("register-new-project-button").click();
     // Register a new project
     await page.goto("/register");
@@ -34,6 +34,7 @@ test("Create project", async () => {
     await page
       .getByTestId("proposal-approved-description")
       .fill(generateRandomWords(3));
+    await sleep(1000);
     await page.getByTestId("submit-proposal-button").click();
     await sign();
     await sleep(2000);
@@ -48,16 +49,11 @@ test("Create project", async () => {
     await page.getByTestId("vote-option-approve").check();
     await page.getByTestId("vote-button").click();
     await reviewAndSign();
-  }
-});
-
-test("Support", async () => {
-  const { page, sign } = await setupWallet();
-  if (page) {
-    await page.goto("/project?name=tansu");
-    await page.getByRole("button", { name: "♥ Support" }).click();
-    await page.locator("#donate-modal").click();
-    await page.getByRole("button", { name: "Contribute to tansu.xlm" }).click();
+    await new Promise(() => {});
+    // Support
+    await page.goto(`/project?name=${projectName}`);
+    await page.getByTestId("show-support-modal-button").click();
+    await page.getByTestId("support-button").click();
     await sign();
   }
 });
