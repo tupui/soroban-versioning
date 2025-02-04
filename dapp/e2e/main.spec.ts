@@ -8,7 +8,7 @@ import {
 } from "./utils";
 import { setupWallet } from "./wallet-helper";
 
-test("Create project", async () => {
+test("Main flow", async () => {
   const { page, changeWallet, sign, reviewAndSign } = await setupWallet();
 
   if (page) {
@@ -49,7 +49,6 @@ test("Create project", async () => {
     await page.getByTestId("vote-option-approve").check();
     await page.getByTestId("vote-button").click();
     await reviewAndSign();
-    await new Promise(() => {});
     // Support
     await page.goto(`/project?name=${projectName}`);
     await page.getByTestId("show-support-modal-button").click();
