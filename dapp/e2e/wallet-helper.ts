@@ -1,11 +1,10 @@
 import { chromium, type BrowserContext, type Page } from "playwright";
-import { expect } from "playwright/test";
 import { wallet1, wallet2, walletExtensionPath } from "./constants";
 import type { IWallet } from "./interfaces";
 
 const elapse = 100;
 
-const getPage = (context: BrowserContext, index: number, timeout = 20000) =>
+const getPage = (context: BrowserContext, index: number, timeout = 30000) =>
   new Promise<Page>((resolve, reject) => {
     let time = 0;
     const intervalId = setInterval(() => {
@@ -39,7 +38,7 @@ const connectWalletWithSeeds = async (page: Page, wallet: IWallet) => {
       .fill(wallet.seeds?.[i] || "");
   }
   await page.getByRole("button", { name: "Import" }).click();
-  await expect(page.getByText("You’re all set!")).toBeVisible();
+  await page.waitForURL(/\/recover-account-success/);
   await page.goBack();
   await page.goBack();
   await page.getByTestId("network-selector-open").click();
@@ -76,7 +75,7 @@ export async function setupWallet() {
   const wallet2Page = await context.newPage();
   if (wallet2Page) {
     await wallet2Page.goto(
-      "chrome-extension://bcacfldlkkdogcmkkibnjlakofdplcbk/index.html#/account/import",
+      "chrome-extension://hghfkofghagaopgofigcbknjpeiaghdc/index.html#/account/import",
     );
     await connectWalletWithSecretKey(wallet2Page, wallet2);
   }
@@ -97,7 +96,7 @@ export async function setupWallet() {
     changeWallet: async (index: number) => {
       const walletPage = await context.newPage();
       await walletPage.goto(
-        "chrome-extension://bcacfldlkkdogcmkkibnjlakofdplcbk/index.html#/account",
+        "chrome-extension://hghfkofghagaopgofigcbknjpeiaghdc/index.html#/account",
       );
       await walletPage
         .getByTestId("account-list-identicon-button")
