@@ -74,6 +74,7 @@ const ProposalPageTitle: React.FC<Props> = ({
             disabled={status !== "active"}
             onClick={() => submitVote()}
             className={`w-full px-3 md:px-4 py-1 sm:py-1.5 md:py-3 ${!isConnected ? "bg-zinc-600" : "bg-zinc-900"} rounded-lg sm:rounded-xl md:rounded-[14px] justify-center gap-2.5 inline-flex`}
+            data-testid="show-vote-modal-button"
           >
             <span className="text-center text-white text-base sm:text-lg md:text-xl font-normal">
               Vote

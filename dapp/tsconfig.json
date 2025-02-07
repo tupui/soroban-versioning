@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "jsx": "react",
+    "types": ["@playwright/test"],
     "baseUrl": "src",
     "paths": {
       "@service/*": ["service/*"]

@@ -6,6 +6,7 @@ interface Props {
   ariaControls?: string;
   dataAttr: string;
   buttonText: string;
+  testId?: string;
 }
 
 const {
@@ -15,6 +16,7 @@ const {
   ariaControls,
   dataAttr,
   buttonText,
+  testId,
 } = Astro.props;
 ---
 
@@ -23,6 +25,7 @@ const {
     id={buttonId}
     class={`w-full px-2 sm:px-4 py-1.5 sm:py-3 bg-zinc-900 rounded-[14px] justify-center gap-2.5 inline-flex ${buttonClass}`}
     aria-controls={ariaControls}
+    data-testid={testId}
     {...dataAttr && { [dataAttr]: "" }}
   >
     <span
