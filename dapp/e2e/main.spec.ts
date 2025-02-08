@@ -8,11 +8,15 @@ import {
 } from "./utils";
 import { setupWallet } from "./wallet-helper";
 
+import { getDemoConfigData } from "../src/constants/demoConfigData";
+
 // test('title is ', async({page}) => {
 //   await page.goto("http://localhost:4321/");
 //   const locator = page.getByRole("button");
 //   await expect(locator).toHaveText("Connect");
 // })
+
+const data = getDemoConfigData();
 
 interface CheckResponse {
   success?: boolean;
@@ -21,15 +25,22 @@ interface CheckResponse {
 
 const checkLabel = async (
   page: Page, 
-  tag_id: string, 
-  check_str: string
+  tag_id?: string, 
+  check_str?: string
 ): Promise<CheckResponse> => {
   try {
+    let locator;
     // check element using getByTestId
-    const locator = page.getByTestId(tag_id);
-
+    if(check_str){
+      if (tag_id){
+        locator = page.getByTestId(tag_id);
+        await expect(locator).toContainText(check_str);
+      }
+      else{
+        await expect(page.getByText(check_str, { exact: false })).toBeVisible();
+      }
+    }
     // Check the Test is in the element
-    await expect(locator).toContainText(check_str);
 
     console.log("Check Label Success");
 
@@ -45,7 +56,8 @@ const checkImage = async (
   page: Page,
   tag_id?: string,  // Optional tag_id
   tag_alt?: string,  // Optional alt text
-  check_str?: string // Optional text check
+  check_str?: string, // Optional text check
+  display: boolean = true
 ): Promise<CheckResponse> => {
   try {
     let locator;
@@ -61,13 +73,21 @@ const checkImage = async (
       throw new Error("Either tag_id or tag_alt must be provided.");
     }
 
+    // If src is invalid
+    await expect(locator).not.toHaveAttribute("src", "");
+
     // If check_str is provided, check text content
     if (check_str) {
-      await expect(locator).toContainText(check_str);
+      await expect(locator).toHaveAttribute("alt", check_str);
     }
 
     // Check if the image is visible
-    await expect(locator).toBeVisible();
+    if(!display){
+      await expect(locator).not.toBeVisible();
+    }
+    else{
+      await expect(locator).toBeVisible();
+    }
 
     console.log("Check Image Success");
 
@@ -152,6 +172,24 @@ const checkInput = async (
   }
 };
 
+const checkColor = async (
+  page: Page,
+  tag_id: string,
+  color: string,
+): Promise<CheckResponse> => {
+  try{
+    const backgroundDiv = page.getByTestId(tag_id);
+    const backgroundDivColor = await backgroundDiv.evaluate(el => getComputedStyle(el).backgroundColor);
+    expect(backgroundDivColor).toBe(color);
+
+    console.log("Check Color Success")
+    
+    return{ success: true }
+  }catch(error){
+    return { error: error instanceof Error? error.message : "Unknown Error"};
+  }
+}
+
 
 test.describe("home page test", () => {
   
@@ -163,31 +201,61 @@ test.describe("home page test", () => {
     console.log("After tests");
   });
 
+  // Check the Url is correct!
   test("correct Url", async ({ page }) => {
     // ✅ Navigate to the URL first
     await page.goto("http://localhost:4321");
-
+    
     // ✅ Then, check if the URL is correct
     await expect(page).toHaveURL("http://localhost:4321");
-
+    
     console.log("Test passed!");
   });
-
+  
+  // Check home UI is correct!
   test("home Ui test", async({page}) => {
     const results : CheckResponse[] = [];
 
     await page.goto("http://localhost:4321");
 
-    // Check if Logo exsits at the top
-    results.push(await checkImage(page, undefined, "Logo"));
+    // Check if Images exsit
+    results.push(await checkImage(page, undefined, "Logo", "Logo"));
+    results.push(await checkImage(page, "serachIcon", "serachIcon", "serachIcon"));
+    results.push(await checkImage(page, undefined, "(//)", "(//)"));
+    results.push(await checkImage(page, "footer-github"));
+    results.push(await checkImage(page, "footer-stellar"));
+    results.push(await checkImage(page, "footer-discord"));
 
-    // Check Navbar Labels
+    // project-modal ui test
+    data.map( async (item) => {
+      results.push(await checkImage(page, undefined, item.projectName, item.projectName));
+      results.push(await checkLabel(page, `${item.projectName}-title`, item.projectName)); 
+      results.push(await checkLabel(page, `${item.projectName}-description`, item.description));  
+      results.push(await checkImage(page, `${item.projectName}-web`));
+      results.push(await checkImage(page, `${item.projectName}-github`));
+      Object.entries(item.socialLinks).map( async ([platform]) => {
+        results.push(await checkImage(page, `${item.projectName}-social-${platform}`));
+      })
+      item.organizationName
+        ? 
+          results.push(await checkLabel(page, `${item.projectName}-organization`, item.organizationName)) 
+        :
+          results.push(await checkLabel(page, `${item.projectName}-nonOrganization`, "No organization name"))   
+    })
+
+    // Check Labels exist
     results.push(await checkLabel(page, "navbar-default", "Tansu"));
     results.push(await checkLabel(page, "navbar-default", "Alpha"));   
-    
+    results.push(await checkLabel(page, "Featured Projects", "Featured Projects"));  
+    results.push(await checkLabel(page, "footer-label", `© ${new Date().getFullYear()} Tansu, Consulting Manao GmbH`));  
+
     //Check if the button exists
     results.push(await checkButton(page, "connect-wallet-button", "Connect"))
+    //Check if the searchBar exists
     results.push(await checkInput(page, "project-search", "Search or register a project...", "Stellar", "Stellar"));
+
+    // Check the color
+    results.push(await checkColor(page, "footer-parent", "rgb(185, 255, 102)"));
 
     // Ensure all checks passed
     for (const result of results) {

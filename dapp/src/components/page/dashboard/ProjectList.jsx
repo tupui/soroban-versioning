@@ -146,10 +146,12 @@ const ProjectList = () => {
             onClick={handleSearch}
           >
             <img
+              alt="serachIcon"
               src="/icons/search.svg"
               width={20}
               height={20}
               className="icon-search"
+              data-testId="serachIcon"
             />
           </div>
         </div>
@@ -162,7 +164,8 @@ const ProjectList = () => {
               id="featured-projects-topic"
               className="grid place-items-center gap-8 mb-1.5 mt-12 md:flex"
             >
-              <span className="text-2xl sm:text-4xl text-nowrap px-1.5 font-medium bg-lime rounded-md">
+              <span className="text-2xl sm:text-4xl text-nowrap px-1.5 font-medium bg-lime rounded-md"
+              data-testId="Featured Projects">
                 Featured Projects
               </span>
               <p className="text-2xl font-normal text-center md:text-start"></p>
