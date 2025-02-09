@@ -7,11 +7,12 @@ import Topic from "../../utils/Topic.astro";
 <div
   class="relative flex flex-col items-center md:flex-row mb-1.5 mt-4 sm:mt-8 md:mt-12"
 >
-  <Topic title="Register" description="Register a new project on-chain" />
+  <Topic title="Register" description="Register a new project on-chain" id="register"/>
 </div>
 
 <div
   class="relative flex flex-col items-center lg:flex-row my-6 bg-zinc-100 rounded-[45px]"
+  data-testid="register-form"
 >
   <div
     class="row items-center py-12 px-4 sm:px-12 md:px-20 md:py-10 w-full lg:w-8/12 max-w-[680px] lg:max-w-none"

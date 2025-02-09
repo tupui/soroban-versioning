@@ -5,10 +5,14 @@ const { title, description, id } = Astro.props;
 <div id={id} class="grid place-items-center gap-8 md:flex">
   <span
     class="text-2xl sm:text-4xl text-nowrap px-1.5 font-medium bg-lime rounded-md"
+    data-testId={`${id}-title`}
   >
     {title}
   </span>
-  <p class="text-2xl font-normal text-center md:text-start">
+  <p 
+    class="text-2xl font-normal text-center md:text-start"
+    data-testId={`${id}-description`}
+  >
     {description}
   </p>
 </div>
