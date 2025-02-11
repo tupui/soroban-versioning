@@ -5,11 +5,9 @@ import { getPage, connectWalletWithSeeds } from "../wallet-helper";
 import {
     generateRandomProjectName,
     generateRandomString,
-    sleep,
 } from "../utils";
 
-import { getDemoConfigData } from "../../src/constants/demoConfigData";
-import { z } from "astro:content";
+import { registeredProjectNames } from "./projectName";
 
 test.describe('Register Test', () => {
     let context: BrowserContext;
@@ -41,14 +39,9 @@ test.describe('Register Test', () => {
     });
 
     test('Check Project Already Exists!', async () => {
-        const data = getDemoConfigData();
-        const projectNames : string[] = [];
-        data.map((item) => {
-            projectNames.push(item.projectName);
-        })
         if (page) {
             await page.getByTestId("project-search").fill(projectName);
-            for (const name of projectNames) {
+            for (const name of registeredProjectNames) {
                 await expect(page.getByTestId("register-new-project-button")).not.toHaveText(name);
             }
         }
@@ -75,6 +68,7 @@ test.describe('Register Test', () => {
             await page.waitForURL(/\/project\?name=/);
             const projectNameElement = page.locator("#project-name-value");
             await expect(projectNameElement).toHaveText(projectName);
+            registeredProjectNames.push(projectName);
         }
     })
 

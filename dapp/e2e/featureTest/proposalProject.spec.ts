@@ -8,7 +8,9 @@ import {
     generateRandomProposalName,
     generateRandomWords,
     sleep,
-  } from "../utils";
+} from "../utils";
+
+import { registeredProjectNames } from "./projectName";
 
 test.describe('Proposal Test', () => {
     let context: BrowserContext;
