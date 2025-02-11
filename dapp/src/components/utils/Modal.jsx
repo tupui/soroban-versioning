@@ -9,6 +9,7 @@ const Modal = ({ id, title, children, onClose }) => {
           onClose();
         }
       }}
+      data-testId={id}
     >
       <div
         id={id}

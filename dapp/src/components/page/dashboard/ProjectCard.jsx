@@ -69,7 +69,8 @@ const ProjectCard = ({ config }) => {
     <div className="project-card max-w-[400px] w-full border border-zinc-400 rounded-lg">
       <div
         className="rounded-lg overflow-hidden cursor-pointer group"
-        onClick={handleCardClick}
+        // onClick={handleCardClick}
+        data-testid={`${config.projectName}_modal_open`}
       >
         <img
           src={
@@ -78,6 +79,7 @@ const ProjectCard = ({ config }) => {
               : "/fallback-image.jpg"
           }
           alt={config.projectName}
+          onClick={handleCardClick}
           className="thumbnail w-full aspect-[3/2] object-fill transition-transform duration-300 ease-in-out group-hover:scale-125"
         />
       </div>

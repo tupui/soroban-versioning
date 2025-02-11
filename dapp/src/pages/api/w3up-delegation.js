@@ -24,6 +24,10 @@ export const POST = async ({ request }) => {
     const body = await request.json();
     const { signedTxXdr, projectName, did } = body;
 
+    console.log("signedTxXdr :", signedTxXdr);
+    console.log("projectName :", projectName);
+    console.log("did :", did);
+
     const didVerified = verifyDidHash(signedTxXdr, did);
 
     if (!didVerified) {
@@ -39,6 +43,8 @@ export const POST = async ({ request }) => {
 
     const maintainerPublicKey = await getProjectMaintainers(projectName);
 
+    console.log("maintainerPublicKey :", maintainerPublicKey);
+
     if (!maintainerPublicKey) {
       return new Response(
         JSON.stringify({ error: "Can not get maintainers" }),
@@ -49,8 +55,12 @@ export const POST = async ({ request }) => {
     }
     verifyChallengeSignature(signedTxXdr, maintainerPublicKey);
 
+    console.log("After verfiyChallengeSignature");
+
     try {
       const archive = await generateDelegation(did);
+
+      console.log("archive :", archive);
 
       return new Response(archive, {
         status: 200,

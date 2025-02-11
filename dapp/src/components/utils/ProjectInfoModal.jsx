@@ -22,7 +22,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
 
   return (
     <Modal id={id} title="" onClose={onClose}>
-      <div className="space-y-4 sm:space-y-6 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-full md:max-w-[800px]">
+      <div className="space-y-4 sm:space-y-6 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-full md:max-w-[800px]" >
         {projectInfo && Object.keys(projectInfo).length > 0 ? (
           <>
             <div className="flex items-center space-x-4">
@@ -32,6 +32,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
               <h2
                 id="view-modal-project-name"
                 className="text-2xl sm:text-3xl font-bold"
+                data-testId={`${projectInfo.projectName}-modalTitle`}
               >
                 {projectInfo.projectName || "No project name"}
               </h2>
@@ -163,6 +164,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
             <h2
               id="view-modal-project-name"
               className="text-2xl sm:text-3xl font-bold"
+              data-testid={`${projectName}-modalTitle`}
             >
               {projectName || "No project name"}
             </h2>

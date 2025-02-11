@@ -182,7 +182,11 @@ const ProposalForm: React.FC = () => {
 
       const did = client.agent.did();
 
+      console.log("did :", did);
+
       const signedTxXdr = await generateChallengeTransaction(did);
+
+      console.log("signedTxXdr :", signedTxXdr);
 
       const response = await fetch(apiUrl, {
         method: "POST",

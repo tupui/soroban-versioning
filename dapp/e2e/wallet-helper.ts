@@ -4,7 +4,7 @@ import type { IWallet } from "./interfaces";
 import os from "os";
 import path from "path";
 
-const userDataDir = path.join(os.tmpdir(), "playwright-profile");
+// const userDataDir = path.join(os.tmpdir(), "playwright-profile");
 
 const elapse = 100;
 
@@ -24,7 +24,7 @@ const elapse = 100;
 //     }, elapse);
 //   });
 
-const getPage = async (context: BrowserContext, index: number, timeout = 60000): Promise<Page> => {
+export const getPage = async (context: BrowserContext, index: number, timeout = 120000): Promise<Page> => {
   const start = Date.now();
   while (Date.now() - start < timeout) {
     const pages = context.pages();
@@ -34,7 +34,7 @@ const getPage = async (context: BrowserContext, index: number, timeout = 60000):
   throw new Error("Timeout: Page did not load in time.");
 };
 
-const connectWalletWithSeeds = async (page: Page, wallet: IWallet) => {
+export const connectWalletWithSeeds = async (page: Page, wallet: IWallet) => {
   await page.getByText("Import wallet").click();
   await page.getByTestId("account-creator-password-input").click();
   await page
@@ -70,83 +70,32 @@ const connectWalletWithSecretKey = async (page: Page, wallet: IWallet) => {
   await page.close();
 };
 
-// export async function setupWallet() {
-//   const context = await chromium.launchPersistentContext("", {
-//     headless: false,
-//     args: [
-//       `--disable-extensions-except=${walletExtensionPath}`,
-//       `--load-extension=${walletExtensionPath}`,
-//     ],
-//   });
-
-//   const pages = context.pages();
-
-//   const wallet1Page = await getPage(context, 1);
-//   if (wallet1Page) {
-//     await connectWalletWithSeeds(wallet1Page, wallet1);
-//   }
-
-//   const wallet2Page = await context.newPage();
-//   if (wallet2Page) {
-//     await wallet2Page.goto(
-//       "chrome-extension://hghfkofghagaopgofigcbknjpeiaghdc/index.html#/account/import",
-//     );
-//     await connectWalletWithSecretKey(wallet2Page, wallet2);
-//   }
-
-//   const page = pages[0];
-
-//   if (page) {
-//     await page.goto("http://localhost:4321/");
-//     await page.getByTestId("connect-wallet-button").click();
-//     await page.getByText("Freighter").click();
-//     const walletPage = await getPage(context, 1);
-//     await walletPage.getByRole("button", { name: "Connect" }).click();
-//   }
-
-//   return {
-//     context,
-//     page,
-//     changeWallet: async (index: number) => {
-//       const walletPage = await context.newPage();
-//       await walletPage.goto(
-//         "chrome-extension://hghfkofghagaopgofigcbknjpeiaghdc/index.html#/account",
-//       );
-//       await walletPage
-//         .getByTestId("account-list-identicon-button")
-//         .first()
-//         .click();
-//       await walletPage
-//         .getByTestId("account-list-identicon-button")
-//         .nth(index)
-//         .click();
-//       await walletPage.close();
-//     },
-//     sign: async () => {
-//       const walletPage = await getPage(context, 1);
-//       await walletPage.getByRole("button", { name: "Sign" }).click();
-//     },
-//     reviewAndSign: async () => {
-//       const walletPage = await getPage(context, 1);
-//       await walletPage.getByText("Review").click();
-//       await walletPage.getByText("Approve and continue").click();
-//       await walletPage.getByText("Sign Transaction").click();
-//     },
-//   };
-// }
-
-
 export async function setupWallet() {
-  const context = await chromium.launchPersistentContext(userDataDir, {
+  const context = await chromium.launchPersistentContext("", {
     headless: false,
     args: [
       `--disable-extensions-except=${walletExtensionPath}`,
       `--load-extension=${walletExtensionPath}`,
     ],
   });
-  console.log("after chrome is on");
-  
-  const page = context.pages()[0];
+
+  const pages = context.pages();
+
+  const wallet1Page = await getPage(context, 1);
+  if (wallet1Page) {
+    await connectWalletWithSeeds(wallet1Page, wallet1);
+  }
+
+  // const wallet2Page = await context.newPage();
+  // if (wallet2Page) {
+  //   await wallet2Page.goto(
+  //     "chrome-extension://hghfkofghagaopgofigcbknjpeiaghdc/index.html#/account/import",
+  //   );
+  //   await connectWalletWithSecretKey(wallet2Page, wallet2);
+  // }
+
+  const page = pages[0];
+
   if (page) {
     await page.goto("http://localhost:4321/");
     await page.getByTestId("connect-wallet-button").click();
@@ -154,32 +103,23 @@ export async function setupWallet() {
     const walletPage = await getPage(context, 1);
     await walletPage.getByRole("button", { name: "Connect" }).click();
   }
-  console.log("tansu website is on");
-  
-  const wallet1Page = await getPage(context, 1);
-  await connectWalletWithSeeds(wallet1Page, wallet1);
-  console.log("wallet1Page is on");
-  
-  const wallet2Page = await context.newPage();
-  const extensions = context.backgroundPages();
-  const walletExtension = extensions.find((page) =>
-    page.url().includes("chrome-extension://")
-  );
-  const extensionId = walletExtension?.url().split("/")[2];
-  
-  await wallet2Page.goto(`chrome-extension://${extensionId}/index.html#/account/import`);
-  await connectWalletWithSecretKey(wallet2Page, wallet2);
-  console.log("wallet2Page is on");
-  
-  
+
   return {
     context,
     page,
     changeWallet: async (index: number) => {
       const walletPage = await context.newPage();
-      await walletPage.goto(`chrome-extension://${extensionId}/index.html#/account`);
-      await walletPage.getByTestId("account-list-identicon-button").first().click();
-      await walletPage.getByTestId("account-list-identicon-button").nth(index).click();
+      await walletPage.goto(
+        "chrome-extension://hghfkofghagaopgofigcbknjpeiaghdc/index.html#/account",
+      );
+      await walletPage
+        .getByTestId("account-list-identicon-button")
+        .first()
+        .click();
+      await walletPage
+        .getByTestId("account-list-identicon-button")
+        .nth(index)
+        .click();
       await walletPage.close();
     },
     sign: async () => {
@@ -195,6 +135,70 @@ export async function setupWallet() {
   };
 }
 
-export async function closeWallet(context: BrowserContext) {
-  await context.close();
-}
+
+// export async function setupWallet() {
+//   const context = await chromium.launchPersistentContext(userDataDir, {
+//     headless: false,
+//     args: [
+//       `--disable-extensions-except=${walletExtensionPath}`,
+//       `--load-extension=${walletExtensionPath}`,
+//     ],
+//   });
+//   console.log("after chrome is on");
+  
+//   const page = context.pages()[0];
+//   if (page) {
+//     await page.goto("http://localhost:4321/");
+//     await page.getByTestId("connect-wallet-button").click();
+//     await page.getByText("Freighter").click();
+//     const walletPage = await getPage(context, 1);
+//     await walletPage.getByText("Import wallet").click();
+//     await walletPage.getByPlaceholder("New password").fill("assassinWalet@1234%")
+//     await walletPage.getByPlaceholder("Confirm password").fill("assassinWalet@1234%")
+//     await page.getByRole('checkbox', { name: 'termsOfUse' }).check();
+//     await walletPage.getByRole("button", { name: "Connect" }).click();
+//   }
+//   console.log("tansu website is on");
+  
+//   const wallet1Page = await getPage(context, 1);
+//   await connectWalletWithSeeds(wallet1Page, wallet1);
+//   console.log("wallet1Page is on");
+  
+//   // const wallet2Page = await context.newPage();
+//   const extensions = context.backgroundPages();
+//   const walletExtension = extensions.find((page) =>
+//     page.url().includes("chrome-extension://")
+//   );
+//   const extensionId = walletExtension?.url().split("/")[2];
+  
+//   // await wallet2Page.goto(`chrome-extension://${extensionId}/index.html#/account/import`);
+//   // await connectWalletWithSecretKey(wallet2Page, wallet2);
+//   // console.log("wallet2Page is on");
+  
+  
+//   return {
+//     context,
+//     page,
+//     changeWallet: async (index: number) => {
+//       const walletPage = await context.newPage();
+//       await walletPage.goto(`chrome-extension://${extensionId}/index.html#/account`);
+//       await walletPage.getByTestId("account-list-identicon-button").first().click();
+//       await walletPage.getByTestId("account-list-identicon-button").nth(index).click();
+//       await walletPage.close();
+//     },
+//     sign: async () => {
+//       const walletPage = await getPage(context, 1);
+//       await walletPage.getByRole("button", { name: "Sign" }).click();
+//     },
+//     reviewAndSign: async () => {
+//       const walletPage = await getPage(context, 1);
+//       await walletPage.getByText("Review").click();
+//       await walletPage.getByText("Approve and continue").click();
+//       await walletPage.getByText("Sign Transaction").click();
+//     },
+//   };
+// }
+
+// export async function closeWallet(context: BrowserContext) {
+//   await context.close();
+// }
