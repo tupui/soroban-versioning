@@ -2,7 +2,7 @@ import { expect, type Page } from "@playwright/test";
 
 const characters = "abcdefghijklmnopqrstuvwxyz";
 
-const generateRandomString = (length: number) => {
+export const generateRandomString = (length: number) => {
   let result = "";
   const charactersLength = characters.length;
 

@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { chromium, type BrowserContext, type Page } from "playwright";
-import { wallet1, wallet2, walletExtensionPath } from "../constants";
-import type { IWallet } from "../interfaces";
+import { wallet1, walletExtensionPath } from "../constants";
 import { getPage, connectWalletWithSeeds } from "../wallet-helper";
 
 test.describe('Wallet Connection Test', () => {

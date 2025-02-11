@@ -1,19 +1,19 @@
-import { testCaseProjectNameAfterRegister } from './registerProject.spec';
-
 import { expect, test } from "@playwright/test";
 import { chromium, type BrowserContext, type Page } from "playwright";
-import { walletExtensionPath } from "../constants";
+import { githubRepoURL, infoFileHash, wallet1, walletExtensionPath } from "../constants";
 import { getPage, connectWalletWithSeeds } from "../wallet-helper";
 
 import {
+    generateRandomProjectName,
     generateRandomProposalName,
     generateRandomWords,
     sleep,
   } from "../utils";
 
-test.describe('Wallet Connection Test', () => {
+test.describe('Proposal Test', () => {
     let context: BrowserContext;
     let page: Page;
+    const projectName = generateRandomProjectName();
   
     test.beforeAll(async () => {
         context = await chromium.launchPersistentContext("", {
@@ -25,11 +25,39 @@ test.describe('Wallet Connection Test', () => {
         });
         const pages = context.pages();
         page = pages[0] || await context.newPage();
+
+        const WalletPage = await getPage(context, 1);
+        await connectWalletWithSeeds(WalletPage, wallet1);
+        await page.goto("http://localhost:4321/");
+        await expect(page).toHaveURL("http://localhost:4321/");
+        await expect(page.getByTestId("connect-wallet-button")).toHaveText("Connect");
+        await page.getByTestId("connect-wallet-button").click();
+        await page.getByText("Freighter").click();
+        const walletPage1 = await getPage(context, 1);
+        await walletPage1.getByRole("button", { name: "Connect" }).click();
+        await walletPage1.close();
+        await expect(page.getByTestId('connect-wallet-button')).toHaveText("GAYW7...OAEFV");
+
+        await page.getByTestId("project-search").fill(projectName);
+        await page.getByTestId("project-search").press("Enter");
+        await page.getByTestId("register-new-project-button").click();
+        await page.goto("/register");
+        await page.getByTestId("maintainers").fill(wallet1.address);
+        await page.getByTestId("config_url").fill(githubRepoURL);
+        await page.getByTestId("config_hash").fill(infoFileHash);
+        await page.getByTestId("register-project-button").click();
+        const walletPage = await getPage(context, 1);
+        await walletPage.getByText("Review").click();
+        await walletPage.getByText("Approve and continue").click();
+        await walletPage.getByText("Sign Transaction").click();
+        await page.waitForURL(/\/project\?name=/);
+        const projectNameElement = page.locator("#project-name-value");
+        await expect(projectNameElement).toHaveText(projectName);
     });
 
     test('Check Proposal Feature!', async () => {
         if(page){
-            await page.goto(`http"//localhost:4321/proposal/new?name=${testCaseProjectNameAfterRegister}`);
+            await page.goto(`/proposal/new?name=${projectName}`);
             const proposalName = generateRandomProposalName();
             const proposalDescription = generateRandomWords(12);
             await page.getByTestId("proposal-name").fill(proposalName);
@@ -41,22 +69,21 @@ test.describe('Wallet Connection Test', () => {
                 .getByTestId("proposal-approved-xdr")
                 .fill(generateRandomWords(3));
             await page
-                .getByTestId("rejected-approved-description")
+                .getByTestId("proposal-rejected-description")
                 .fill(generateRandomWords(3));
             await page
-                .getByTestId("rejected-approved-xdr")
+                .getByTestId("proposal-rejected-xdr")
                 .fill(generateRandomWords(3));
             await page
-                .getByTestId("cancelled-approved-description")
+                .getByTestId("proposal-cancelled-description")
                 .fill(generateRandomWords(3));
             await page
-                .getByTestId("cancelled-approved-xdr")
+                .getByTestId("proposal-cancelled-xdr")
                 .fill(generateRandomWords(3));
             await sleep(1000);
             await page.getByTestId("submit-proposal-button").click();
             const signWalletPage = await getPage(context, 1);
             await signWalletPage.getByRole("button", { name: "Sign" }).click();
-            await signWalletPage.close();
             const walletExtensionPage = await getPage(context, 1);
             await walletExtensionPage.getByText("Review").click();
             await walletExtensionPage.getByText("Approve and continue").click();
