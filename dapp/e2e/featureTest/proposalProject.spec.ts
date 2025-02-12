@@ -7,6 +7,7 @@ import {
     generateRandomProjectName,
     generateRandomProposalName,
     generateRandomWords,
+    generateRandomString,
     sleep,
 } from "../utils";
 
@@ -16,6 +17,7 @@ test.describe('Proposal Test', () => {
     let context: BrowserContext;
     let page: Page;
     const projectName = generateRandomProjectName();
+    const index = registeredProjectNames.length;    
   
     test.beforeAll(async () => {
         context = await chromium.launchPersistentContext("", {
@@ -40,26 +42,26 @@ test.describe('Proposal Test', () => {
         await walletPage1.close();
         await expect(page.getByTestId('connect-wallet-button')).toHaveText("GAYW7...OAEFV");
 
-        await page.getByTestId("project-search").fill(projectName);
-        await page.getByTestId("project-search").press("Enter");
-        await page.getByTestId("register-new-project-button").click();
-        await page.goto("/register");
-        await page.getByTestId("maintainers").fill(wallet1.address);
-        await page.getByTestId("config_url").fill(githubRepoURL);
-        await page.getByTestId("config_hash").fill(infoFileHash);
-        await page.getByTestId("register-project-button").click();
-        const walletPage = await getPage(context, 1);
-        await walletPage.getByText("Review").click();
-        await walletPage.getByText("Approve and continue").click();
-        await walletPage.getByText("Sign Transaction").click();
-        await page.waitForURL(/\/project\?name=/);
-        const projectNameElement = page.locator("#project-name-value");
-        await expect(projectNameElement).toHaveText(projectName);
+        // await page.getByTestId("project-search").fill(projectName);
+        // await page.getByTestId("project-search").press("Enter");
+        // await page.getByTestId("register-new-project-button").click();
+        // await page.goto("/register");
+        // await page.getByTestId("maintainers").fill(wallet1.address);
+        // await page.getByTestId("config_url").fill(githubRepoURL);
+        // await page.getByTestId("config_hash").fill(infoFileHash);
+        // await page.getByTestId("register-project-button").click();
+        // const walletPage = await getPage(context, 1);
+        // await walletPage.getByText("Review").click();
+        // await walletPage.getByText("Approve and continue").click();
+        // await walletPage.getByText("Sign Transaction").click();
+        // await page.waitForURL(/\/project\?name=/);
+        // const projectNameElement = page.locator("#project-name-value");
+        // await expect(projectNameElement).toHaveText(projectName);
     });
 
     test('Check Proposal Feature!', async () => {
         if(page){
-            await page.goto(`/proposal/new?name=${projectName}`);
+            await page.goto(`/proposal/new?name=${registeredProjectNames[index - 1]}`);
             const proposalName = generateRandomProposalName();
             const proposalDescription = generateRandomWords(12);
             await page.getByTestId("proposal-name").fill(proposalName);
@@ -90,6 +92,46 @@ test.describe('Proposal Test', () => {
             await walletExtensionPage.getByText("Review").click();
             await walletExtensionPage.getByText("Approve and continue").click();
             await walletExtensionPage.getByText("Sign Transaction").click();
+        }
+    })
+
+    test('Check Validation Input Feature!', async () => {
+        if(page){
+            await page.goto(`/proposal/new?name=${registeredProjectNames[index - 1]}`);
+            await expect(page.locator("#new-proposal-topic")).toHaveText("Create Proposal");
+
+            const proposalName = generateRandomProposalName();
+            const proposalDescription = generateRandomWords(12);
+            await page.getByTestId("proposal-name").fill("");
+            await page.getByLabel("editable markdown").fill(proposalDescription);
+            await page
+                .getByTestId("proposal-approved-description")
+                .fill(generateRandomWords(3));
+            await page
+                .getByTestId("proposal-approved-xdr")
+                .fill(generateRandomWords(3));
+            await page
+                .getByTestId("proposal-rejected-description")
+                .fill(generateRandomWords(3));
+            await page
+                .getByTestId("proposal-rejected-xdr")
+                .fill(generateRandomWords(3));
+            await page
+                .getByTestId("proposal-cancelled-description")
+                .fill(generateRandomWords(3));
+            await page
+                .getByTestId("proposal-cancelled-xdr")
+                .fill(generateRandomWords(3));
+            await sleep(1000);
+            await page.getByTestId("submit-proposal-button").click();
+
+            page.on('dialog', async (dialog) => {
+                console.log(dialog.message());
+                expect(dialog.message()).toBe('Proposal name is required');
+                await dialog.accept();
+            });  
+            await page.getByTestId("proposal-name").fill(proposalName);
+            await page.getByTestId("submit-proposal-button").click();
         }
     })
 })

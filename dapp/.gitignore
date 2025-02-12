@@ -40,4 +40,4 @@ pnpm-debug.log*
 /blob-report/
 /playwright/.cache/
 /e2e/freighter.zip
-# /e2e/freighter
+/e2e/freighter
