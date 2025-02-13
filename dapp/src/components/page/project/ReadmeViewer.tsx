@@ -1,10 +1,11 @@
 import { useStore } from "@nanostores/react";
-import "github-markdown-css";
 import Markdown from "markdown-to-jsx";
 import { useEffect, useState } from "react";
 import { fetchReadmeContentFromConfigUrl } from "../../../service/GithubService";
 import { loadProjectInfo } from "../../../service/StateService";
 import { projectInfoLoaded } from "../../../utils/store";
+
+import "github-markdown-css";
 
 const ReadmeViewer = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
