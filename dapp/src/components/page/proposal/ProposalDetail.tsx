@@ -8,6 +8,7 @@ import { parseToLosslessJson } from "utils/passToLosslessJson";
 import * as StellarXdr from "utils/stellarXdr";
 import {
   capitalizeFirstLetter,
+  getIpfsBasicLink,
   getOutcomeLinkFromIpfs,
   getProposalLinkFromIpfs,
 } from "utils/utils";
@@ -53,7 +54,15 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
               <img src="/icons/link.svg" />
             </a>
           </div>
-          <Button type="secondary">View Details</Button>
+          <Button
+            type="secondary"
+            icon="/icons/eye.svg"
+            onClick={() =>
+              ipfsLink && window.open(getIpfsBasicLink(ipfsLink), "_blank")
+            }
+          >
+            View IPFS
+          </Button>
         </div>
         <div className="markdown-body w-full px-4 sm:px-6 md:px-8 py-6">
           <Markdown>{description}</Markdown>
@@ -61,9 +70,7 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
       </div>
       <div className="flex flex-col gap-6">
         <div className="flex items-center gap-3">
-          <p className="text-2xl font-medium text-primary">
-            Proposal Description
-          </p>
+          <p className="text-2xl font-medium text-primary">Proposal Outcome</p>
           <a
             href={(ipfsLink && getOutcomeLinkFromIpfs(ipfsLink)) || ""}
             target="_blank"

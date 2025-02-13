@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from "react";
 import { useStore } from "@nanostores/react";
+import { useEffect, useState } from "react";
+import { getDemoConfigData } from "../../../constants/demoConfigData";
+import { fetchTOMLFromConfigUrl } from "../../../service/GithubService.ts";
+import { getProjectFromName } from "../../../service/ReadContractService.ts";
+import { loadConfigData } from "../../../service/StateService.ts";
+import { convertGitHubLink } from "../../../utils/editLinkFunctions";
+import { projectCardModalOpen } from "../../../utils/store.ts";
+import { extractConfigData } from "../../../utils/utils";
+import DonateModal from "../project/DonateModal.astro";
+import CreateProjectModal from "./CreateProjectModal.tsx";
 import ProjectCard from "./ProjectCard.jsx";
 import ProjectInfoModal from "./ProjectInfoModal.jsx";
-import { getDemoConfigData } from "../../../constants/demoConfigData";
-import { projectCardModalOpen } from "../../../utils/store";
-import { getProjectFromName } from "../../../service/ReadContractService.ts";
-import {
-  refreshLocalStorage,
-  setProjectId,
-  loadConfigData,
-} from "../../../service/StateService.ts";
-import { fetchTOMLFromConfigUrl } from "../../../service/GithubService.ts";
-import { convertGitHubLink } from "../../../utils/editLinkFunctions";
-import { extractConfigData } from "../../../utils/utils";
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);
@@ -24,10 +22,11 @@ const ProjectList = () => {
   const [configInfo, setConfigInfo] = useState();
   const [registerButtonVisible, setRegisterButtonVisible] = useState(false);
 
-  const [isModalOpen, setModalOpen] = useState(false);
   const [projectInfo, setProjectInfo] = useState(null);
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [isFilterClose, setIsFilterClose] = useState(true);
+  const [showProjectInfoModal, setShowProjectInfoModal] = useState(false);
+  const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -60,7 +59,7 @@ const ProjectList = () => {
   }, [projects, searchTerm]);
 
   useEffect(() => {
-    setModalOpen(isProjectInfoModalOpen);
+    setShowProjectInfoModal(isProjectInfoModalOpen);
     if (isProjectInfoModalOpen) {
       const configData = loadConfigData();
       if (configData?.logoImageLink) {
@@ -87,12 +86,6 @@ const ProjectList = () => {
         setRegisterButtonVisible(true);
       }
     }
-  };
-
-  const handleRegister = () => {
-    refreshLocalStorage();
-    setProjectId(searchTerm.toLowerCase());
-    window.location.href = "/register";
   };
 
   const checkProjectOnChain = async (projectName) => {
@@ -148,27 +141,29 @@ const ProjectList = () => {
     <div className="project-list-container relative mx-auto w-full max-w-[984px]">
       <div className="flex flex-col items-start lg:items-center gap-[60px]">
         <div className="flex max-lg:flex-col justify-center items-start lg:items-center gap-6">
-          <div
-            className="px-[30px] py-[18px] flex gap-3 border border-zinc-800 cursor-pointer"
+          <button
+            className="px-[30px] py-[18px] flex gap-3 bg-[#F5F1F9] cursor-pointer"
             onClick={() => openSearchBox()}
           >
             <img src="/icons/search.svg" width={20} height={20} />
             <p className="text-xl leading-5 font-firacode text-pink">
               Explore Projects
             </p>
-          </div>
-          <div className="px-[30px] py-[18px] flex gap-3 bg-white cursor-pointer">
+          </button>
+          <button
+            className="px-[30px] py-[18px] flex gap-3 bg-white cursor-pointer"
+            onClick={() => setShowCreateProjectModal(true)}
+          >
             <p className="text-xl leading-5 font-firacode text-pink">
               Add Project
             </p>
-            <img src="/icons/plus.svg" width={20} height={20} />
-          </div>
+            <img src="/icons/plus-fill.svg" width={20} height={20} />
+          </button>
         </div>
         <div className="w-full flex justify-center items-center gap-[18px]">
           <p className="text-[26px] leading-[42px] font-firaMono text-pink">
             Featured Projects
           </p>
-          <img src="/icons/swap.svg" width={42} height={42} />
         </div>
       </div>
 
@@ -255,7 +250,6 @@ const ProjectList = () => {
         ) : isLoading ? (
           <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
             <p className="px-3 py-1 text-base sm:text-lg font-medium border-2 border-zinc-700 rounded-lg">
-              {" "}
               looking if the project is registered on chain...
             </p>
           </div>
@@ -264,24 +258,19 @@ const ProjectList = () => {
             <ProjectCard key={1} config={configInfo} />
           </div>
         ) : (
-          registerButtonVisible && (
-            <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
-              <button
-                className="register-btn mr-2 px-3 sm:px-4 py-2 bg-black text-white text-2xl sm:text-3xl rounded-lg"
-                onClick={handleRegister}
-              >
-                Register
-              </button>
-            </div>
-          )
+          <img className="mx-auto" src="/images/no-result.svg" />
         ))}
 
-      {isModalOpen && (
+      {showProjectInfoModal && (
         <ProjectInfoModal
           id="project-info-modal"
           projectInfo={projectInfo}
+          onClickSupport={() => setShowDonateModal(true)}
           onClose={() => projectCardModalOpen.set(false)}
         />
+      )}
+      {showCreateProjectModal && (
+        <CreateProjectModal onClose={() => setShowCreateProjectModal(false)} />
       )}
     </div>
   );

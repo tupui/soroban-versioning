@@ -23,11 +23,11 @@ const ProposalTypeButton: React.FC<ProposalTypeButtonProps> = ({
     }
   }, [proposalTypeStatus]);
 
-  const buttonClass = `py-[18px] w-[180px] flex justify-center border border-[#FFBD1E] ${isSelected ? "bg-[#FFBD1E]" : "bg-white"}`;
+  const buttonClass = `py-[11px] w-[180px] flex justify-center border border-[#FFBD1E] ${isSelected ? "bg-[#FFBD1E]" : "bg-white"}`;
 
   return (
     <button className={buttonClass} onClick={() => onClick(proposalType)}>
-      <span className="text-base text-[#2D0F51]">{title}</span>
+      <span className="leading-4 text-base text-[#2D0F51]">{title}</span>
     </button>
   );
 };

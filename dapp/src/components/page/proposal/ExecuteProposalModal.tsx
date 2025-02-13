@@ -1,28 +1,31 @@
-import React from "react";
-import { useState, useEffect, useMemo } from "react";
-import JsonView from "react18-json-view";
-import { modifySlashInXdr } from "utils/utils";
-import { stellarLabViewXdrLink } from "constants/serviceLinks";
-import * as StellarXdr from "utils/stellarXdr";
-import { parseToLosslessJson } from "utils/passToLosslessJson";
-import type { ProposalOutcome, VoteStatus, VoteType } from "types/proposal";
+import { navigate } from "astro:transitions/client";
+import Button from "components/utils/Button";
+import Modal, { type ModalProps } from "components/utils/Modal";
+import Step from "components/utils/Step";
+import Title from "components/utils/Title";
+import React, { useMemo, useState } from "react";
+import {
+  VoteType,
+  type ProposalOutcome,
+  type VoteStatus,
+} from "types/proposal";
+import VotingResult from "./VotingResult";
 
-interface VotersModalProps {
+interface ExecuteProposalModalProps extends ModalProps {
   projectName: string;
   proposalId: number | undefined;
   outcome: ProposalOutcome | null;
-  voteStatus: VoteStatus | null;
-  onClose: () => void;
+  voteStatus: VoteStatus | undefined;
 }
 
-const VotersModal: React.FC<VotersModalProps> = ({
+const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   projectName,
   proposalId,
   outcome,
   voteStatus,
   onClose,
 }) => {
-  const [content, setContent] = useState<any>(null);
+  const [step, setStep] = useState(1);
 
   const voteResultAndXdr: { voteResult: VoteType | null; xdr: string | null } =
     useMemo(() => {
@@ -31,13 +34,13 @@ const VotersModal: React.FC<VotersModalProps> = ({
         let voteResult: VoteType | null = null;
         let xdr: string | null = null;
         if (approve.score > abstain.score) {
-          voteResult = "approve";
+          voteResult = VoteType.APPROVE;
           xdr = outcome?.approved?.xdr || null;
         } else if (approve.score < abstain.score) {
-          voteResult = "reject";
+          voteResult = VoteType.REJECT;
           xdr = outcome?.rejected?.xdr || null;
         } else {
-          voteResult = "abstain";
+          voteResult = VoteType.CANCEL;
           xdr = outcome?.cancelled?.xdr || null;
         }
         return { voteResult, xdr };
@@ -45,21 +48,6 @@ const VotersModal: React.FC<VotersModalProps> = ({
         return { voteResult: null, xdr: null };
       }
     }, [voteStatus, outcome]);
-
-  useEffect(() => {
-    getContentFromXdr(voteResultAndXdr.xdr);
-  }, [voteResultAndXdr.xdr]);
-
-  const getContentFromXdr = async (_xdr: string | null) => {
-    try {
-      if (_xdr) {
-        const decoded = StellarXdr.decode("TransactionEnvelope", _xdr);
-        setContent(parseToLosslessJson(decoded));
-      }
-    } catch (error) {
-      console.error("Error decoding XDR:", error);
-    }
-  };
 
   const signAndExecute = async () => {
     if (!projectName) {
@@ -149,9 +137,38 @@ const VotersModal: React.FC<VotersModalProps> = ({
             Sign
           </button>
         </div>
-      </div>
-    </div>
+      ) : (
+        <div className="flex flex-col gap-[42px]">
+          <div className="flex items-start gap-[18px]">
+            <img src="/images/flower.svg" />
+            <div className="flex-grow flex flex-col gap-[30px]">
+              <Step step={step} totalSteps={3} />
+              <Title
+                title="Your Vote Is Officially Executed!"
+                description="Congratulations! You've successfully executed your vote, and the final status has been updated."
+              />
+              <VotingResult voteStatus={voteStatus} />
+            </div>
+          </div>
+          <div className="flex justify-end gap-[18px]">
+            <Button type="secondary" onClick={onClose}>
+              Close
+            </Button>
+            <Button type="secondary" icon="/icons/share.svg">
+              Share
+            </Button>
+            <Button
+              onClick={() =>
+                navigate(`/proposal?id=${proposalId}&name=${projectName}`)
+              }
+            >
+              View Proposal
+            </Button>
+          </div>
+        </div>
+      )}
+    </Modal>
   );
 };
 
-export default VotersModal;
+export default ExecuteProposalModal;

@@ -1,13 +1,10 @@
 ---
-import { BackIcon } from "components/icons";
 import PrimaryButton from "../../utils/PrimaryButton.astro";
 ---
 
-<div
-  class="z-10 mx-auto w-full max-w-[1048px] flex justify-between items-center"
->
+<div class="z-[1] flex justify-between items-center">
   <button id="back-button" class="flex gap-[14px]">
-    <BackIcon />
+    <img src="/icon/back.svg" />
     <p class="leading-5 text-xl text-primary">Back to Project Page</p>
   </button>
   <PrimaryButton id="create-proposal-button" icon="/icons/send.svg">
@@ -18,13 +15,12 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
 <script>
   import { getProjectFromName } from "@service/ReadContractService";
   import { navigate } from "astro:transitions/client";
-  import { connectedPublicKey, projectNameForGovernance } from "utils/store";
+  import { projectNameForGovernance } from "utils/store";
   import { capitalizeFirstLetter } from "utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
     let projectName = "";
     let maintainers: string[] = [];
-    let connectedAddress = "";
     projectNameForGovernance.subscribe(async (_projectName) => {
       if (_projectName) {
         const titleElement = document
@@ -44,37 +40,10 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
       }
     });
 
-    connectedPublicKey.subscribe((publicKey) => {
-      connectedAddress = publicKey;
-    });
-
     const backButton = document.getElementById("back-button");
     if (backButton) {
       backButton.addEventListener("click", () => {
         navigate(`/project?name=${projectName}`);
-      });
-    }
-
-    const submitProposalButton = document.getElementById(
-      "create-proposal-button",
-    );
-
-    if (submitProposalButton) {
-      submitProposalButton.addEventListener("click", () => {
-        if (!connectedAddress) {
-          alert("Please connect your wallet first");
-          return;
-        }
-
-        if (projectName) {
-          if (maintainers.includes(connectedAddress)) {
-            navigate(`/proposal/new?name=${projectName}`);
-          } else {
-            alert("Only maintainers can submit proposals");
-          }
-        } else {
-          alert("Project name is not provided");
-        }
       });
     }
   });

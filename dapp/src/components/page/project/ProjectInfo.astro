@@ -1,10 +1,9 @@
 ---
-import { BookIcon, EyeIcon, SettingIcon } from "components/icons";
-import CommitHistory from "./CommitHistory.jsx";
+import CommitHistory from "./CommitHistory";
 import DonateModal from "./DonateModal.astro";
-import ReadMoreModal from "./ReadMoreModal.astro";
 import LastHashModal from "./LastHashModal.astro";
 import LatestCommit from "./LatestCommit";
+import ReadMoreModal from "./ReadMoreModal.astro";
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
@@ -44,7 +43,7 @@ import LatestCommit from "./LatestCommit";
       </div>
       <div class="flex max-lg:flex-col gap-[18px]">
         <button id="goto-dao" class="p-[18px_30px] flex gap-3 bg-primary">
-          <SettingIcon />
+          <img src="/icons/gear.svg" />
           <p class="leading-5 text-xl text-white">DAO Management</p>
         </button>
         <button class="p-[18px_30px] flex gap-3 bg-white" data-donate-modal>
@@ -52,11 +51,11 @@ import LatestCommit from "./LatestCommit";
           <p class="leading-5 text-xl text-primary">Support</p>
         </button>
         <button class="p-[18px_30px] flex gap-3 bg-white" data-read-more>
-          <BookIcon />
+          <img src="/icons/book.svg" />
           <p class="leading-5 text-xl text-primary">Read More</p>
         </button>
         <button class="p-[18px_30px] flex gap-3 bg-white" data-last-hash>
-          <EyeIcon />
+          <img src="/icons/eye.svg" />
           <p class="leading-5 text-xl text-primary">Last Hash</p>
         </button>
       </div>
@@ -80,8 +79,10 @@ import LatestCommit from "./LatestCommit";
 <LastHashModal />
 
 <script>
+  import { getLatestCommitData } from "@service/GithubService";
   import { navigate } from "astro:transitions/client";
   import type { ConfigData } from "types/projectConfig";
+  import { formatDateTime } from "utils/formatTimeFunctions";
   import {
     loadConfigData,
     loadProjectInfo,
@@ -90,8 +91,6 @@ import LatestCommit from "./LatestCommit";
   } from "../../../service/StateService";
   import { convertGitHubLink } from "../../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../../utils/store";
-import { getLatestCommitData } from "@service/GithubService";
-import { formatDateTime } from "utils/formatTimeFunctions";
 
   document.addEventListener("astro:page-load", () => {
     const updateConfigButton = document.querySelector("[data-update-config]");
@@ -467,10 +466,43 @@ import { formatDateTime } from "utils/formatTimeFunctions";
         // Read more modal content
         const readMoreModal = document.getElementById("read-more-modal");
         if (readMoreModal) {
+          const projectOrganizationContainer = readMoreModal.querySelector(
+            ".project-organization",
+          );
+          if (projectOrganizationContainer)
+            projectOrganizationContainer.textContent =
+              configData?.organizationName || "Not available";
           const projectNameContainer =
             readMoreModal.querySelector(".project-name");
           if (projectNameContainer)
             projectNameContainer.textContent = projectInfo.name;
+          const officialLinksContainer = readMoreModal.querySelector(
+            ".official-links",
+          ) as HTMLElement;
+          if (officialLinksContainer) {
+            if (configData?.officials) {
+              if (configData.officials.githubLink) {
+                addLinkButton(
+                  officialLinksContainer,
+                  configData.officials.githubLink,
+                  "github",
+                );
+              }
+              if (configData.officials.websiteLink) {
+                addLinkButton(
+                  officialLinksContainer,
+                  configData.officials.websiteLink,
+                  "web",
+                );
+              }
+            } else {
+              addLinkButton(
+                officialLinksContainer,
+                "GitHub",
+                projectInfo.config.url,
+              );
+            }
+          }
           const projectDescContainer = readMoreModal.querySelector(
             ".project-description",
           );
@@ -499,17 +531,29 @@ import { formatDateTime } from "utils/formatTimeFunctions";
           console.log(latestCommit);
           const lastHashModal = document.getElementById("last-hash-modal");
           if (lastHashModal) {
-            const copyButton = lastHashModal.querySelector(".commit-link-copy") as HTMLButtonElement;
+            const copyButton = lastHashModal.querySelector(
+              ".commit-link-copy",
+            ) as HTMLButtonElement;
             copyButton.addEventListener("click", () => {
               navigator.clipboard.writeText(latestCommit.html_url);
             });
-            const commitLink = lastHashModal.querySelector(".commit-link") as HTMLLinkElement;
+            const commitLink = lastHashModal.querySelector(
+              ".commit-link",
+            ) as HTMLLinkElement;
             commitLink.href = latestCommit.html_url;
-            const commitHash = lastHashModal.querySelector(".commit-hash") as HTMLParagraphElement;
+            const commitHash = lastHashModal.querySelector(
+              ".commit-hash",
+            ) as HTMLParagraphElement;
             commitHash.textContent = `${latestCommit.sha.slice(0, 24)}...`;
-            const commitDate = lastHashModal.querySelector(".commit-date") as HTMLParagraphElement;
-            commitDate.textContent = formatDateTime(latestCommit?.commit.committer.date);
-            const commitAuthor = lastHashModal.querySelector(".commit-author") as HTMLParagraphElement;
+            const commitDate = lastHashModal.querySelector(
+              ".commit-date",
+            ) as HTMLParagraphElement;
+            commitDate.textContent = formatDateTime(
+              latestCommit?.commit.committer.date,
+            );
+            const commitAuthor = lastHashModal.querySelector(
+              ".commit-author",
+            ) as HTMLParagraphElement;
             commitAuthor.textContent = `@${latestCommit?.commit.author.name}`;
           }
         }

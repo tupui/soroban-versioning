@@ -35,7 +35,11 @@ export interface ProposalCardView {
   endDate: number;
 }
 
-export type VoteType = "approve" | "reject" | "abstain";
+export enum VoteType {
+  APPROVE = "approve",
+  REJECT = "reject",
+  CANCEL = "abstain",
+}
 
 export type VoterRole = "maintainer" | "community";
 

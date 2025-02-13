@@ -1,5 +1,6 @@
 ---
 import GovernancePageTitle from "components/page/governance/GovernancePageTitle.astro";
+import CreateProposalModal from "components/page/proposal/CreateProposalModal";
 import Container from "../../components/layout/Container.astro";
 import GovernancePage from "../../components/page/governance/GovernancePage.astro";
 import Layout from "../../layouts/Layout.astro";
@@ -13,6 +14,7 @@ import Layout from "../../layouts/Layout.astro";
   <Container>
     <GovernancePageTitle />
     <GovernancePage />
+    <CreateProposalModal client:load />
   </Container>
 </Layout>
 

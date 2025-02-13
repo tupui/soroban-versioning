@@ -1,23 +1,23 @@
 import { kit } from "../components/stellar-wallets-kit";
-import { loadedPublicKey } from "./walletService";
 import Versioning from "../contracts/soroban_versioning";
+import { loadedPublicKey } from "./walletService";
 
-import { loadedProjectId } from "./StateService";
-import * as pkg from "js-sha3";
-const { keccak256 } = pkg;
 import {
-  TransactionBuilder,
-  Transaction,
-  xdr,
   rpc,
+  Transaction,
+  TransactionBuilder,
+  xdr,
 } from "@stellar/stellar-sdk";
-import type { Vote } from "soroban_versioning";
-import type { VoteType } from "types/proposal";
-import type { Response } from "types/response";
 import {
   contractErrorMessages,
   type ContractErrorMessageKey,
 } from "constants/contractErrorMessages";
+import * as pkg from "js-sha3";
+import type { Vote } from "soroban_versioning";
+import type { VoteType } from "types/proposal";
+import type { Response } from "types/response";
+import { loadedProjectId } from "./StateService";
+const { keccak256 } = pkg;
 
 const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
 
@@ -39,6 +39,8 @@ function fetchErrorCode(error: any): {
   errorCode: ContractErrorMessageKey;
   errorMessage: string;
 } {
+  if (error.code == -4)
+    return { errorCode: error.code, errorMessage: error.message };
   const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
   let errorCode: ContractErrorMessageKey = 0;
   if (errorCodeMatch && errorCodeMatch[1]) {

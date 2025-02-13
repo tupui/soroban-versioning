@@ -6,7 +6,7 @@ import {
   loadProjectRepoInfo,
 } from "../../../service/StateService.ts";
 import { formatDate } from "../../../utils/formatTimeFunctions.ts";
-import { latestCommit, projectInfoLoaded } from "../../../utils/store.js";
+import { latestCommit, projectInfoLoaded } from "../../../utils/store.ts";
 import CommitPeriod from "./CommitPeriod.jsx";
 import CommitRecord from "./CommitRecord.jsx";
 

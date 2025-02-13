@@ -14,8 +14,12 @@ import ProjectReadme from "./ProjectReadme.astro";
     />
     <div class="flex flex-col gap-[15px] gap-[30px]">
       <div class="flex flex-col gap-3">
-        <p class="project-name leading-6 text-xl font-medium text-primary"></p>
-        <p class="project-description text-base text-secondary"></p>
+        <p class="project-organization leading-4 text-base text-secondary"></p>
+        <div class="flex gap-[18px]">
+          <p class="project-name text-2xl text-primary"></p>
+          <div class="official-links flex items-center gap-3"></div>
+        </div>
+        <p class="project-description text-base text-primary"></p>
       </div>
       <ProjectReadme />
     </div>

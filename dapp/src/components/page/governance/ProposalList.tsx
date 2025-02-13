@@ -7,12 +7,15 @@ import { projectNameForGovernance } from "utils/store";
 import { modifyProposalToView } from "utils/utils";
 import Pagination from "../../utils/Pagination";
 import ProposalCard from "./ProposalCard";
+import VotingModal from "../proposal/VotingModal";
 
 const ProposalList: React.FC = () => {
   const projectName = useStore(projectNameForGovernance);
   const [currentPage, setCurrentPage] = useState(0);
   const [proposalData, setProposalData] = useState<ProposalView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showVotingModal, setShowVotingModal] = useState(false);
+  const [proposalId, setProposalId] = useState<number>();
 
   const fetchProposalData = async (_page: number) => {
     if (projectName) {
@@ -50,6 +53,10 @@ const ProposalList: React.FC = () => {
                 proposalTitle={proposal.title}
                 proposalStatus={proposal.status}
                 endDate={proposal.endDate}
+                onVoteClick={() => {
+                  setProposalId(proposal.id);
+                  setShowVotingModal(true);
+                }}
               />
             ))}
           </div>
@@ -58,6 +65,13 @@ const ProposalList: React.FC = () => {
             onPageChange={(page: number) => setCurrentPage(page - 1)}
           />
         </div>
+      )}
+      {showVotingModal && (
+        <VotingModal
+          projectName={projectName}
+          proposalId={proposalId}
+          onClose={() => setShowVotingModal(false)}
+        />
       )}
     </>
   );

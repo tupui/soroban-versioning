@@ -36,6 +36,6 @@ const Tooltip = ({ children, text, position = "top" }: TooltipProps) => {
       )}
     </div>
   );
-}
+};
 
 export default Tooltip;

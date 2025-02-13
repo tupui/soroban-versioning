@@ -1,13 +1,16 @@
-import React from "react";
-import { useState } from "react";
-import type { VoteType } from "types/proposal";
+import Button from "components/utils/Button";
+import Modal, { type ModalProps } from "components/utils/Modal";
+import Title from "components/utils/Title";
+import { voteTypeDescriptionMap, voteTypeLabelMap } from "constants/constants";
+import React, { useState } from "react";
+import { VoteType } from "types/proposal";
+import VoteTypeCheckbox from "./VoteTypeCheckbox";
 
-interface VotersModalProps {
+interface VotersModalProps extends ModalProps {
   projectName: string;
   proposalId: number | undefined;
-  isVoted: boolean;
-  setIsVoted: React.Dispatch<React.SetStateAction<boolean>>;
-  onClose: () => void;
+  isVoted?: boolean;
+  setIsVoted?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const VotingModal: React.FC<VotersModalProps> = ({
@@ -17,8 +20,11 @@ const VotingModal: React.FC<VotersModalProps> = ({
   setIsVoted,
   onClose,
 }) => {
-  const [selectedOption, setSelectedOption] = useState<VoteType | null>(null);
+  const [selectedOption, setSelectedOption] = useState<VoteType | null>(
+    VoteType.APPROVE,
+  );
   const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState(1);
 
   const handleVote = async () => {
     if (!selectedOption) {
@@ -28,7 +34,6 @@ const VotingModal: React.FC<VotersModalProps> = ({
 
     if (isVoted) {
       alert("You have already voted");
-      onClose();
       return;
     }
 
@@ -43,7 +48,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
     if (res.data) {
       setIsLoading(false);
       alert(`You have successfully voted to "${selectedOption}" option.`);
-      setIsVoted(true);
+      setIsVoted?.(true);
     } else {
       setIsLoading(false);
       if (res.error) {
@@ -51,99 +56,104 @@ const VotingModal: React.FC<VotersModalProps> = ({
         alert(errorMessage);
       }
     }
-    onClose();
+    setStep(2);
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[9999]"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <div
-        className="modal relative w-max sm:max-w-[90%] md:max-w-[620px] px-8 py-4 rounded-[20px] bg-white"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-2xl font-bold">Vote</h2>
-        <div className="flex flex-col items-center gap-5">
-          <p className="text-base">Select one option to vote</p>
-
-          <div className="flex flex-col gap-5">
-            <CheckBox
-              value="approve"
-              option={selectedOption}
-              setOption={setSelectedOption}
-              label="Approve"
-              bgColor="bg-interest"
+    <Modal onClose={onClose}>
+      {step == 1 ? (
+        <div className="flex items-start gap-6">
+          <img
+            src="/images/box-with-ball.svg"
+            className="w-[360px] h-[360px]"
+          />
+          <div className="flex-grow flex flex-col gap-9">
+            <Title
+              title="Cast Your Vote"
+              description={
+                <div className="flex gap-1.5">
+                  <p>Vote on the proposal:</p>
+                  <p className="font-bold text-primary">
+                    Sustainable Future Initiative
+                  </p>
+                </div>
+              }
             />
-            <CheckBox
-              value="reject"
-              option={selectedOption}
-              setOption={setSelectedOption}
-              label="Reject"
-              bgColor="bg-conflict"
-            />
-            <CheckBox
-              value="abstain"
-              option={selectedOption}
-              setOption={setSelectedOption}
-              label="Abstain"
-              bgColor="bg-abstain"
-            />
-          </div>
-
-          <button
-            disabled={isLoading}
-            className="bg-black w-[94px] mt-4 mb-1 py-1 px-2 rounded-lg text-lg"
-            onClick={handleVote}
-          >
-            {isLoading ? (
-              <span className="text-center text-white text-xl font-normal leading-7">
-                Voting...
-              </span>
-            ) : (
-              <span className="text-center text-white text-xl font-normal leading-7">
-                Vote
-              </span>
+            {[VoteType.APPROVE, VoteType.REJECT, VoteType.CANCEL].map(
+              (voteType, index) => (
+                <div
+                  className="flex gap-3"
+                  onClick={() => setSelectedOption(voteType)}
+                >
+                  <VoteTypeCheckbox
+                    key={index}
+                    voteType={voteType}
+                    currentVoteType={selectedOption}
+                  />
+                  <div className="flex flex-col justify-center gap-3">
+                    <p
+                      className={`leading-5 text-xl font-medium text-${voteType}`}
+                    >
+                      {voteTypeLabelMap[voteType]}
+                    </p>
+                    <p className="leading-4 text-base font-semibold text-primary">
+                      {voteTypeDescriptionMap[voteType]}
+                    </p>
+                  </div>
+                </div>
+              ),
             )}
-          </button>
+            <div className="flex flex-col items-end gap-[18px]">
+              <div className="flex gap-[18px]">
+                <Button type="secondary" onClick={onClose}>
+                  Close
+                </Button>
+                <Button onClick={() => !isLoading && handleVote()}>
+                  {isLoading ? "Voting..." : "Vote"}
+                </Button>
+              </div>
+              <p className="text-base text-secondary">
+                Once submitted, your vote cannot be changed.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      ) : (
+        <div className="flex items-center gap-[18px]">
+          <img src="/images/box.svg" className="w-[360px] h-[360px]" />
+          <div className="flex-grow flex flex-col gap-[30px]">
+            <Title
+              title={
+                <div className="flex gap-3">
+                  <VoteTypeCheckbox size="sm" voteType={selectedOption!} />
+                  <span>
+                    Your {voteTypeLabelMap[selectedOption!]} Vote Has Been
+                    Submitted!
+                  </span>
+                </div>
+              }
+              description={
+                <>
+                  Thank you for voting{" "}
+                  <span className={`text-${selectedOption}`}>
+                    {voteTypeLabelMap[selectedOption!]}!
+                  </span>{" "}
+                  Your positive feedback helps this proposal move closer to
+                  realization.
+                </>
+              }
+            />
+            <div className="flex justify-end gap-[18px]">
+              <Button type="secondary" onClick={onClose}>
+                Close
+              </Button>
+              <Button onClick={onClose}>Ok</Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </Modal>
   );
 };
 
 export default VotingModal;
-
-const CheckBox: React.FC<{
-  value: VoteType;
-  option: string | null;
-  setOption: any;
-  label: string;
-  bgColor: string;
-}> = ({ value, option, setOption, label, bgColor }) => {
-  return (
-    <label className="relative flex gap-3 items-center cursor-pointer pr-2">
-      <input
-        type="radio"
-        value={value}
-        checked={option === value}
-        className="opacity-0 absolute left-0 right-0 cursor-pointer"
-        onChange={(e) => setOption(e.target.value)}
-      />
-      <span className="rounded-full w-4 h-4 bg-zinc-200 border border-zinc-600 flex justify-center items-center">
-        <span
-          className={`rounded-full w-2.5 h-2.5 ${option === value && "bg-approved"}`}
-        ></span>
-      </span>
-      <p
-        className={`w-24 py-0.5 ${bgColor} rounded-lg text-white text-center text-lg font-medium`}
-      >
-        {label}
-      </p>
-    </label>
-  );
-};
