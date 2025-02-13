@@ -4,10 +4,10 @@ import Loading from "components/utils/Loading";
 import React, { useEffect, useState } from "react";
 import type { ProposalView } from "types/proposal";
 import { projectNameForGovernance } from "utils/store";
-import { modifyProposalToView } from "utils/utils";
+import { modifyProposalToView, toast } from "utils/utils";
 import Pagination from "../../utils/Pagination";
-import ProposalCard from "./ProposalCard";
 import VotingModal from "../proposal/VotingModal";
+import ProposalCard from "./ProposalCard";
 
 const ProposalList: React.FC = () => {
   const projectName = useStore(projectNameForGovernance);
@@ -29,7 +29,7 @@ const ProposalList: React.FC = () => {
         });
         setProposalData(updatedProposalData);
       } else {
-        alert(res.errorMessage);
+        toast.error("Something Went Wrong!", res.errorMessage);
       }
     }
     setIsLoading(false);

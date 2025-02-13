@@ -12,7 +12,7 @@ import {
   projectNameForGovernance,
   proposalId,
 } from "utils/store";
-import { modifyProposalToView } from "utils/utils";
+import { modifyProposalToView, toast } from "utils/utils";
 import ExecuteProposalModal from "./ExecuteProposalModal";
 import ProposalDetail from "./ProposalDetail";
 import ProposalTitle from "./ProposalTitle";
@@ -37,7 +37,7 @@ const ProposalPage: React.FC = () => {
       if (connectedAddress) {
         setIsVotingModalOpen(true);
       } else {
-        alert("Please connect your wallet first");
+        toast.error("Connect Wallet", "Please connect your wallet first.");
       }
     }
   };
@@ -46,7 +46,7 @@ const ProposalPage: React.FC = () => {
     if (proposal?.status === "voted") {
       setIsExecuteProposalModalOpen(true);
     } else {
-      alert("Cannot execute proposal.");
+      toast.error("Execute Proposal", "Cannot execute proposal.");
     }
   };
 
@@ -60,7 +60,7 @@ const ProposalPage: React.FC = () => {
       if (projectInfo && projectInfo.maintainers) {
         setProjectMaintainers(projectInfo?.maintainers);
       } else if (res.error) {
-        alert(res.errorMessage);
+        toast.error("Something Went Wrong!", res.errorMessage);
       }
       if (proposal) {
         const proposalView = modifyProposalToView(proposal, projectName);
@@ -70,7 +70,7 @@ const ProposalPage: React.FC = () => {
         const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfs);
         setOutcome(outcome);
       } else if (response.error) {
-        alert(response.errorMessage);
+        toast.error("Something Went Wrong!", response.errorMessage);
       }
       setIsLoading(false);
     }

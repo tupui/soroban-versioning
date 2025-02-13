@@ -1,21 +1,22 @@
-import React from "react";
+import { fetchTOMLFromConfigUrl } from "../../../service/GithubService";
 import {
   getProject,
   getProjectHash,
 } from "../../../service/ReadContractService";
 import {
-  setProjectId,
-  setProject,
-  setProjectRepoInfo,
-  setConfigData,
-  setProjectLatestSha,
   refreshLocalStorage,
+  setConfigData,
+  setProject,
+  setProjectId,
+  setProjectLatestSha,
+  setProjectRepoInfo,
 } from "../../../service/StateService";
-import { getAuthorRepo } from "../../../utils/editLinkFunctions";
-import { fetchTOMLFromConfigUrl } from "../../../service/GithubService";
+import {
+  convertGitHubLink,
+  getAuthorRepo,
+} from "../../../utils/editLinkFunctions";
 import { projectCardModalOpen } from "../../../utils/store";
-import { convertGitHubLink } from "../../../utils/editLinkFunctions";
-import { extractConfigData } from "../../../utils/utils";
+import { extractConfigData, toast } from "../../../utils/utils";
 
 const ProjectCard = ({ config }) => {
   const handleCardClick = async () => {
@@ -48,16 +49,19 @@ const ProjectCard = ({ config }) => {
         } else {
           setProjectLatestSha("");
           if (latestSha.error) {
-            alert(latestSha.errorMessage);
+            toast.error("Something Went Wrong!", latestSha.errorMessage);
           }
         }
 
         projectCardModalOpen.set(true);
       } else {
         if (res.error) {
-          alert(res.errorMessage);
+          toast.error("Something Went Wrong!", res.errorMessage);
         } else {
-          alert(`There is not such project: ${config.projectName}`);
+          toast.error(
+            "Something Went Wrong!",
+            `There is not such project: ${config.projectName}`,
+          );
         }
       }
     } catch (e) {
