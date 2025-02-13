@@ -3,7 +3,7 @@ import { join } from "path";
 
 export default async function decryptProof(keyHex: string): Promise<string> {
   const key = await getKeyFromHex(keyHex);
-  const filePath = join(process.cwd(), "encrypted_proof.bin");
+  const filePath = join(process.cwd(), "encrypted_proof.bin.test");
   const fileContent = await fs.readFile(filePath, "utf-8");
   const payload: {
     nonce: string;
