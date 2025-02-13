@@ -1,4 +1,3 @@
-import { ClipboardIcon, CollapseIcon, ExpandIcon } from "components/icons";
 import { useEffect, useState } from "react";
 import { loadProjectLatestSha } from "../../../service/StateService.ts";
 import { formatTime } from "../../../utils/formatTimeFunctions";
@@ -92,7 +91,11 @@ const CommitRecord = ({
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="expand-button"
               >
-                {isExpanded ? <CollapseIcon /> : <ExpandIcon />}
+                {isExpanded ? (
+                  <img src="/icons/chevron-up.svg" />
+                ) : (
+                  <img src="/icons/chevron-down.svg" />
+                )}
               </button>
             )}
           </div>
@@ -102,7 +105,11 @@ const CommitRecord = ({
               className="copy-button hover:bg-zinc-400 transition-colors duration-200 p-1 rounded"
               onClick={handleCopy}
             >
-              {isCopied ? <img src="/icons/check.svg" /> : <ClipboardIcon />}
+              {isCopied ? (
+                <img src="/icons/check.svg" />
+              ) : (
+                <img src="/icons/clipboard.svg" />
+              )}
             </button>
             <a
               href={commitLink}

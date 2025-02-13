@@ -7,11 +7,16 @@ import { calculateDateDifference } from "utils/formatTimeFunctions";
 import { projectNameForGovernance } from "utils/store";
 import { capitalizeFirstLetter } from "utils/utils";
 
-const ProposalCard: React.FC<ProposalCardView> = ({
+interface Props extends ProposalCardView {
+  onVoteClick?: () => void;
+}
+
+const ProposalCard: React.FC<Props> = ({
   proposalNumber,
   proposalTitle,
   proposalStatus,
   endDate,
+  onVoteClick,
 }) => {
   const projectName = useStore(projectNameForGovernance);
 
@@ -19,25 +24,12 @@ const ProposalCard: React.FC<ProposalCardView> = ({
     <div className="p-[30px] flex flex-col gap-6 bg-white">
       <div className="flex justify-between">
         <p className="text-xl font-medium text-primary">{proposalTitle}</p>
-        <div className="w-[220px] flex gap-[18px] text-xl">
+        <div className="flex gap-[18px] text-xl">
           <span className="text-tertiary">ID:</span>
           <span className="text-primary">{proposalNumber}</span>
         </div>
       </div>
       <div className="flex justify-between">
-        <div className="flex gap-3">
-          {proposalStatus == "active" && (
-            <Button icon="/icons/vote.svg">Vote</Button>
-          )}
-          <Button
-            type="secondary"
-            onClick={() =>
-              navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
-            }
-          >
-            View Details
-          </Button>
-        </div>
         <div className="w-[220px] grid grid-cols-2 gap-[18px]">
           <div className="flex flex-col gap-3">
             <p className="text-sm text-tertiary">Status</p>
@@ -65,6 +57,21 @@ const ProposalCard: React.FC<ProposalCardView> = ({
               </p>
             </div>
           )}
+        </div>
+        <div className="flex gap-3">
+          {proposalStatus == "active" && (
+            <Button icon="/icons/vote.svg" onClick={onVoteClick}>
+              Vote
+            </Button>
+          )}
+          <Button
+            type="secondary"
+            onClick={() =>
+              navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
+            }
+          >
+            View Details
+          </Button>
         </div>
       </div>
     </div>

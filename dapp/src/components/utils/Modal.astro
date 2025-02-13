@@ -1,6 +1,4 @@
 ---
-import { CloseIcon } from "components/icons";
-
 interface Props {
   id: string;
 }
@@ -13,7 +11,7 @@ const { id } = Astro.props;
     class="absolute right-0 top-0 p-[18px] bg-[#FF3B30] lg:translate-x-1/2 -translate-y-1/2"
     onclick="this.closest('dialog').close()"
   >
-    <CloseIcon />
+    <img src="/icons/cancel-white.svg" />
   </button>
   <slot />
 </dialog>

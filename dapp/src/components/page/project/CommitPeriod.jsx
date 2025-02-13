@@ -1,35 +1,22 @@
-import { LeftArrowIcon, NextIcon, RightArrowIcon } from "components/icons";
-
 const CommitPeriod = ({ startDate, endDate, currentPage, onPageChange }) => {
   // const [showDatePicker, setShowDatePicker] = useState(false);
 
   return (
     <>
       <div className="flex justify-between">
-        {/* <div className="flex gap-3"> */}
         <div className="px-[18px] flex items-center gap-[18px]">
           <button
             onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
           >
-            <LeftArrowIcon />
+            <img src="/icons/arrow-left.svg" />
           </button>
           <p className="leading-5 text-base lg:text-lg text-primary">
             {startDate} - {endDate}
           </p>
           <button onClick={() => onPageChange(currentPage + 1)}>
-            <RightArrowIcon />
+            <img src="/icons/arrow-right.svg" />
           </button>
         </div>
-        {/* <button className="p-[12px_18px] bg-primary" onClick={() => setShowDatePicker(true)}>
-                        <CalendarIcon />
-                    </button>
-                </div>
-                <div className="px-[18px] flex items-center gap-3">
-                    <p className="leading-5 text-lg text-primary">
-                        Latest Commit
-                    </p>
-                    <NextIcon />
-                </div> */}
       </div>
       {/* {showDatePicker && (
                 <Modal onClose={() => setShowDatePicker(false)}>

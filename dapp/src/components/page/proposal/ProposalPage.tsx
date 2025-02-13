@@ -15,7 +15,7 @@ import {
 import { modifyProposalToView } from "utils/utils";
 import ExecuteProposalModal from "./ExecuteProposalModal";
 import ProposalDetail from "./ProposalDetail";
-import ProposalPageTitle from "./ProposalPageTitle";
+import ProposalTitle from "./ProposalTitle";
 import VotingModal from "./VotingModal";
 
 const ProposalPage: React.FC = () => {
@@ -90,7 +90,7 @@ const ProposalPage: React.FC = () => {
         </div>
       ) : (
         <div className="bg-[#FFFFFFB8] px-[72px] py-12 flex flex-col gap-12">
-          <ProposalPageTitle
+          <ProposalTitle
             proposal={proposal}
             maintainers={projectMaintainers}
             submitVote={() => openVotingModal()}
@@ -115,7 +115,7 @@ const ProposalPage: React.FC = () => {
               projectName={projectName}
               proposalId={id}
               outcome={outcome}
-              voteStatus={proposal?.voteStatus ?? null}
+              voteStatus={proposal?.voteStatus}
               onClose={() => setIsExecuteProposalModalOpen(false)}
             />
           )}
