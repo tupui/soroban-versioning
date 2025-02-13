@@ -16,7 +16,7 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
   import { getProjectFromName } from "@service/ReadContractService";
   import { navigate } from "astro:transitions/client";
   import { projectNameForGovernance } from "utils/store";
-  import { capitalizeFirstLetter } from "utils/utils";
+  import { capitalizeFirstLetter, toast } from "utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
     let projectName = "";
@@ -35,7 +35,7 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
         if (projectInfo && projectInfo.maintainers) {
           maintainers = projectInfo?.maintainers;
         } else {
-          alert(res.errorMessage);
+          toast.error("Something Went Wrong!", res.errorMessage);
         }
       }
     });

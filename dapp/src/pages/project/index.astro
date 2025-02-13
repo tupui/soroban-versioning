@@ -33,7 +33,7 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
   } from "../../service/StateService";
   import { getAuthorRepo } from "../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../utils/store";
-  import { extractConfigData } from "../../utils/utils";
+  import { extractConfigData, toast } from "../../utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -68,7 +68,7 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
         } else {
           setProjectLatestSha("");
           if (latestSha.error) {
-            alert(latestSha.errorMessage);
+            toast.error("Something Went Wrong!", latestSha.errorMessage);
           }
         }
 
@@ -77,7 +77,7 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
       } else {
         refreshLocalStorage();
         if (res.error) {
-          alert(res.errorMessage);
+          toast.error("Something Went Wrong!", res.errorMessage);
         }
         window.location.href = "/";
       }

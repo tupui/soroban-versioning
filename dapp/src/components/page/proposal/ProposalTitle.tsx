@@ -3,6 +3,7 @@ import Button from "components/utils/Button";
 import React, { useEffect, useState } from "react";
 import type { ProposalView } from "types/proposal";
 import { connectedPublicKey } from "utils/store";
+import { toast } from "utils/utils";
 import ProposalStatusSection from "./ProposalStatusSection";
 import VoteStatusBar from "./VoteStatusBar";
 import VotingResultModal from "./VotingResultModal";
@@ -51,7 +52,10 @@ const ProposalTitle: React.FC<Props> = ({
 
   const openVotingResultModal = () => {
     if (proposal?.status == "active") {
-      alert("Cannot show voters while voting is in progress");
+      toast.error(
+        "Voting Result",
+        "Cannot show voters while voting is in progress",
+      );
       return;
     }
     setShowVotingResultModal(true);

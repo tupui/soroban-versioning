@@ -101,6 +101,7 @@ import Tooltip from "components/utils/Tooltip.astro";
 </Modal>
 
 <script>
+  import { toast } from "utils/utils";
   import { sendXLM } from "../../../service/PaymentService";
   import { getAddressFromDomain } from "../../../service/SorobanDomainContractService";
 
@@ -182,18 +183,21 @@ import Tooltip from "components/utils/Tooltip.astro";
               donateMessage,
             );
             if (payment) {
-              alert("You successfully donated.");
+              toast.success("Congratulation!", "You successfully donated.");
               if (modal) {
                 modal.close();
               }
             } else {
-              alert("Donation failed.");
+              toast.error("Support", "Donation failed.");
             }
           } else {
-            alert("Cannot read domain information.");
+            toast.error("Support", "Cannot read domain information.");
           }
         } catch (error) {
-          alert("An error occurred during the contribution process.");
+          toast.error(
+            "Support",
+            "An error occurred during the contribution process.",
+          );
         } finally {
         }
       });

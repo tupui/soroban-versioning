@@ -4,6 +4,7 @@ import Title from "components/utils/Title";
 import { voteTypeDescriptionMap, voteTypeLabelMap } from "constants/constants";
 import React, { useState } from "react";
 import { VoteType } from "types/proposal";
+import { toast } from "utils/utils";
 import VoteTypeCheckbox from "./VoteTypeCheckbox";
 
 interface VotersModalProps extends ModalProps {
@@ -28,32 +29,35 @@ const VotingModal: React.FC<VotersModalProps> = ({
 
   const handleVote = async () => {
     if (!selectedOption) {
-      alert("You should select one option to vote");
+      toast.error("Vote", "You should select one option to vote");
       return;
     }
 
     if (isVoted) {
-      alert("You have already voted");
+      toast.error("Vote", "You have already voted");
       return;
     }
 
     setIsLoading(true);
     const { voteToProposal } = await import("@service/WriteContractService");
     if (proposalId === undefined) {
-      alert("Proposal ID is required");
+      toast.error("Vote", "Proposal ID is required");
       return;
     }
     const res = await voteToProposal(projectName, proposalId, selectedOption);
 
     if (res.data) {
       setIsLoading(false);
-      alert(`You have successfully voted to "${selectedOption}" option.`);
+      toast.success(
+        "Congratulation!",
+        `You have successfully voted to "${selectedOption}" option.`,
+      );
       setIsVoted?.(true);
     } else {
       setIsLoading(false);
       if (res.error) {
         const errorMessage = res.errorMessage;
-        alert(errorMessage);
+        toast.error("Vote", errorMessage);
       }
     }
     setStep(2);

@@ -9,6 +9,7 @@ import {
   type ProposalOutcome,
   type VoteStatus,
 } from "types/proposal";
+import { toast } from "utils/utils";
 import VotingResult from "./VotingResult";
 
 interface ExecuteProposalModalProps extends ModalProps {
@@ -51,22 +52,22 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 
   const signAndExecute = async () => {
     if (!projectName) {
-      alert("Project name is required");
+      toast.error("Execute Proposal", "Project name is required");
       return;
     }
 
     if (proposalId === undefined) {
-      alert("Proposal ID is required");
+      toast.error("Execute Proposal", "Proposal ID is required");
       return;
     }
 
     if (!voteResultAndXdr.voteResult) {
-      alert("Vote result is required");
+      toast.error("Execute Proposal", "Vote result is required");
       return;
     }
 
     if (!voteResultAndXdr.xdr) {
-      alert("XDR is required");
+      toast.error("Execute Proposal", "XDR is required");
       return;
     }
 
@@ -77,11 +78,11 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       voteResultAndXdr.xdr,
     );
     if (res.error) {
-      alert(res.errorMessage);
+      toast.error("Execute Proposal", res.errorMessage);
       onClose();
     } else {
       console.log("execute result:", res.data);
-      alert("Proposal executed successfully");
+      toast.success("Congratulation!", "Proposal executed successfully");
       onClose();
     }
   };
