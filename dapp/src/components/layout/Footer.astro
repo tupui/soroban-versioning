@@ -4,7 +4,7 @@ const network = import.meta.env.SOROBAN_NETWORK;
 const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 ---
 
-<footer class="bg-lime bg-fixed bg-bottom text-black">
+<footer class="bg-lime bg-fixed bg-bottom text-black" data-testId="footer-parent">
   <div class="max-w-screen-xl mx-auto px-6 md:px-14 xl:px-14">
     <div class="py-8">
       <div class="flex justify-between items-center">
@@ -16,7 +16,7 @@ const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
               class="w-7 md:w-8"
             />
           </a>
-          <div class="text-sm sm:text-base text-center max-w-[calc(100%-36px)]">
+          <div data-testId="footer-label" class="text-sm sm:text-base text-center max-w-[calc(100%-36px)]">
             © <span id="currentYear">{year}</span> Tansu, <a
               href="https://consulting-manao.com">Consulting Manao GmbH</a
             >
@@ -28,6 +28,7 @@ const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
               src="/icons/logos/github.svg"
               alt="github"
               class="w-5 sm:w-6 md:w-7 h-5 sm:h-6 md:h-7"
+              data-testId="footer-github"
             />
           </a>
           <a
@@ -37,15 +38,17 @@ const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
               src="/icons/logos/stellar-expert.svg"
               alt="stellar explorer"
               class="w-5 sm:w-6 md:w-7"
-            />
-          </a>
-          <a
-            href="https://discord.com/channels/897514728459468821/1262501866915237908"
-          >
+              data-testId="footer-stellar"
+              />
+            </a>
+            <a
+              href="https://discord.com/channels/897514728459468821/1262501866915237908"
+            >
             <img
               src="/icons/logos/discord.svg"
               alt="stellar explorer"
               class="w-5 sm:w-6 md:w-7"
+              data-testId="footer-discord"
             />
           </a>
         </div>

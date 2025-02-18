@@ -139,16 +139,19 @@ const ProjectList = () => {
             className="w-full border rounded-2xl pl-3 sm:pl-4 pr-6 sm:pr-8 py-1 sm:py-2"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            data-testid="project-search"
           />
           <div
             className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 rounded-full hover:bg-zinc-300 cursor-pointer flex justify-center items-center p-0.5 pl-[3px]"
             onClick={handleSearch}
           >
             <img
+              alt="serachIcon"
               src="/icons/search.svg"
               width={20}
               height={20}
               className="icon-search"
+              data-testId="serachIcon"
             />
           </div>
         </div>
@@ -161,7 +164,8 @@ const ProjectList = () => {
               id="featured-projects-topic"
               className="grid place-items-center gap-8 mb-1.5 mt-12 md:flex"
             >
-              <span className="text-2xl sm:text-4xl text-nowrap px-1.5 font-medium bg-lime rounded-md">
+              <span className="text-2xl sm:text-4xl text-nowrap px-1.5 font-medium bg-lime rounded-md"
+              data-testId="Featured Projects">
                 Featured Projects
               </span>
               <p className="text-2xl font-normal text-center md:text-start"></p>
@@ -187,6 +191,7 @@ const ProjectList = () => {
               <button
                 className="register-btn mr-2 px-3 sm:px-4 py-2 bg-black text-white text-2xl sm:text-3xl rounded-lg"
                 onClick={handleRegister}
+                data-testid="register-new-project-button"
               >
                 Register
               </button>
