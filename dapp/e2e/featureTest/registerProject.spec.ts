@@ -73,7 +73,6 @@ test.describe('Register Test', () => {
     })
 
     test('Check the register Validation', async () => {
-        //first case
         await page.goto("/register");
         await page.getByTestId("project_name").fill("assassin");
         await page.getByTestId("maintainers").fill(generateRandomString(56));
@@ -89,20 +88,17 @@ test.describe('Register Test', () => {
         await expect(page.locator("#config_hash_error")).toHaveText("File hash must be 64 characters long");
         await expect(page.locator("#config_hash_error")).toBeVisible();
 
-        // second case
         await page.getByTestId("maintainers").fill("");
         await page.getByTestId("register-project-button").click();
         await expect(page.locator("#maintainers_error")).toHaveText("Maintainers cannot be empty");
         await expect(page.locator("#maintainers_error")).toBeVisible();
 
-        //third case
         await page.getByTestId("project_name").fill("");
         await page.getByTestId("maintainers").fill(wallet1.address);
         await page.getByTestId("config_url").fill(githubRepoURL);
         await page.getByTestId("config_hash").fill(infoFileHash);
         await page.getByTestId("register-project-button").click();
         page.on('dialog', async (dialog) => {
-            console.log(dialog.message());
             expect(dialog.message()).toBe('The proposal voting time has expired.');
             await dialog.accept();
         });        

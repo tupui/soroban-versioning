@@ -49,8 +49,6 @@ export const checkString = async (
     }
     // Check the Test is in the element
 
-    console.log("🏢✅ Check String Success");
-
     return { success: true };
   } catch (error) {
     return { error: error instanceof Error 
@@ -77,8 +75,6 @@ export const checkLabel = async (
       }
     }
     // Check the Test is in the element
-
-    console.log("📑✅ Check Label Success");
 
     return { success: true };
   } catch (error) {
@@ -125,8 +121,6 @@ export const checkImage = async (
       await expect(locator).toBeVisible();
     }
 
-    console.log("📷✅ Check Image Success");
-
     return { success: true };
   } catch (error) {
     return { error: error instanceof Error 
@@ -148,8 +142,6 @@ export const checkButton = async (
       await expect(locator).toContainText(check_str);
     }
     await expect(locator).toBeVisible();
-
-    console.log("🔘✅ Check Button Success");
 
     return { success: true };
   } catch (error) {
@@ -200,8 +192,6 @@ export const checkInput = async (
       await expect(inputField).toHaveValue(expected_text);
     }
 
-    console.log("🙌✅ Check Input Success");
-
     return { success: true };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Unknown error" };
@@ -240,7 +230,6 @@ export const checkColor = async (
       throw new Error(`Expected: ${expectedColor}, Received: ${computedColor}`);
     }
 
-    console.log("🎨✅ Check Color Success");
     return { success: true };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Unknown Error" };

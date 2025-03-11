@@ -12,12 +12,10 @@ test("Main flow", async () => {
     const { page, changeWallet, sign, reviewAndSign } = await setupWallet();
   
     if (page) {
-      // Search for non-existent projects
       const projectName = generateRandomProjectName();
       await page.getByTestId("project-search").fill(projectName);
       await page.getByTestId("project-search").press("Enter");
       await page.getByTestId("register-new-project-button").click();
-      // Register a new project
       await page.goto("/register");
       await page.getByTestId("maintainers").fill(wallet1.address);
       await page.getByTestId("config_url").fill(githubRepoURL);
@@ -25,7 +23,6 @@ test("Main flow", async () => {
       await page.getByTestId("register-project-button").click();
       reviewAndSign();
       await page.waitForURL(/\/project\?name=/);
-      // Submit proposal
       await page.goto(`/proposal/new?name=${projectName}`);
       const proposalName = generateRandomProposalName();
       const proposalDescription = generateRandomWords(12);
@@ -36,13 +33,11 @@ test("Main flow", async () => {
         .fill(generateRandomWords(3));
       await sleep(1000);
       await page.getByTestId("submit-proposal-button").click();
-      console.log("pass submit-proposal-button click!");
       await sign();
       await sleep(2000);
       await reviewAndSign();
       await page.waitForURL(/\/governance\?name=/);
-      console.log("pass on governance!");
-      // Vote
+
       await changeWallet(1);
       await page.getByTestId("connect-wallet-button").click();
       await page.getByText("Freighter").click();
@@ -51,7 +46,7 @@ test("Main flow", async () => {
       await page.getByTestId("vote-option-approve").check();
       await page.getByTestId("vote-button").click();
       await reviewAndSign();
-      // Support
+
       await page.goto(`/project?name=${projectName}`);
       await page.getByTestId("show-support-modal-button").click();
       await page.getByTestId("support-button").click();

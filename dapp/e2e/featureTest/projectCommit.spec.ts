@@ -1,12 +1,8 @@
-import { expect, test, type Browser } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { chromium, type BrowserContext, type Page } from "playwright";
-import { githubRepoURL, infoFileHash, wallet1, walletExtensionPath } from "../constants";
+import { wallet1, walletExtensionPath } from "../constants";
 import { getPage, connectWalletWithSeeds } from "../wallet-helper";
-import {
-    generateRandomProjectName,
-    generateRandomString,
-    sleep,
-} from "../utils";
+import { sleep } from "../utils";
 
 import { registeredProjectNames } from "./projectName";
 
