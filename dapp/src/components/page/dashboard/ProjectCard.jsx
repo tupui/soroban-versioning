@@ -69,7 +69,8 @@ const ProjectCard = ({ config }) => {
     <div className="project-card max-w-[400px] w-full border border-zinc-400 rounded-lg">
       <div
         className="rounded-lg overflow-hidden cursor-pointer group"
-        onClick={handleCardClick}
+        // onClick={handleCardClick}
+        data-testid={`${config.projectName}_modal_open`}
       >
         <img
           src={
@@ -78,14 +79,15 @@ const ProjectCard = ({ config }) => {
               : "/fallback-image.jpg"
           }
           alt={config.projectName}
+          onClick={handleCardClick}
           className="thumbnail w-full aspect-[3/2] object-fill transition-transform duration-300 ease-in-out group-hover:scale-125"
         />
       </div>
       <div className="px-2 pb-2">
-        <h3 className="project-name text-xl font-bold mt-2 mb-1">
+        <h3 className="project-name text-xl font-bold mt-2 mb-1" data-testId={`${config.projectName}-title`}>
           {config.projectName || "No project name"}
         </h3>
-        <p className="description text-sm line-clamp-2 h-10">
+        <p className="description text-sm line-clamp-2 h-10" data-testId={`${config.projectName}-description`}>
           {config.description || "No description"}
         </p>
         <div className="links mt-4 ml-2 flex gap-2 items-center">
@@ -100,20 +102,22 @@ const ProjectCard = ({ config }) => {
                 width={19}
                 height={19}
                 className="icon-website"
-              />
+                data-testId={`${config.projectName}-web`}
+                />
             </a>
           )}
           {config.officials.githubLink && (
             <a
-              href={config.officials.githubLink}
+            href={config.officials.githubLink}
               target="_blank"
               rel="noopener noreferrer"
-            >
+              >
               <img
                 src="/icons/logos/github.svg"
                 width={16}
                 height={16}
                 className="icon-github"
+                data-testId={`${config.projectName}-github`}
               />
             </a>
           )}
@@ -131,6 +135,7 @@ const ProjectCard = ({ config }) => {
                     width={16}
                     height={16}
                     className={`icon-${platform}`}
+                    data-testId={`${config.projectName}-social-${platform}`}
                   />
                 </a>
               ),
@@ -138,10 +143,10 @@ const ProjectCard = ({ config }) => {
         </div>
         {config.organizationName ? (
           <p className="organization-name mt-3 text-right">
-            by <span className="font-bold">{config.organizationName}</span>
+            by <span className="font-bold" data-testId={`${config.projectName}-organization`}>{config.organizationName}</span>
           </p>
         ) : (
-          <p className="organization-name mt-3 text-right">
+          <p className="organization-name mt-3 text-right" data-testId={`${config.projectName}-nonOrganization`}>
             No organization name
           </p>
         )}

@@ -33,3 +33,11 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/e2e/freighter.zip
+/e2e/freighter

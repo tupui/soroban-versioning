@@ -20,11 +20,14 @@
     "lossless-json": "^4.0.2",
     "markdown-to-jsx": "^7.7.1",
     "nanostores": "^0.11.3",
+    "playwright": "^1.49.1",
     "react18-json-view": "^0.2.8",
     "tailwindcss": "^3.4.16",
     "typescript": "^5.7.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "@types/node": "^22.10.6",
     "@web3-storage/w3cli": "^7.9.1",
     "dotenv": "^16.4.7",
     "glob": "^11.0.0",
@@ -35,7 +38,7 @@
   "scripts": {
     "check": "astro check",
     "build": "astro build",
-    "dev": "astro dev",
+    "dev": "astro dev --host",
     "preview": "astro preview",
     "start": "astro dev",
     "formatter": "prettier --write .",
