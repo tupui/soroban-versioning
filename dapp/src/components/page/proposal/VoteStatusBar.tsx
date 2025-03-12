@@ -20,19 +20,19 @@ const VoteStatusBar: React.FC<VoteStatusBarProps> = ({
     <div className="flex-grow h-[18px] flex gap-3">
       {interestPercent > 0 && (
         <div
-          className="bg-[#93F4A8] cursor-pointer"
+          className="bg-[#93F4A8]"
           style={{ width: `${interestPercent}%` }}
         />
       )}
       {abstainPercent > 0 && (
         <div
-          className="bg-[#FBDE7E] cursor-pointer"
+          className="bg-[#FBDE7E]"
           style={{ width: `${abstainPercent}%` }}
         />
       )}
       {conflictPercent > 0 && (
         <div
-          className="bg-[#F79FB1] cursor-pointer"
+          className="bg-[#F79FB1]"
           style={{ width: `${conflictPercent}%` }}
         />
       )}
