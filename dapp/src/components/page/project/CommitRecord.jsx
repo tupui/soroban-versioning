@@ -61,7 +61,7 @@ const CommitRecord = ({
           )}
           {isMaintainer && (
             <div className="relative group">
-              <div className="text-xs font-bold tracking-tighter leading-3 bg-blue-200 rounded-sm p-0.5">
+              <div className="text-xs font-bold text-green-500 tracking-tighter leading-3 bg-blue-200 rounded-sm p-0.5">
                 verified maintainer
               </div>
               <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block">
