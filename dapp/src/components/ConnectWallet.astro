@@ -1,7 +1,7 @@
 <div id="connect-wrap" aria-live="polite" class="relative">
   <div
     id="get-started"
-    class="absolute hidden top-6 -left-16 md:flex flex-col gap-2 transform -rotate-[13deg]"
+    class="absolute hidden top-6 -left-16 xl:flex flex-col gap-2 transform -rotate-[13deg]"
   >
     <img src="/arrow.svg" alt="" class="w-[56px] h-[69px]" />
     <p class="text-victorMono text-lg italic text-zinc-700 text-nowrap">
@@ -74,7 +74,7 @@ import { kit } from "./stellar-wallets-kit";
     const getStarted = document.querySelector('#get-started');
     connectedPublicKey.subscribe((publicKey) => {
       if (publicKey) {
-        getStarted?.classList.remove('md:flex');
+        getStarted?.classList.remove('xl:flex');
       }
     })
   });
