@@ -35,7 +35,7 @@ const ProposalCard: React.FC<Props> = ({
             <p className="text-sm text-tertiary">Status</p>
             <p className="text-lg text-tertiary">
               {proposalStatus == "voted"
-                ? "Executing"
+                ? "Pending Execution"
                 : ["approved", "rejected", "cancelled"].includes(proposalStatus)
                   ? "Finished"
                   : capitalizeFirstLetter(proposalStatus)}
