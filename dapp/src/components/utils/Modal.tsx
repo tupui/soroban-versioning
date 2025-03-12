@@ -21,7 +21,7 @@ const Modal: FC<ModalProps> = ({ id, children, onClose }) => {
         className="modal relative bg-white shadow-modal"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-9 w-[1048px] max-h-[90vh] overflow-auto">
+        <div className="p-4 lg:p-9 w-[342px] lg:w-[1048px] max-h-[90vh] overflow-auto">
           {children}
         </div>
         <div

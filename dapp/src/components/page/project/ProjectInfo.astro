@@ -1,6 +1,6 @@
 ---
 import CommitHistory from "./CommitHistory";
-import DonateModal from "./DonateModal.astro";
+import DonateModal from "./DonateModal";
 import LastHashModal from "./LastHashModal.astro";
 import LatestCommit from "./LatestCommit";
 import ReadMoreModal from "./ReadMoreModal.astro";
@@ -46,10 +46,12 @@ import ReadMoreModal from "./ReadMoreModal.astro";
           <img src="/icons/gear.svg" />
           <p class="leading-5 text-xl text-white">DAO Management</p>
         </button>
-        <button class="p-[18px_30px] flex gap-3 bg-white" data-donate-modal>
-          <img src="/icons/heart.svg" />
-          <p class="leading-5 text-xl text-primary">Support</p>
-        </button>
+        <DonateModal client:only>
+          <button class="p-[18px_30px] flex gap-3 bg-white">
+            <img src="/icons/heart.svg" />
+            <p class="leading-5 text-xl text-primary">Support</p>
+          </button>
+        </DonateModal>
         <button class="p-[18px_30px] flex gap-3 bg-white" data-read-more>
           <img src="/icons/book.svg" />
           <p class="leading-5 text-xl text-primary">Read More</p>
@@ -71,8 +73,6 @@ import ReadMoreModal from "./ReadMoreModal.astro";
     <CommitHistory client:load />
   </div>
 </div>
-
-<DonateModal />
 
 <ReadMoreModal />
 
@@ -101,17 +101,6 @@ import ReadMoreModal from "./ReadMoreModal.astro";
     if (updateConfigButton) {
       updateConfigButton.addEventListener("click", () => {
         udpateConfigModal.showModal();
-      });
-    }
-
-    const donateButton = document.querySelector("[data-donate-modal]");
-    const donateModal = document.getElementById(
-      "donate-modal",
-    ) as HTMLDialogElement;
-
-    if (donateButton && donateModal) {
-      donateButton.addEventListener("click", () => {
-        donateModal.showModal();
       });
     }
 
