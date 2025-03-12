@@ -90,7 +90,7 @@ const ProjectCard = ({ config }) => {
           <h3 className="project-name text-2xl leading-6 font-medium font-firaMono text-pink">
             {config.projectName || "No project name"}
           </h3>
-          <p className="description text-base font-victorMono text-zinc-800 line-clamp-2 h-10">
+          <p className="description text-base font-victorMono text-zinc-800 line-clamp-2">
             {config.description || "No description"}
           </p>
         </div>
