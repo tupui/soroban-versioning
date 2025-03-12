@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
+
 import { loadProjectName } from "@service/StateService";
 import { navigate } from "astro:transitions/client";
 import Button from "components/utils/Button";
-import { useEffect, useState } from "react";
 import Modal from "../../utils/Modal";
+import DonateModal from "../project/DonateModal";
 
 const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
   const [projectName, setProjectName] = useState("");
@@ -90,13 +92,11 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                 >
                   DAO Management
                 </Button>
-                {/* <Button
-                  type="secondary"
-                  icon="/icons/heart.svg"
-                  size="xl"
-                >
-                  Support
-                </Button> */}
+                <DonateModal>
+                  <Button type="secondary" icon="/icons/heart.svg" size="xl">
+                    Support
+                  </Button>
+                </DonateModal>
               </div>
             </div>
           </div>
