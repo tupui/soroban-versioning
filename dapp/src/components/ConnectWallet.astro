@@ -1,5 +1,6 @@
 <div id="connect-wrap" aria-live="polite" class="relative">
   <div
+    id="get-started"
     class="absolute hidden top-6 -left-16 md:flex flex-col gap-2 transform -rotate-[13deg]"
   >
     <img src="/arrow.svg" alt="" class="w-[56px] h-[69px]" />
@@ -18,13 +19,14 @@
 </div>
 
 <script>
-  import { truncateMiddle } from "../utils/utils";
-  import { kit } from "./stellar-wallets-kit";
-  import {
-    initializeConnection,
-    loadedPublicKey,
-    setPublicKey,
-  } from "../service/walletService";
+  import { connectedPublicKey } from "utils/store";
+import {
+initializeConnection,
+loadedPublicKey,
+setPublicKey,
+} from "../service/walletService";
+import { truncateMiddle } from "../utils/utils";
+import { kit } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
@@ -40,9 +42,9 @@
       button.classList.toggle("bg-primary", true);
     }
 
-    const connectedPublicKey = loadedPublicKey();
-    if (connectedPublicKey) {
-      setLoggedIn(connectedPublicKey);
+    const publicKey = loadedPublicKey();
+    if (publicKey) {
+      setLoggedIn(publicKey);
     }
 
     if (button) {
@@ -68,5 +70,12 @@
         }
       });
     }
+
+    const getStarted = document.querySelector('#get-started');
+    connectedPublicKey.subscribe((publicKey) => {
+      if (publicKey) {
+        getStarted?.classList.remove('md:flex');
+      }
+    })
   });
 </script>
