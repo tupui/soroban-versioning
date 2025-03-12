@@ -230,6 +230,7 @@ const ProjectList = () => {
         <div
           className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 p-4 bg-red cursor-pointer"
           onClick={() => {
+            setSearchTerm("");
             closeSearchBox();
           }}
         >
