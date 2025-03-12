@@ -15,12 +15,21 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
 <script>
   import { getProjectFromName } from "@service/ReadContractService";
   import { navigate } from "astro:transitions/client";
-  import { projectNameForGovernance } from "utils/store";
+  import { connectedPublicKey, projectNameForGovernance } from "utils/store";
   import { capitalizeFirstLetter, toast } from "utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
     let projectName = "";
     let maintainers: string[] = [];
+    const createProposalButton = document.querySelector('#create-proposal-button');
+    createProposalButton?.classList.add('hidden');
+
+    connectedPublicKey.subscribe((publicKey) => {
+      if (maintainers.includes(publicKey)) {
+        createProposalButton?.classList.remove('hidden');
+      }
+    })
+
     projectNameForGovernance.subscribe(async (_projectName) => {
       if (_projectName) {
         const titleElement = document
