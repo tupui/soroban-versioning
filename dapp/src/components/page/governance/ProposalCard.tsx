@@ -21,7 +21,10 @@ const ProposalCard: React.FC<Props> = ({
   const projectName = useStore(projectNameForGovernance);
 
   return (
-    <div className="p-[30px] flex flex-col gap-6 bg-white">
+    <div
+      className="p-[30px] flex flex-col gap-6 bg-white cursor-pointer"
+      onClick={() => navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)}
+    >
       <div className="flex justify-between">
         <p className="text-xl font-medium text-primary">{proposalTitle}</p>
         <div className="flex gap-[18px] text-xl">
@@ -58,21 +61,11 @@ const ProposalCard: React.FC<Props> = ({
             </div>
           )}
         </div>
-        <div className="flex gap-3">
-          {proposalStatus == "active" && (
-            <Button icon="/icons/vote.svg" onClick={onVoteClick}>
-              Vote
-            </Button>
-          )}
-          <Button
-            type="secondary"
-            onClick={() =>
-              navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
-            }
-          >
-            View Details
+        {proposalStatus == "active" && (
+          <Button icon="/icons/vote.svg" onClick={onVoteClick}>
+            Vote
           </Button>
-        </div>
+        )}
       </div>
     </div>
   );
