@@ -93,7 +93,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
     <Modal onClose={onClose}>
       {step == 1 ? (
         <div key={step} className="flex items-center gap-[18px]">
-          <img src="/images/megaphone.svg" />
+          <img className="flex-none w-[360px]" src="/images/megaphone.svg" />
           <div className="flex flex-col gap-[42px]">
             <div className="flex flex-col gap-[30px]">
               <div className="flex-grow flex flex-col gap-[30px]">
@@ -150,7 +150,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
         </div>
       ) : step == 2 ? (
         <div key={step} className="flex items-center gap-[18px]">
-          <img src="/images/team.svg" />
+          <img className="flex-none w-[360px]" src="/images/team.svg" />
           <div className="flex flex-col gap-[42px]">
             <div className="flex flex-col gap-[30px]">
               <div className="flex-grow flex flex-col gap-[30px]">
@@ -233,7 +233,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
         </div>
       ) : step == 3 ? (
         <div key={step} className="flex items-center gap-[18px]">
-          <img src="/images/arrow.svg" />
+          <img className="flex-none w-[360px]" src="/images/arrow.svg" />
           <div className="flex flex-col gap-[42px]">
             <div className="flex flex-col gap-[30px]">
               <div className="flex-grow flex flex-col gap-[30px]">
@@ -291,7 +291,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
         <div key={step} className="flex flex-col gap-[42px]">
           <div className="flex flex-col gap-[30px]">
             <div className="flex items-center gap-[18px]">
-              <img src="/images/note.svg" />
+              <img className="flex-none w-[360px]" src="/images/note.svg" />
               <div className="flex-grow flex flex-col gap-[30px]">
                 <div className="flex flex-col gap-5">
                   <Step step={step} totalSteps={5} />
@@ -393,7 +393,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
       ) : (
         <div className="flex flex-col gap-[42px]">
           <div className="flex items-start gap-[18px]">
-            <img src="/images/flower.svg" />
+            <img className="flex-none w-[360px]" src="/images/flower.svg" />
             <div className="flex-grow flex flex-col gap-[30px]">
               <Step step={step} totalSteps={5} />
               <Title
