@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { loadProjectLatestSha } from "../../../service/StateService.ts";
 import { formatTime } from "../../../utils/formatTimeFunctions";
 
@@ -11,15 +11,17 @@ const CommitRecord = ({
   commitLink,
   isMaintainer,
 }) => {
+  const messageRef = useRef();
   const [isCopied, setIsCopied] = useState(false);
   const [isLatestCommit, setIsLatestCommit] = useState(false);
-  const formattedMessage = message
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-  const firstLine = formattedMessage[0];
-  const hasMoreLines = formattedMessage.length > 1;
+  const [isOverflowing, setIsOverflowing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const [firstLine, ...formattedMessage] = useMemo(() =>
+    message.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+  );
+
+  const hasMoreLines = isOverflowing || formattedMessage.length > 1;
 
   useEffect(() => {
     const highlightLatestCommit = () => {
@@ -27,6 +29,20 @@ const CommitRecord = ({
     };
     highlightLatestCommit();
   }, [sha]);
+
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (messageRef.current) {
+        setIsOverflowing(
+          messageRef.current.scrollHeight > messageRef.current.clientHeight,
+        );
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener("resize", checkOverflow);
+    return () => window.removeEventListener("resize", checkOverflow);
+  }, [message]);
 
   const handleCopy = async () => {
     try {
@@ -77,19 +93,20 @@ const CommitRecord = ({
       )}
       <div className="commit-info flex-grow flex flex-col gap-3 lg:gap-6 overflow-hidden">
         <div className="flex justify-between">
-          <div className="w-[calc(100%-120px)] flex items-center gap-3">
+          <div className="w-[calc(100%-120px)] flex items-start gap-3">
             <a
+              ref={messageRef}
               href={commitLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="commit-message text-base lg:text-xl font-medium text-primary hover:underline hover:text-blue-500 truncate"
+              className={`commit-message text-base lg:text-xl font-medium text-primary hover:underline hover:text-blue-500 ${!isExpanded && "line-clamp-1"}`}
             >
               {firstLine}
             </a>
             {hasMoreLines && (
               <button
+                className="mt-1 expand-button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="expand-button"
               >
                 {isExpanded ? (
                   <img src="/icons/chevron-up.svg" />
@@ -123,7 +140,7 @@ const CommitRecord = ({
         </div>
         {hasMoreLines && isExpanded && (
           <div className="expanded-message text-base text-secondary whitespace-pre-wrap">
-            {formattedMessage.slice(1).join("\n")}
+            {formattedMessage.join("\n")}
           </div>
         )}
         <div className="commit-details text-sm text-gray-600 mt-1">
