@@ -389,13 +389,20 @@ const CreateProposalModal = () => {
             <Button type="secondary" onClick={() => setShowModal(false)}>
               Cancel
             </Button>
-            <Button onClick={() => {
-              if (!isDescriptionValid(mdText, 10)) {
-                toast.error("Submit proposal", "Proposal description must contain at least 10 words.");
-              } else {
-                setStep(step + 1);
-              }
-            }}>Next</Button>
+            <Button
+              onClick={() => {
+                if (!isDescriptionValid(mdText, 10)) {
+                  toast.error(
+                    "Submit proposal",
+                    "Proposal description must contain at least 10 words.",
+                  );
+                } else {
+                  setStep(step + 1);
+                }
+              }}
+            >
+              Next
+            </Button>
           </div>
         </div>
       ) : step == 2 ? (

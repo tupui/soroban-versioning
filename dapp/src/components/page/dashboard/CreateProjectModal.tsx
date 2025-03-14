@@ -374,9 +374,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
               <p className="leading-6 text-xl text-primary">{infoFileHash}</p>
             </Label>
             <Label label="GitHub Repository URL">
-              <p className="leading-6 text-xl text-primary">
-                {githubRepoUrl}
-              </p>
+              <p className="leading-6 text-xl text-primary">{githubRepoUrl}</p>
             </Label>
           </div>
         </div>

@@ -25,10 +25,7 @@ const VoteStatusBar: React.FC<VoteStatusBarProps> = ({
         />
       )}
       {abstainPercent > 0 && (
-        <div
-          className="bg-[#FBDE7E]"
-          style={{ width: `${abstainPercent}%` }}
-        />
+        <div className="bg-[#FBDE7E]" style={{ width: `${abstainPercent}%` }} />
       )}
       {conflictPercent > 0 && (
         <div

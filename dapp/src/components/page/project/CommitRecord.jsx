@@ -18,7 +18,10 @@ const CommitRecord = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   const [firstLine, ...formattedMessage] = useMemo(() =>
-    message.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+    message
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean),
   );
 
   const hasMoreLines = isOverflowing || formattedMessage.length > 1;

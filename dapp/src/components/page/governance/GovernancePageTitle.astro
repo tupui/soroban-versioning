@@ -21,14 +21,16 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
   document.addEventListener("astro:page-load", async () => {
     let projectName = "";
     let maintainers: string[] = [];
-    const createProposalButton = document.querySelector('#create-proposal-button');
-    createProposalButton?.classList.add('hidden');
+    const createProposalButton = document.querySelector(
+      "#create-proposal-button",
+    );
+    createProposalButton?.classList.add("hidden");
 
     connectedPublicKey.subscribe((publicKey) => {
       if (maintainers.includes(publicKey)) {
-        createProposalButton?.classList.remove('hidden');
+        createProposalButton?.classList.remove("hidden");
       }
-    })
+    });
 
     projectNameForGovernance.subscribe(async (_projectName) => {
       if (_projectName) {
