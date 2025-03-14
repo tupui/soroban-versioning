@@ -23,7 +23,9 @@ const ProposalCard: React.FC<Props> = ({
   return (
     <div
       className="p-[30px] flex flex-col gap-6 bg-white cursor-pointer"
-      onClick={() => navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)}
+      onClick={() =>
+        navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
+      }
     >
       <div className="flex justify-between">
         <p className="text-xl font-medium text-primary">{proposalTitle}</p>

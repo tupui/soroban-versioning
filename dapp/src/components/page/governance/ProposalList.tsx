@@ -24,9 +24,11 @@ const ProposalList: React.FC = () => {
       const proposals = res.data;
 
       if (proposals && !res.error) {
-        const updatedProposalData = proposals.map((proposal) => {
-          return modifyProposalToView(proposal, projectName);
-        }).sort((a, b) => b.id - a.id);
+        const updatedProposalData = proposals
+          .map((proposal) => {
+            return modifyProposalToView(proposal, projectName);
+          })
+          .sort((a, b) => b.id - a.id);
         setProposalData(updatedProposalData);
       } else {
         toast.error("Something Went Wrong!", res.errorMessage);

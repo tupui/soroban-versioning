@@ -92,7 +92,7 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
       const isDisabled = isDateDisabled(
         currentDate.getFullYear(),
         currentDate.getMonth(),
-        day
+        day,
       );
 
       days.push(
@@ -102,9 +102,10 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
           disabled={isDisabled}
           className={`h-10 w-10 flex items-center justify-center transition-colors
             ${isSelected ? "bg-primary text-white" : ""}
-            ${isDisabled
-              ? "text-gray-300 cursor-not-allowed"
-              : "hover:bg-[#F5F1F9] text-primary"
+            ${
+              isDisabled
+                ? "text-gray-300 cursor-not-allowed"
+                : "hover:bg-[#F5F1F9] text-primary"
             }`}
         >
           {day}

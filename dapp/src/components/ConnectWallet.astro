@@ -20,13 +20,13 @@
 
 <script>
   import { connectedPublicKey } from "utils/store";
-import {
-initializeConnection,
-loadedPublicKey,
-setPublicKey,
-} from "../service/walletService";
-import { truncateMiddle } from "../utils/utils";
-import { kit } from "./stellar-wallets-kit";
+  import {
+    initializeConnection,
+    loadedPublicKey,
+    setPublicKey,
+  } from "../service/walletService";
+  import { truncateMiddle } from "../utils/utils";
+  import { kit } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
@@ -71,11 +71,11 @@ import { kit } from "./stellar-wallets-kit";
       });
     }
 
-    const getStarted = document.querySelector('#get-started');
+    const getStarted = document.querySelector("#get-started");
     connectedPublicKey.subscribe((publicKey) => {
       if (publicKey) {
-        getStarted?.classList.remove('xl:flex');
+        getStarted?.classList.remove("xl:flex");
       }
-    })
+    });
   });
 </script>

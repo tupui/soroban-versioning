@@ -182,11 +182,7 @@ export const modifyProposalFromContract = (
   };
 };
 
-const createModal = (
-  imgSrc: string,
-  title: string,
-  description: string,
-) => {
+const createModal = (imgSrc: string, title: string, description: string) => {
   const body = document.getElementsByTagName("body")[0];
   if (!body) throw new Error("Body couldn't be found");
   const modal = document.createElement("div");
@@ -247,17 +243,9 @@ const createModal = (
 
 export const toast = {
   success: (title: string, description: string) => {
-    createModal(
-      "/images/flower.svg",
-      title,
-      description,
-    );
+    createModal("/images/flower.svg", title, description);
   },
   error: (title: string, description: string) => {
-    createModal(
-      "/images/wrong.svg",
-      title,
-      description,
-    );
+    createModal("/images/wrong.svg", title, description);
   },
 };

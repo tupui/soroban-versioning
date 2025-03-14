@@ -34,7 +34,9 @@ const DonateModal: FC<Props> = ({ children }) => {
 
   const handleContribute = async () => {
     const { sendXLM } = await import("service/PaymentService");
-    const { getAddressFromDomain } = await import("service/SorobanDomainContractService");
+    const { getAddressFromDomain } = await import(
+      "service/SorobanDomainContractService"
+    );
 
     if (amount < 1) {
       toast.error("Support", "Minimum donation is 1 XLM.");
@@ -55,7 +57,7 @@ const DonateModal: FC<Props> = ({ children }) => {
           amount.toString(),
           domainOwnerAddress as string,
           tipAmount.toString(),
-          donateMessage
+          donateMessage,
         );
 
         if (payment) {
@@ -68,15 +70,16 @@ const DonateModal: FC<Props> = ({ children }) => {
         toast.error("Support", "Cannot read domain information.");
       }
     } catch (error) {
-      toast.error("Support", "An error occurred during the contribution process.");
+      toast.error(
+        "Support",
+        "An error occurred during the contribution process.",
+      );
     }
   };
 
   return (
     <>
-      <div onClick={() => setIsOpen(true)}>
-        {children}
-      </div>
+      <div onClick={() => setIsOpen(true)}>{children}</div>
       {isOpen && (
         <Modal onClose={onClose}>
           <div className="flex items-start gap-[18px]">
@@ -108,8 +111,11 @@ const DonateModal: FC<Props> = ({ children }) => {
                   {amountOptions.map((value, index) => (
                     <button
                       key={index}
-                      className={`amount-button py-[11px] flex justify-center items-center leading-5 text-xl border border-[#FFB21E] ${amount === value ? "bg-[#FFB21E] text-white" : "text-primary"
-                        }`}
+                      className={`amount-button py-[11px] flex justify-center items-center leading-5 text-xl border border-[#FFB21E] ${
+                        amount === value
+                          ? "bg-[#FFB21E] text-white"
+                          : "text-primary"
+                      }`}
                       onClick={() => handleAmountButtonClick(value)}
                     >
                       {value} XLM
@@ -138,7 +144,9 @@ const DonateModal: FC<Props> = ({ children }) => {
               {/* Platform Tip */}
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3">
-                  <p className="text-base font-[600] text-primary">Platform tip (optional)</p>
+                  <p className="text-base font-[600] text-primary">
+                    Platform tip (optional)
+                  </p>
                   <Tooltip text="Help us run the Tansu platform sustainably">
                     <img src="/icons/info.svg" alt="Info" />
                   </Tooltip>
@@ -159,7 +167,10 @@ const DonateModal: FC<Props> = ({ children }) => {
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-[18px]">
-                <button className="w-[220px] h-[56px] bg-[#F5F1F9] text-primary" onClick={onClose}>
+                <button
+                  className="w-[220px] h-[56px] bg-[#F5F1F9] text-primary"
+                  onClick={onClose}
+                >
                   Cancel
                 </button>
                 <button

@@ -9,7 +9,7 @@ import * as StellarXdr from "utils/stellarXdr";
 import {
   capitalizeFirstLetter,
   getIpfsBasicLink,
-  getOutcomeLinkFromIpfs
+  getOutcomeLinkFromIpfs,
 } from "utils/utils";
 
 import "github-markdown-css";
