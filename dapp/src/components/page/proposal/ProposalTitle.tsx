@@ -66,7 +66,7 @@ const ProposalTitle: React.FC<Props> = ({
       <div className="flex gap-[30px]">
         {proposal?.status == "active" ? (
           <img src="/images/box-with-coin-outside.svg" />
-        ) : proposal?.status == "cancelled" ? (
+        ) : proposal?.status == "cancelled" || proposal?.status == "voted" ? (
           <img src="/images/box-with-coin-inside.svg" />
         ) : (
           <img src="/images/box.svg" />
