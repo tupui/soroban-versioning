@@ -12,7 +12,7 @@ export function ExpandableText({
 }: ExpandableTextProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  if (children) {
+  if (children?.trim()) {
     return (
       <div className={`relative flex flex-col items-start gap-3 ${className}`}>
         <p
