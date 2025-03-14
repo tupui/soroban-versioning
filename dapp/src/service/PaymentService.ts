@@ -40,7 +40,7 @@ async function sendXLM(
       .addMemo(StellarSdk.Memo.text(donateMessage));
 
     // Add tip operation only if tipAmount is not "0"
-    if (tipAmount !== "0") {
+    if (Number(tipAmount) > 0) {
       transactionBuilder.addOperation(
         StellarSdk.Operation.payment({
           destination: tansuAddress,
