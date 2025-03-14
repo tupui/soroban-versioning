@@ -10,7 +10,7 @@ const ProposalsSection: React.FC = () => {
     <div className="flex flex-col gap-9 bg-[#FFFFFFB8]">
       <div className="py-12 px-[72px] flex flex-col gap-12">
         <div className="flex items-center gap-[18px]">
-          <img src="/images/box-with-ball.svg" />
+          <img src="/images/box-with-coin-outside.svg" />
           <div className="flex flex-col gap-[18px]">
             <h2 className="leading-6 text-2xl font-medium text-primary">
               Decentralized Autonomous Organization

@@ -68,7 +68,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
       {step == 1 ? (
         <div className="flex items-start gap-6">
           <img
-            src="/images/box-with-ball.svg"
+            src="/images/box-with-coin-outside.svg"
             className="w-[360px] h-[360px]"
           />
           <div className="flex-grow flex flex-col gap-9">
