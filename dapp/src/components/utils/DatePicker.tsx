@@ -38,12 +38,23 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
     return new Date(year, month, 1).getDay();
   };
 
+  const isDateDisabled = (year: number, month: number, day: number) => {
+    const date = new Date(year, month, day);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    return date < tomorrow;
+  };
+
   const handleDateClick = (day: number) => {
-    const newDate = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      day,
-    );
+    const selectedYear = currentDate.getFullYear();
+    const selectedMonth = currentDate.getMonth();
+
+    if (isDateDisabled(selectedYear, selectedMonth, day)) {
+      return;
+    }
+
+    const newDate = new Date(selectedYear, selectedMonth, day);
     onDateChange(newDate);
   };
 
@@ -78,15 +89,22 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
         selectedDate.getMonth() === currentDate.getMonth() &&
         selectedDate.getFullYear() === currentDate.getFullYear();
 
+      const isDisabled = isDateDisabled(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        day
+      );
+
       days.push(
         <button
           key={day}
           onClick={() => handleDateClick(day)}
+          disabled={isDisabled}
           className={`h-10 w-10 flex items-center justify-center transition-colors
-            ${
-              isSelected
-                ? "bg-primary text-white"
-                : "hover:bg-[#F5F1F9] text-primary"
+            ${isSelected ? "bg-primary text-white" : ""}
+            ${isDisabled
+              ? "text-gray-300 cursor-not-allowed"
+              : "hover:bg-[#F5F1F9] text-primary"
             }`}
         >
           {day}
