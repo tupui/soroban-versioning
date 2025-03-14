@@ -288,106 +288,96 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
           </div>
         </div>
       ) : step == 4 ? (
-        <div key={step} className="flex flex-col gap-[42px]">
-          <div className="flex flex-col gap-[30px]">
-            <div className="flex items-center gap-[18px]">
-              <img className="flex-none w-[360px]" src="/images/note.svg" />
-              <div className="flex-grow flex flex-col gap-[30px]">
-                <div className="flex flex-col gap-5">
-                  <Step step={step} totalSteps={5} />
-                  <Title
-                    title="Review and Submit Your Project"
-                    description="Take a moment to review your project details before submitting. You can go back and make changes if needed."
-                  />
-                </div>
-                <div className="flex gap-[18px]">
-                  <Button isLoading={isLoading} onClick={handleRegisterProject}>
-                    Register Project
-                  </Button>
-                  <Button type="secondary" onClick={() => setStep(step - 1)}>
-                    Back
-                  </Button>
-                </div>
+        <div key={step} className="flex flex-col gap-[30px]">
+          <div className="flex items-center gap-[18px]">
+            <img className="flex-none w-[360px]" src="/images/note.svg" />
+            <div className="flex-grow flex flex-col gap-[30px]">
+              <div className="flex flex-col gap-5">
+                <Step step={step} totalSteps={5} />
+                <Title
+                  title="Review and Submit Your Project"
+                  description="Take a moment to review your project details before submitting. You can go back and make changes if needed."
+                />
               </div>
-            </div>
-            <div className="flex flex-col gap-6">
-              <div className="flex gap-6">
-                <p className="leading-6 text-xl font-medium text-primary">
-                  First Step
-                </p>
-                <Button
-                  type="secondary"
-                  size="sm"
-                  className="p-[2px_10px]"
-                  onClick={() => setStep(1)}
-                >
-                  Back to the First Step
+              <div className="flex gap-[18px]">
+                <Button isLoading={isLoading} onClick={handleRegisterProject}>
+                  Register Project
+                </Button>
+                <Button type="secondary" onClick={() => setStep(step - 1)}>
+                  Back
                 </Button>
               </div>
-              <Label label="Project name">
-                <p className="leading-6 text-xl text-primary">{projectName}</p>
-              </Label>
-            </div>
-            <div className="h-[1px] bg-[#ECE3F4]" />
-            <div className="flex flex-col gap-6">
-              <div className="flex gap-6">
-                <p className="leading-6 text-xl font-medium text-primary">
-                  Second Step
-                </p>
-                <Button
-                  type="secondary"
-                  size="sm"
-                  className="p-[2px_10px]"
-                  onClick={() => setStep(2)}
-                >
-                  Back to the Second Step
-                </Button>
-              </div>
-              <Label label="Maintainers">
-                <div className="grid grid-cols-3 gap-x-9 gap-y-[18px]">
-                  {maintainers.map((maintainer, index) => (
-                    <p
-                      key={index}
-                      className="leading-[14px] text-sm text-secondary"
-                    >
-                      {`(${maintainer.slice(0, 24) + "..."})`}
-                    </p>
-                  ))}
-                </div>
-              </Label>
-            </div>
-            <div className="h-[1px] bg-[#ECE3F4]" />
-            <div className="flex flex-col gap-6">
-              <div className="flex gap-6">
-                <p className="leading-6 text-xl font-medium text-primary">
-                  Third Step
-                </p>
-                <Button
-                  type="secondary"
-                  size="sm"
-                  className="p-[2px_10px]"
-                  onClick={() => setStep(3)}
-                >
-                  Back to the Third Step
-                </Button>
-              </div>
-              <Label label="Information File Hash">
-                <p className="leading-6 text-xl text-primary">{infoFileHash}</p>
-              </Label>
-              <Label label="GitHub Repository URL">
-                <p className="leading-6 text-xl text-primary">
-                  {githubRepoUrl}
-                </p>
-              </Label>
             </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
-            <Button type="secondary" onClick={() => setStep(step - 1)}>
-              Back
-            </Button>
-            <Button isLoading={isLoading} onClick={handleRegisterProject}>
-              Register Project
-            </Button>
+          <div className="flex flex-col gap-6">
+            <div className="flex gap-6">
+              <p className="leading-6 text-xl font-medium text-primary">
+                First Step
+              </p>
+              <Button
+                type="secondary"
+                size="sm"
+                className="p-[2px_10px]"
+                onClick={() => setStep(1)}
+              >
+                Back to the First Step
+              </Button>
+            </div>
+            <Label label="Project name">
+              <p className="leading-6 text-xl text-primary">{projectName}</p>
+            </Label>
+          </div>
+          <div className="h-[1px] bg-[#ECE3F4]" />
+          <div className="flex flex-col gap-6">
+            <div className="flex gap-6">
+              <p className="leading-6 text-xl font-medium text-primary">
+                Second Step
+              </p>
+              <Button
+                type="secondary"
+                size="sm"
+                className="p-[2px_10px]"
+                onClick={() => setStep(2)}
+              >
+                Back to the Second Step
+              </Button>
+            </div>
+            <Label label="Maintainers">
+              <div className="grid grid-cols-3 gap-x-9 gap-y-[18px]">
+                {maintainers.map((maintainer, index) => (
+                  <p
+                    key={index}
+                    className="leading-[14px] text-sm text-secondary"
+                  >
+                    {`(${maintainer.slice(0, 24) + "..."})`}
+                  </p>
+                ))}
+              </div>
+            </Label>
+          </div>
+          <div className="h-[1px] bg-[#ECE3F4]" />
+          <div className="flex flex-col gap-6">
+            <div className="flex gap-6">
+              <p className="leading-6 text-xl font-medium text-primary">
+                Third Step
+              </p>
+              <Button
+                type="secondary"
+                size="sm"
+                className="p-[2px_10px]"
+                onClick={() => setStep(3)}
+              >
+                Back to the Third Step
+              </Button>
+            </div>
+            <Label label="Information File Hash">
+              <p className="leading-6 text-xl text-primary">{infoFileHash}</p>
+            </Label>
+            <Label label="GitHub Repository URL">
+              <p className="leading-6 text-xl text-primary">
+                {githubRepoUrl}
+              </p>
+            </Label>
           </div>
         </div>
       ) : (
