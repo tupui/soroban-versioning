@@ -6,7 +6,7 @@ import { getProjectFromName } from "../../../service/ReadContractService.ts";
 import { loadConfigData } from "../../../service/StateService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
 import { projectCardModalOpen } from "../../../utils/store.ts";
-import { extractConfigData, toast } from "../../../utils/utils";
+import { extractConfigData } from "../../../utils/utils";
 import CreateProjectModal from "./CreateProjectModal.tsx";
 import ProjectCard from "./ProjectCard.jsx";
 import ProjectInfoModal from "./ProjectInfoModal.jsx";
@@ -98,7 +98,6 @@ const ProjectList = () => {
           const configData = extractConfigData(tomlData, project.name);
           setConfigInfo(configData);
         } else {
-          toast.error("Something Went Wrong!", "Can not read config data.");
           const configData = {
             projectName: project.name,
             logoImageLink: undefined,
@@ -117,10 +116,6 @@ const ProjectList = () => {
         setIsInOnChain(true);
       } else {
         setIsInOnChain(false);
-        toast.error(
-          "Something Went Wrong!",
-          res.errorMessage || "Cannot get project info.",
-        );
       }
     } catch (error) {
       console.error("Error checking project on-chain:", error);
