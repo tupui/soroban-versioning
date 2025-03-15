@@ -336,7 +336,7 @@ async function execute(
 async function executeProposal(
   project_name: string,
   proposal_id: number,
-  executeXdr: string,
+  executeXdr: string | null,
 ): Promise<Response<any>> {
   const publicKey = loadedPublicKey();
 
@@ -356,19 +356,18 @@ async function executeProposal(
 
   const executorAccount = await server.getAccount(publicKey);
   try {
-    const outcomeTransactionEnvelope = xdr.TransactionEnvelope.fromXDR(
-      executeXdr,
-      "base64",
-    );
+    const outcomeTransactionEnvelope = executeXdr
+      ? xdr.TransactionEnvelope.fromXDR(executeXdr, "base64")
+      : undefined;
 
-    const outcomeTransaction = outcomeTransactionEnvelope.v1().tx();
+    const outcomeTransaction = outcomeTransactionEnvelope?.v1().tx();
 
     const transactionBuilder = new TransactionBuilder(executorAccount, {
       fee: import.meta.env.PUBLIC_DEFAULT_FEE,
       networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
     });
 
-    outcomeTransaction.operations().forEach((operation) => {
+    outcomeTransaction?.operations().forEach((operation) => {
       transactionBuilder.addOperation(operation);
     });
 
