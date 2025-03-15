@@ -104,7 +104,7 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
             ${isSelected ? "bg-primary text-white" : ""}
             ${
               isDisabled
-                ? "text-gray-300 cursor-not-allowed"
+                ? "text-[#ccc] cursor-not-allowed"
                 : "hover:bg-[#F5F1F9] text-primary"
             }`}
         >
