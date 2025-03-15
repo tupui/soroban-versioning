@@ -6,14 +6,16 @@ interface Props {
 const { id } = Astro.props;
 ---
 
-<dialog id={id} class="modal relative !overflow-visible">
+<dialog id={id} class="modal relative !overflow-visible" onclick="this.closest('dialog').close()">
   <button
     class="absolute right-0 top-0 p-[18px] bg-[#FF3B30] lg:translate-x-1/2 -translate-y-1/2"
     onclick="this.closest('dialog').close()"
   >
     <img src="/icons/cancel-white.svg" />
   </button>
-  <slot />
+  <div onclick="event.stopPropagation()">
+    <slot />
+  </div>
 </dialog>
 
 <style>
