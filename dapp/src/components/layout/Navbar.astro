@@ -10,7 +10,9 @@ const { page } = Astro.props;
     <div class="max-w-[1920px] mx-auto">
       <div class="pt-[60px] md:pt-[80px] flex gap-[18px]">
         <div class="md:order-1 ml-auto flex flex-col gap-[30px]">
-          <img alt="logo" src="/logo.svg" class="h-12" />
+          <a href="/">
+            <img alt="logo" src="/logo.svg" class="h-12" />
+          </a>
           {
             page === "home" && (
               <div class="hidden md:flex gap-[12px]">
