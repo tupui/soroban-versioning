@@ -2,14 +2,15 @@
 interface Props {
   id?: string;
   icon?: string;
+  class?: string;
 }
 
-const { id, icon } = Astro.props;
+const { id, icon, class: className } = Astro.props;
 ---
 
 <button
   id={id}
-  class="flex items-center gap-3 p-[18px_30px] bg-primary text-xl text-white"
+  class={`flex items-center gap-3 p-[18px_30px] bg-primary text-xl text-white ${className}`}
 >
   {icon && <img src={icon} />}
   <slot />

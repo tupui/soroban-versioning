@@ -7,7 +7,7 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
     <img src="/icons/back.svg" />
     <p class="leading-5 text-xl text-primary">Back to Project Page</p>
   </button>
-  <PrimaryButton id="create-proposal-button" icon="/icons/send.svg">
+  <PrimaryButton class="hidden" id="create-proposal-button" icon="/icons/send.svg">
     Submit Proposal
   </PrimaryButton>
 </div>
@@ -24,7 +24,6 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
     const createProposalButton = document.querySelector(
       "#create-proposal-button",
     );
-    createProposalButton?.classList.add("hidden");
 
     connectedPublicKey.subscribe((publicKey) => {
       if (maintainers.includes(publicKey)) {
