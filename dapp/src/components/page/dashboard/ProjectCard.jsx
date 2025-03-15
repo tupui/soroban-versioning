@@ -70,7 +70,7 @@ const ProjectCard = ({ config }) => {
   };
 
   return (
-    <div className="project-card w-full shadow-card">
+    <div className="project-card w-full flex flex-col shadow-card">
       <div
         className="h-[290px] bg-white/25 backdrop-blur-[9px] overflow-hidden cursor-pointer group flex justify-center items-center"
         onClick={handleCardClick}
@@ -85,7 +85,7 @@ const ProjectCard = ({ config }) => {
           className="thumbnail aspect-[3/2] object-fill transition-transform duration-300 ease-in-out group-hover:scale-125"
         />
       </div>
-      <div className="bg-white p-6 flex flex-col gap-[30px]">
+      <div className="flex-grow bg-white p-6 flex flex-col gap-[30px]">
         <div className="flex flex-col gap-3">
           <h3 className="project-name text-2xl leading-6 font-medium font-firaMono text-pink">
             {config.projectName || "No project name"}
