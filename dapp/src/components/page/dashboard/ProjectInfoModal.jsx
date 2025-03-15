@@ -90,7 +90,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                   size="xl"
                   onClick={() => navigate(`/governance?name=${projectName}`)}
                 >
-                  DAO Management
+                  Governance
                 </Button>
                 <DonateModal>
                   <Button type="secondary" icon="/icons/heart.svg" size="xl">

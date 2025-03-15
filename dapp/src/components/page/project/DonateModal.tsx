@@ -1,4 +1,4 @@
-import { useRef, useState, type FC, type ReactNode } from "react";
+import { Children, cloneElement, useRef, useState, type FC, type ReactElement, type ReactNode } from "react";
 
 import Modal from "components/utils/Modal";
 import Tooltip from "components/utils/Tooltip";
@@ -79,7 +79,11 @@ const DonateModal: FC<Props> = ({ children }) => {
 
   return (
     <>
-      <div onClick={() => setIsOpen(true)}>{children}</div>
+      {Children.map(children, child => {
+        return cloneElement(child as ReactElement<any>, {
+          onClick: () => setIsOpen(true),
+        });
+      })}
       {isOpen && (
         <Modal onClose={onClose}>
           <div className="flex items-start gap-[18px]">
@@ -111,11 +115,10 @@ const DonateModal: FC<Props> = ({ children }) => {
                   {amountOptions.map((value, index) => (
                     <button
                       key={index}
-                      className={`amount-button py-[11px] flex justify-center items-center leading-5 text-xl border border-[#FFB21E] ${
-                        amount === value
-                          ? "bg-[#FFB21E] text-white"
-                          : "text-primary"
-                      }`}
+                      className={`amount-button py-[11px] flex justify-center items-center leading-5 text-xl border border-[#FFB21E] ${amount === value
+                        ? "bg-[#FFB21E] text-white"
+                        : "text-primary"
+                        }`}
                       onClick={() => handleAmountButtonClick(value)}
                     >
                       {value} XLM
