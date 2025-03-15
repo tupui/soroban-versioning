@@ -223,7 +223,7 @@ const ProjectList = () => {
           </div>
         </div>
         <div
-          className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 p-4 bg-red cursor-pointer"
+          className="absolute top-0 right-0 lg:translate-x-1/2 -translate-y-1/2 p-[18px] bg-red cursor-pointer"
           onClick={() => {
             setSearchTerm("");
             closeSearchBox();
@@ -240,7 +240,7 @@ const ProjectList = () => {
 
       {filteredProjects !== undefined &&
         (filteredProjects.length > 0 ? (
-          <div className="project-list pt-[42px] pb-[120px] grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 justify-items-center">
+          <div className="project-list pt-[42px] grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 justify-items-center">
             {filteredProjects.map((project, index) => (
               <ProjectCard key={index} config={project} />
             ))}
