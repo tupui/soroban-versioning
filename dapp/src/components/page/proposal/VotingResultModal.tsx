@@ -6,6 +6,7 @@ import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";
 import { truncateMiddle } from "utils/utils";
 import VotingResult from "./VotingResult";
+import { loadConfigData } from "@service/StateService";
 
 interface VotingResultModal extends ModalProps {
   voteStatus?: VoteStatus;
@@ -66,10 +67,21 @@ const Voters: FC<VotersProps> = ({
   const [currentType, setCurrentType] = useState<VoteType>(VoteType.APPROVE);
   const [showAll, setShowAll] = useState(false);
 
+  const configData = useMemo(() => loadConfigData(), []);
+
   const voters = useMemo(() => {
     return voteStatus?.[currentType].voters.filter(
       (voter) => projectMaintainers.includes(voter.address) == onlyMaintainers,
-    );
+    ).map(voter => {
+      const index = configData?.maintainersAddresses.findIndex(maintainer => maintainer == voter.address);
+      if (index != undefined && index >= 0) {
+        return {
+          ...voter,
+          name: voter?.name || configData?.authorGithubNames[index],
+        }
+      }
+      return voter;
+    });
   }, [currentType]);
 
   useEffect(() => {
@@ -100,9 +112,16 @@ const Voters: FC<VotersProps> = ({
         {voters
           ?.filter((_, index) => index < 4 || showAll)
           .map((voter, index) => (
-            <p key={index} className="leading-[14px] text-sm text-secondary">
-              ({truncateMiddle(voter.address, 24)})
-            </p>
+            <div className="flex flex-col justify-end gap-2" key={index}>
+              {voter.name && (
+                <p className="leading-6 text-xl text-primary">
+                  @{voter.name}
+                </p>
+              )}
+              <p className="leading-[14px] text-sm text-secondary">
+                ({truncateMiddle(voter.address, 24)})
+              </p>
+            </div>
           ))}
       </div>
       <div className="flex">
