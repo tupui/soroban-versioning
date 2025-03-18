@@ -27,7 +27,7 @@ const ProposalList: React.FC = () => {
     } catch (err: any) {
       toast.error("Proposal list", err.message);
     }
-  }
+  };
 
   const fetchProposalData = async (_page: number) => {
     if (projectName) {

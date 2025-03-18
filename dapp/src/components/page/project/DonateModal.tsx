@@ -1,9 +1,4 @@
-import {
-  useRef,
-  useState,
-  type FC,
-  type ReactNode
-} from "react";
+import { useRef, useState, type FC, type ReactNode } from "react";
 
 import Modal from "components/utils/Modal";
 import Tooltip from "components/utils/Tooltip";
@@ -116,10 +111,11 @@ const DonateModal: FC<Props> = ({ children }) => {
                   {amountOptions.map((value, index) => (
                     <button
                       key={index}
-                      className={`amount-button py-[11px] flex justify-center items-center leading-5 text-xl border border-[#FFB21E] ${amount === value
-                        ? "bg-[#FFB21E] text-white"
-                        : "text-primary"
-                        }`}
+                      className={`amount-button py-[11px] flex justify-center items-center leading-5 text-xl border border-[#FFB21E] ${
+                        amount === value
+                          ? "bg-[#FFB21E] text-white"
+                          : "text-primary"
+                      }`}
                       onClick={() => handleAmountButtonClick(value)}
                     >
                       {value} XLM
