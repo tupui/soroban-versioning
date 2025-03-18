@@ -3,23 +3,31 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
 ---
 
 <div class="z-[1] flex justify-between items-center">
-  <button id="back-button" class="flex gap-[14px]">
+  <a href="" id="back-link" class="flex gap-[14px]">
     <img src="/icons/back.svg" />
     <p class="leading-5 text-xl text-primary">Back to Project Page</p>
-  </button>
-  <PrimaryButton class="hidden" id="create-proposal-button" icon="/icons/send.svg">
+  </a>
+  <PrimaryButton id="create-proposal-button" class="hidden" icon="/icons/send.svg">
     Submit Proposal
   </PrimaryButton>
 </div>
 
 <script>
   import { getProjectFromName } from "@service/ReadContractService";
-  import { navigate } from "astro:transitions/client";
-  import { connectedPublicKey, projectNameForGovernance } from "utils/store";
-  import { capitalizeFirstLetter, toast } from "utils/utils";
+import { connectedPublicKey } from "utils/store";
+import { toast } from "utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
-    let projectName = "";
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectName = urlParams.get('name');
+
+    const backLink = document.getElementById("back-link");
+    if (backLink) {
+      if (backLink) {
+        backLink.setAttribute("href", `/project?name=${projectName}`);
+      }
+    }
+
     let maintainers: string[] = [];
     const createProposalButton = document.querySelector(
       "#create-proposal-button",
@@ -31,30 +39,12 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
       }
     });
 
-    projectNameForGovernance.subscribe(async (_projectName) => {
-      if (_projectName) {
-        const titleElement = document
-          .getElementById("proposal-page-topic")
-          ?.querySelector("span");
-        if (titleElement) {
-          titleElement.textContent = `${capitalizeFirstLetter(_projectName)} Governance`;
-        }
-        projectName = _projectName;
-        const res = await getProjectFromName(_projectName);
-        const projectInfo = res.data;
-        if (projectInfo && projectInfo.maintainers) {
-          maintainers = projectInfo?.maintainers;
-        } else {
-          toast.error("Something Went Wrong!", res.errorMessage);
-        }
-      }
-    });
-
-    const backButton = document.getElementById("back-button");
-    if (backButton) {
-      backButton.addEventListener("click", () => {
-        navigate(`/project?name=${projectName}`);
-      });
+    const res = await getProjectFromName(projectName!);
+    const projectInfo = res.data;
+    if (projectInfo && projectInfo.maintainers) {
+      maintainers = projectInfo?.maintainers;
+    } else {
+      toast.error("Something Went Wrong!", res.errorMessage);
     }
   });
 </script>
