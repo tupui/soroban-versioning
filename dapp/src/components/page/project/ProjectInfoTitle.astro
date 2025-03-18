@@ -1,6 +1,6 @@
 <!-- <div class="flex justify-between items-center"> -->
 <div class="flex">
-  <a id="back-link" href="" class="flex gap-[14px]">
+  <a href="/" class="flex gap-[14px]">
     <img src="/icons/back.svg" />
     <p class="leading-5 text-xl text-primary">Back to Home Page</p>
   </a>
@@ -14,12 +14,3 @@
     </div>
 </div> -->
 <!-- </div> -->
-
-<script>
-  document.addEventListener("astro:page-load", async () => {
-    const backLink = document.getElementById("back-link");
-    if (backLink) {
-      backLink.setAttribute("href", "/");
-    }
-  });
-</script>
