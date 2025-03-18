@@ -166,27 +166,7 @@ const CreateProposalModal = () => {
     try {
       setStep(5);
 
-      const votingDays = getDeltaDays(selectedDate);
-
       checkSubmitAvailability();
-
-      if (proposalName.length < 10 || proposalName.length > 256)
-        throw new Error("Proposal name is required");
-
-      if (votingDays < 1 || votingDays > 30)
-        throw new Error("Voting days must be between 5 and 30");
-
-      if (!isDescriptionValid(mdText, 10))
-        throw new Error("Proposal description must contain at least 10 words.");
-
-      if (!isDescriptionValid(approveDescription))
-        throw new Error("Approved description must contain at least 3 words.");
-
-      if (rejectXdr && !isDescriptionValid(rejectDescription))
-        throw new Error("Rejected description must contain at least 3 words.");
-
-      if (cancelledXdr && !isDescriptionValid(cancelledDescription))
-        throw new Error("Cancelled description must contain at least 3 words.");
 
       setStep(6);
 
@@ -271,6 +251,7 @@ const CreateProposalModal = () => {
 
       const { createProposal } = await import("@service/WriteContractService");
 
+      const votingDays = getDeltaDays(selectedDate);
       const res = await createProposal(
         projectName!,
         proposalName,
@@ -391,13 +372,17 @@ const CreateProposalModal = () => {
             </Button>
             <Button
               onClick={() => {
-                if (!isDescriptionValid(mdText, 10)) {
-                  toast.error(
-                    "Submit proposal",
-                    "Proposal description must contain at least 10 words.",
-                  );
-                } else {
+                try {
+                  if (proposalName.length < 10 || proposalName.length > 256)
+                    throw new Error("Proposal name is required");
+
+                  if (!isDescriptionValid(mdText, 10))
+                    throw new Error("Proposal description must contain at least 10 words.");
+
                   setStep(step + 1);
+                } catch (err: any) {
+                  console.error(err.message);
+                  toast.error("Submit proposal", err.message);
                 }
               }}
             >
@@ -444,7 +429,23 @@ const CreateProposalModal = () => {
             <Button type="secondary" onClick={() => setStep(step - 1)}>
               Back
             </Button>
-            <Button onClick={() => setStep(step + 1)}>Next</Button>
+            <Button onClick={() => {
+              try {
+                if (!isDescriptionValid(approveDescription))
+                  throw new Error("Approved description must contain at least 3 words.");
+
+                if (rejectXdr && !isDescriptionValid(rejectDescription))
+                  throw new Error("Rejected description must contain at least 3 words.");
+
+                if (cancelledXdr && !isDescriptionValid(cancelledDescription))
+                  throw new Error("Cancelled description must contain at least 3 words.");
+
+                setStep(step + 1);
+              } catch (err: any) {
+                console.error(err.message);
+                toast.error("Submit proposal", err.message);
+              }
+            }}>Next</Button>
           </div>
         </div>
       ) : step == 3 ? (
@@ -482,7 +483,19 @@ const CreateProposalModal = () => {
             <Button type="secondary" onClick={() => setStep(step - 1)}>
               Back
             </Button>
-            <Button onClick={() => setStep(step + 1)}>Next</Button>
+            <Button onClick={() => {
+              try {
+                const votingDays = getDeltaDays(selectedDate);
+
+                if (votingDays < 1 || votingDays > 30)
+                  throw new Error("Voting days must be between 5 and 30");
+
+                setStep(step + 1);
+              } catch (err: any) {
+                console.error(err.message);
+                toast.error("Submit proposal", err.message);
+              }
+            }}>Next</Button>
           </div>
         </div>
       ) : step == 4 ? (
