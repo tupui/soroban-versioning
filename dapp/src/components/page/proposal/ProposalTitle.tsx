@@ -9,7 +9,7 @@ import VoteStatusBar from "./VoteStatusBar";
 import VotingResultModal from "./VotingResultModal";
 
 interface Props {
-  proposal: ProposalView | null;
+  proposal: ProposalView;
   maintainers: string[];
   submitVote: () => void;
   executeProposal: () => void;
@@ -109,10 +109,7 @@ const ProposalTitle: React.FC<Props> = ({
           </div>
           <div className="flex flex-col gap-6">
             <div className="flex justify-between">
-              <ProposalStatusSection
-                status={proposal?.status || null}
-                endDate={proposal?.endDate || null}
-              />
+              <ProposalStatusSection proposal={proposal} />
               {proposal?.status == "active" && (
                 <Button
                   size="sm"

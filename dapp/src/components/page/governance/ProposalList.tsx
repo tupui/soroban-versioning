@@ -66,11 +66,7 @@ const ProposalList: React.FC = () => {
           <div className="flex flex-col gap-[18px]">
             {proposalData.map((proposal) => (
               <ProposalCard
-                key={proposal.id}
-                proposalNumber={proposal.id}
-                proposalTitle={proposal.title}
-                proposalStatus={proposal.status}
-                endDate={proposal.endDate}
+                proposal={proposal}
                 onVoteClick={() => {
                   setProposalId(proposal.id);
                   setShowVotingModal(true);
