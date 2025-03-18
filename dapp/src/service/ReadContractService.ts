@@ -106,6 +106,34 @@ async function getProjectFromId(projectId: Buffer): Promise<Response<Project>> {
   }
 }
 
+async function getProposalPages(project_name: string) {
+  const project_key = Buffer.from(
+    keccak256.create().update(project_name).digest(),
+  );
+
+  const checkPageExist = async (page: number) => {
+    const res = await Versioning.get_dao({
+      project_key,
+      page,
+    });
+    return res.result.proposals.length > 0;
+  };
+
+  for (let page = 1; ; page *= 2) {
+    const isPageExist = await checkPageExist(page);
+    if (isPageExist) continue;
+    if (page <= 2) return 1;
+    let f = page / 2, t = page;
+    while (t - f > 1) {
+      const m = Math.floor((f + t) / 2);
+      const isPageExist = await checkPageExist(m);
+      if (isPageExist) f = m;
+      else t = m;
+    }
+    return f;
+  }
+}
+
 async function getProposals(
   project_name: string,
   page: number,
@@ -162,6 +190,7 @@ export {
   getProjectHash,
   getProjectFromName,
   getProjectFromId,
+  getProposalPages,
   getProposals,
   getProposal,
 };

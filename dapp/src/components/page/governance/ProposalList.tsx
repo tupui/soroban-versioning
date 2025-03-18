@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react";
-import { getProposals } from "@service/ReadContractService";
+import { getProposalPages, getProposals } from "@service/ReadContractService";
 import Loading from "components/utils/Loading";
 import React, { useEffect, useState } from "react";
 import type { ProposalView } from "types/proposal";
@@ -11,11 +11,23 @@ import ProposalCard from "./ProposalCard";
 
 const ProposalList: React.FC = () => {
   const projectName = useStore(projectNameForGovernance);
+  const [totalPage, setTotalPage] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [proposalData, setProposalData] = useState<ProposalView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showVotingModal, setShowVotingModal] = useState(false);
   const [proposalId, setProposalId] = useState<number>();
+
+  const fetchProposalPages = async () => {
+    try {
+      if (projectName) {
+        const page = await getProposalPages(projectName);
+        setTotalPage(page);
+      }
+    } catch (err: any) {
+      toast.error("Proposal list", err.message);
+    }
+  }
 
   const fetchProposalData = async (_page: number) => {
     if (projectName) {
@@ -36,6 +48,10 @@ const ProposalList: React.FC = () => {
     }
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    fetchProposalPages();
+  }, [projectName]);
 
   useEffect(() => {
     fetchProposalData(currentPage);
@@ -63,6 +79,7 @@ const ProposalList: React.FC = () => {
             ))}
           </div>
           <Pagination
+            totalPage={totalPage}
             currentPage={currentPage + 1}
             onPageChange={(page: number) => setCurrentPage(page - 1)}
           />

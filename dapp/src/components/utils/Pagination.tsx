@@ -1,11 +1,13 @@
 import React from "react";
 
 interface PaginationProps {
+  totalPage: number;
   currentPage: number;
   onPageChange: (page: number) => void;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
+  totalPage,
   currentPage,
   onPageChange,
 }) => {
@@ -30,7 +32,7 @@ const Pagination: React.FC<PaginationProps> = ({
         </svg>
       </button>
       <div className="flex gap-3">
-        {Array.from({ length: 13 }, (_, index) => {
+        {Array.from({ length: totalPage }, (_, index) => {
           const page = Math.max(currentPage - 7, 0) + index + 1;
           return (
             <button
@@ -45,7 +47,7 @@ const Pagination: React.FC<PaginationProps> = ({
       </div>
       <button
         onClick={() => onPageChange(currentPage + 1)}
-        disabled={false}
+        disabled={currentPage == totalPage}
         className="disabled:opacity-50"
       >
         <svg
