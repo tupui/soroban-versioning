@@ -4,11 +4,12 @@ import { capitalizeFirstLetter } from "utils/utils";
 import { calculateDateDifference } from "../../../utils/formatTimeFunctions";
 
 interface Props {
-  proposal: ProposalView;
+  proposal: ProposalView | null;
 }
 
 const ProposalStatusSection: React.FC<Props> = ({ proposal }) => {
   const { status, voteResult, endDate } = useMemo(() => {
+    if (!proposal) return {};
     const status = proposal.status;
     const voteStatus = proposal.voteStatus;
     const sortedVoteResult = [

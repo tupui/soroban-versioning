@@ -9,7 +9,7 @@ import VoteStatusBar from "./VoteStatusBar";
 import VotingResultModal from "./VotingResultModal";
 
 interface Props {
-  proposal: ProposalView;
+  proposal: ProposalView | null;
   maintainers: string[];
   submitVote: () => void;
   executeProposal: () => void;
