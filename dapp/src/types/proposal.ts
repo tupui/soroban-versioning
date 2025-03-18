@@ -28,13 +28,6 @@ export interface ProposalView {
   voteStatus: VoteStatus;
 }
 
-export interface ProposalCardView {
-  proposalNumber: number;
-  proposalTitle: string;
-  proposalStatus: ProposalViewStatus;
-  endDate: number;
-}
-
 export enum VoteType {
   APPROVE = "approve",
   REJECT = "reject",
