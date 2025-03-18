@@ -36,7 +36,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                   {projectInfo?.organizationName || "No organization name"}
                 </p>
                 <h2 className="leading-6 text-2xl font-medium text-primary">
-                  {projectInfo.projectName || "No project name"}
+                  {projectInfo.projectName}
                 </h2>
                 <p className="leading-4 text-base text-secondary">
                   {projectInfo?.description || "No description"}
