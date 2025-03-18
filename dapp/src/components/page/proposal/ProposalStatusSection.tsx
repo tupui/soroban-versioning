@@ -24,10 +24,17 @@ const ProposalStatusSection: React.FC<Props> = ({ proposal }) => {
       .sort((a, b) => b.score - a.score);
 
     return {
-      status: status == "voted" ? "pending execution" : status == "active" ? "active" : "finished",
-      voteResult: ["approved", "rejected", "cancelled"].includes(status) ? sortedVoteResult[0]?.type : undefined,
+      status:
+        status == "voted"
+          ? "pending execution"
+          : status == "active"
+            ? "active"
+            : "finished",
+      voteResult: ["approved", "rejected", "cancelled"].includes(status)
+        ? sortedVoteResult[0]?.type
+        : undefined,
       endDate: status == "active" ? proposal.endDate : undefined,
-    }
+    };
   }, [proposal]);
 
   return (
