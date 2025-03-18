@@ -123,7 +123,8 @@ async function getProposalPages(project_name: string) {
     const isPageExist = await checkPageExist(page);
     if (isPageExist) continue;
     if (page <= 2) return 1;
-    let f = page / 2, t = page;
+    let f = page / 2,
+      t = page;
     while (t - f > 1) {
       const m = Math.floor((f + t) / 2);
       const isPageExist = await checkPageExist(m);

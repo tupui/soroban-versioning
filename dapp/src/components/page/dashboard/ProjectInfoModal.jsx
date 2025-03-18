@@ -93,7 +93,12 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                   Governance
                 </Button>
                 <DonateModal>
-                  <Button className="w-full" type="secondary" icon="/icons/heart.svg" size="xl">
+                  <Button
+                    className="w-full"
+                    type="secondary"
+                    icon="/icons/heart.svg"
+                    size="xl"
+                  >
                     Support
                   </Button>
                 </DonateModal>
