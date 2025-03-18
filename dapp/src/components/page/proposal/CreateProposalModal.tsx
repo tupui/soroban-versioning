@@ -377,7 +377,9 @@ const CreateProposalModal = () => {
                     throw new Error("Proposal name is required");
 
                   if (!isDescriptionValid(mdText, 10))
-                    throw new Error("Proposal description must contain at least 10 words.");
+                    throw new Error(
+                      "Proposal description must contain at least 10 words.",
+                    );
 
                   setStep(step + 1);
                 } catch (err: any) {
@@ -429,23 +431,33 @@ const CreateProposalModal = () => {
             <Button type="secondary" onClick={() => setStep(step - 1)}>
               Back
             </Button>
-            <Button onClick={() => {
-              try {
-                if (!isDescriptionValid(approveDescription))
-                  throw new Error("Approved description must contain at least 3 words.");
+            <Button
+              onClick={() => {
+                try {
+                  if (!isDescriptionValid(approveDescription))
+                    throw new Error(
+                      "Approved description must contain at least 3 words.",
+                    );
 
-                if (rejectXdr && !isDescriptionValid(rejectDescription))
-                  throw new Error("Rejected description must contain at least 3 words.");
+                  if (rejectXdr && !isDescriptionValid(rejectDescription))
+                    throw new Error(
+                      "Rejected description must contain at least 3 words.",
+                    );
 
-                if (cancelledXdr && !isDescriptionValid(cancelledDescription))
-                  throw new Error("Cancelled description must contain at least 3 words.");
+                  if (cancelledXdr && !isDescriptionValid(cancelledDescription))
+                    throw new Error(
+                      "Cancelled description must contain at least 3 words.",
+                    );
 
-                setStep(step + 1);
-              } catch (err: any) {
-                console.error(err.message);
-                toast.error("Submit proposal", err.message);
-              }
-            }}>Next</Button>
+                  setStep(step + 1);
+                } catch (err: any) {
+                  console.error(err.message);
+                  toast.error("Submit proposal", err.message);
+                }
+              }}
+            >
+              Next
+            </Button>
           </div>
         </div>
       ) : step == 3 ? (
@@ -483,19 +495,23 @@ const CreateProposalModal = () => {
             <Button type="secondary" onClick={() => setStep(step - 1)}>
               Back
             </Button>
-            <Button onClick={() => {
-              try {
-                const votingDays = getDeltaDays(selectedDate);
+            <Button
+              onClick={() => {
+                try {
+                  const votingDays = getDeltaDays(selectedDate);
 
-                if (votingDays < 1 || votingDays > 30)
-                  throw new Error("Voting days must be between 5 and 30");
+                  if (votingDays < 1 || votingDays > 30)
+                    throw new Error("Voting days must be between 5 and 30");
 
-                setStep(step + 1);
-              } catch (err: any) {
-                console.error(err.message);
-                toast.error("Submit proposal", err.message);
-              }
-            }}>Next</Button>
+                  setStep(step + 1);
+                } catch (err: any) {
+                  console.error(err.message);
+                  toast.error("Submit proposal", err.message);
+                }
+              }}
+            >
+              Next
+            </Button>
           </div>
         </div>
       ) : step == 4 ? (

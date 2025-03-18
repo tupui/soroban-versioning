@@ -10,10 +10,7 @@ interface Props {
   onVoteClick?: () => void;
 }
 
-const ProposalCard: React.FC<Props> = ({
-  proposal,
-  onVoteClick,
-}) => {
+const ProposalCard: React.FC<Props> = ({ proposal, onVoteClick }) => {
   const projectName = useStore(projectNameForGovernance);
 
   return (
@@ -31,10 +28,13 @@ const ProposalCard: React.FC<Props> = ({
       <div className="flex justify-between">
         <ProposalStatusSection proposal={proposal} />
         {proposal.status == "active" && (
-          <Button icon="/icons/vote.svg" onClick={(e) => {
-            e.preventDefault();
-            onVoteClick?.();
-          }}>
+          <Button
+            icon="/icons/vote.svg"
+            onClick={(e) => {
+              e.preventDefault();
+              onVoteClick?.();
+            }}
+          >
             Vote
           </Button>
         )}
