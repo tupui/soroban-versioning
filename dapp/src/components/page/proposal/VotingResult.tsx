@@ -11,17 +11,16 @@ interface Props {
 const VotingResult: FC<Props> = ({ voteStatus, withDetail }) => {
   const voteResult = useMemo(() => {
     if (voteStatus) {
-      const sortedVoteResult = [
-        VoteType.APPROVE,
-        VoteType.CANCEL,
-        VoteType.REJECT,
-      ]
-        .map((voteType) => ({
-          type: voteType,
-          score: voteStatus[voteType].score,
-        }))
-        .sort((a, b) => b.score - a.score);
-      return sortedVoteResult[0]?.type;
+      let voteResult: VoteType | undefined = undefined;
+      const { approve, abstain } = voteStatus;
+      if (approve.score > abstain.score) {
+        voteResult = VoteType.APPROVE;
+      } else if (approve.score < abstain.score) {
+        voteResult = VoteType.REJECT;
+      } else {
+        voteResult = VoteType.CANCEL;
+      }
+      return voteResult;
     }
     return undefined;
   }, [voteStatus]);
@@ -48,8 +47,8 @@ const VotingResult: FC<Props> = ({ voteStatus, withDetail }) => {
             <p className="leading-6 text-xl text-primary">
               {voteStatus &&
                 voteStatus?.abstain.score +
-                  voteStatus?.approve.score +
-                  voteStatus?.reject.score}
+                voteStatus?.approve.score +
+                voteStatus?.reject.score}
             </p>
           </div>
         )}

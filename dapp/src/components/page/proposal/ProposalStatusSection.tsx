@@ -12,16 +12,15 @@ const ProposalStatusSection: React.FC<Props> = ({ proposal }) => {
     if (!proposal) return {};
     const status = proposal.status;
     const voteStatus = proposal.voteStatus;
-    const sortedVoteResult = [
-      VoteType.APPROVE,
-      VoteType.CANCEL,
-      VoteType.REJECT,
-    ]
-      .map((voteType) => ({
-        type: voteType,
-        score: voteStatus[voteType].score,
-      }))
-      .sort((a, b) => b.score - a.score);
+    let voteResult: VoteType | undefined = undefined;
+    const { approve, abstain } = voteStatus;
+    if (approve.score > abstain.score) {
+      voteResult = VoteType.APPROVE;
+    } else if (approve.score < abstain.score) {
+      voteResult = VoteType.REJECT;
+    } else {
+      voteResult = VoteType.CANCEL;
+    }
 
     return {
       status:
@@ -31,7 +30,7 @@ const ProposalStatusSection: React.FC<Props> = ({ proposal }) => {
             ? "active"
             : "finished",
       voteResult: ["approved", "rejected", "cancelled"].includes(status)
-        ? sortedVoteResult[0]?.type
+        ? voteResult
         : undefined,
       endDate: status == "active" ? proposal.endDate : undefined,
     };
