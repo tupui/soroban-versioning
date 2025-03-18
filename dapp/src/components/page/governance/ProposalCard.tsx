@@ -1,5 +1,4 @@
 import { useStore } from "@nanostores/react";
-import { navigate } from "astro:transitions/client";
 import Button from "components/utils/Button";
 import React from "react";
 import type { ProposalCardView } from "types/proposal";
@@ -21,11 +20,9 @@ const ProposalCard: React.FC<Props> = ({
   const projectName = useStore(projectNameForGovernance);
 
   return (
-    <div
+    <a
+      href={`/proposal?id=${proposalNumber}&name=${projectName}`}
       className="p-[30px] flex flex-col gap-6 bg-white cursor-pointer"
-      onClick={() =>
-        navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
-      }
     >
       <div className="flex justify-between">
         <p className="text-xl font-medium text-primary">{proposalTitle}</p>
@@ -35,7 +32,7 @@ const ProposalCard: React.FC<Props> = ({
         </div>
       </div>
       <div className="flex justify-between">
-        <div className="w-[220px] grid grid-cols-2 gap-[18px]">
+        <div className="grid grid-cols-2 gap-[18px]">
           <div className="flex flex-col gap-3">
             <p className="text-sm text-tertiary">Status</p>
             <p className="text-lg text-tertiary">
@@ -64,12 +61,15 @@ const ProposalCard: React.FC<Props> = ({
           )}
         </div>
         {proposalStatus == "active" && (
-          <Button icon="/icons/vote.svg" onClick={onVoteClick}>
+          <Button icon="/icons/vote.svg" onClick={(e) => {
+            e.preventDefault();
+            onVoteClick?.();
+          }}>
             Vote
           </Button>
         )}
       </div>
-    </div>
+    </a>
   );
 };
 
