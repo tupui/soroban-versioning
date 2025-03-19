@@ -1,9 +1,14 @@
+---
+import UpdateConfigModal from "./UpdateConfigModal";
+---
+
 <!-- <div class="flex justify-between items-center"> -->
-<div class="flex">
+<div class="flex items-center justify-between">
   <a href="/" class="flex gap-[14px]">
     <img src="/icons/back.svg" />
     <p class="leading-5 text-xl text-primary">Back to Home Page</p>
   </a>
+  <UpdateConfigModal client:only/>
 </div>
 <!-- <div class="flex gap-3">
     <div class="p-[12px_18px] bg-white">
