@@ -91,7 +91,7 @@ export const OutcomeDetail: React.FC<{
   type: string;
   detail: { description: string; xdr: string };
   isXdrInit: boolean;
-}> = ({ type, detail /*, proposalStatus*/, isXdrInit }) => {
+}> = ({ type, detail, isXdrInit }) => {
   const [content, setContent] = useState<any>(null);
   const [showXDRModal, setShowXDRModal] = useState(false);
 
@@ -115,16 +115,14 @@ export const OutcomeDetail: React.FC<{
   }, [detail, isXdrInit]);
 
   return (
-    <div className="flex flex-col gap-1 sm:gap-4 md:gap-6">
-      <div className="flex flex-col items-start gap-1 sm:gap-2 md:gap-3">
-        <div
-          className={`text-base sm:text-xl md:text-2xl text-white md:py-0.5 px-1 md:px-2 rounded md:rounded-md" ${type === "approved" ? "bg-approved" : type === "rejected" ? "bg-conflict" : type === "cancelled" ? "bg-abstain" : type === "voted" ? "bg-voted" : "bg-gray-300"}`}
-        >
-          {capitalizeFirstLetter(type)}
-        </div>
-        <div className="text-sm sm:text-lg md:text-xl md:mt-1.5">
+    <div className="p-[30px] flex justify-between items-center bg-white">
+      <div className="flex flex-col gap-3">
+        <p className={`text-xl font-medium text-${type}`}>
+          {capitalizeFirstLetter(type || "")}
+        </p>
+        <p className="text-base font-semibold text-primary">
           {detail.description}
-        </div>
+        </p>
       </div>
       {content && (
         <Button

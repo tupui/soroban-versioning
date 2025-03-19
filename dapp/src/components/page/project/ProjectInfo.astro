@@ -79,7 +79,7 @@ import ReadMoreModal from "./ReadMoreModal.astro";
 <LastHashModal />
 
 <script>
-  import { getLatestCommitData } from "@service/GithubService";
+  import { getLatestCommitData, getTOMLFileHash } from "@service/GithubService";
   import { navigate } from "astro:transitions/client";
   import type { ConfigData } from "types/projectConfig";
   import { formatDateTime } from "utils/formatTimeFunctions";
@@ -416,40 +416,6 @@ import ReadMoreModal from "./ReadMoreModal.astro";
             commitPopup.innerHTML =
               '<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on GitHub</p>';
           }
-
-          commitPopup.appendChild(commitTriangle);
-          commitComponent.appendChild(commitIcon);
-          commitComponent.appendChild(commitText);
-          commitComponent.appendChild(commitPopup);
-
-          syncStatusContainer.appendChild(commitComponent);
-        }
-
-        // Update modal content
-        const modalProjectName = document.getElementById(
-          "update-modal-project-name",
-        );
-        if (modalProjectName) {
-          modalProjectName.textContent = projectInfo.name;
-        }
-
-        const modalMaintainers = document.getElementById(
-          "modal-maintainers",
-        ) as HTMLInputElement;
-        if (modalMaintainers) {
-          modalMaintainers.value = projectInfo.maintainers.join(",");
-        }
-        const modalConfigUrl = document.getElementById(
-          "modal-config-url",
-        ) as HTMLInputElement;
-        if (modalConfigUrl) {
-          modalConfigUrl.value = projectInfo.config.url;
-        }
-        const modalConfigHash = document.getElementById(
-          "modal-config-hash",
-        ) as HTMLInputElement;
-        if (modalConfigHash) {
-          modalConfigHash.value = projectInfo.config.hash;
         }
 
         // Read more modal content

@@ -73,6 +73,11 @@ const ProposalPage: React.FC = () => {
         toast.error("Something Went Wrong!", response.errorMessage);
       }
       setIsLoading(false);
+    } else {
+      toast.error(
+        "Something Went Wrong!",
+        "Project name or proposal id is not provided",
+      );
     }
   };
 
