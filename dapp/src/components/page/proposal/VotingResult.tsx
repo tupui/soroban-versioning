@@ -47,8 +47,8 @@ const VotingResult: FC<Props> = ({ voteStatus, withDetail }) => {
             <p className="leading-6 text-xl text-primary">
               {voteStatus &&
                 voteStatus?.abstain.score +
-                voteStatus?.approve.score +
-                voteStatus?.reject.score}
+                  voteStatus?.approve.score +
+                  voteStatus?.reject.score}
             </p>
           </div>
         )}

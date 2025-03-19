@@ -48,29 +48,21 @@ const UpdateConfigModal = () => {
       if (updateStatus.data && !updateStatus.error) {
         const res = await getProject();
         const project = res.data;
-        if (
-          project &&
-          project.name &&
-          project.config &&
-          project.maintainers
-        ) {
+        if (project && project.name && project.config && project.maintainers) {
           setProject(project);
         } else if (res.error) {
           alert(res.errorMessage);
         }
         setIsOpen(false);
       } else if (updateStatus.error) {
-        toast.error(
-          "Update config",
-          updateStatus.errorMessage
-        );
+        toast.error("Update config", updateStatus.errorMessage);
       }
     } catch (error) {
       console.error("Error updating config:", error);
       toast.error(
         "Update config",
         "An error occurred while updating the project configuration. Please try again.",
-      )
+      );
     } finally {
       setIsLoading(false);
     }
@@ -84,9 +76,7 @@ const UpdateConfigModal = () => {
           onClick={() => setIsOpen(true)}
         >
           <img src="/icons/gear.svg" />
-          <p className="leading-5 text-xl text-primary">
-            Update config
-          </p>
+          <p className="leading-5 text-xl text-primary">Update config</p>
         </button>
       )}
       {isOpen && (
@@ -94,7 +84,9 @@ const UpdateConfigModal = () => {
           <div className="flex items-start gap-[18px]">
             <img src="/images/scan.svg" />
             <div className="flex-grow flex flex-col gap-9">
-              <h6 className="text-2xl font-medium text-primary">Update config</h6>
+              <h6 className="text-2xl font-medium text-primary">
+                Update config
+              </h6>
               <div className="flex flex-col gap-[18px]">
                 <div className="flex flex-col gap-3">
                   <p className="text-base font-[600] text-primary">
@@ -138,10 +130,7 @@ const UpdateConfigModal = () => {
                   />
                 </div>
                 <div className="flex justify-end">
-                  <Button
-                    onClick={handleUpdate}
-                    isLoading={isLoading}
-                  >
+                  <Button onClick={handleUpdate} isLoading={isLoading}>
                     Update Config
                   </Button>
                 </div>
