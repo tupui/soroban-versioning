@@ -10,12 +10,6 @@ if (typeof window !== "undefined") {
   //@ts-ignore Buffer exists
   window.Buffer = window.Buffer || Buffer;
 }
-export const networks = {
-  testnet: {
-    networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CB6EA5V4T5Z5XXOKHRU5MNYTZ2QESR4STUW6EBLA4HXYZ2BPVMCHRHUR",
-  },
-};
 export const Errors = {
   0: { message: "UnexpectedError" },
   1: { message: "InvalidKey" },
@@ -32,6 +26,14 @@ export const Errors = {
 };
 export class Client extends ContractClient {
   options;
+  static async deploy(
+    /** Constructor/Initialization Args for the contract's `__constructor` method */
+    { admin },
+    /** Options for initalizing a Client as well as for calling a method, with extras specific to deploying. */
+    options,
+  ) {
+    return ContractClient.deploy({ admin }, options);
+  }
   constructor(options) {
     super(
       new ContractSpec([
