@@ -1,6 +1,7 @@
+import * as StellarSdk from "@stellar/stellar-sdk";
+import { toast } from "utils/utils";
 import { kit } from "../components/stellar-wallets-kit";
 import { loadedPublicKey } from "./walletService";
-import * as StellarSdk from "@stellar/stellar-sdk";
 
 async function sendXLM(
   donateAmount: string,
@@ -13,7 +14,7 @@ async function sendXLM(
   const tansuAddress = import.meta.env.PUBLIC_TANSU_OWNER_ID;
 
   if (!senderPublicKey) {
-    alert("Please connect your wallet first");
+    toast.error("Connect Wallet", "Please connect your wallet first");
     return false;
   }
 
@@ -39,7 +40,7 @@ async function sendXLM(
       .addMemo(StellarSdk.Memo.text(donateMessage));
 
     // Add tip operation only if tipAmount is not "0"
-    if (tipAmount !== "0") {
+    if (Number(tipAmount) > 0) {
       transactionBuilder.addOperation(
         StellarSdk.Operation.payment({
           destination: tansuAddress,
