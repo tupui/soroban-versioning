@@ -58,6 +58,8 @@ pub trait VersioningTrait {
 }
 
 pub trait DaoTrait {
+    fn anonymous_voting_setup(env: Env, public_key: String);
+
     fn create_proposal(
         env: Env,
         proposer: Address,

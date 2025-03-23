@@ -1,4 +1,5 @@
 use crate::{errors, types, DaoTrait, Tansu, TansuArgs, TansuClient};
+use soroban_sdk::xdr::ToXdr;
 use soroban_sdk::{contractimpl, panic_with_error, vec, Address, Bytes, Env, String, Vec};
 
 const MAX_TITLE_LENGTH: u32 = 256;
@@ -9,6 +10,40 @@ const MAX_VOTING_PERIOD: u64 = 30 * 24 * 3600; // 30 days in seconds
 
 #[contractimpl]
 impl DaoTrait for Tansu {
+    fn anonymous_voting_setup(env: Env, public_key: String) {
+        let admin: Address = env
+            .storage()
+            .instance()
+            .get(&types::DataKey::Admin)
+            .unwrap();
+        admin.require_auth();
+
+        // generators
+        let bls12_381 = env.crypto().bls12_381();
+
+        let vote_generator = Bytes::from_slice(&env, "VOTE_GENERATOR".as_bytes());
+        let vote_dst = Bytes::from_slice(&env, "VOTE_COMMITMENT".as_bytes());
+        let seed_generator = Bytes::from_slice(&env, "SEED_GENERATOR".as_bytes());
+        let seed_dst = Bytes::from_slice(&env, "VOTE_SEED".as_bytes());
+
+        let vote_generator_point = bls12_381
+            .hash_to_g1(&vote_generator, &vote_dst)
+            .to_xdr(&env);
+        let seed_generator_point = bls12_381
+            .hash_to_g1(&seed_generator, &seed_dst)
+            .to_xdr(&env);
+
+        let vote_config = types::AnonymousVoteConfig {
+            vote_generator_point,
+            seed_generator_point,
+            public_key,
+        };
+
+        env.storage()
+            .instance()
+            .set(&types::DataKey::AnonymousVoteConfig, &vote_config);
+    }
+
     /// Create a proposal on the DAO of the project.
     /// Proposal initiators are automatically put in the abstain group.
     /// # Arguments
@@ -59,16 +94,22 @@ impl DaoTrait for Tansu {
                 .unwrap_or(0);
 
             // proposer is automatically in the abstain group
-            let voters_abstain = vec![&env, proposer];
+            let votes = vec![
+                &env,
+                types::Vote::PublicVote(types::PublicVote::Abstain(proposer.clone())),
+            ];
+            let voters = vec![&env, proposer];
+            let vote_data = types::VoteData {
+                voting_ends_at,
+                public: true,
+                votes,
+                voters,
+            };
             let proposal = types::Proposal {
                 id: proposal_id,
                 title,
                 ipfs,
-                voting_ends_at,
-                voters_approve: Vec::new(&env),
-                voters_reject: Vec::new(&env),
-                voters_abstain,
-                nqg: 0,
+                vote_data,
                 status: types::ProposalStatus::Active,
             };
 
@@ -119,18 +160,11 @@ impl DaoTrait for Tansu {
         };
 
         // only allow to vote once per voter
-        if proposal.voters_approve.contains(&voter)
-            | proposal.voters_reject.contains(&voter)
-            | proposal.voters_abstain.contains(&voter)
-        {
+        if proposal.vote_data.voters.contains(&voter) {
             panic_with_error!(&env, &errors::ContractErrors::AlreadyVoted);
         } else {
             // Record the vote
-            match vote {
-                types::Vote::Approve => proposal.voters_approve.push_back(voter),
-                types::Vote::Reject => proposal.voters_reject.push_back(voter),
-                types::Vote::Abstain => proposal.voters_abstain.push_back(voter),
-            }
+            proposal.vote_data.votes.push_back(vote);
 
             dao_page.proposals.set(sub_id, proposal);
 
@@ -162,13 +196,21 @@ impl DaoTrait for Tansu {
         // only allow to execute once
         if proposal.status != types::ProposalStatus::Active {
             panic_with_error!(&env, &errors::ContractErrors::AlreadyExecuted);
-        } else if curr_timestamp < proposal.voting_ends_at {
+        } else if curr_timestamp < proposal.vote_data.voting_ends_at {
             panic_with_error!(&env, &errors::ContractErrors::ProposalVotingTime);
         } else {
             // count votes
-            let voted_approve = proposal.voters_approve.len();
-            let voted_reject = proposal.voters_reject.len();
-            let voted_abstain = proposal.voters_abstain.len();
+            let mut voted_approve = 0;
+            let mut voted_reject = 0;
+            let mut voted_abstain = 0;
+            for vote_ in &proposal.vote_data.votes {
+                match &vote_ {
+                    types::Vote::PublicVote(types::PublicVote::Approve(_)) => voted_approve += 1,
+                    types::Vote::PublicVote(types::PublicVote::Reject(_)) => voted_reject += 1,
+                    types::Vote::PublicVote(types::PublicVote::Abstain(_)) => voted_abstain += 1,
+                    _ => {}
+                }
+            }
 
             // accept or reject if we have a majority
             if voted_approve > (voted_abstain + voted_reject) {

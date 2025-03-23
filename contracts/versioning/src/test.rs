@@ -3,7 +3,7 @@
 use super::{domain_contract, Tansu, TansuClient};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
-use crate::types::{Dao, ProposalStatus, Vote};
+use crate::types::{Dao, ProposalStatus, PublicVote, Vote};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
 use soroban_sdk::{
@@ -200,12 +200,12 @@ fn test() {
     assert_eq!(proposal.id, 0);
     assert_eq!(proposal.title, title);
     assert_eq!(proposal.ipfs, ipfs);
-    assert_eq!(proposal.voting_ends_at, voting_ends_at);
-    assert_eq!(proposal.voters_approve, Vec::new(&env));
-    assert_eq!(proposal.voters_reject, Vec::new(&env));
-    assert_eq!(proposal.voters_abstain, vec![&env, grogu.clone()]);
-
-    let dao = contract.get_dao(&id, &0);
+    assert_eq!(proposal.vote_data.voting_ends_at, voting_ends_at);
+    assert_eq!(proposal.vote_data.voters, vec![&env, grogu.clone()]);
+    assert_eq!(
+        proposal.vote_data.votes,
+        vec![&env, Vote::PublicVote(PublicVote::Abstain(grogu.clone()))]
+    );
     assert_eq!(
         dao,
         Dao {
@@ -219,33 +219,64 @@ fn test() {
 
     // cannot vote for your own proposal
     let error = contract
-        .try_vote(&grogu, &id, &proposal_id, &Vote::Approve)
+        .try_vote(
+            &grogu,
+            &id,
+            &proposal_id,
+            &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+        )
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::AlreadyVoted.into());
 
-    contract.vote(&mando, &id, &proposal_id, &Vote::Approve);
+    contract.vote(
+        &mando,
+        &id,
+        &proposal_id,
+        &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+    );
 
     // cannot vote twice
     let error = contract
-        .try_vote(&mando, &id, &proposal_id, &Vote::Approve)
+        .try_vote(
+            &mando,
+            &id,
+            &proposal_id,
+            &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+        )
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::AlreadyVoted.into());
 
     let proposal = contract.get_proposal(&id, &proposal_id);
     assert_eq!(proposal.status, ProposalStatus::Active);
-    assert_eq!(proposal.voters_approve, vec![&env, mando.clone()]);
-    assert_eq!(proposal.voters_reject, Vec::new(&env));
-    assert_eq!(proposal.voters_abstain, vec![&env, grogu.clone()]);
+
+    assert_eq!(
+        proposal.vote_data.votes,
+        vec![
+            &env,
+            Vote::PublicVote(PublicVote::Approve(mando.clone())),
+            Vote::PublicVote(PublicVote::Abstain(grogu.clone()))
+        ]
+    );
 
     // cast another vote and approve
     env.ledger().set_timestamp(1234567890);
     let kuiil = Address::generate(&env);
     let voting_ends_at = 1234567890 + 3600 * 24 * 2;
     let proposal_id_2 = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at);
-    contract.vote(&mando, &id, &proposal_id_2, &Vote::Approve);
-    contract.vote(&kuiil, &id, &proposal_id_2, &Vote::Approve);
+    contract.vote(
+        &mando,
+        &id,
+        &proposal_id_2,
+        &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+    );
+    contract.vote(
+        &kuiil,
+        &id,
+        &proposal_id_2,
+        &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+    );
 
     // too early to execute
     let error = contract
@@ -259,12 +290,17 @@ fn test() {
     let vote_result = contract.execute(&mando, &id, &proposal_id_2);
     assert_eq!(vote_result, ProposalStatus::Approved);
     let proposal_2 = contract.get_proposal(&id, &proposal_id_2);
+
     assert_eq!(
-        proposal_2.voters_approve,
-        vec![&env, mando.clone(), kuiil.clone()]
+        proposal_2.vote_data.votes,
+        vec![
+            &env,
+            Vote::PublicVote(PublicVote::Approve(mando.clone())),
+            Vote::PublicVote(PublicVote::Approve(kuiil.clone())),
+            Vote::PublicVote(PublicVote::Abstain(grogu.clone()))
+        ]
     );
-    assert_eq!(proposal_2.voters_reject, Vec::new(&env));
-    assert_eq!(proposal_2.voters_abstain, vec![&env, grogu.clone()]);
+
     assert_eq!(proposal_2.status, ProposalStatus::Approved);
 }
 

@@ -3,6 +3,7 @@ use soroban_sdk::{contracttype, Address, Bytes, String, Vec};
 #[contracttype]
 pub enum DataKey {
     Admin, // Contract administrator
+    AnonymousVoteConfig,
 }
 
 #[contracttype]
@@ -17,9 +18,41 @@ pub enum ProposalStatus {
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Vote {
-    Approve,
-    Reject,
-    Abstain,
+    PublicVote(PublicVote),
+    AnonymousVote(AnonymousVote),
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub enum PublicVote {
+    Approve(Address),
+    Reject(Address),
+    Abstain(Address),
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct AnonymousVote {
+    pub vote_seed: Bytes,
+    pub encrypted_seed: String,
+    pub commitment: Bytes,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct VoteData {
+    pub voting_ends_at: u64,
+    pub public: bool, // Public or anonymous vote
+    pub votes: Vec<Vote>,
+    pub voters: Vec<Address>,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct AnonymousVoteConfig {
+    pub vote_generator_point: Bytes,
+    pub seed_generator_point: Bytes,
+    pub public_key: String,
 }
 
 #[contracttype]
@@ -28,11 +61,7 @@ pub struct Proposal {
     pub id: u32,
     pub title: String,
     pub ipfs: String,
-    pub voting_ends_at: u64,
-    pub voters_approve: Vec<Address>,
-    pub voters_reject: Vec<Address>,
-    pub voters_abstain: Vec<Address>,
-    pub nqg: u32,
+    pub vote_data: VoteData,
     pub status: ProposalStatus,
 }
 

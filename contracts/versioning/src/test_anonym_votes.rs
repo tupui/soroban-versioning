@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use core::ops::{Add, Sub};
+use core::ops::Add;
 use soroban_sdk::crypto::bls12_381::{Fr, G1Affine};
 
 use soroban_sdk::{bytesn, Bytes, Env, U256};
@@ -55,28 +55,15 @@ fn add_commitment(
     bls12_381.g1_add(tally, &recovered_vote)
 }
 
-fn add_vote(
-    env: &Env,
-    vote: &u32,
-    seed: &u32,
-    approve: bool,
-    tally_vote: &Fr,
-    tally_seed: &Fr,
-) -> (Fr, Fr) {
+fn add_vote(env: &Env, vote: &u32, seed: &u32, tally_vote: &Fr) -> (Fr, Fr) {
     let vote_fr = Fr::from_u256(U256::from_u32(env, *vote).clone());
     let seed_fr = Fr::from_u256(U256::from_u32(env, *seed).clone());
 
-    let mut new_tally_seed = tally_seed.clone();
-    new_tally_seed = new_tally_seed.add(seed_fr.clone());
+    let mut new_tally_vote = tally_vote.clone();
+    new_tally_vote = new_tally_vote.add(vote_fr);
+    new_tally_vote = new_tally_vote.add(seed_fr.clone());
 
-    let mut new_tally = tally_vote.clone();
-    new_tally = new_tally.add(seed_fr);
-
-    if approve {
-        (new_tally.add(vote_fr), new_tally_seed)
-    } else {
-        (new_tally.sub(vote_fr), new_tally_seed)
-    }
+    (new_tally_vote, seed_fr)
 }
 
 #[test]
@@ -94,15 +81,11 @@ fn test_vote() {
     let vote_generator_point = bls12_381.hash_to_g1(&vote_generator, &vote_dst);
     let seed_generator_point = bls12_381.hash_to_g1(&seed_generator, &seed_dst);
 
-    // setup to differentiate votes
-    let mut middle_tally = Fr::from_u256(U256::from_u32(&env, 2).clone());
-    middle_tally = middle_tally.pow(255);
-    let middle_seed = Fr::from_u256(U256::from_u32(&env, 100_u32).clone());
+    // init tallies
+    let mut tally_votes = Fr::from_u256(U256::from_u32(&env, 0).clone());
+    let mut tally_seed = Fr::from_u256(U256::from_u32(&env, 0).clone());
 
-    let mut tally_votes = middle_tally.clone();
-    let mut tally_seed = middle_seed.clone();
-
-    // casting votes
+    // casting votes, on-chain store tally_votes, encrypted version of seed_fr and commitment
     let vote_a = 1_u32;
     let seed_a = 60_u32;
     let vote_commitment_a = commitment(
@@ -112,7 +95,8 @@ fn test_vote() {
         &vote_generator_point,
         &seed_generator_point,
     );
-    (tally_votes, tally_seed) = add_vote(&env, &vote_a, &seed_a, true, &tally_votes, &tally_seed);
+    let seed_a_fr;
+    (tally_votes, seed_a_fr) = add_vote(&env, &vote_a, &seed_a, &tally_votes);
 
     let vote_b = 2_u32;
     let seed_b = 30_u32;
@@ -123,7 +107,8 @@ fn test_vote() {
         &vote_generator_point,
         &seed_generator_point,
     );
-    (tally_votes, tally_seed) = add_vote(&env, &vote_b, &seed_b, true, &tally_votes, &tally_seed);
+    let seed_b_fr;
+    (tally_votes, seed_b_fr) = add_vote(&env, &vote_b, &seed_b, &tally_votes);
 
     let vote_c = 5_u32;
     let seed_c = 10_u32;
@@ -134,19 +119,23 @@ fn test_vote() {
         &vote_generator_point,
         &seed_generator_point,
     );
-    (tally_votes, tally_seed) = add_vote(&env, &vote_c, &seed_c, true, &tally_votes, &tally_seed);
+    let seed_c_fr;
+    (tally_votes, seed_c_fr) = add_vote(&env, &vote_c, &seed_c, &tally_votes);
 
     // voting ends
     let ref_tally = U256::from_u32(&env, vote_a + vote_b + vote_c);
 
-    let mut tally = (tally_votes - middle_tally).to_u256();
-    let seed = (tally_seed.clone() - middle_seed).to_u256();
+    let mut tally = tally_votes.to_u256();
+
+    // seed_fr are decrypted on the frontend with the secret key
+    tally_seed = tally_seed.add(seed_a_fr).add(seed_b_fr).add(seed_c_fr);
+    let seed = tally_seed.clone().to_u256();
+
     tally = tally.sub(&seed);
 
     assert_eq!(tally.clone(), ref_tally);
 
-    // we retrieve the commitments and the
-    // seeds are decrypted on the frontend with the secret key
+    // we retrieve the commitments
     // let tally_commitment_votes = bls12_381.g1_mul(&vote_generator_point, &Fr::from_u256(tally));
     let mut tally_commitment_votes = G1Affine::from_bytes(bytesn!(&env, 0x400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000));
     tally_commitment_votes = add_commitment(
