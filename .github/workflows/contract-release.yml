@@ -1,4 +1,4 @@
-name: Publish Soroban versioning contract
+name: Publish Tansu contract
 
 on:
   workflow_dispatch:
@@ -21,8 +21,8 @@ jobs:
     with:
       release_name: ${{ github.event.inputs.release_name }}
       release_description: "Tansu contract release"
-      relative_path: '["contracts/versioning"]'
-      package: 'versioning'
+      relative_path: '["contracts/tansu"]'
+      package: 'tansu'
     environment:
       name: publish-contract
     secrets:
@@ -34,7 +34,7 @@ jobs:
 #      - name: Generate artifact attestation for build
 #        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c
 #        with:
-#          subject-path: "target/wasm32-unknown-unknown/release/versioning.wasm"
+#          subject-path: "target/wasm32-unknown-unknown/release/tansu.wasm"
 #
 #      - name: Verify artifact attestation
 #        env:

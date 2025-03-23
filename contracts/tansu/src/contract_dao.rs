@@ -159,12 +159,29 @@ impl DaoTrait for Tansu {
             _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
         };
 
+        // TODO change to not have voters and iterate over votes instead
+        // also important to check voter address == vote address
+
         // only allow to vote once per voter
         if proposal.vote_data.voters.contains(&voter) {
             panic_with_error!(&env, &errors::ContractErrors::AlreadyVoted);
         } else {
+            match vote {
+                types::Vote::PublicVote(_) => {
+                    if !proposal.vote_data.public {
+                        panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
+                    }
+                }
+                types::Vote::AnonymousVote(_) => {
+                    if proposal.vote_data.public {
+                        panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
+                    }
+                }
+            }
+
             // Record the vote
             proposal.vote_data.votes.push_back(vote);
+            proposal.vote_data.voters.push_back(voter);
 
             dao_page.proposals.set(sub_id, proposal);
 

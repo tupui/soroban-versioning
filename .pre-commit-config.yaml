@@ -40,7 +40,7 @@ repos:
         entry: prettier --write "website/{blog,docs,src/pages}/**/*.{md,mdx}"
 
       # our custom action
-      - id: soroban-versioning
+      - id: tansu
         name: Send hash to Soroban contract before push
         language: python
         additional_dependencies:

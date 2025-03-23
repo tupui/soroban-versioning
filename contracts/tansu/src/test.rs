@@ -206,6 +206,8 @@ fn test() {
         proposal.vote_data.votes,
         vec![&env, Vote::PublicVote(PublicVote::Abstain(grogu.clone()))]
     );
+
+    let dao = contract.get_dao(&id, &0);
     assert_eq!(
         dao,
         Dao {
@@ -233,7 +235,7 @@ fn test() {
         &mando,
         &id,
         &proposal_id,
-        &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+        &Vote::PublicVote(PublicVote::Approve(mando.clone())),
     );
 
     // cannot vote twice
@@ -242,7 +244,7 @@ fn test() {
             &mando,
             &id,
             &proposal_id,
-            &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+            &Vote::PublicVote(PublicVote::Approve(mando.clone())),
         )
         .unwrap_err()
         .unwrap();
@@ -255,8 +257,8 @@ fn test() {
         proposal.vote_data.votes,
         vec![
             &env,
+            Vote::PublicVote(PublicVote::Abstain(grogu.clone())),
             Vote::PublicVote(PublicVote::Approve(mando.clone())),
-            Vote::PublicVote(PublicVote::Abstain(grogu.clone()))
         ]
     );
 
@@ -269,13 +271,13 @@ fn test() {
         &mando,
         &id,
         &proposal_id_2,
-        &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+        &Vote::PublicVote(PublicVote::Approve(mando.clone())),
     );
     contract.vote(
         &kuiil,
         &id,
         &proposal_id_2,
-        &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+        &Vote::PublicVote(PublicVote::Approve(kuiil.clone())),
     );
 
     // too early to execute
@@ -295,9 +297,9 @@ fn test() {
         proposal_2.vote_data.votes,
         vec![
             &env,
+            Vote::PublicVote(PublicVote::Abstain(grogu.clone())),
             Vote::PublicVote(PublicVote::Approve(mando.clone())),
             Vote::PublicVote(PublicVote::Approve(kuiil.clone())),
-            Vote::PublicVote(PublicVote::Abstain(grogu.clone()))
         ]
     );
 

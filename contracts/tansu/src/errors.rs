@@ -19,4 +19,6 @@ pub enum ContractErrors {
     AlreadyVoted = 9,
     ProposalVotingTime = 10,
     AlreadyExecuted = 11,
+    // Private voting
+    WrongVoteType = 12,
 }
