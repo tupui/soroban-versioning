@@ -4,6 +4,7 @@ import {
   AssembledTransaction,
   Client as ContractClient,
   ClientOptions as ContractClientOptions,
+  MethodOptions,
   Result,
   Spec as ContractSpec,
 } from "@stellar/stellar-sdk/contract";
@@ -28,13 +29,6 @@ if (typeof window !== "undefined") {
   //@ts-ignore Buffer exists
   window.Buffer = window.Buffer || Buffer;
 }
-
-export const networks = {
-  testnet: {
-    networkPassphrase: "Test SDF Network ; September 2015",
-    contractId: "CB6EA5V4T5Z5XXOKHRU5MNYTZ2QESR4STUW6EBLA4HXYZ2BPVMCHRHUR",
-  },
-} as const;
 
 export const Errors = {
   0: { message: "UnexpectedError" },
@@ -471,6 +465,22 @@ export interface Client {
   ) => Promise<AssembledTransaction<Project>>;
 }
 export class Client extends ContractClient {
+  static async deploy<T = Client>(
+    /** Constructor/Initialization Args for the contract's `__constructor` method */
+    { admin }: { admin: string },
+    /** Options for initalizing a Client as well as for calling a method, with extras specific to deploying. */
+    options: MethodOptions &
+      Omit<ContractClientOptions, "contractId"> & {
+        /** The hash of the Wasm blob, which must already be installed on-chain. */
+        wasmHash: Buffer | string;
+        /** Salt used to generate the contract's ID. Passed through to {@link Operation.createCustomContract}. Default: random. */
+        salt?: Buffer | Uint8Array;
+        /** The format used to decode `wasmHash`, if it's provided as a string. */
+        format?: "hex" | "base64";
+      },
+  ): Promise<AssembledTransaction<T>> {
+    return ContractClient.deploy({ admin }, options);
+  }
   constructor(public readonly options: ContractClientOptions) {
     super(
       new ContractSpec([
