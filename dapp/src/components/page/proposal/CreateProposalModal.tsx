@@ -101,6 +101,7 @@ const CreateProposalModal = () => {
 
     const showModalButton = document.querySelector("#create-proposal-button");
     if (showModalButton) {
+      setStep(4);
       showModalButton.addEventListener("click", handleSubmmitProposal);
       return () =>
         showModalButton.removeEventListener("click", handleSubmmitProposal);
@@ -269,7 +270,6 @@ const CreateProposalModal = () => {
       console.error(err.message);
       toast.error("Submit proposal", err.message);
     }
-    setStep(4);
   };
 
   if (!showModal) return <></>;
