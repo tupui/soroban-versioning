@@ -37,12 +37,6 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
       "#create-proposal-button",
     );
 
-    connectedPublicKey.subscribe((publicKey) => {
-      if (maintainers.includes(publicKey)) {
-        createProposalButton?.classList.remove("hidden");
-      }
-    });
-
     const res = await getProjectFromName(projectName!);
     const projectInfo = res.data;
     if (projectInfo && projectInfo.maintainers) {
@@ -50,5 +44,11 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
     } else {
       toast.error("Something Went Wrong!", res.errorMessage);
     }
+
+    connectedPublicKey.subscribe((publicKey) => {
+      if (maintainers.includes(publicKey)) {
+        createProposalButton?.classList.remove("hidden");
+      }
+    });
   });
 </script>
