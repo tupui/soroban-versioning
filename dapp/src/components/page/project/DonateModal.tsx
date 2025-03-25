@@ -46,13 +46,8 @@ const DonateModal: FC<Props> = ({ children }) => {
     try {
       const domainInfo = await getAddressFromDomain("tansu");
 
-      if (
-        domainInfo &&
-        !domainInfo.error &&
-        typeof domainInfo.message === "object" &&
-        "owner" in domainInfo.message.value
-      ) {
-        const domainOwnerAddress = domainInfo.message.value.owner;
+      if ("owner" in domainInfo.value) {
+        const domainOwnerAddress = domainInfo.value.owner;
         const payment = await sendXLM(
           amount.toString(),
           domainOwnerAddress as string,
