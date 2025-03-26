@@ -1,5 +1,3 @@
-import React from "react";
-
 const Loading = ({ theme = "light" }: { theme?: "dark" | "light" }) => {
   const bgColor = theme === "dark" ? "bg-white" : "bg-black";
 
