@@ -108,6 +108,7 @@ const ProposalPage: React.FC = () => {
             <VotingModal
               projectName={projectName}
               proposalId={id}
+              proposalTitle={proposal?.title}
               isVoted={isVoted}
               setIsVoted={setIsVoted}
               onClose={() => setIsVotingModalOpen(false)}

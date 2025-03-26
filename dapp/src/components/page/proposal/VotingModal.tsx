@@ -10,6 +10,7 @@ import VoteTypeCheckbox from "./VoteTypeCheckbox";
 interface VotersModalProps extends ModalProps {
   projectName: string;
   proposalId: number | undefined;
+  proposalTitle: string | undefined;
   isVoted?: boolean;
   setIsVoted?: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -17,6 +18,7 @@ interface VotersModalProps extends ModalProps {
 const VotingModal: React.FC<VotersModalProps> = ({
   projectName,
   proposalId,
+  proposalTitle,
   isVoted,
   setIsVoted,
   onClose,
@@ -58,6 +60,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
       if (res.error) {
         const errorMessage = res.errorMessage;
         toast.error("Vote", errorMessage);
+        return;
       }
     }
     setStep(2);
@@ -78,7 +81,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
                 <div className="flex gap-1.5">
                   <p>Vote on the proposal:</p>
                   <p className="font-bold text-primary">
-                    Sustainable Future Initiative
+                    {proposalTitle}
                   </p>
                 </div>
               }

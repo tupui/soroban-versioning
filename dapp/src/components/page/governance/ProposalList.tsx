@@ -17,6 +17,7 @@ const ProposalList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showVotingModal, setShowVotingModal] = useState(false);
   const [proposalId, setProposalId] = useState<number>();
+  const [proposalTitle, setProposalTitle] = useState<string>();
 
   const fetchProposalPages = async () => {
     try {
@@ -69,6 +70,7 @@ const ProposalList: React.FC = () => {
                 proposal={proposal}
                 onVoteClick={() => {
                   setProposalId(proposal.id);
+                  setProposalTitle(proposal.title);
                   setShowVotingModal(true);
                 }}
               />
@@ -85,6 +87,7 @@ const ProposalList: React.FC = () => {
         <VotingModal
           projectName={projectName}
           proposalId={proposalId}
+          proposalTitle={proposalTitle}
           onClose={() => setShowVotingModal(false)}
         />
       )}

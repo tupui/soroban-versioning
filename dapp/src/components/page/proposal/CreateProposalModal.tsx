@@ -101,7 +101,7 @@ const CreateProposalModal = () => {
 
     const showModalButton = document.querySelector("#create-proposal-button");
     if (showModalButton) {
-      setStep(4);
+      setStep(1);
       showModalButton.addEventListener("click", handleSubmmitProposal);
       return () =>
         showModalButton.removeEventListener("click", handleSubmmitProposal);
