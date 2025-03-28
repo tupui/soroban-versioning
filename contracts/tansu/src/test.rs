@@ -3,7 +3,7 @@
 use super::{domain_contract, Tansu, TansuClient};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
-use crate::types::{Dao, ProposalStatus, PublicVote, Vote};
+use crate::types::{Dao, ProposalStatus, PublicVote, Vote, VoteChoice};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
 use soroban_sdk::{
@@ -201,10 +201,15 @@ fn test() {
     assert_eq!(proposal.title, title);
     assert_eq!(proposal.ipfs, ipfs);
     assert_eq!(proposal.vote_data.voting_ends_at, voting_ends_at);
-    assert_eq!(proposal.vote_data.voters, vec![&env, grogu.clone()]);
     assert_eq!(
         proposal.vote_data.votes,
-        vec![&env, Vote::PublicVote(PublicVote::Abstain(grogu.clone()))]
+        vec![
+            &env,
+            Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                vote_choice: VoteChoice::Abstain
+            })
+        ]
     );
 
     let dao = contract.get_dao(&id, &0);
@@ -225,7 +230,10 @@ fn test() {
             &grogu,
             &id,
             &proposal_id,
-            &Vote::PublicVote(PublicVote::Approve(grogu.clone())),
+            &Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
         )
         .unwrap_err()
         .unwrap();
@@ -235,7 +243,10 @@ fn test() {
         &mando,
         &id,
         &proposal_id,
-        &Vote::PublicVote(PublicVote::Approve(mando.clone())),
+        &Vote::PublicVote(PublicVote {
+            address: mando.clone(),
+            vote_choice: VoteChoice::Approve,
+        }),
     );
 
     // cannot vote twice
@@ -244,7 +255,10 @@ fn test() {
             &mando,
             &id,
             &proposal_id,
-            &Vote::PublicVote(PublicVote::Approve(mando.clone())),
+            &Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
         )
         .unwrap_err()
         .unwrap();
@@ -257,8 +271,14 @@ fn test() {
         proposal.vote_data.votes,
         vec![
             &env,
-            Vote::PublicVote(PublicVote::Abstain(grogu.clone())),
-            Vote::PublicVote(PublicVote::Approve(mando.clone())),
+            Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                vote_choice: VoteChoice::Abstain,
+            }),
+            Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
         ]
     );
 
@@ -271,13 +291,19 @@ fn test() {
         &mando,
         &id,
         &proposal_id_2,
-        &Vote::PublicVote(PublicVote::Approve(mando.clone())),
+        &Vote::PublicVote(PublicVote {
+            address: mando.clone(),
+            vote_choice: VoteChoice::Approve,
+        }),
     );
     contract.vote(
         &kuiil,
         &id,
         &proposal_id_2,
-        &Vote::PublicVote(PublicVote::Approve(kuiil.clone())),
+        &Vote::PublicVote(PublicVote {
+            address: kuiil.clone(),
+            vote_choice: VoteChoice::Approve,
+        }),
     );
 
     // too early to execute
@@ -297,9 +323,18 @@ fn test() {
         proposal_2.vote_data.votes,
         vec![
             &env,
-            Vote::PublicVote(PublicVote::Abstain(grogu.clone())),
-            Vote::PublicVote(PublicVote::Approve(mando.clone())),
-            Vote::PublicVote(PublicVote::Approve(kuiil.clone())),
+            Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                vote_choice: VoteChoice::Abstain,
+            }),
+            Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
+            Vote::PublicVote(PublicVote {
+                address: kuiil.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
         ]
     );
 

@@ -96,14 +96,15 @@ impl DaoTrait for Tansu {
             // proposer is automatically in the abstain group
             let votes = vec![
                 &env,
-                types::Vote::PublicVote(types::PublicVote::Abstain(proposer.clone())),
+                types::Vote::PublicVote(types::PublicVote {
+                    address: proposer.clone(),
+                    vote_choice: types::VoteChoice::Abstain,
+                }),
             ];
-            let voters = vec![&env, proposer];
             let vote_data = types::VoteData {
                 voting_ends_at,
                 public: true,
                 votes,
-                voters,
             };
             let proposal = types::Proposal {
                 id: proposal_id,
@@ -159,38 +160,49 @@ impl DaoTrait for Tansu {
             _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
         };
 
-        // TODO change to not have voters and iterate over votes instead
-        // also important to check voter address == vote address
-
         // only allow to vote once per voter
-        if proposal.vote_data.voters.contains(&voter) {
+        let has_already_voted = proposal.vote_data.votes.iter().any(|vote_| match vote_ {
+            types::Vote::PublicVote(public_vote) => public_vote.address == voter,
+            types::Vote::AnonymousVote(anonymous_vote) => anonymous_vote.address == voter,
+        });
+
+        if has_already_voted {
             panic_with_error!(&env, &errors::ContractErrors::AlreadyVoted);
-        } else {
-            match vote {
-                types::Vote::PublicVote(_) => {
-                    if !proposal.vote_data.public {
-                        panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
-                    }
-                }
-                types::Vote::AnonymousVote(_) => {
-                    if proposal.vote_data.public {
-                        panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
-                    }
-                }
-            }
-
-            // Record the vote
-            proposal.vote_data.votes.push_back(vote);
-            proposal.vote_data.voters.push_back(voter);
-
-            dao_page.proposals.set(sub_id, proposal);
-
-            env.storage()
-                .persistent()
-                .set(&types::ProjectKey::Dao(project_key_, page), &dao_page)
         }
+
+        // proposals are either public or anonymous so only a single type of vote
+        // can be registered for a given proposal
+        let is_public_vote = matches!(vote, types::Vote::PublicVote(_));
+        if is_public_vote != proposal.vote_data.public {
+            panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
+        }
+
+        // can only vote for yourself so address must match
+        let vote_address = match &vote {
+            types::Vote::PublicVote(vote_choice) => &vote_choice.address,
+            types::Vote::AnonymousVote(vote_choice) => &vote_choice.address,
+        };
+        if vote_address != &voter {
+            panic_with_error!(&env, &errors::ContractErrors::WrongVoter);
+        }
+
+        // Record the vote
+        proposal.vote_data.votes.push_back(vote);
+
+        dao_page.proposals.set(sub_id, proposal);
+
+        env.storage()
+            .persistent()
+            .set(&types::ProjectKey::Dao(project_key_, page), &dao_page)
     }
 
+    /// Execute a vote after the voting period ends.
+    /// Double votes are not allowed.
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `maintainer` - Address of the maintainer
+    /// * `project_key` - Unique identifier for the project
+    /// * `proposal_id` - ID of the proposal
     fn execute(
         env: Env,
         maintainer: Address,
@@ -216,15 +228,23 @@ impl DaoTrait for Tansu {
         } else if curr_timestamp < proposal.vote_data.voting_ends_at {
             panic_with_error!(&env, &errors::ContractErrors::ProposalVotingTime);
         } else {
+            // TODO anonymous branching
+            // match proposal.vote_data.public {
+            //     true => {}
+            //     false => {}
+            // }
+
             // count votes
             let mut voted_approve = 0;
             let mut voted_reject = 0;
             let mut voted_abstain = 0;
             for vote_ in &proposal.vote_data.votes {
                 match &vote_ {
-                    types::Vote::PublicVote(types::PublicVote::Approve(_)) => voted_approve += 1,
-                    types::Vote::PublicVote(types::PublicVote::Reject(_)) => voted_reject += 1,
-                    types::Vote::PublicVote(types::PublicVote::Abstain(_)) => voted_abstain += 1,
+                    types::Vote::PublicVote(vote) => match vote.vote_choice {
+                        types::VoteChoice::Approve => voted_approve += 1,
+                        types::VoteChoice::Reject => voted_reject += 1,
+                        types::VoteChoice::Abstain => voted_abstain += 1,
+                    },
                     _ => {}
                 }
             }

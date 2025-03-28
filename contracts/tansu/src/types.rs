@@ -24,15 +24,23 @@ pub enum Vote {
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
-pub enum PublicVote {
-    Approve(Address),
-    Reject(Address),
-    Abstain(Address),
+pub enum VoteChoice {
+    Approve,
+    Reject,
+    Abstain,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct PublicVote {
+    pub address: Address,
+    pub vote_choice: VoteChoice,
 }
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnonymousVote {
+    pub address: Address,
     pub vote_seed: Bytes,
     pub encrypted_seed: String,
     pub commitment: Bytes,
@@ -44,7 +52,6 @@ pub struct VoteData {
     pub voting_ends_at: u64,
     pub public: bool, // Public or anonymous vote
     pub votes: Vec<Vote>,
-    pub voters: Vec<Address>,
 }
 
 #[contracttype]

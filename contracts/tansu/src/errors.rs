@@ -21,4 +21,5 @@ pub enum ContractErrors {
     AlreadyExecuted = 11,
     // Private voting
     WrongVoteType = 12,
+    WrongVoter = 13,
 }
