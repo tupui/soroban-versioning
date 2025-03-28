@@ -305,7 +305,6 @@ fn test() {
             &proposal_id,
             &Vote::AnonymousVote(AnonymousVote {
                 address: kuiil.clone(),
-                vote_seed: Bytes::from_array(&env, &[1, 2, 3]),
                 encrypted_seed: String::from_str(&env, "abcd"),
                 commitment: Bytes::from_array(&env, &[1, 2, 3]),
             }),
@@ -378,7 +377,7 @@ fn test() {
         .try_execute(&mando, &id, &proposal_id_2)
         .unwrap_err()
         .unwrap();
-    assert_eq!(error, ContractErrors::AlreadyExecuted.into());
+    assert_eq!(error, ContractErrors::ProposalActive.into());
 }
 
 #[test]

@@ -78,6 +78,8 @@ pub trait DaoTrait {
         proposal_id: u32,
     ) -> types::ProposalStatus;
 
+    fn proof(env: Env, project_key: Bytes, proposal_id: u32, seeds: Vec<u32>) -> bool;
+
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 
     fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal;

@@ -1,6 +1,9 @@
 use crate::{errors, types, DaoTrait, Tansu, TansuArgs, TansuClient};
-use soroban_sdk::xdr::ToXdr;
-use soroban_sdk::{contractimpl, panic_with_error, vec, Address, Bytes, Env, String, Vec};
+use soroban_sdk::crypto::bls12_381::{Fr, G1Affine};
+use soroban_sdk::xdr::{FromXdr, ToXdr};
+use soroban_sdk::{
+    bytesn, contractimpl, panic_with_error, vec, Address, Bytes, Env, String, Vec, U256,
+};
 
 const MAX_TITLE_LENGTH: u32 = 256;
 const MAX_PROPOSALS_PER_PAGE: u32 = 9;
@@ -10,6 +13,11 @@ const MAX_VOTING_PERIOD: u64 = 30 * 24 * 3600; // 30 days in seconds
 
 #[contractimpl]
 impl DaoTrait for Tansu {
+    /// Anonymous voting primitives.
+    ///
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `public_key` - Asymmetric public key to be used to encode seeds
     fn anonymous_voting_setup(env: Env, public_key: String) {
         let admin: Address = env
             .storage()
@@ -224,7 +232,7 @@ impl DaoTrait for Tansu {
 
         // only allow to execute once
         if proposal.status != types::ProposalStatus::Active {
-            panic_with_error!(&env, &errors::ContractErrors::AlreadyExecuted);
+            panic_with_error!(&env, &errors::ContractErrors::ProposalActive);
         } else if curr_timestamp < proposal.vote_data.voting_ends_at {
             panic_with_error!(&env, &errors::ContractErrors::ProposalVotingTime);
         } else {
@@ -266,6 +274,62 @@ impl DaoTrait for Tansu {
 
             proposal.status
         }
+    }
+
+    fn proof(env: Env, project_key: Bytes, proposal_id: u32, seeds: Vec<u32>) -> bool {
+        let project_key_ = project_key.clone();
+        let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
+        let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
+        let dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key_.clone(), page);
+        let proposal = match dao_page.proposals.try_get(sub_id) {
+            Ok(Some(proposal)) => proposal,
+            _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
+        };
+
+        // only allow to proof if proposal is not active
+        if proposal.status != types::ProposalStatus::Active {
+            panic_with_error!(&env, &errors::ContractErrors::ProposalActive);
+        }
+
+        // we can only proof anonymous votes
+        if proposal.vote_data.public {
+            panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
+        }
+
+        let bls12_381 = env.crypto().bls12_381();
+
+        let vote_config: types::AnonymousVoteConfig = env
+            .storage()
+            .instance()
+            .get(&types::DataKey::AnonymousVoteConfig)
+            .unwrap();
+
+        let seed_generator_point =
+            G1Affine::from_xdr(&env, &vote_config.seed_generator_point).unwrap();
+
+        // use decrypted seeds to remove them from commitments to have vote commitments
+        //
+        let mut tally_commitment = G1Affine::from_bytes(bytesn!(&env, 0x400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000));
+        let mut tally_commitment_votes = G1Affine::from_bytes(bytesn!(&env, 0x400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000));
+        for it in proposal.vote_data.votes.iter().zip(seeds.iter()) {
+            let (vote_, seed) = it;
+            if let types::Vote::AnonymousVote(anonymous_vote) = &vote_ {
+                let commitment = G1Affine::from_xdr(&env, &anonymous_vote.commitment).unwrap();
+
+                tally_commitment = bls12_381.g1_add(&tally_commitment, &commitment);
+
+                let recovered_vote =
+                    recover_vote_choice_commitment(&env, &commitment, &seed, &seed_generator_point);
+                tally_commitment_votes = bls12_381.g1_add(&tally_commitment_votes, &recovered_vote)
+            };
+        }
+
+        let tally_seed: U256 = U256::from_u32(&env, seeds.iter().sum());
+        let tally_seed_point = bls12_381.g1_mul(&seed_generator_point, &tally_seed.into());
+        let commitment_check = bls12_381.g1_add(&tally_commitment_votes, &tally_seed_point);
+
+        // compare commitments
+        commitment_check == tally_commitment
     }
 
     /// Get one page of proposal of the DAO.
@@ -317,4 +381,55 @@ impl DaoTrait for Tansu {
             _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
         }
     }
+}
+
+/// Voting choice commitment.
+///
+/// Recover the commitment by removing the randomization introduced by the
+/// seed.
+///
+/// Vote commitment is:
+///
+/// C = g^v * h^r (in additive notation: g*v + h*r),
+///
+/// where g, h point generator and v is the vote choice, r is the seed.
+///
+/// # Arguments
+/// * `env` - The environment object
+/// * `commitment` - Vote commitment
+/// * `seed` - decoded seed value
+/// * `seed_generator` - G1 generator point
+/// # Returns
+/// * `G1Affine` - The commitment of the choice
+pub fn recover_vote_choice_commitment(
+    env: &Env,
+    commitment: &G1Affine,
+    seed: &u32,
+    seed_generator: &G1Affine,
+) -> G1Affine {
+    let bls12_381 = env.crypto().bls12_381();
+
+    let seed_fr = Fr::from_u256(U256::from_u32(env, *seed).clone());
+    let seed_point = bls12_381.g1_mul(seed_generator, &seed_fr);
+    let neg_seed = neg_value(env, seed_point);
+
+    // Remove randomization
+    bls12_381.g1_add(commitment, &neg_seed)
+}
+
+/// Negate a point on the G1 curve.
+/// # Arguments
+/// * `env` - The environment object
+/// * `value` - point on G1 to negate
+/// # Returns
+/// * `types::G1Affine` - The proposal object
+fn neg_value(env: &Env, value: G1Affine) -> G1Affine {
+    // Create -1 in Fr field using fr_sub(0, 1)
+    let bls12_381 = env.crypto().bls12_381();
+    let zero = U256::from_u32(env, 0);
+    let one = U256::from_u32(env, 1);
+    let neg_one = bls12_381.fr_sub(&zero.into(), &one.into());
+
+    // negate the value
+    bls12_381.g1_mul(&value, &neg_one)
 }

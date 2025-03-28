@@ -41,7 +41,6 @@ pub struct PublicVote {
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnonymousVote {
     pub address: Address,
-    pub vote_seed: Bytes,
     pub encrypted_seed: String,
     pub commitment: Bytes,
 }
