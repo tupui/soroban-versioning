@@ -3,7 +3,7 @@
 use super::{domain_contract, Tansu, TansuClient};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
-use crate::types::{Dao, ProposalStatus, PublicVote, Vote, VoteChoice};
+use crate::types::{AnonymousVote, Dao, ProposalStatus, PublicVote, Vote, VoteChoice};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
 use soroban_sdk::{
@@ -296,6 +296,39 @@ fn test() {
             vote_choice: VoteChoice::Approve,
         }),
     );
+
+    // cannot vote with the wrong type for a proposal
+    let error = contract
+        .try_vote(
+            &kuiil,
+            &id,
+            &proposal_id,
+            &Vote::AnonymousVote(AnonymousVote {
+                address: kuiil.clone(),
+                vote_seed: Bytes::from_array(&env, &[1, 2, 3]),
+                encrypted_seed: String::from_str(&env, "abcd"),
+                commitment: Bytes::from_array(&env, &[1, 2, 3]),
+            }),
+        )
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::WrongVoteType.into());
+
+    // cannot vote for someone else
+    let error = contract
+        .try_vote(
+            &kuiil,
+            &id,
+            &proposal_id,
+            &Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
+        )
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::WrongVoter.into());
+
     contract.vote(
         &kuiil,
         &id,
@@ -339,6 +372,13 @@ fn test() {
     );
 
     assert_eq!(proposal_2.status, ProposalStatus::Approved);
+
+    // already executed
+    let error = contract
+        .try_execute(&mando, &id, &proposal_id_2)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::AlreadyExecuted.into());
 }
 
 #[test]
