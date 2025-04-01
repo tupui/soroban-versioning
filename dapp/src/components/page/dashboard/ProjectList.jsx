@@ -158,7 +158,7 @@ const ProjectList = () => {
           </button>
         </div>
         <div className="w-full flex justify-center items-center gap-[18px]">
-          <p className="text-[26px] leading-[42px] font-firaMono text-pink">
+          <p className="text-[26px] leading-[42px] font-firamono text-pink">
             Featured Projects
           </p>
         </div>

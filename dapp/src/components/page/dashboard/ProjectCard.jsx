@@ -87,10 +87,10 @@ const ProjectCard = ({ config }) => {
       </div>
       <div className="flex-grow bg-white p-6 flex flex-col gap-[30px]">
         <div className="flex flex-col gap-3">
-          <h3 className="project-name text-2xl leading-6 font-medium font-firaMono text-pink">
+          <h3 className="project-name text-2xl leading-6 font-medium font-firamono text-pink">
             {config.projectName || "No project name"}
           </h3>
-          <p className="description text-base font-victorMono text-zinc-800 line-clamp-2">
+          <p className="description text-base font-victormono text-zinc-800 line-clamp-2">
             {config.description || "No description"}
           </p>
         </div>
@@ -144,11 +144,11 @@ const ProjectCard = ({ config }) => {
             )}
           </div>
           {config.organizationName ? (
-            <p className="organization-name text-base leading-4 font-firaMono text-pink font-light">
+            <p className="organization-name text-base leading-4 font-firamono text-pink font-light">
               by <span className="font-medium">{config.organizationName}</span>
             </p>
           ) : (
-            <p className="organization-name text-base leading-4 font-firaMono text-pink">
+            <p className="organization-name text-base leading-4 font-firamono text-pink">
               No organization name
             </p>
           )}

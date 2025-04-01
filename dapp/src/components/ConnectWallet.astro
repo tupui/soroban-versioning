@@ -4,14 +4,14 @@
     class="absolute hidden top-6 -left-16 xl:flex flex-col gap-2 transform -rotate-[13deg]"
   >
     <img src="/arrow.svg" alt="" class="w-[56px] h-[69px]" />
-    <p class="text-victorMono text-lg italic text-zinc-700 text-nowrap">
+    <p class="text-victormono text-lg italic text-zinc-700 text-nowrap">
       Get Started
     </p>
   </div>
   <button
     data-connect
     aria-controls="connect-wrap"
-    class="w-[162px] md:w-[195px] h-12 md:h-14 flex justify-center items-center gap-3 bg-white text-white shadow-button"
+    class="w-[162px] md:w-[195px] h-12 md:h-14 flex justify-center items-center gap-3 bg-white shadow-button"
   >
     <p class="text-base md:text-xl leading-4 md:leading-5 text-pink">Connect</p>
     <img src="/icons/connect.png" alt="" class="w-4 md:w-5 h-4 md:h-5" />
@@ -40,6 +40,7 @@
       button.title = publicKey;
       button.classList.toggle("bg-white", false);
       button.classList.toggle("bg-primary", true);
+      button.classList.toggle("text-white", true);
     }
 
     const publicKey = loadedPublicKey();
