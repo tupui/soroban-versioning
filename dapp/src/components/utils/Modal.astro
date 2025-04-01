@@ -8,11 +8,11 @@ const { id } = Astro.props;
 
 <dialog
   id={id}
-  class="modal relative !overflow-visible"
+  class="modal relative !overflow-visible fixed inset-0 m-auto"
   onclick="this.closest('dialog').close()"
 >
   <button
-    class="absolute right-0 top-0 p-[12px] bg-[#FF3B30] lg:translate-x-1/2 -translate-y-1/2"
+    class="absolute cursor-pointer right-0 top-0 p-[12px] bg-red lg:translate-x-1/2 -translate-y-1/2"
     onclick="this.closest('dialog').close()"
   >
     <img src="/icons/cancel-white.svg" width={18} height={18} />
