@@ -1,5 +1,5 @@
 ---
-import PrimaryButton from "../../utils/PrimaryButton.astro";
+import Button from "components/utils/Button";
 ---
 
 <div class="z-[1] flex justify-between items-center">
@@ -7,13 +7,9 @@ import PrimaryButton from "../../utils/PrimaryButton.astro";
     <img src="/icons/back.svg" />
     <p class="leading-5 text-xl text-primary">Back to Project Page</p>
   </a>
-  <PrimaryButton
-    id="create-proposal-button"
-    class="hidden"
-    icon="/icons/send.svg"
-  >
+  <Button id="create-proposal-button" className="hidden" icon="/icons/send.svg">
     Submit Proposal
-  </PrimaryButton>
+  </Button>
 </div>
 
 <script>

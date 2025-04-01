@@ -3,6 +3,7 @@ import { useRef, useState, type FC, type ReactNode } from "react";
 import Modal from "components/utils/Modal";
 import Tooltip from "components/utils/Tooltip";
 import { toast } from "utils/utils";
+import Button from "components/utils/Button";
 
 interface Props {
   children: ReactNode;
@@ -162,18 +163,19 @@ const DonateModal: FC<Props> = ({ children }) => {
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-[18px]">
-                <button
-                  className="w-[220px] h-[56px] bg-[#F5F1F9] text-primary"
+                <Button
+                  type="secondary"
+                  className="w-[220px] h-[56px]"
                   onClick={onClose}
                 >
                   Cancel
-                </button>
-                <button
-                  className="w-[220px] h-[56px] bg-primary text-white"
+                </Button>
+                <Button
+                  className="w-[220px] h-[56px]"
                   onClick={handleContribute}
                 >
                   Contribute
-                </button>
+                </Button>
               </div>
             </div>
           </div>
