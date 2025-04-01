@@ -4,6 +4,7 @@ import DonateModal from "./DonateModal";
 import LastHashModal from "./LastHashModal.astro";
 import LatestCommit from "./LatestCommit";
 import ReadMoreModal from "./ReadMoreModal.astro";
+import Button from "components/utils/Button";
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
@@ -47,19 +48,30 @@ import ReadMoreModal from "./ReadMoreModal.astro";
           <p class="leading-5 text-xl text-white">Governance</p>
         </button>
         <DonateModal client:only>
-          <button class="w-full p-[18px_30px] flex gap-3 bg-white">
-            <img src="/icons/heart.svg" />
-            <p class="leading-5 text-xl text-primary">Support</p>
-          </button>
+          <Button
+            icon="/icons/heart.svg"
+            size="xl"
+            type="secondary"
+          >
+            Support
+          </Button>
         </DonateModal>
-        <button class="p-[18px_30px] flex gap-3 bg-white" data-read-more>
-          <img src="/icons/book.svg" />
-          <p class="leading-5 text-xl text-primary">Read More</p>
-        </button>
-        <button class="p-[18px_30px] flex gap-3 bg-white" data-last-hash>
-          <img src="/icons/eye.svg" />
-          <p class="leading-5 text-xl text-primary">Last Hash</p>
-        </button>
+        <Button
+          id="read-more-button"
+          icon="/icons/book.svg"
+          size="xl"
+          type="secondary"
+        >
+          Read More
+        </Button>
+        <Button
+          id="last-hash-button"
+          icon="/icons/eye.svg"
+          size="xl"
+          type="secondary"
+        >
+          Last Hash
+        </Button>
       </div>
     </div>
     <div
@@ -104,7 +116,7 @@ import ReadMoreModal from "./ReadMoreModal.astro";
       });
     }
 
-    const readMoreButton = document.querySelector("[data-read-more]");
+    const readMoreButton = document.getElementById("read-more-button");
     const readMoreModal = document.getElementById(
       "read-more-modal",
     ) as HTMLDialogElement;
@@ -115,7 +127,7 @@ import ReadMoreModal from "./ReadMoreModal.astro";
       });
     }
 
-    const lastHashButton = document.querySelector("[data-last-hash]");
+    const lastHashButton = document.getElementById("last-hash-button");
     const lastHashModal = document.getElementById(
       "last-hash-modal",
     ) as HTMLDialogElement;

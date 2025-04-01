@@ -3,6 +3,7 @@ import type { AnyObject, Size } from "types/types";
 import Spinner from "./Spinner";
 
 interface Props {
+  id?: string;
   type?: "primary" | "secondary" | "tertiary";
   size?: Size;
   className?: string;
@@ -21,6 +22,7 @@ const sizeMap: AnyObject = {
 };
 
 const Button: FC<Props> = ({
+  id,
   type = "primary",
   size = "md",
   className,
@@ -31,7 +33,8 @@ const Button: FC<Props> = ({
 }) => {
   return (
     <button
-      className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" : "border border-primary text-primary"} flex justify-center items-center ${sizeMap[size]}`}
+      id={id}
+      className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" : "border border-primary text-primary"} cursor-pointer flex justify-center items-center ${sizeMap[size]}`}
       onClick={onClick}
     >
       {isLoading && <Spinner />}
