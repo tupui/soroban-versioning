@@ -10,7 +10,7 @@
     "@stellar/stellar-sdk": "^13.1.0",
     "@stellar/stellar-xdr-json": "^22.0.0-rc.1.1",
     "@web3-storage/w3up-client": "^17.2.0",
-    "astro": "5.5.4",
+    "astro": "5.5.5",
     "astro-seo": "^0.8.4",
     "crypto-js": "^4.2.0",
     "github-markdown-css": "^5.8.1",
