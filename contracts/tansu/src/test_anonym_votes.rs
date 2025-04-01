@@ -136,7 +136,6 @@ fn test_vote() {
     assert_eq!(tally.clone(), ref_tally);
 
     // we retrieve the commitments
-    // let tally_commitment_votes = bls12_381.g1_mul(&vote_generator_point, &Fr::from_u256(tally));
     let mut tally_commitment_votes = G1Affine::from_bytes(bytesn!(&env, 0x400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000));
     tally_commitment_votes = add_commitment(
         &env,
@@ -168,4 +167,10 @@ fn test_vote() {
     tally_commitment = bls12_381.g1_add(&tally_commitment, &vote_commitment_c);
 
     assert_eq!(commitment_check, tally_commitment);
+
+    // second check: we know the tally so we can reconstruct the commitment without seed
+    // we could add that to the tally_seed_point as we do above, this way we do
+    // not leak the individual seed, just the tally of the seed
+    let tally_commitment_votes_ = bls12_381.g1_mul(&vote_generator_point, &Fr::from_u256(tally));
+    assert_eq!(tally_commitment_votes, tally_commitment_votes_);
 }
