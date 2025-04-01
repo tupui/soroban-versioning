@@ -43,10 +43,12 @@ import Button from "components/utils/Button";
         </div>
       </div>
       <div class="flex max-lg:flex-col gap-[18px]">
-        <button id="goto-dao" class="p-[18px_30px] flex gap-3 bg-primary">
-          <img src="/icons/gear-white.svg" />
+        <Button 
+          id="goto-dao"
+          icon="/icons/gear-white.svg"
+        >
           <p class="leading-5 text-xl text-white">Governance</p>
-        </button>
+        </Button>
         <DonateModal client:only>
           <Button icon="/icons/heart.svg" size="xl" type="secondary">
             Support
