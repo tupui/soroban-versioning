@@ -10,6 +10,7 @@ import { extractConfigData } from "../../../utils/utils";
 import CreateProjectModal from "./CreateProjectModal.tsx";
 import ProjectCard from "./ProjectCard.jsx";
 import ProjectInfoModal from "./ProjectInfoModal.jsx";
+import Button from "components/utils/Button.tsx";
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);
@@ -138,24 +139,27 @@ const ProjectList = () => {
     <div className="project-list-container relative mx-auto w-full max-w-[984px]">
       <div className="flex flex-col items-start lg:items-center gap-[60px]">
         <div className="flex max-lg:flex-col justify-center items-start lg:items-center gap-6">
-          <button
-            className="px-[30px] py-[18px] flex gap-3 bg-[#F5F1F9] cursor-pointer"
+          <Button
+            type="secondary"
+            icon="/icons/search.svg"
+            className="px-[30px] py-[18px]"
             onClick={() => openSearchBox()}
           >
-            <img src="/icons/search.svg" width={20} height={20} />
             <p className="text-xl leading-5 font-firacode text-pink">
               Explore Projects
             </p>
-          </button>
-          <button
-            className="px-[30px] py-[18px] flex gap-3 bg-white cursor-pointer"
+          </Button>
+          <Button
+            type="quaternary"
+            order="secondary"
+            icon="/icons/plus-fill.svg"
+            className="px-[30px] py-[18px]"
             onClick={() => setShowCreateProjectModal(true)}
           >
-            <p className="text-xl leading-5 font-firacode text-pink">
+            <p className="text-xl leading-5">
               Add Project
             </p>
-            <img src="/icons/plus-fill.svg" width={20} height={20} />
-          </button>
+          </Button>
         </div>
         <div className="w-full flex justify-center items-center gap-[18px]">
           <p className="text-[26px] leading-[42px] font-firamono text-pink">
@@ -200,20 +204,15 @@ const ProjectList = () => {
                 />
               </div>
             </div>
-            <button
-              className="bg-pink shrink-0 cursor-pointer flex justify-center items-center gap-3 px-[30px] py-[18px]"
+            <Button
+              icon="/icons/search-white.svg"
+              className="px-[30px] py-[18px]"
               onClick={handleSearch}
             >
-              <img
-                src="/icons/search-white.svg"
-                width={20}
-                height={20}
-                className="icon-search"
-              />
-              <p className="text-xl leading-5 font-firacode text-white">
+              <p className="text-xl leading-5">
                 Search
               </p>
-            </button>
+            </Button>
           </div>
           <div
             id="search-result"

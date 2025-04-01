@@ -4,7 +4,8 @@ import Spinner from "./Spinner";
 
 interface Props {
   id?: string;
-  type?: "primary" | "secondary" | "tertiary";
+  type?: "primary" | "secondary" | "tertiary" | "quaternary";
+  order?: "primary" | "secondary";
   size?: Size;
   className?: string;
   children?: ReactNode;
@@ -24,6 +25,7 @@ const sizeMap: AnyObject = {
 const Button: FC<Props> = ({
   id,
   type = "primary",
+  order = "primary",
   size = "md",
   className,
   children,
@@ -34,12 +36,22 @@ const Button: FC<Props> = ({
   return (
     <button
       id={id}
-      className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" : "border border-primary text-primary"} cursor-pointer flex justify-center items-center ${sizeMap[size]}`}
+      className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" :  type == "tertiary" ? "border border-primary text-primary" : "bg-white text-primary"} cursor-pointer flex justify-center items-center ${sizeMap[size]}`}
       onClick={onClick}
     >
       {isLoading && <Spinner />}
-      {icon && <img src={icon} />}
-      {children}
+      {order === "primary" && (
+        <>
+          {icon && <img src={icon} />}
+          {children}
+        </>
+      )}
+      {order === "secondary" && (
+        <>
+          {children}
+          {icon && <img src={icon} />}
+        </>
+      )}
     </button>
   );
 };

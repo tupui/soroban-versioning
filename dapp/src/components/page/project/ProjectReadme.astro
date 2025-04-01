@@ -1,19 +1,20 @@
 ---
 import ReadmeViewer from "./ReadmeViewer.tsx";
+import Button from "components/utils/Button";
 ---
 
 <div class="relative flex flex-col items-center">
   <div class="flex flex-col gap-[15px] lg:gap-[30px]">
     <div class="flex max-lg:flex-col gap-[9px] lg:gap-[18px]">
-      <button
+      <Button
         id="copy-repo-link"
-        class="p-[9px_30px] lg:p-[18px_30px] bg-[#F5F1F9] flex gap-3"
+        type="secondary"
+        icon="/icons/clipboard.svg"
       >
-        <img src="/icons/clipboard.svg" />
         <span id="copy-repo-text" class="leading-5 text-xl text-primary">
           Clone Repository
         </span>
-      </button>
+      </Button>
       <a
         id="move-to-releases"
         class="p-[9px_30px] lg:p-[18px_30px] bg-[#F5F1F9] flex gap-3"
