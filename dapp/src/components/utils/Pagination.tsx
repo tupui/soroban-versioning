@@ -1,69 +1,65 @@
 import React from "react";
 
 interface PaginationProps {
+  totalPage: number;
   currentPage: number;
   onPageChange: (page: number) => void;
 }
 
 const Pagination: React.FC<PaginationProps> = ({
+  totalPage,
   currentPage,
   onPageChange,
 }) => {
   return (
-    <div className="flex justify-center items-center mt-4 space-x-2">
+    <div className="p-[6px_18px] flex items-center gap-[24px] bg-white">
       <button
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage === 1}
-        className="px-3 py-1 border border-zinc-300 rounded disabled:opacity-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 flex items-center"
+        className="disabled:opacity-50"
       >
         <svg
-          className="w-4 h-4 mr-1"
+          width="18"
+          height="18"
+          viewBox="0 0 18 18"
           fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 19l-7-7 7-7"
+            d="M17.1 7.98789H4.77787L10.4377 2.32802L8.99999 0.900391L0.899994 9.00039L8.99999 17.1004L10.4276 15.6728L4.77787 10.0129H17.1V7.98789Z"
+            fill="#311255"
           />
         </svg>
-        Previous
       </button>
-      <button
-        onClick={() => onPageChange(1)}
-        className={`px-3 py-1 border rounded hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 ${
-          currentPage === 1 ? "bg-lime border-lime" : "border-zinc-300"
-        }`}
-      >
-        1
-      </button>
-      {currentPage > 2 && <span>...</span>}
-      {currentPage !== 1 && (
-        <button className="px-3 py-1 border border-lime bg-lime rounded">
-          {currentPage}
-        </button>
-      )}
+      <div className="flex gap-3">
+        {Array.from({ length: totalPage }, (_, index) => {
+          const page = Math.max(currentPage - 7, 0) + index + 1;
+          return (
+            <button
+              key={index}
+              className={`p-[6px_10px] w-8 h-8 ${page == currentPage && "border border-primary"}`}
+              onClick={() => onPageChange(page)}
+            >
+              <p className="leading-5 text-xl text-primary">{page}</p>
+            </button>
+          );
+        })}
+      </div>
       <button
         onClick={() => onPageChange(currentPage + 1)}
-        disabled={false}
-        className="px-3 py-1 border border-zinc-300 rounded disabled:opacity-50 hover:bg-zinc-100 active:bg-zinc-200 transition-colors duration-150 flex items-center"
+        disabled={currentPage == totalPage}
+        className="disabled:opacity-50"
       >
-        Next
         <svg
-          className="w-4 h-4 ml-1"
+          width="18"
+          height="18"
+          viewBox="0 0 18 18"
           fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5l7 7-7 7"
+            d="M0.900005 10.0121L13.2221 10.0121L7.56226 15.672L9.00001 17.0996L17.1 8.99961L9.00001 0.899609L7.57238 2.32723L13.2221 7.98711L0.900005 7.98711V10.0121Z"
+            fill="#311255"
           />
         </svg>
       </button>

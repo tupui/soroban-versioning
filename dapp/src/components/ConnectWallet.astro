@@ -1,20 +1,32 @@
-<div id="connect-wrap" aria-live="polite">
+<div id="connect-wrap" aria-live="polite" class="relative">
+  <div
+    id="get-started"
+    class="absolute hidden top-6 -left-16 xl:flex flex-col gap-2 transform -rotate-[13deg]"
+  >
+    <img src="/arrow.svg" alt="" class="w-[56px] h-[69px]" />
+    <p class="text-victormono text-lg italic text-zinc-700 text-nowrap">
+      Get Started
+    </p>
+  </div>
   <button
     data-connect
     aria-controls="connect-wrap"
-    class="text-center text-sm sm:text-base max-w-28 sm:max-w-36 md:max-w-44"
-    >Connect</button
+    class="w-[162px] md:w-[195px] h-12 md:h-14 flex justify-center items-center gap-3 bg-white shadow-button"
   >
+    <p class="text-base md:text-xl leading-4 md:leading-5 text-pink">Connect</p>
+    <img src="/icons/connect.png" alt="" class="w-4 md:w-5 h-4 md:h-5" />
+  </button>
 </div>
 
 <script>
-  import { truncateMiddle } from "../utils/utils";
-  import { kit } from "./stellar-wallets-kit";
+  import { connectedPublicKey } from "utils/store";
   import {
     initializeConnection,
     loadedPublicKey,
     setPublicKey,
   } from "../service/walletService";
+  import { truncateMiddle } from "../utils/utils";
+  import { kit } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
@@ -24,13 +36,16 @@
 
     async function setLoggedIn(publicKey: string) {
       const truncatedKey = truncateMiddle(publicKey, 13);
-      button.textContent = truncatedKey;
+      button.innerHTML = truncatedKey;
       button.title = publicKey;
+      button.classList.toggle("bg-white", false);
+      button.classList.toggle("bg-primary", true);
+      button.classList.toggle("text-white", true);
     }
 
-    const connectedPublicKey = loadedPublicKey();
-    if (connectedPublicKey) {
-      setLoggedIn(connectedPublicKey);
+    const publicKey = loadedPublicKey();
+    if (publicKey) {
+      setLoggedIn(publicKey);
     }
 
     if (button) {
@@ -56,5 +71,12 @@
         }
       });
     }
+
+    const getStarted = document.querySelector("#get-started");
+    connectedPublicKey.subscribe((publicKey) => {
+      if (publicKey) {
+        getStarted?.classList.remove("xl:flex");
+      }
+    });
   });
 </script>
