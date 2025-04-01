@@ -276,7 +276,61 @@ impl DaoTrait for Tansu {
         }
     }
 
-    fn proof(env: Env, project_key: Bytes, proposal_id: u32, seeds: Vec<u32>) -> bool {
+    fn proof(env: Env, project_key: Bytes, proposal_id: u32, tally: u32, seed: u32) -> bool {
+        let project_key_ = project_key.clone();
+        let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
+        let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
+        let dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key_.clone(), page);
+        let proposal = match dao_page.proposals.try_get(sub_id) {
+            Ok(Some(proposal)) => proposal,
+            _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
+        };
+
+        // only allow to proof if proposal is not active
+        if proposal.status != types::ProposalStatus::Active {
+            panic_with_error!(&env, &errors::ContractErrors::ProposalActive);
+        }
+
+        // we can only proof anonymous votes
+        if proposal.vote_data.public {
+            panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
+        }
+
+        let bls12_381 = env.crypto().bls12_381();
+
+        let vote_config: types::AnonymousVoteConfig = env
+            .storage()
+            .instance()
+            .get(&types::DataKey::AnonymousVoteConfig)
+            .unwrap();
+
+        let seed_generator_point =
+            G1Affine::from_xdr(&env, &vote_config.seed_generator_point).unwrap();
+        let vote_generator_point =
+            G1Affine::from_xdr(&env, &vote_config.vote_generator_point).unwrap();
+
+        // calculate commitments from vote tally and seed tally
+        let seed: U256 = U256::from_u32(&env, seed);
+        let tally: U256 = U256::from_u32(&env, tally);
+        let seed_point = bls12_381.g1_mul(&seed_generator_point, &seed.into());
+        let tally_commitment_votes = bls12_381.g1_mul(&vote_generator_point, &tally.into());
+
+        let commitment_check = bls12_381.g1_add(&tally_commitment_votes, &seed_point);
+
+        // tally commitments from recorded votes (vote + seed)
+        let mut tally_commitment = G1Affine::from_bytes(bytesn!(&env, 0x400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000));
+        for vote_ in proposal.vote_data.votes.iter() {
+            if let types::Vote::AnonymousVote(anonymous_vote) = &vote_ {
+                let commitment = G1Affine::from_xdr(&env, &anonymous_vote.commitment).unwrap();
+                tally_commitment = bls12_381.g1_add(&tally_commitment, &commitment);
+            };
+        }
+
+        // compare commitments
+        commitment_check == tally_commitment
+    }
+
+    fn transparent_proof(env: Env, project_key: Bytes, proposal_id: u32, seeds: Vec<u32>) -> bool {
         let project_key_ = project_key.clone();
         let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
         let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
