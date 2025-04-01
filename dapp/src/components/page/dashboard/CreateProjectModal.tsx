@@ -58,7 +58,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
 
           const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
           if (tomlData) {
-            const configData = extractConfigData(tomlData, project.name);
+            const configData = extractConfigData(tomlData, project);
             setConfigData(configData);
           } else {
             setConfigData({});
