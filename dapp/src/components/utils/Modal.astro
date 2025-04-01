@@ -12,10 +12,10 @@ const { id } = Astro.props;
   onclick="this.closest('dialog').close()"
 >
   <button
-    class="absolute right-0 top-0 p-[18px] bg-[#FF3B30] lg:translate-x-1/2 -translate-y-1/2"
+    class="absolute right-0 top-0 p-[12px] bg-[#FF3B30] lg:translate-x-1/2 -translate-y-1/2"
     onclick="this.closest('dialog').close()"
   >
-    <img src="/icons/cancel-white.svg" />
+    <img src="/icons/cancel-white.svg" width={18} height={18} />
   </button>
   <div onclick="event.stopPropagation()">
     <slot />
