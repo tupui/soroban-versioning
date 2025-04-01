@@ -156,9 +156,7 @@ const ProjectList = () => {
             className="px-[30px] py-[18px]"
             onClick={() => setShowCreateProjectModal(true)}
           >
-            <p className="text-xl leading-5">
-              Add Project
-            </p>
+            <p className="text-xl leading-5">Add Project</p>
           </Button>
         </div>
         <div className="w-full flex justify-center items-center gap-[18px]">
@@ -209,9 +207,7 @@ const ProjectList = () => {
               className="px-[30px] py-[18px]"
               onClick={handleSearch}
             >
-              <p className="text-xl leading-5">
-                Search
-              </p>
+              <p className="text-xl leading-5">Search</p>
             </Button>
           </div>
           <div

@@ -80,9 +80,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
               description={
                 <div className="flex gap-1.5">
                   <p>Vote on the proposal:</p>
-                  <p className="font-bold text-primary">
-                    {proposalTitle}
-                  </p>
+                  <p className="font-bold text-primary">{proposalTitle}</p>
                 </div>
               }
             />
