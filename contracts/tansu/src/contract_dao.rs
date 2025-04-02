@@ -397,13 +397,12 @@ pub fn public_execute(proposal: &types::Proposal) -> types::ProposalStatus {
     let mut voted_reject = 0;
     let mut voted_abstain = 0;
     for vote_ in &proposal.vote_data.votes {
-        match &vote_ {
-            types::Vote::PublicVote(vote) => match vote.vote_choice {
+        if let types::Vote::PublicVote(vote) = &vote_ {
+            match vote.vote_choice {
                 types::VoteChoice::Approve => voted_approve += 1,
                 types::VoteChoice::Reject => voted_reject += 1,
                 types::VoteChoice::Abstain => voted_abstain += 1,
-            },
-            _ => {}
+            };
         }
     }
 
