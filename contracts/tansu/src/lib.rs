@@ -67,6 +67,7 @@ pub trait DaoTrait {
         title: String,
         ipfs: String,
         voting_ends_at: u64,
+        public: bool,
     ) -> u32;
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote);
@@ -76,11 +77,11 @@ pub trait DaoTrait {
         maintainer: Address,
         project_key: Bytes,
         proposal_id: u32,
+        tally: Option<u32>,
+        seed: Option<u32>,
     ) -> types::ProposalStatus;
 
-    fn proof(env: Env, project_key: Bytes, proposal_id: u32, tally: u32, seed: u32) -> bool;
-
-    fn transparent_proof(env: Env, project_key: Bytes, proposal_id: u32, seeds: Vec<u32>) -> bool;
+    fn proof(env: Env, proposal: types::Proposal, tally: u32, seed: u32) -> bool;
 
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 

@@ -42,6 +42,7 @@ pub struct PublicVote {
 pub struct AnonymousVote {
     pub address: Address,
     pub encrypted_seed: String,
+    pub encrypted_vote: String,
     pub commitment: Bytes,
 }
 

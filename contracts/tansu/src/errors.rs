@@ -22,4 +22,6 @@ pub enum ContractErrors {
     // Private voting
     WrongVoteType = 12,
     WrongVoter = 13,
+    TallySeedError = 14,
+    InvalidProof = 15,
 }

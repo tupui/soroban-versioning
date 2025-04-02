@@ -192,7 +192,7 @@ fn test() {
         "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
     );
     let voting_ends_at = env.ledger().timestamp() + 3600 * 24 * 2;
-    let proposal_id = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at);
+    let proposal_id = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &true);
 
     assert_eq!(proposal_id, 0);
 
@@ -286,7 +286,8 @@ fn test() {
     env.ledger().set_timestamp(1234567890);
     let kuiil = Address::generate(&env);
     let voting_ends_at = 1234567890 + 3600 * 24 * 2;
-    let proposal_id_2 = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at);
+    let proposal_id_2 =
+        contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &true);
     contract.vote(
         &mando,
         &id,
@@ -306,6 +307,7 @@ fn test() {
             &Vote::AnonymousVote(AnonymousVote {
                 address: kuiil.clone(),
                 encrypted_seed: String::from_str(&env, "abcd"),
+                encrypted_vote: String::from_str(&env, "fdsfsd"),
                 commitment: Bytes::from_array(&env, &[1, 2, 3]),
             }),
         )
@@ -340,14 +342,14 @@ fn test() {
 
     // too early to execute
     let error = contract
-        .try_execute(&mando, &id, &proposal_id_2)
+        .try_execute(&mando, &id, &proposal_id_2, &None, &None)
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::ProposalVotingTime.into());
 
     env.ledger().set_timestamp(voting_ends_at + 1);
 
-    let vote_result = contract.execute(&mando, &id, &proposal_id_2);
+    let vote_result = contract.execute(&mando, &id, &proposal_id_2, &None, &None);
     assert_eq!(vote_result, ProposalStatus::Approved);
     let proposal_2 = contract.get_proposal(&id, &proposal_id_2);
 
@@ -374,7 +376,7 @@ fn test() {
 
     // already executed
     let error = contract
-        .try_execute(&mando, &id, &proposal_id_2)
+        .try_execute(&mando, &id, &proposal_id_2, &None, &None)
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::ProposalActive.into());
