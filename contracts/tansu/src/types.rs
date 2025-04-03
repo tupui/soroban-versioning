@@ -41,9 +41,9 @@ pub struct PublicVote {
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnonymousVote {
     pub address: Address,
-    pub encrypted_seed: String,
-    pub encrypted_vote: String,
-    pub commitment: Bytes,
+    pub encrypted_seeds: Vec<String>,
+    pub encrypted_votes: Vec<String>,
+    pub commitments: Vec<Bytes>,
 }
 
 #[contracttype]

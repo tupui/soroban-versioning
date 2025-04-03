@@ -77,11 +77,11 @@ pub trait DaoTrait {
         maintainer: Address,
         project_key: Bytes,
         proposal_id: u32,
-        tally: Option<u32>,
-        seed: Option<u32>,
+        tallies: Option<Vec<u32>>,
+        seeds: Option<Vec<u32>>,
     ) -> types::ProposalStatus;
 
-    fn proof(env: Env, proposal: types::Proposal, tally: u32, seed: u32) -> bool;
+    fn proof(env: Env, proposal: types::Proposal, tallies: Vec<u32>, seeds: Vec<u32>) -> bool;
 
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 

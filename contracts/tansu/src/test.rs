@@ -306,9 +306,9 @@ fn test() {
             &proposal_id,
             &Vote::AnonymousVote(AnonymousVote {
                 address: kuiil.clone(),
-                encrypted_seed: String::from_str(&env, "abcd"),
-                encrypted_vote: String::from_str(&env, "fdsfsd"),
-                commitment: Bytes::from_array(&env, &[1, 2, 3]),
+                encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
+                encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
+                commitments: vec![&env, Bytes::from_array(&env, &[1, 2, 3])],
             }),
         )
         .unwrap_err()
