@@ -29,9 +29,9 @@ export interface ProposalView {
 }
 
 export enum VoteType {
-  APPROVE = "approve",
-  REJECT = "reject",
-  CANCEL = "abstain",
+  APPROVE = "approved",
+  REJECT = "rejected",
+  CANCEL = "cancelled",
 }
 
 export type VoterRole = "maintainer" | "community";

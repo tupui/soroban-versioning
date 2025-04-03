@@ -13,10 +13,10 @@ const ProposalStatusSection: React.FC<Props> = ({ proposal }) => {
     const status = proposal.status;
     const voteStatus = proposal.voteStatus;
     let voteResult: VoteType | undefined = undefined;
-    const { approve, abstain } = voteStatus;
-    if (approve.score > abstain.score) {
+    const { approve, abstain, reject } = voteStatus;
+    if (approve.score > abstain.score + reject.score) {
       voteResult = VoteType.APPROVE;
-    } else if (approve.score < abstain.score) {
+    } else if (approve.score + abstain.score < reject.score) {
       voteResult = VoteType.REJECT;
     } else {
       voteResult = VoteType.CANCEL;
