@@ -112,13 +112,46 @@ impl DaoTrait for Tansu {
                 .unwrap_or(0);
 
             // proposer is automatically in the abstain group
-            let votes = vec![
-                &env,
-                types::Vote::PublicVote(types::PublicVote {
+            let vote_ = match public {
+                true => types::Vote::PublicVote(types::PublicVote {
                     address: proposer.clone(),
                     vote_choice: types::VoteChoice::Abstain,
                 }),
-            ];
+                false => {
+                    let vote_config = <Tansu as DaoTrait>::get_anonymous_voting_config(env.clone());
+
+                    let bls12_381 = env.crypto().bls12_381();
+                    let seed_generator_point =
+                        G1Affine::from_xdr(&env, &vote_config.seed_generator_point).unwrap();
+                    let vote_generator_point =
+                        G1Affine::from_xdr(&env, &vote_config.vote_generator_point).unwrap();
+
+                    let seed_: U256 = U256::from_u32(&env, 0);
+                    let vote_: U256 = U256::from_u32(&env, 0);
+                    let seed_point_ = bls12_381.g1_mul(&seed_generator_point, &seed_.into());
+                    let vote_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_.into());
+
+                    let commitment_ = bls12_381.g1_add(&vote_point_, &seed_point_).to_xdr(&env);
+                    let zero_string = String::from_str(&env, "0");
+                    let encrypted_seeds =
+                        vec![&env, zero_string.clone(), zero_string.clone(), zero_string];
+                    let encrypted_votes = encrypted_seeds.clone();
+
+                    types::Vote::AnonymousVote(types::AnonymousVote {
+                        address: proposer.clone(),
+                        encrypted_seeds,
+                        encrypted_votes,
+                        commitments: vec![
+                            &env,
+                            commitment_.clone(),
+                            commitment_.clone(),
+                            commitment_,
+                        ],
+                    })
+                }
+            };
+
+            let votes = vec![&env, vote_];
             let vote_data = types::VoteData {
                 voting_ends_at,
                 public,

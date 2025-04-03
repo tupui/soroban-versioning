@@ -303,7 +303,7 @@ fn test() {
         .try_vote(
             &kuiil,
             &id,
-            &proposal_id,
+            &proposal_id_2,
             &Vote::AnonymousVote(AnonymousVote {
                 address: kuiil.clone(),
                 encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
@@ -320,7 +320,7 @@ fn test() {
         .try_vote(
             &kuiil,
             &id,
-            &proposal_id,
+            &proposal_id_2,
             &Vote::PublicVote(PublicVote {
                 address: mando.clone(),
                 vote_choice: VoteChoice::Approve,
@@ -380,6 +380,35 @@ fn test() {
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::ProposalActive.into());
+
+    // anonymous voting
+    let voting_ends_at = env.ledger().timestamp() + 3600 * 24 * 2;
+    let error = contract
+        .try_create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &false)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::NoAnonymousVotingConfig.into());
+
+    let public_key = String::from_str(&env, "public key random");
+    contract.anonymous_voting_setup(&public_key);
+
+    let proposal_id_3 =
+        contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &false);
+
+    contract.vote(
+        &kuiil,
+        &id,
+        &proposal_id_3,
+        &Vote::AnonymousVote(AnonymousVote {
+            address: kuiil.clone(),
+            encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
+            encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
+            // TODO real commitment
+            commitments: vec![&env, Bytes::from_array(&env, &[1, 2, 3])],
+        }),
+    );
+
+    env.ledger().set_timestamp(voting_ends_at + 1);
 }
 
 #[test]
