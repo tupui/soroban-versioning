@@ -430,14 +430,7 @@ pub fn public_execute(proposal: &types::Proposal) -> types::ProposalStatus {
         }
     }
 
-    // accept or reject if we have a majority
-    if voted_approve > (voted_abstain + voted_reject) {
-        types::ProposalStatus::Approved
-    } else if voted_reject > (voted_abstain + voted_approve) {
-        types::ProposalStatus::Rejected
-    } else {
-        types::ProposalStatus::Cancelled
-    }
+    tallies_to_result(voted_approve, voted_reject, voted_abstain)
 }
 
 pub fn anonymous_execute(
@@ -461,6 +454,14 @@ pub fn anonymous_execute(
     let voted_reject = iter.next().unwrap();
     let voted_abstain = iter.next().unwrap();
 
+    tallies_to_result(voted_approve, voted_reject, voted_abstain)
+}
+
+fn tallies_to_result(
+    voted_approve: u32,
+    voted_reject: u32,
+    voted_abstain: u32,
+) -> types::ProposalStatus {
     // accept or reject if we have a majority
     if voted_approve > (voted_abstain + voted_reject) {
         types::ProposalStatus::Approved
