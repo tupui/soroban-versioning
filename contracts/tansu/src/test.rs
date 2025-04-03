@@ -395,6 +395,13 @@ fn test() {
     let proposal_id_3 =
         contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &false);
 
+    let vote_ = contract.build_anonymous_vote_abstain(&grogu);
+    let proposal_3 = contract.get_proposal(&id, &proposal_id_3);
+    assert_eq!(
+        proposal_3.vote_data.votes,
+        vec![&env, Vote::AnonymousVote(vote_)]
+    );
+
     contract.vote(
         &kuiil,
         &id,
@@ -409,6 +416,17 @@ fn test() {
     );
 
     env.ledger().set_timestamp(voting_ends_at + 1);
+
+    // env.cost_estimate().budget().reset_unlimited();
+
+    let vote_result = contract.execute(
+        &grogu,
+        &id,
+        &proposal_id_3,
+        &Some(vec![&env, 0u32, 0u32, 2u32]),
+        &Some(vec![&env, 0u32, 0u32, 0u32]),
+    );
+    assert_eq!(vote_result, ProposalStatus::Cancelled);
 }
 
 #[test]

@@ -61,6 +61,45 @@ impl DaoTrait for Tansu {
             })
     }
 
+    fn build_anonymous_vote_abstain(env: Env, proposer: Address) -> types::AnonymousVote {
+        let vote_config = <Tansu as DaoTrait>::get_anonymous_voting_config(env.clone());
+
+        let bls12_381 = env.crypto().bls12_381();
+        let seed_generator_point =
+            G1Affine::from_xdr(&env, &vote_config.seed_generator_point).unwrap();
+        let vote_generator_point =
+            G1Affine::from_xdr(&env, &vote_config.vote_generator_point).unwrap();
+
+        let seed_: U256 = U256::from_u32(&env, 0);
+        let vote_: U256 = U256::from_u32(&env, 0);
+        let vote_abstain_: U256 = U256::from_u32(&env, 1);
+        let seed_point_ = bls12_381.g1_mul(&seed_generator_point, &seed_.into());
+        let vote_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_.into());
+        let vote_abstain_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_abstain_.into());
+
+        let commitment_ = bls12_381.g1_add(&vote_point_, &seed_point_).to_xdr(&env);
+        let commitment_abstain_ = bls12_381
+            .g1_add(&vote_abstain_point_, &seed_point_)
+            .to_xdr(&env);
+
+        let zero_string = String::from_str(&env, "0");
+        let one_string = String::from_str(&env, "1");
+        let encrypted_seeds = vec![
+            &env,
+            zero_string.clone(),
+            zero_string.clone(),
+            zero_string.clone(),
+        ];
+        let encrypted_votes = vec![&env, zero_string.clone(), zero_string.clone(), one_string];
+
+        types::AnonymousVote {
+            address: proposer.clone(),
+            encrypted_seeds,
+            encrypted_votes,
+            commitments: vec![&env, commitment_.clone(), commitment_, commitment_abstain_],
+        }
+    }
+
     /// Create a proposal on the DAO of the project.
     /// Proposal initiators are automatically put in the abstain group.
     /// # Arguments
@@ -114,40 +153,13 @@ impl DaoTrait for Tansu {
             // proposer is automatically in the abstain group
             let vote_ = match public {
                 true => types::Vote::PublicVote(types::PublicVote {
-                    address: proposer.clone(),
+                    address: proposer,
                     vote_choice: types::VoteChoice::Abstain,
                 }),
                 false => {
-                    let vote_config = <Tansu as DaoTrait>::get_anonymous_voting_config(env.clone());
-
-                    let bls12_381 = env.crypto().bls12_381();
-                    let seed_generator_point =
-                        G1Affine::from_xdr(&env, &vote_config.seed_generator_point).unwrap();
-                    let vote_generator_point =
-                        G1Affine::from_xdr(&env, &vote_config.vote_generator_point).unwrap();
-
-                    let seed_: U256 = U256::from_u32(&env, 0);
-                    let vote_: U256 = U256::from_u32(&env, 0);
-                    let seed_point_ = bls12_381.g1_mul(&seed_generator_point, &seed_.into());
-                    let vote_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_.into());
-
-                    let commitment_ = bls12_381.g1_add(&vote_point_, &seed_point_).to_xdr(&env);
-                    let zero_string = String::from_str(&env, "0");
-                    let encrypted_seeds =
-                        vec![&env, zero_string.clone(), zero_string.clone(), zero_string];
-                    let encrypted_votes = encrypted_seeds.clone();
-
-                    types::Vote::AnonymousVote(types::AnonymousVote {
-                        address: proposer.clone(),
-                        encrypted_seeds,
-                        encrypted_votes,
-                        commitments: vec![
-                            &env,
-                            commitment_.clone(),
-                            commitment_.clone(),
-                            commitment_,
-                        ],
-                    })
+                    let vote_ =
+                        <Tansu as DaoTrait>::build_anonymous_vote_abstain(env.clone(), proposer);
+                    types::Vote::AnonymousVote(vote_)
                 }
             };
 
@@ -306,7 +318,16 @@ impl DaoTrait for Tansu {
                 if !(tallies.is_some() & seeds.is_some()) {
                     panic_with_error!(&env, &errors::ContractErrors::TallySeedError);
                 }
-                anonymous_execute(&env, &proposal, &tallies.unwrap(), &seeds.unwrap())
+                let tallies_ = tallies.unwrap();
+                // if !<Tansu as DaoTrait>::proof(
+                //     env.clone(),
+                //     proposal.clone(),
+                //     tallies_.clone(),
+                //     seeds.unwrap(),
+                // ) {
+                //     panic_with_error!(&env, &errors::ContractErrors::InvalidProof)
+                // }
+                anonymous_execute(&tallies_)
             }
         };
 
@@ -475,21 +496,7 @@ pub fn public_execute(proposal: &types::Proposal) -> types::ProposalStatus {
     tallies_to_result(voted_approve, voted_reject, voted_abstain)
 }
 
-pub fn anonymous_execute(
-    env: &Env,
-    proposal: &types::Proposal,
-    tallies: &Vec<u32>,
-    seeds: &Vec<u32>,
-) -> types::ProposalStatus {
-    if !<Tansu as DaoTrait>::proof(
-        env.clone(),
-        proposal.clone(),
-        tallies.clone(),
-        seeds.clone(),
-    ) {
-        panic_with_error!(&env, &errors::ContractErrors::InvalidProof)
-    }
-
+pub fn anonymous_execute(tallies: &Vec<u32>) -> types::ProposalStatus {
     let mut iter = tallies.iter();
 
     let voted_approve = iter.next().unwrap();

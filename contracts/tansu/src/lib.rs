@@ -62,6 +62,8 @@ pub trait DaoTrait {
 
     fn get_anonymous_voting_config(env: Env) -> types::AnonymousVoteConfig;
 
+    fn build_anonymous_vote_abstain(env: Env, proposer: Address) -> types::AnonymousVote;
+
     fn create_proposal(
         env: Env,
         proposer: Address,
