@@ -24,4 +24,5 @@ pub enum ContractErrors {
     WrongVoter = 13,
     TallySeedError = 14,
     InvalidProof = 15,
+    NoAnonymousVotingConfig = 16,
 }

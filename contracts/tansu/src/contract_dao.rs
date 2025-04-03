@@ -52,6 +52,15 @@ impl DaoTrait for Tansu {
             .set(&types::DataKey::AnonymousVoteConfig, &vote_config);
     }
 
+    fn get_anonymous_voting_config(env: Env) -> types::AnonymousVoteConfig {
+        env.storage()
+            .instance()
+            .get::<types::DataKey, types::AnonymousVoteConfig>(&types::DataKey::AnonymousVoteConfig)
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &errors::ContractErrors::NoAnonymousVotingConfig);
+            })
+    }
+
     /// Create a proposal on the DAO of the project.
     /// Proposal initiators are automatically put in the abstain group.
     /// # Arguments
