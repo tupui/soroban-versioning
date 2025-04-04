@@ -319,14 +319,14 @@ impl DaoTrait for Tansu {
                     panic_with_error!(&env, &errors::ContractErrors::TallySeedError);
                 }
                 let tallies_ = tallies.unwrap();
-                // if !<Tansu as DaoTrait>::proof(
-                //     env.clone(),
-                //     proposal.clone(),
-                //     tallies_.clone(),
-                //     seeds.unwrap(),
-                // ) {
-                //     panic_with_error!(&env, &errors::ContractErrors::InvalidProof)
-                // }
+                if !<Tansu as DaoTrait>::proof(
+                    env.clone(),
+                    proposal.clone(),
+                    tallies_.clone(),
+                    seeds.unwrap(),
+                ) {
+                    panic_with_error!(&env, &errors::ContractErrors::InvalidProof)
+                }
                 anonymous_execute(&tallies_)
             }
         };

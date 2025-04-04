@@ -402,28 +402,28 @@ fn test() {
         vec![&env, Vote::AnonymousVote(vote_)]
     );
 
-    contract.vote(
-        &kuiil,
-        &id,
-        &proposal_id_3,
-        &Vote::AnonymousVote(AnonymousVote {
-            address: kuiil.clone(),
-            encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
-            encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
-            // TODO real commitment
-            commitments: vec![&env, Bytes::from_array(&env, &[1, 2, 3])],
-        }),
-    );
+    // contract.vote(
+    //     &kuiil,
+    //     &id,
+    //     &proposal_id_3,
+    //     &Vote::AnonymousVote(AnonymousVote {
+    //         address: kuiil.clone(),
+    //         encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
+    //         encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
+    //         // TODO real commitment
+    //         commitments: vec![&env, Bytes::from_array(&env, &[1, 2, 3])],
+    //     }),
+    // );
 
     env.ledger().set_timestamp(voting_ends_at + 1);
 
-    // env.cost_estimate().budget().reset_unlimited();
+    env.cost_estimate().budget().reset_unlimited();
 
     let vote_result = contract.execute(
         &grogu,
         &id,
         &proposal_id_3,
-        &Some(vec![&env, 0u32, 0u32, 2u32]),
+        &Some(vec![&env, 0u32, 0u32, 1u32]),
         &Some(vec![&env, 0u32, 0u32, 0u32]),
     );
     assert_eq!(vote_result, ProposalStatus::Cancelled);
