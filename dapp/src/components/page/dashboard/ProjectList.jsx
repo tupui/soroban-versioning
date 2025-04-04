@@ -188,7 +188,7 @@ const ProjectList = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <div
-                className="absolute right-1 right-[18px] top-1/2 transform -translate-y-1/2 cursor-pointer"
+                className="absolute right-[18px] top-1/2 transform -translate-y-1/2 cursor-pointer"
                 onClick={() => {
                   setSearchTerm("");
                   setRegisterButtonVisible(false);
