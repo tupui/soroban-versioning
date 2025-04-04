@@ -7,11 +7,7 @@ import { getProjectFromName, getProposal } from "@service/ReadContractService";
 import Loading from "components/utils/Loading";
 import React, { useEffect, useState } from "react";
 import type { ProposalOutcome, ProposalView } from "types/proposal";
-import {
-  connectedPublicKey,
-  projectNameForGovernance,
-  proposalId,
-} from "utils/store";
+import { connectedPublicKey } from "utils/store";
 import { modifyProposalToView, toast } from "utils/utils";
 import ExecuteProposalModal from "./ExecuteProposalModal";
 import ProposalDetail from "./ProposalDetail";
@@ -19,8 +15,9 @@ import ProposalTitle from "./ProposalTitle";
 import VotingModal from "./VotingModal";
 
 const ProposalPage: React.FC = () => {
-  const id = useStore(proposalId);
-  const projectName = useStore(projectNameForGovernance);
+  const id = Number(new URLSearchParams(window.location.search).get("id"));
+  const projectName =
+    new URLSearchParams(window.location.search).get("name") || "";
   const connectedAddress = useStore(connectedPublicKey);
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
   const [isExecuteProposalModalOpen, setIsExecuteProposalModalOpen] =
@@ -51,7 +48,7 @@ const ProposalPage: React.FC = () => {
   };
 
   const getProposalDetails = async () => {
-    if (id !== undefined && projectName) {
+    if (!id !== undefined && projectName) {
       setIsLoading(true);
       const response = await getProposal(projectName, id);
       const proposal = response.data;

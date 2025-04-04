@@ -1,16 +1,15 @@
-import { useStore } from "@nanostores/react";
 import { getProposalPages, getProposals } from "@service/ReadContractService";
 import Loading from "components/utils/Loading";
 import React, { useEffect, useState } from "react";
 import type { ProposalView } from "types/proposal";
-import { projectNameForGovernance } from "utils/store";
 import { modifyProposalToView, toast } from "utils/utils";
 import Pagination from "../../utils/Pagination";
 import VotingModal from "../proposal/VotingModal";
 import ProposalCard from "./ProposalCard";
 
 const ProposalList: React.FC = () => {
-  const projectName = useStore(projectNameForGovernance);
+  const projectName =
+    new URLSearchParams(window.location.search).get("name") || "";
   const [totalPage, setTotalPage] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [proposalData, setProposalData] = useState<ProposalView[]>([]);

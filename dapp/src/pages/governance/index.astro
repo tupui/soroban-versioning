@@ -18,14 +18,4 @@ import Layout from "../../layouts/Layout.astro";
   </Container>
 </Layout>
 
-<script>
-  import { projectNameForGovernance } from "utils/store";
-
-  document.addEventListener("astro:page-load", async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectName = urlParams.get("name") || "";
-    if (projectName) {
-      projectNameForGovernance.set(projectName);
-    }
-  });
-</script>
+<script></script>

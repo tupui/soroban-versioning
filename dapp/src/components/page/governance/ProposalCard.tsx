@@ -1,8 +1,6 @@
-import { useStore } from "@nanostores/react";
 import Button from "components/utils/Button";
 import React from "react";
 import type { ProposalView } from "types/proposal";
-import { projectNameForGovernance } from "utils/store";
 import ProposalStatusSection from "../proposal/ProposalStatusSection";
 
 interface Props {
@@ -11,7 +9,8 @@ interface Props {
 }
 
 const ProposalCard: React.FC<Props> = ({ proposal, onVoteClick }) => {
-  const projectName = useStore(projectNameForGovernance);
+  const projectName =
+    new URLSearchParams(window.location.search).get("name") || "";
 
   return (
     <a

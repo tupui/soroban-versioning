@@ -45,7 +45,7 @@ import Title from "components/utils/Title";
 import { useCallback, useEffect, useState } from "react";
 import type { ProposalOutcome } from "types/proposal";
 import { formatDate } from "utils/formatTimeFunctions";
-import { connectedPublicKey, projectNameForGovernance } from "utils/store";
+import { connectedPublicKey } from "utils/store";
 import { capitalizeFirstLetter, getIpfsBasicLink, toast } from "utils/utils";
 import OutcomeInput from "./OutcomeInput";
 
@@ -95,10 +95,8 @@ const CreateProposalModal = () => {
 
   useEffect(() => {
     connectedPublicKey.subscribe((publicKey) => setConnectedAddress(publicKey));
-    projectNameForGovernance.subscribe((projectName) =>
-      setProjectName(projectName),
-    );
-
+    const name = new URLSearchParams(window.location.search).get("name");
+    setProjectName(name);
     const showModalButton = document.querySelector("#create-proposal-button");
     if (showModalButton) {
       setStep(1);
