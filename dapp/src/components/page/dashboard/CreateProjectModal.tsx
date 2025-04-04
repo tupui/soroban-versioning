@@ -35,7 +35,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
     const { registerProject } = await import("@service/WriteContractService");
 
     try {
-      const res = await registerProject(
+      await registerProject(
         projectName,
         maintainers.join(","),
         githubRepoUrl,
