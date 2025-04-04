@@ -66,18 +66,18 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       return;
     }
 
-    const { executeProposal } = await import("@service/WriteContractService");
-    const res = await executeProposal(
-      projectName,
-      proposalId,
-      voteResultAndXdr.xdr,
-    );
-    if (res.error) {
-      toast.error("Execute Proposal", res.errorMessage);
-      onClose();
-    } else {
+    try {
+      const { executeProposal } = await import("@service/WriteContractService");
+      const res = await executeProposal(
+        projectName,
+        proposalId,
+        voteResultAndXdr.xdr,
+      );
       console.log("execute result:", res.data);
       toast.success("Congratulation!", "Proposal executed successfully");
+      onClose();
+    } catch (error: any) {
+      toast.error("Execute Proposal", error.message);
       onClose();
     }
   };

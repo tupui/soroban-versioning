@@ -260,9 +260,7 @@ const CreateProposalModal = () => {
         Math.floor(Date.now() / 1000) + 86400 * votingDays,
       );
 
-      if (res.error) throw new Error(res.errorMessage);
-
-      setProposalId(res.data);
+      setProposalId(res);
       setIpfsLink(getIpfsBasicLink(directoryCid.toString()));
 
       setStep(10);

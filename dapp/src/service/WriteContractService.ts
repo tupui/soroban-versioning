@@ -15,7 +15,7 @@ import {
 import * as pkg from "js-sha3";
 import type { Vote } from "soroban_versioning";
 import type { VoteType } from "types/proposal";
-import type { Response } from "types/response";
+// import type { Response } from "types/response";
 import { loadedProjectId } from "./StateService";
 const { keccak256 } = pkg;
 
@@ -24,11 +24,11 @@ const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
 // Function to map VoteType to Vote
 function mapVoteTypeToVote(voteType: VoteType): Vote {
   switch (voteType) {
-    case "approve":
+    case "approved":
       return { tag: "Approve", values: undefined };
-    case "reject":
+    case "rejected":
       return { tag: "Reject", values: undefined };
-    case "abstain":
+    case "cancelled":
       return { tag: "Abstain", values: undefined };
     default:
       throw new Error("Invalid vote type");
@@ -49,29 +49,19 @@ function fetchErrorCode(error: any): {
   return { errorCode, errorMessage: contractErrorMessages[errorCode] };
 }
 
-async function commitHash(commit_hash: string): Promise<Response<boolean>> {
+async function commitHash(commit_hash: string): Promise<boolean> {
   const projectId = loadedProjectId();
 
   if (!projectId) {
-    return {
-      data: false,
-      error: true,
-      errorCode: -1,
-      errorMessage: "No project defined",
-    };
+    throw new Error("No project defined");
   }
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    return {
-      data: false,
-      error: true,
-      errorCode: -1,
-      errorMessage: "Please connect your wallet first",
-    };
-  } else {
-    Versioning.options.publicKey = publicKey;
+    throw new Error("Please connect your wallet first");
   }
+
+  Versioning.options.publicKey = publicKey;
 
   const tx = await Versioning.commit({
     maintainer: publicKey,
@@ -84,11 +74,11 @@ async function commitHash(commit_hash: string): Promise<Response<boolean>> {
         return await kit.signTransaction(xdr);
       },
     });
-    return { data: true, error: false, errorCode: -1, errorMessage: "" };
+    return true;
   } catch (e) {
     console.error(e);
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: false, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
@@ -98,19 +88,14 @@ async function registerProject(
   config_url: string,
   config_hash: string,
   domain_contract_id: string,
-): Promise<Response<boolean>> {
+): Promise<boolean> {
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    return {
-      data: false,
-      error: true,
-      errorCode: -1,
-      errorMessage: "Please connect your wallet first",
-    };
-  } else {
-    Versioning.options.publicKey = publicKey;
+    throw new Error("Please connect your wallet first");
   }
+
+  Versioning.options.publicKey = publicKey;
 
   const maintainers_ = maintainers.split(",");
 
@@ -130,11 +115,11 @@ async function registerProject(
         return await kit.signTransaction(xdr);
       },
     });
-    return { data: true, error: false, errorCode: -1, errorMessage: "" };
+    return true;
   } catch (e) {
     console.error(e);
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: false, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
@@ -142,28 +127,16 @@ async function updateConfig(
   maintainers: string,
   config_url: string,
   config_hash: string,
-): Promise<Response<boolean>> {
+): Promise<boolean> {
   const projectId = loadedProjectId();
 
   if (!projectId) {
-    return {
-      data: false,
-      error: true,
-      errorCode: -1,
-      errorMessage: "No project defined",
-    };
+    throw new Error("No project defined");
   }
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    return {
-      data: false,
-      error: true,
-      errorCode: -1,
-      errorMessage: "Please connect your wallet first",
-    };
-  } else {
-    Versioning.options.publicKey = publicKey;
+    throw new Error("Please connect your wallet first");
   }
   const maintainers_ = maintainers.split(",");
 
@@ -181,11 +154,11 @@ async function updateConfig(
         return await kit.signTransaction(xdr);
       },
     });
-    return { data: true, error: false, errorCode: -1, errorMessage: "" };
+    return true;
   } catch (e) {
     console.error(e);
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: false, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
@@ -194,19 +167,13 @@ async function createProposal(
   title: string,
   ipfs: string,
   voting_ends_at: number,
-): Promise<Response<number>> {
+): Promise<number> {
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    return {
-      data: -1,
-      error: true,
-      errorCode: -1,
-      errorMessage: "Please connect your wallet first",
-    };
-  } else {
-    Versioning.options.publicKey = publicKey;
+    throw new Error("Please connect your wallet first");
   }
+  Versioning.options.publicKey = publicKey;
   const project_key = Buffer.from(
     keccak256.create().update(project_name).digest(),
   );
@@ -225,16 +192,11 @@ async function createProposal(
         return await kit.signTransaction(xdr);
       },
     });
-    return {
-      data: result.result,
-      error: false,
-      errorCode: -1,
-      errorMessage: "",
-    };
+    return result.result;
   } catch (e) {
     console.error(e);
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: -1, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
@@ -242,19 +204,13 @@ async function voteToProposal(
   project_name: string,
   proposal_id: number,
   vote: VoteType,
-): Promise<Response<boolean>> {
+): Promise<boolean> {
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    return {
-      data: false,
-      error: true,
-      errorCode: -1,
-      errorMessage: "Please connect your wallet first",
-    };
-  } else {
-    Versioning.options.publicKey = publicKey;
+    throw new Error("Please connect your wallet first");
   }
+  Versioning.options.publicKey = publicKey;
   const project_key = Buffer.from(
     keccak256.create().update(project_name).digest(),
   );
@@ -274,35 +230,24 @@ async function voteToProposal(
         return await kit.signTransaction(xdr);
       },
     });
-    return { data: true, error: false, errorCode: -1, errorMessage: "" };
+    return true;
   } catch (e: any) {
     console.error(e);
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return {
-      data: false,
-      error: true,
-      errorCode,
-      errorMessage,
-    };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
 async function execute(
   project_name: string,
   proposal_id: number,
-): Promise<Response<any>> {
+): Promise<any> {
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    return {
-      data: false,
-      error: true,
-      errorCode: -1,
-      errorMessage: "Please connect your wallet first",
-    };
-  } else {
-    Versioning.options.publicKey = publicKey;
+    throw new Error("Please connect your wallet first");
   }
+  Versioning.options.publicKey = publicKey;
 
   const project_key = Buffer.from(
     keccak256.create().update(project_name).digest(),
@@ -320,16 +265,11 @@ async function execute(
         return await kit.signTransaction(xdr);
       },
     });
-    return {
-      data: result.result,
-      error: false,
-      errorCode: -1,
-      errorMessage: "",
-    };
+    return result.result;
   } catch (e) {
     console.error(e);
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: null, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
@@ -337,7 +277,7 @@ async function executeProposal(
   project_name: string,
   proposal_id: number,
   executeXdr: string | null,
-): Promise<Response<any>> {
+): Promise<any> {
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
@@ -349,13 +289,9 @@ async function executeProposal(
     };
   }
 
-  const res = await execute(project_name, proposal_id);
-  if (res.error) {
-    return res;
-  }
-
-  const executorAccount = await server.getAccount(publicKey);
   try {
+    await execute(project_name, proposal_id);
+    const executorAccount = await server.getAccount(publicKey);
     const outcomeTransactionEnvelope = executeXdr
       ? xdr.TransactionEnvelope.fromXDR(executeXdr, "base64")
       : undefined;
@@ -385,24 +321,14 @@ async function executeProposal(
     const result = await server.sendTransaction(signedTransaction);
 
     if (result.status === "ERROR") {
-      return {
-        data: null,
-        error: true,
-        errorCode: -1,
-        errorMessage: "Transaction failed",
-      };
+      throw new Error("Transaction failed");
     } else {
-      return {
-        data: result.hash,
-        error: false,
-        errorCode: -1,
-        errorMessage: "",
-      };
+      return result.hash;
     }
   } catch (e) {
     console.error(e);
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: null, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 

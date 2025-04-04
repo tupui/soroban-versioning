@@ -39,13 +39,8 @@ const UpdateConfigModal = () => {
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
-      const updateStatus = await updateConfig(
-        maintainers,
-        configUrl,
-        configHash,
-      );
-
-      if (updateStatus.data && !updateStatus.error) {
+      await updateConfig(maintainers, configUrl, configHash);
+      try {
         const res = await getProject();
         const project = res.data;
         if (project && project.name && project.config && project.maintainers) {
@@ -54,15 +49,16 @@ const UpdateConfigModal = () => {
           alert(res.errorMessage);
         }
         setIsOpen(false);
-      } else if (updateStatus.error) {
-        toast.error("Update config", updateStatus.errorMessage);
+      } catch (error) {
+        console.error("Error updating config:", error);
+        toast.error(
+          "Update config",
+          "An error occurred while updating the project configuration. Please try again.",
+        );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating config:", error);
-      toast.error(
-        "Update config",
-        "An error occurred while updating the project configuration. Please try again.",
-      );
+      toast.error("Update config", error.message);
     } finally {
       setIsLoading(false);
     }

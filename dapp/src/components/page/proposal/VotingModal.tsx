@@ -46,22 +46,18 @@ const VotingModal: React.FC<VotersModalProps> = ({
       toast.error("Vote", "Proposal ID is required");
       return;
     }
-    const res = await voteToProposal(projectName, proposalId, selectedOption);
-
-    if (res.data) {
+    try {
+      await voteToProposal(projectName, proposalId, selectedOption);
       setIsLoading(false);
       toast.success(
         "Congratulation!",
         `You have successfully voted to "${selectedOption}" option.`,
       );
       setIsVoted?.(true);
-    } else {
+    } catch (error: any) {
       setIsLoading(false);
-      if (res.error) {
-        const errorMessage = res.errorMessage;
-        toast.error("Vote", errorMessage);
-        return;
-      }
+      toast.error("Vote", error.message);
+      return;
     }
     setStep(2);
   };

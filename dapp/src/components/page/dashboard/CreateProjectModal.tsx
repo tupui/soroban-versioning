@@ -43,41 +43,37 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
         SOROBAN_DOMAIN_CONTRACT_ID,
       );
 
-      if (res.error) {
-        throw new Error(res.errorMessage);
-      } else {
-        const res = await getProjectFromName(projectName);
-        const project = res.data;
-        if (project && project.name && project.config && project.maintainers) {
-          setProject(project);
+      const response = await getProjectFromName(projectName);
+      const project = response.data;
+      if (project && project.name && project.config && project.maintainers) {
+        setProject(project);
 
-          const { username, repoName } = getAuthorRepo(project.config.url);
-          if (username && repoName) {
-            setProjectRepoInfo(username, repoName);
-          }
-
-          const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
-          if (tomlData) {
-            const configData = extractConfigData(tomlData, project);
-            setConfigData(configData);
-          } else {
-            setConfigData({});
-          }
-
-          const latestSha = await getProjectHash();
-          if (
-            latestSha.data &&
-            typeof latestSha.data === "string" &&
-            latestSha.data.match(/^[a-f0-9]{40}$/)
-          ) {
-            setProjectLatestSha(latestSha.data);
-          } else {
-            setProjectLatestSha("");
-            if (latestSha.error) throw new Error(latestSha.errorMessage);
-          }
-        } else if (res.error) {
-          throw new Error(res.errorMessage);
+        const { username, repoName } = getAuthorRepo(project.config.url);
+        if (username && repoName) {
+          setProjectRepoInfo(username, repoName);
         }
+
+        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+        if (tomlData) {
+          const configData = extractConfigData(tomlData, project);
+          setConfigData(configData);
+        } else {
+          setConfigData({});
+        }
+
+        const latestSha = await getProjectHash();
+        if (
+          latestSha.data &&
+          typeof latestSha.data === "string" &&
+          latestSha.data.match(/^[a-f0-9]{40}$/)
+        ) {
+          setProjectLatestSha(latestSha.data);
+        } else {
+          setProjectLatestSha("");
+          if (latestSha.error) throw new Error(latestSha.errorMessage);
+        }
+      } else if (response.error) {
+        throw new Error(response.errorMessage);
       }
     } catch (err: any) {
       toast.error("Something Went Wrong!", err.message);
