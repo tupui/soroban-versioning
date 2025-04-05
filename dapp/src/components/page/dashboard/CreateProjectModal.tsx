@@ -43,8 +43,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
         SOROBAN_DOMAIN_CONTRACT_ID,
       );
 
-      const response = await getProjectFromName(projectName);
-      const project = response.data;
+      const project = await getProjectFromName(projectName);
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
 
@@ -60,20 +59,22 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
         } else {
           setConfigData({});
         }
-
-        const latestSha = await getProjectHash();
-        if (
-          latestSha.data &&
-          typeof latestSha.data === "string" &&
-          latestSha.data.match(/^[a-f0-9]{40}$/)
-        ) {
-          setProjectLatestSha(latestSha.data);
-        } else {
+        try {
+          const latestSha = await getProjectHash();
+          if (
+            typeof latestSha === "string" &&
+            latestSha.match(/^[a-f0-9]{40}$/)
+          ) {
+            setProjectLatestSha(latestSha);
+          } else {
+            setProjectLatestSha("");
+            throw new Error("Invalid project hash");
+          }
+        } catch (error: any) {
+          console.error("Error fetching project hash:", error);
           setProjectLatestSha("");
-          if (latestSha.error) throw new Error(latestSha.errorMessage);
+          toast.error("Something Went Wrong!", error.message);
         }
-      } else if (response.error) {
-        throw new Error(response.errorMessage);
       }
     } catch (err: any) {
       toast.error("Something Went Wrong!", err.message);
@@ -118,11 +119,8 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 isLoading={isLoading}
                 onClick={async () => {
                   setIsLoading(true);
-
-                  const response = await getProjectFromName(projectName);
-                  const project = response.data;
-
                   try {
+                    const project = await getProjectFromName(projectName);
                     if (projectName.length < 4 || projectName.length > 15)
                       throw new Error(
                         "The length of project name should be between 4 and 15.",

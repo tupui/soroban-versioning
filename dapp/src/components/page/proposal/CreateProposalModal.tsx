@@ -110,10 +110,13 @@ const CreateProposalModal = () => {
   useEffect(() => {
     if (projectName) {
       (async () => {
-        const res = await getProjectFromName(projectName);
-        const projectInfo = res.data;
-        if (projectInfo?.maintainers) {
-          setMaintainers(projectInfo.maintainers);
+        try {
+          const projectInfo = await getProjectFromName(projectName);
+          if (projectInfo?.maintainers) {
+            setMaintainers(projectInfo.maintainers);
+          }
+        } catch (error) {
+          console.error("Error fetching project info:", error);
         }
       })();
     }

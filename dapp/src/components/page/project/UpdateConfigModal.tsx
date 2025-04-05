@@ -41,12 +41,9 @@ const UpdateConfigModal = () => {
     try {
       await updateConfig(maintainers, configUrl, configHash);
       try {
-        const res = await getProject();
-        const project = res.data;
+        const project = await getProject();
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
-        } else if (res.error) {
-          alert(res.errorMessage);
         }
         setIsOpen(false);
       } catch (error) {

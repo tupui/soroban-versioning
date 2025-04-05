@@ -67,13 +67,15 @@ const getProjectMaintainers = async (projectName) => {
     const projectId = Buffer.from(
       keccak256.create().update(projectName).digest(),
     );
-
-    const res = await getProjectFromId(projectId);
-    const projectInfo = res.data;
-
-    if (projectInfo && projectInfo.maintainers) {
-      return projectInfo.maintainers;
-    } else if (res.error) {
+    try {
+      const projectInfo = await getProjectFromId(projectId);
+      if (projectInfo && projectInfo.maintainers) {
+        return projectInfo.maintainers;
+      } else if (res.error) {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching project info:", error);
       return null;
     }
   } else {

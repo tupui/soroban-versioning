@@ -33,14 +33,14 @@ import Button from "components/utils/Button";
       "#create-proposal-button",
     );
 
-    const res = await getProjectFromName(projectName!);
-    const projectInfo = res.data;
-    if (projectInfo && projectInfo.maintainers) {
-      maintainers = projectInfo?.maintainers;
-    } else {
-      toast.error("Something Went Wrong!", res.errorMessage);
+    try {
+      const projectInfo = await getProjectFromName(projectName!);
+      if (projectInfo && projectInfo.maintainers) {
+        maintainers = projectInfo?.maintainers;
+      }
+    } catch (error: any) {
+      toast.error("Something Went Wrong!", error.message);
     }
-
     connectedPublicKey.subscribe((publicKey) => {
       if (maintainers.includes(publicKey)) {
         createProposalButton?.classList.remove("hidden");

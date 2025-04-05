@@ -41,44 +41,46 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
     if (projectName) {
       console.log("project info loading...");
       setProjectId(projectName);
-      const res = await getProject();
-      const project = res.data;
-      if (project && project.name && project.config && project.maintainers) {
-        setProject(project);
-        const { username, repoName } = getAuthorRepo(project.config.url);
-        if (username && repoName) {
-          setProjectRepoInfo(username, repoName);
-        }
-        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
-        if (tomlData) {
-          const configData = extractConfigData(tomlData, project);
-          setConfigData(configData);
-        } else {
-          setConfigData({});
-        }
-
-        const latestSha = await getProjectHash();
-
-        if (
-          latestSha.data &&
-          typeof latestSha.data === "string" &&
-          latestSha.data.match(/^[a-f0-9]{40}$/)
-        ) {
-          setProjectLatestSha(latestSha.data);
-        } else {
-          setProjectLatestSha("");
-          if (latestSha.error) {
-            toast.error("Something Went Wrong!", latestSha.errorMessage);
+      try {
+        const project = await getProject();
+        if (project && project.name && project.config && project.maintainers) {
+          setProject(project);
+          const { username, repoName } = getAuthorRepo(project.config.url);
+          if (username && repoName) {
+            setProjectRepoInfo(username, repoName);
           }
-        }
+          const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+          if (tomlData) {
+            const configData = extractConfigData(tomlData, project);
+            setConfigData(configData);
+          } else {
+            setConfigData({});
+          }
+          try {
+            const latestSha = await getProjectHash();
 
-        initializeProjectState();
-        projectInfoLoaded.set(true);
-      } else {
-        refreshLocalStorage();
-        if (res.error) {
-          toast.error("Something Went Wrong!", res.errorMessage);
+            if (
+              latestSha &&
+              typeof latestSha === "string" &&
+              latestSha.match(/^[a-f0-9]{40}$/)
+            ) {
+              setProjectLatestSha(latestSha);
+            } else {
+              setProjectLatestSha("");
+            }
+          } catch (error: any) {
+            toast.error("Something Went Wrong!", error.message);
+          }
+          initializeProjectState();
+          projectInfoLoaded.set(true);
+        } else {
+          refreshLocalStorage();
+          window.location.href = "/";
         }
+      } catch (error: any) {
+        console.error("Error fetching project info:", error);
+        toast.error("Something Went Wrong!", error.message);
+        refreshLocalStorage();
         window.location.href = "/";
       }
     }

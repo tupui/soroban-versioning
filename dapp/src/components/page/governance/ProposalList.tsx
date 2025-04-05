@@ -32,21 +32,19 @@ const ProposalList: React.FC = () => {
   const fetchProposalData = async (_page: number) => {
     if (projectName) {
       setIsLoading(true);
-      const res = await getProposals(projectName, _page);
-      const proposals = res.data;
-
-      if (proposals && !res.error) {
+      try {
+        const proposals = await getProposals(projectName, _page);
         const updatedProposalData = proposals
           .map((proposal) => {
             return modifyProposalToView(proposal, projectName);
           })
           .sort((a, b) => b.id - a.id);
         setProposalData(updatedProposalData);
-      } else {
-        toast.error("Something Went Wrong!", res.errorMessage);
+      } catch (error: any) {
+        toast.error("Something Went Wrong!", error.message);
       }
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {

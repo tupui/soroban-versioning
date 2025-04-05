@@ -38,21 +38,19 @@ const ProjectCard = ({ config }) => {
         } else {
           setConfigData({});
         }
-
-        const latestSha = await getProjectHash();
-        if (
-          latestSha.data &&
-          typeof latestSha.data === "string" &&
-          latestSha.data.match(/^[a-f0-9]{40}$/)
-        ) {
-          setProjectLatestSha(latestSha.data);
-        } else {
-          setProjectLatestSha("");
-          if (latestSha.error) {
-            toast.error("Something Went Wrong!", latestSha.errorMessage);
+        try {
+          const latestSha = await getProjectHash();
+          if (
+            latestSha &&
+            typeof latestSha === "string" &&
+            latestSha.match(/^[a-f0-9]{40}$/)
+          ) {
+            setProjectLatestSha(latestSha);
           }
+          setProjectLatestSha("");
+        } catch (error) {
+          toast.error("Something Went Wrong!", error.message);
         }
-
         projectCardModalOpen.set(true);
       } else {
         if (res.error) {

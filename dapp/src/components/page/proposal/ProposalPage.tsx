@@ -50,24 +50,25 @@ const ProposalPage: React.FC = () => {
   const getProposalDetails = async () => {
     if (!id !== undefined && projectName) {
       setIsLoading(true);
-      const response = await getProposal(projectName, id);
-      const proposal = response.data;
-      const res = await getProjectFromName(projectName);
-      const projectInfo = res.data;
-      if (projectInfo && projectInfo.maintainers) {
-        setProjectMaintainers(projectInfo?.maintainers);
-      } else if (res.error) {
-        toast.error("Something Went Wrong!", res.errorMessage);
-      }
-      if (proposal) {
+      try {
+        const proposal = await getProposal(projectName, id);
         const proposalView = modifyProposalToView(proposal, projectName);
         setProposal(proposalView);
         const description = await fetchProposalFromIPFS(proposal.ipfs);
         setDescription(description);
         const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfs);
         setOutcome(outcome);
-      } else if (response.error) {
-        toast.error("Something Went Wrong!", response.errorMessage);
+      } catch (error: any) {
+        console.error("Error fetching proposal details:", error);
+        toast.error("Something Went Wrong!", error.message);
+      }
+      try {
+        const projectInfo = await getProjectFromName(projectName);
+        if (projectInfo && projectInfo.maintainers) {
+          setProjectMaintainers(projectInfo?.maintainers);
+        }
+      } catch (error: any) {
+        toast.error("Something Went Wrong!", error.message);
       }
       setIsLoading(false);
     } else {
