@@ -1,7 +1,7 @@
 use crate::{errors, types, DaoTrait, Tansu, TansuArgs, TansuClient};
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
-    bytesn, contractimpl, panic_with_error, vec, Address, Bytes, Env, String, Vec, U256,
+    contractimpl, panic_with_error, vec, Address, Bytes, BytesN, Env, String, Vec, U256,
 };
 
 const MAX_TITLE_LENGTH: u32 = 256;
@@ -233,6 +233,20 @@ impl DaoTrait for Tansu {
             panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
         }
 
+        if !is_public_vote {
+            match &vote {
+                types::Vote::AnonymousVote(vote_choice) => {
+                    if vote_choice.commitments.len() != 3 {
+                        panic_with_error!(&env, &errors::ContractErrors::BadCommitment)
+                    }
+                    for commitment in &vote_choice.commitments {
+                        G1Affine::from_bytes(commitment);
+                    }
+                }
+                _ => {}
+            }
+        }
+
         // can only vote for yourself so address must match
         let vote_address = match &vote {
             types::Vote::PublicVote(vote_choice) => &vote_choice.address,
@@ -386,7 +400,10 @@ impl DaoTrait for Tansu {
         }
 
         // tally commitments from recorded votes (vote + seed)
-        let tally_commitment_init_ = G1Affine::from_bytes(bytesn!(&env, 0x400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000));
+        let mut g1_identity = [0u8; 96];
+        g1_identity[0] = 0x40;
+        let tally_commitment_init_ = G1Affine::from_bytes(BytesN::from_array(&env, &g1_identity));
+
         let mut tally_commitments = [
             tally_commitment_init_.clone(),
             tally_commitment_init_.clone(),

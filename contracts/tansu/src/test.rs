@@ -412,6 +412,12 @@ fn test() {
             encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
             encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
             commitments: contract.build_anonymous_vote_abstain(&kuiil).commitments,
+            // commitments: vec![
+            //     &env,
+            //     BytesN::from_array(&env, &[0; 96]),
+            //     BytesN::from_array(&env, &[0; 96]),
+            //     BytesN::from_array(&env, &[0; 96]),
+            // ],
         }),
     );
 
