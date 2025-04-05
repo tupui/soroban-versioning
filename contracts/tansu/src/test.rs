@@ -4,10 +4,11 @@ use super::{domain_contract, Tansu, TansuClient};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
 use crate::types::{AnonymousVote, Dao, ProposalStatus, PublicVote, Vote, VoteChoice};
+use soroban_sdk::testutils::arbitrary::std::println;
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
 use soroban_sdk::{
-    symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
+    symbol_short, testutils::Events, token, vec, Address, Bytes, BytesN, Env, IntoVal, String, Vec,
 };
 
 #[test]
@@ -308,7 +309,7 @@ fn test() {
                 address: kuiil.clone(),
                 encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
                 encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
-                commitments: vec![&env, Bytes::from_array(&env, &[1, 2, 3])],
+                commitments: vec![&env, BytesN::from_array(&env, &[0; 96])],
             }),
         )
         .unwrap_err()
@@ -416,7 +417,8 @@ fn test() {
 
     env.ledger().set_timestamp(voting_ends_at + 1);
 
-    env.cost_estimate().budget().reset_unlimited();
+    //env.cost_estimate().budget().reset_unlimited();
+    env.cost_estimate().budget().reset_default();
 
     let vote_result = contract.execute(
         &grogu,
@@ -425,6 +427,10 @@ fn test() {
         &Some(vec![&env, 0u32, 0u32, 2u32]),
         &Some(vec![&env, 0u32, 0u32, 0u32]),
     );
+
+    let cost = env.cost_estimate().budget();
+    println!("{:#?}", cost);
+
     assert_eq!(vote_result, ProposalStatus::Cancelled);
 }
 

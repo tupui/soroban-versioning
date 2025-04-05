@@ -1,6 +1,5 @@
 use crate::{errors, types, DaoTrait, Tansu, TansuArgs, TansuClient};
 use soroban_sdk::crypto::bls12_381::G1Affine;
-use soroban_sdk::xdr::{FromXdr, ToXdr};
 use soroban_sdk::{
     bytesn, contractimpl, panic_with_error, vec, Address, Bytes, Env, String, Vec, U256,
 };
@@ -34,12 +33,8 @@ impl DaoTrait for Tansu {
         let seed_generator = Bytes::from_slice(&env, "SEED_GENERATOR".as_bytes());
         let seed_dst = Bytes::from_slice(&env, "VOTE_SEED".as_bytes());
 
-        let vote_generator_point = bls12_381
-            .hash_to_g1(&vote_generator, &vote_dst)
-            .to_xdr(&env);
-        let seed_generator_point = bls12_381
-            .hash_to_g1(&seed_generator, &seed_dst)
-            .to_xdr(&env);
+        let vote_generator_point = bls12_381.hash_to_g1(&vote_generator, &vote_dst).to_bytes();
+        let seed_generator_point = bls12_381.hash_to_g1(&seed_generator, &seed_dst).to_bytes();
 
         let vote_config = types::AnonymousVoteConfig {
             vote_generator_point,
@@ -65,10 +60,8 @@ impl DaoTrait for Tansu {
         let vote_config = <Tansu as DaoTrait>::get_anonymous_voting_config(env.clone());
 
         let bls12_381 = env.crypto().bls12_381();
-        let seed_generator_point =
-            G1Affine::from_xdr(&env, &vote_config.seed_generator_point).unwrap();
-        let vote_generator_point =
-            G1Affine::from_xdr(&env, &vote_config.vote_generator_point).unwrap();
+        let seed_generator_point = G1Affine::from_bytes(vote_config.seed_generator_point);
+        let vote_generator_point = G1Affine::from_bytes(vote_config.vote_generator_point);
 
         let seed_: U256 = U256::from_u32(&env, 0);
         let vote_: U256 = U256::from_u32(&env, 0);
@@ -77,10 +70,10 @@ impl DaoTrait for Tansu {
         let vote_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_.into());
         let vote_abstain_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_abstain_.into());
 
-        let commitment_ = bls12_381.g1_add(&vote_point_, &seed_point_).to_xdr(&env);
+        let commitment_ = bls12_381.g1_add(&vote_point_, &seed_point_).to_bytes();
         let commitment_abstain_ = bls12_381
             .g1_add(&vote_abstain_point_, &seed_point_)
-            .to_xdr(&env);
+            .to_bytes();
 
         let zero_string = String::from_str(&env, "0");
         let one_string = String::from_str(&env, "1");
@@ -377,10 +370,8 @@ impl DaoTrait for Tansu {
             .get(&types::DataKey::AnonymousVoteConfig)
             .unwrap();
 
-        let seed_generator_point =
-            G1Affine::from_xdr(&env, &vote_config.seed_generator_point).unwrap();
-        let vote_generator_point =
-            G1Affine::from_xdr(&env, &vote_config.vote_generator_point).unwrap();
+        let seed_generator_point = G1Affine::from_bytes(vote_config.seed_generator_point);
+        let vote_generator_point = G1Affine::from_bytes(vote_config.vote_generator_point);
 
         // calculate commitments from vote tally and seed tally
         let mut commitment_checks = Vec::new(&env);
@@ -409,7 +400,7 @@ impl DaoTrait for Tansu {
                     .iter()
                     .zip(tally_commitments.iter_mut())
                 {
-                    let commitment_ = G1Affine::from_xdr(&env, &commitment).unwrap();
+                    let commitment_ = G1Affine::from_bytes(commitment);
                     *tally_commitment = bls12_381.g1_add(tally_commitment, &commitment_);
                 }
             };

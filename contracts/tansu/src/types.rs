@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, Bytes, String, Vec};
+use soroban_sdk::{contracttype, Address, Bytes, BytesN, String, Vec};
 
 #[contracttype]
 pub enum DataKey {
@@ -43,7 +43,7 @@ pub struct AnonymousVote {
     pub address: Address,
     pub encrypted_seeds: Vec<String>,
     pub encrypted_votes: Vec<String>,
-    pub commitments: Vec<Bytes>,
+    pub commitments: Vec<BytesN<96>>,
 }
 
 #[contracttype]
@@ -57,8 +57,8 @@ pub struct VoteData {
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnonymousVoteConfig {
-    pub vote_generator_point: Bytes,
-    pub seed_generator_point: Bytes,
+    pub vote_generator_point: BytesN<96>,
+    pub seed_generator_point: BytesN<96>,
     pub public_key: String,
 }
 
