@@ -23,8 +23,7 @@ const ProjectCard = ({ config }) => {
     refreshLocalStorage();
     try {
       setProjectId(config.projectName.toLowerCase());
-      const res = await getProject();
-      const project = res.data;
+      const project = await getProject();
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
         const { username, repoName } = getAuthorRepo(project.config.url);
@@ -36,6 +35,7 @@ const ProjectCard = ({ config }) => {
           const configData = extractConfigData(tomlData, project);
           setConfigData(configData);
         } else {
+          toast.error("Something Went Wrong!", "No config data found");
           setConfigData({});
         }
         try {

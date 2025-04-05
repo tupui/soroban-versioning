@@ -58,19 +58,14 @@ async function getCommitHistory(
 
 async function fetchTOMLFromConfigUrl(configUrl: string) {
   const url = getGithubContentUrlFromConfigUrl(configUrl);
-
   if (url) {
     const response = await fetch(url);
-
     if (!response.ok) {
       return undefined;
     }
-
     const tomlText = await response.text();
-
     return toml.parse(tomlText);
   }
-
   return undefined;
 }
 
