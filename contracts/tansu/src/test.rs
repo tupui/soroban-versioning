@@ -403,6 +403,27 @@ fn test() {
         vec![&env, Vote::AnonymousVote(vote_)]
     );
 
+    //
+    let error = contract
+        .try_vote(
+            &kuiil,
+            &id,
+            &proposal_id_3,
+            &Vote::AnonymousVote(AnonymousVote {
+                address: kuiil.clone(),
+                encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
+                encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
+                commitments: vec![
+                    &env,
+                    BytesN::from_array(&env, &[0; 96]),
+                    BytesN::from_array(&env, &[0; 96]),
+                ],
+            }),
+        )
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::BadCommitment.into());
+
     contract.vote(
         &kuiil,
         &id,
@@ -412,12 +433,6 @@ fn test() {
             encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
             encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
             commitments: contract.build_anonymous_vote_abstain(&kuiil).commitments,
-            // commitments: vec![
-            //     &env,
-            //     BytesN::from_array(&env, &[0; 96]),
-            //     BytesN::from_array(&env, &[0; 96]),
-            //     BytesN::from_array(&env, &[0; 96]),
-            // ],
         }),
     );
 
