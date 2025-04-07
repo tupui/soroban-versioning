@@ -36,10 +36,10 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       const { approve, abstain, reject } = voteStatus;
       let voteResult: VoteResultType | null = null;
       let xdr: string | null = null;
-      if (approve.score + abstain.score > reject.score) {
+      if (approve.score > abstain.score + reject.score) {
         voteResult = VoteResultType.APPROVE;
         xdr = outcome?.approved?.xdr || null;
-      } else if (reject.score < approve.score + abstain.score) {
+      } else if (reject.score > approve.score + abstain.score) {
         voteResult = VoteResultType.REJECT;
         xdr = outcome?.rejected?.xdr || null;
       } else {
