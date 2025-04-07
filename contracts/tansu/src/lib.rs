@@ -62,7 +62,7 @@ pub trait DaoTrait {
 
     fn get_anonymous_voting_config(env: Env) -> types::AnonymousVoteConfig;
 
-    fn build_anonymous_vote_abstain(env: Env, proposer: Address) -> types::AnonymousVote;
+    fn build_commitments_from_votes(env: Env, votes: Vec<u32>, seeds: Vec<u32>) -> Vec<BytesN<96>>;
 
     fn create_proposal(
         env: Env,

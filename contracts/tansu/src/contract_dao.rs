@@ -56,41 +56,35 @@ impl DaoTrait for Tansu {
             })
     }
 
-    fn build_anonymous_vote_abstain(env: Env, proposer: Address) -> types::AnonymousVote {
+    /// Build all three commitments from the votes and seeds.
+    ///
+    /// Calling that on the smart contract itself would reveal the votes and seeds.
+    /// This can be run in simulation in your RPC or used as a basis for
+    /// implementation client-side.
+    ///
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `votes` - Vector of votes.
+    /// * `seeds` - Vector of seeds.
+    /// # Returns
+    /// * `Vec<BytesN<96>>` - The three voting commitments.
+    fn build_commitments_from_votes(env: Env, votes: Vec<u32>, seeds: Vec<u32>) -> Vec<BytesN<96>> {
         let vote_config = <Tansu as DaoTrait>::get_anonymous_voting_config(env.clone());
 
         let bls12_381 = env.crypto().bls12_381();
         let seed_generator_point = G1Affine::from_bytes(vote_config.seed_generator_point);
         let vote_generator_point = G1Affine::from_bytes(vote_config.vote_generator_point);
 
-        let seed_: U256 = U256::from_u32(&env, 0);
-        let vote_: U256 = U256::from_u32(&env, 0);
-        let vote_abstain_: U256 = U256::from_u32(&env, 1);
-        let seed_point_ = bls12_381.g1_mul(&seed_generator_point, &seed_.into());
-        let vote_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_.into());
-        let vote_abstain_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_abstain_.into());
+        let mut commitments = Vec::new(&env);
+        for (vote_, seed_) in votes.iter().zip(seeds.iter()) {
+            let vote_: U256 = U256::from_u32(&env, vote_);
+            let seed_: U256 = U256::from_u32(&env, seed_);
+            let seed_point_ = bls12_381.g1_mul(&seed_generator_point, &seed_.into());
+            let vote_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_.into());
 
-        let commitment_ = bls12_381.g1_add(&vote_point_, &seed_point_).to_bytes();
-        let commitment_abstain_ = bls12_381
-            .g1_add(&vote_abstain_point_, &seed_point_)
-            .to_bytes();
-
-        let zero_string = String::from_str(&env, "0");
-        let one_string = String::from_str(&env, "1");
-        let encrypted_seeds = vec![
-            &env,
-            zero_string.clone(),
-            zero_string.clone(),
-            zero_string.clone(),
-        ];
-        let encrypted_votes = vec![&env, zero_string.clone(), zero_string.clone(), one_string];
-
-        types::AnonymousVote {
-            address: proposer.clone(),
-            encrypted_seeds,
-            encrypted_votes,
-            commitments: vec![&env, commitment_.clone(), commitment_, commitment_abstain_],
+            commitments.push_back(bls12_381.g1_add(&vote_point_, &seed_point_).to_bytes());
         }
+        commitments
     }
 
     /// Create a proposal on the DAO of the project.
@@ -149,11 +143,26 @@ impl DaoTrait for Tansu {
                     address: proposer,
                     vote_choice: types::VoteChoice::Abstain,
                 }),
-                false => {
-                    let vote_ =
-                        <Tansu as DaoTrait>::build_anonymous_vote_abstain(env.clone(), proposer);
-                    types::Vote::AnonymousVote(vote_)
-                }
+                false => types::Vote::AnonymousVote(types::AnonymousVote {
+                    address: proposer,
+                    encrypted_seeds: vec![
+                        &env,
+                        String::from_str(&env, "0"),
+                        String::from_str(&env, "0"),
+                        String::from_str(&env, "0"),
+                    ],
+                    encrypted_votes: vec![
+                        &env,
+                        String::from_str(&env, "0"),
+                        String::from_str(&env, "0"),
+                        String::from_str(&env, "1"),
+                    ],
+                    commitments: <Tansu as DaoTrait>::build_commitments_from_votes(
+                        env.clone(),
+                        vec![&env, 0u32, 0u32, 1u32],
+                        vec![&env, 0u32, 0u32, 0u32],
+                    ),
+                }),
             };
 
             let votes = vec![&env, vote_];

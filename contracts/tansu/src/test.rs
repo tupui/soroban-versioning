@@ -396,12 +396,30 @@ fn test() {
     let proposal_id_3 =
         contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &false);
 
-    let vote_ = contract.build_anonymous_vote_abstain(&grogu);
     let proposal_3 = contract.get_proposal(&id, &proposal_id_3);
-    assert_eq!(
-        proposal_3.vote_data.votes,
-        vec![&env, Vote::AnonymousVote(vote_)]
-    );
+
+    // test build_commitments_from_votes and abstain
+    let abstain_vote = Vote::AnonymousVote(AnonymousVote {
+        address: grogu.clone(),
+        encrypted_seeds: vec![
+            &env,
+            String::from_str(&env, "0"),
+            String::from_str(&env, "0"),
+            String::from_str(&env, "0"),
+        ],
+        encrypted_votes: vec![
+            &env,
+            String::from_str(&env, "0"),
+            String::from_str(&env, "0"),
+            String::from_str(&env, "1"),
+        ],
+        commitments: contract.build_commitments_from_votes(
+            &vec![&env, 0u32, 0u32, 1u32],
+            &vec![&env, 0u32, 0u32, 0u32],
+        ),
+    });
+
+    assert_eq!(proposal_3.vote_data.votes, vec![&env, abstain_vote.clone()]);
 
     //
     let error = contract
@@ -424,17 +442,26 @@ fn test() {
         .unwrap();
     assert_eq!(error, ContractErrors::BadCommitment.into());
 
-    contract.vote(
-        &kuiil,
-        &id,
-        &proposal_id_3,
-        &Vote::AnonymousVote(AnonymousVote {
-            address: kuiil.clone(),
-            encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
-            encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
-            commitments: contract.build_anonymous_vote_abstain(&kuiil).commitments,
-        }),
-    );
+    let vote_ = Vote::AnonymousVote(AnonymousVote {
+        address: kuiil.clone(),
+        encrypted_seeds: vec![
+            &env,
+            String::from_str(&env, "fafdas"),
+            String::from_str(&env, "fafdas"),
+            String::from_str(&env, "fafdas"),
+        ],
+        encrypted_votes: vec![
+            &env,
+            String::from_str(&env, "fafdas"),
+            String::from_str(&env, "fafdas"),
+            String::from_str(&env, "rewrewr"),
+        ],
+        commitments: contract.build_commitments_from_votes(
+            &vec![&env, 3u32, 1u32, 1u32],
+            &vec![&env, 5u32, 4u32, 6u32],
+        ),
+    });
+    contract.vote(&kuiil, &id, &proposal_id_3, &vote_);
 
     env.ledger().set_timestamp(voting_ends_at + 1);
 
@@ -445,8 +472,8 @@ fn test() {
         &grogu,
         &id,
         &proposal_id_3,
-        &Some(vec![&env, 0u32, 0u32, 2u32]),
-        &Some(vec![&env, 0u32, 0u32, 0u32]),
+        &Some(vec![&env, 3u32, 1u32, 2u32]),
+        &Some(vec![&env, 5u32, 4u32, 6u32]),
     );
 
     let cost = env.cost_estimate().budget();
