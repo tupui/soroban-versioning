@@ -57,7 +57,6 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
           }
           try {
             const latestSha = await getProjectHash();
-
             if (
               latestSha &&
               typeof latestSha === "string" &&

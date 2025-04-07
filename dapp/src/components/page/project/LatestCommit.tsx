@@ -1,6 +1,7 @@
 import { useStore } from "@nanostores/react";
 import { getLatestCommitData, getTOMLFileHash } from "@service/GithubService";
-import { loadProjectInfo, loadProjectLatestSha } from "@service/StateService";
+import { getProjectHash } from "@service/ReadContractService";
+import { loadProjectInfo } from "@service/StateService";
 import Tooltip from "components/utils/Tooltip";
 import { useEffect, useState } from "react";
 import { formatDate } from "utils/formatTimeFunctions";
@@ -22,7 +23,7 @@ const LatestCommit = () => {
 
   const loadLatestCommitData = async () => {
     const projectInfo = loadProjectInfo();
-    const latestSha = loadProjectLatestSha();
+    const latestSha = await getProjectHash();
     if (projectInfo && latestSha) {
       const latestCommit = await getLatestCommitData(
         projectInfo.config.url,
@@ -45,9 +46,7 @@ const LatestCommit = () => {
   };
 
   useEffect(() => {
-    if (isProjectInfoLoaded) {
-      loadLatestCommitData();
-    }
+    loadLatestCommitData();
   }, [isProjectInfoLoaded]);
 
   const handleCopy = () => {
