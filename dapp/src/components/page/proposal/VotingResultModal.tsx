@@ -115,8 +115,8 @@ const Voters: FC<VotersProps> = ({
       </div>
       <div className="grid grid-cols-2 gap-x-9 gap-y-[18px]">
         {voters
-          ?.filter((_, index) => index < 4 || showAll)
-          .map((voter, index) => (
+          ?.filter((_: any, index: number) => index < 4 || showAll)
+          .map((voter: any, index: number) => (
             <div className="flex flex-col justify-end gap-2" key={index}>
               {voter.name && (
                 <p className="leading-6 text-xl text-primary">@{voter.name}</p>

@@ -5,7 +5,7 @@ import Step from "components/utils/Step";
 import Title from "components/utils/Title";
 import React, { useMemo, useState } from "react";
 import {
-  VoteType,
+  VoteResultType,
   type ProposalOutcome,
   type VoteStatus,
 } from "types/proposal";
@@ -28,27 +28,29 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 }) => {
   const [step, setStep] = useState(1);
 
-  const voteResultAndXdr: { voteResult: VoteType | null; xdr: string | null } =
-    useMemo(() => {
-      if (voteStatus && outcome) {
-        const { approve, abstain } = voteStatus;
-        let voteResult: VoteType | null = null;
-        let xdr: string | null = null;
-        if (approve.score > abstain.score) {
-          voteResult = VoteType.APPROVE;
-          xdr = outcome?.approved?.xdr || null;
-        } else if (approve.score < abstain.score) {
-          voteResult = VoteType.REJECT;
-          xdr = outcome?.rejected?.xdr || null;
-        } else {
-          voteResult = VoteType.CANCEL;
-          xdr = outcome?.cancelled?.xdr || null;
-        }
-        return { voteResult, xdr };
+  const voteResultAndXdr: {
+    voteResult: VoteResultType | null;
+    xdr: string | null;
+  } = useMemo(() => {
+    if (voteStatus && outcome) {
+      const { approve, abstain, reject } = voteStatus;
+      let voteResult: VoteResultType | null = null;
+      let xdr: string | null = null;
+      if (approve.score + abstain.score > reject.score) {
+        voteResult = VoteResultType.APPROVE;
+        xdr = outcome?.approved?.xdr || null;
+      } else if (reject.score < approve.score + abstain.score) {
+        voteResult = VoteResultType.REJECT;
+        xdr = outcome?.rejected?.xdr || null;
       } else {
-        return { voteResult: null, xdr: null };
+        voteResult = VoteResultType.CANCEL;
+        xdr = outcome?.cancelled?.xdr || null;
       }
-    }, [voteStatus, outcome]);
+      return { voteResult, xdr };
+    } else {
+      return { voteResult: null, xdr: null };
+    }
+  }, [voteStatus, outcome]);
 
   const signAndExecute = async () => {
     if (!projectName) {

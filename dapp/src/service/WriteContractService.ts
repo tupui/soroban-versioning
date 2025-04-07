@@ -24,11 +24,11 @@ const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
 // Function to map VoteType to Vote
 function mapVoteTypeToVote(voteType: VoteType): Vote {
   switch (voteType) {
-    case "approved":
+    case "approve":
       return { tag: "Approve", values: undefined };
-    case "rejected":
+    case "reject":
       return { tag: "Reject", values: undefined };
-    case "cancelled":
+    case "abstain":
       return { tag: "Abstain", values: undefined };
     default:
       throw new Error("Invalid vote type");

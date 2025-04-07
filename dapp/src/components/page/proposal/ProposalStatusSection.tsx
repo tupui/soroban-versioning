@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { VoteType, type ProposalView } from "types/proposal";
+import { VoteResultType, type ProposalView } from "types/proposal";
 import { capitalizeFirstLetter } from "utils/utils";
 import { calculateDateDifference } from "../../../utils/formatTimeFunctions";
 
@@ -12,14 +12,14 @@ const ProposalStatusSection: React.FC<Props> = ({ proposal }) => {
     if (!proposal) return {};
     const status = proposal.status;
     const voteStatus = proposal.voteStatus;
-    let voteResult: VoteType | undefined = undefined;
+    let voteResult: VoteResultType | undefined = undefined;
     const { approve, abstain, reject } = voteStatus;
     if (approve.score > abstain.score + reject.score) {
-      voteResult = VoteType.APPROVE;
+      voteResult = VoteResultType.APPROVE;
     } else if (approve.score + abstain.score < reject.score) {
-      voteResult = VoteType.REJECT;
+      voteResult = VoteResultType.REJECT;
     } else {
-      voteResult = VoteType.CANCEL;
+      voteResult = VoteResultType.CANCEL;
     }
 
     return {
