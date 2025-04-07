@@ -19,11 +19,10 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
 <script>
   import { fetchTOMLFromConfigUrl } from "../../service/GithubService";
   import {
-    getProject,
+    getProjectFromName,
     getProjectHash,
   } from "../../service/ReadContractService";
   import {
-    initializeProjectState,
     refreshLocalStorage,
     setConfigData,
     setProject,
@@ -42,7 +41,7 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
       console.log("project info loading...");
       setProjectId(projectName);
       try {
-        const project = await getProject();
+        const project = await getProjectFromName(projectName);
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
           const { username, repoName } = getAuthorRepo(project.config.url);
@@ -71,7 +70,6 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
           } catch (error: any) {
             toast.error("Something Went Wrong!", error.message);
           }
-          initializeProjectState();
           projectInfoLoaded.set(true);
         } else {
           refreshLocalStorage();

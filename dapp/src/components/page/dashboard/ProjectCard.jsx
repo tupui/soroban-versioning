@@ -1,6 +1,6 @@
 import { fetchTOMLFromConfigUrl } from "../../../service/GithubService";
 import {
-  getProject,
+  getProjectFromName,
   getProjectHash,
 } from "../../../service/ReadContractService";
 import {
@@ -22,8 +22,8 @@ const ProjectCard = ({ config }) => {
   const handleCardClick = async () => {
     refreshLocalStorage();
     try {
-      setProjectId(config.projectName.toLowerCase());
-      const project = await getProject();
+      setProjectId(config.projectName);
+      const project = await getProjectFromName(config.projectName);
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
         const { username, repoName } = getAuthorRepo(project.config.url);
@@ -64,6 +64,7 @@ const ProjectCard = ({ config }) => {
       }
     } catch (e) {
       console.error(e);
+      toast.error("Something Went Wrong!", e.message);
     }
   };
 

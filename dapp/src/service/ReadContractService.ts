@@ -59,7 +59,7 @@ async function getProject(): Promise<Project> {
 
 async function getProjectFromName(projectName: string): Promise<Project> {
   const projectId = Buffer.from(
-    keccak256.create().update(projectName).digest(),
+    keccak256.create().update(projectName.toLowerCase()).digest(),
   );
 
   if (projectId === undefined) {
