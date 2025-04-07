@@ -126,17 +126,13 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
             </p>
           </div>
           <div className="flex justify-end">
-            <button
-              className="bg-zinc-800 text-white px-4 py-2 rounded-lg flex items-center"
-              onClick={handleDetailClick}
+            <Button
+              icon="/icons/search-white.svg"
+              size="xl"
+              onClick={() => navigate(`/project?name=${projectName}`)}
             >
-              Detail
-              <img
-                src="/icons/arrow.svg"
-                alt="->"
-                className="w-7 h-5 object-contain"
-              />
-            </button>
+              View Details
+            </Button>
           </div>
         </div>
       )}

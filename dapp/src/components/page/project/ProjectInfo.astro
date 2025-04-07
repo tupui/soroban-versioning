@@ -37,7 +37,7 @@ import Button from "components/utils/Button";
                 >
                 </p>
               </div>
-              <LatestCommit client:load />
+              <LatestCommit client:only />
             </div>
           </div>
         </div>
@@ -290,7 +290,7 @@ import Button from "components/utils/Button";
               );
             }
           } else {
-            addLinkButton(officialLinks, "GitHub", projectInfo.config.url);
+            addLinkButton(officialLinks, projectInfo.config.url, "github");
           }
         }
 

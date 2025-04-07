@@ -45,7 +45,9 @@ const LatestCommit = () => {
   };
 
   useEffect(() => {
-    loadLatestCommitData();
+    if (isProjectInfoLoaded) {
+      loadLatestCommitData();
+    }
   }, [isProjectInfoLoaded]);
 
   const handleCopy = () => {

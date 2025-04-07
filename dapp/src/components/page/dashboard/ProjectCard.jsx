@@ -35,7 +35,6 @@ const ProjectCard = ({ config }) => {
           const configData = extractConfigData(tomlData, project);
           setConfigData(configData);
         } else {
-          toast.error("Something Went Wrong!", "No config data found");
           setConfigData({});
         }
         try {
@@ -53,14 +52,10 @@ const ProjectCard = ({ config }) => {
         }
         projectCardModalOpen.set(true);
       } else {
-        if (res.error) {
-          toast.error("Something Went Wrong!", res.errorMessage);
-        } else {
-          toast.error(
-            "Something Went Wrong!",
-            `There is not such project: ${config.projectName}`,
-          );
-        }
+        toast.error(
+          "Something Went Wrong!",
+          `There is not such project: ${config.projectName}`,
+        );
       }
     } catch (e) {
       console.error(e);
