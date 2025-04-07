@@ -133,8 +133,7 @@ impl DaoTrait for Tansu {
         }
 
         // proposers can only be maintainers of existing projects
-        let project_key_ = project_key.clone();
-        let key_ = types::ProjectKey::Key(project_key_.clone());
+        let key_ = types::ProjectKey::Key(project_key.clone());
         if let Some(project) = env
             .storage()
             .persistent()
@@ -145,7 +144,7 @@ impl DaoTrait for Tansu {
             let proposal_id = env
                 .storage()
                 .persistent()
-                .get(&types::ProjectKey::DaoTotalProposals(project_key_.clone()))
+                .get(&types::ProjectKey::DaoTotalProposals(project_key.clone()))
                 .unwrap_or(0);
 
             // proposer is automatically in the abstain group
@@ -170,7 +169,7 @@ impl DaoTrait for Tansu {
                     ],
                     commitments: <Tansu as DaoTrait>::build_commitments_from_votes(
                         env.clone(),
-                        project_key_.clone(),
+                        project_key.clone(),
                         vec![&env, 0u32, 0u32, 1u32],
                         vec![&env, 0u32, 0u32, 0u32],
                     ),
@@ -193,17 +192,16 @@ impl DaoTrait for Tansu {
 
             let next_id = proposal_id + 1;
             env.storage().persistent().set(
-                &types::ProjectKey::DaoTotalProposals(project_key_.clone()),
+                &types::ProjectKey::DaoTotalProposals(project_key.clone()),
                 &next_id,
             );
 
             let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
-            let mut dao_page =
-                <Tansu as DaoTrait>::get_dao(env.clone(), project_key_.clone(), page);
+            let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key.clone(), page);
             dao_page.proposals.push_back(proposal);
 
             env.storage().persistent().set(
-                &types::ProjectKey::Dao(project_key_.clone(), page),
+                &types::ProjectKey::Dao(project_key.clone(), page),
                 &dao_page,
             );
 
@@ -228,10 +226,9 @@ impl DaoTrait for Tansu {
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote) {
         voter.require_auth();
 
-        let project_key_ = project_key.clone();
         let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
         let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
-        let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key_.clone(), page);
+        let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key.clone(), page);
         let mut proposal = match dao_page.proposals.try_get(sub_id) {
             Ok(Some(proposal)) => proposal,
             _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
@@ -281,7 +278,7 @@ impl DaoTrait for Tansu {
 
         env.storage()
             .persistent()
-            .set(&types::ProjectKey::Dao(project_key_, page), &dao_page)
+            .set(&types::ProjectKey::Dao(project_key, page), &dao_page)
     }
 
     /// Execute a vote after the voting period ends.
@@ -312,10 +309,9 @@ impl DaoTrait for Tansu {
     ) -> types::ProposalStatus {
         maintainer.require_auth();
 
-        let project_key_ = project_key.clone();
         let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
         let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
-        let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key_.clone(), page);
+        let mut dao_page = <Tansu as DaoTrait>::get_dao(env.clone(), project_key.clone(), page);
         let mut proposal = match dao_page.proposals.try_get(sub_id) {
             Ok(Some(proposal)) => proposal,
             _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
@@ -346,7 +342,7 @@ impl DaoTrait for Tansu {
                 let tallies_ = tallies.unwrap();
                 if !<Tansu as DaoTrait>::proof(
                     env.clone(),
-                    project_key_.clone(),
+                    project_key.clone(),
                     proposal.clone(),
                     tallies_.clone(),
                     seeds.unwrap(),
@@ -361,7 +357,7 @@ impl DaoTrait for Tansu {
 
         env.storage()
             .persistent()
-            .set(&types::ProjectKey::Dao(project_key_, page), &dao_page);
+            .set(&types::ProjectKey::Dao(project_key, page), &dao_page);
 
         proposal.status
     }
@@ -474,8 +470,7 @@ impl DaoTrait for Tansu {
             panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound);
         }
 
-        let project_key_ = project_key.clone();
-        let key_ = types::ProjectKey::Key(project_key_.clone());
+        let key_ = types::ProjectKey::Key(project_key.clone());
         if env
             .storage()
             .persistent()
@@ -484,7 +479,7 @@ impl DaoTrait for Tansu {
         {
             env.storage()
                 .persistent()
-                .get(&types::ProjectKey::Dao(project_key_, page))
+                .get(&types::ProjectKey::Dao(project_key, page))
                 .unwrap_or(types::Dao {
                     proposals: Vec::new(&env),
                 })
