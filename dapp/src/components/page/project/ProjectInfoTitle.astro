@@ -1,5 +1,6 @@
 ---
 import UpdateConfigModal from "./UpdateConfigModal";
+import UpdateHashModal from "./UpdateHashModal";
 ---
 
 <!-- <div class="flex justify-between items-center"> -->
@@ -8,7 +9,10 @@ import UpdateConfigModal from "./UpdateConfigModal";
     <img src="/icons/back.svg" />
     <p class="leading-5 text-xl text-primary">Back to Home Page</p>
   </a>
-  <UpdateConfigModal client:only />
+  <div class="flex gap-3">
+    <UpdateConfigModal client:only />
+    <UpdateHashModal client:only />
+  </div>
 </div>
 <!-- <div class="flex gap-3">
     <div class="p-[12px_18px] bg-white">

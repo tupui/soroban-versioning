@@ -120,6 +120,51 @@ async function getLatestCommitData(
   return await getCommitDataFromSha(username, repoName, sha);
 }
 
+async function getLatestCommitHash(
+  configUrl: string,
+): Promise<string | undefined> {
+  const token = import.meta.env.PUBLIC_GITHUBTOKEN;
+
+  const headers = token
+    ? {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+      }
+    : {};
+  const { username, repoName } = getAuthorRepo(configUrl);
+  if (!username || !repoName) {
+    return undefined;
+  }
+
+  try {
+    const repoRes = await fetch(
+      `https://api.github.com/repos/${username}/${repoName}`,
+      {
+        headers,
+      },
+    );
+    if (!repoRes.ok)
+      throw new Error(`Failed to fetch repo info: ${repoRes.status}`);
+    const repoData = await repoRes.json();
+    const defaultBranch = repoData.default_branch;
+
+    const commitRes = await fetch(
+      `https://api.github.com/repos/${username}/${repoName}/commits/${defaultBranch}`,
+      {
+        headers,
+      },
+    );
+    if (!commitRes.ok)
+      throw new Error(`Failed to fetch latest commit: ${commitRes.status}`);
+    const latestCommit = await commitRes.json();
+    const latestSha = latestCommit.sha;
+    return latestSha;
+  } catch (error: any) {
+    console.error("Error fetching latest commit:", error);
+    throw new Error(error.message);
+  }
+}
+
 async function fetchReadmeContentFromConfigUrl(configUrl: string) {
   const url = getGithubContentUrlFromReadmeUrl(configUrl);
 
@@ -144,4 +189,5 @@ export {
   fetchReadmeContentFromConfigUrl,
   getTOMLFileHash,
   getLatestCommitData,
+  getLatestCommitHash,
 };
