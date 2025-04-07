@@ -3,7 +3,6 @@ use soroban_sdk::{contracttype, Address, Bytes, BytesN, String, Vec};
 #[contracttype]
 pub enum DataKey {
     Admin, // Contract administrator
-    AnonymousVoteConfig,
 }
 
 #[contracttype]
@@ -85,6 +84,7 @@ pub enum ProjectKey {
     LastHash(Bytes), // last hash of the project
     Dao(Bytes, u32), // Decentralized organization, pagination
     DaoTotalProposals(Bytes),
+    AnonymousVoteConfig(Bytes),
 }
 
 #[contracttype]

@@ -391,7 +391,7 @@ fn test() {
     assert_eq!(error, ContractErrors::NoAnonymousVotingConfig.into());
 
     let public_key = String::from_str(&env, "public key random");
-    contract.anonymous_voting_setup(&public_key);
+    contract.anonymous_voting_setup(&id, &public_key);
 
     let proposal_id_3 =
         contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &false);
@@ -414,6 +414,7 @@ fn test() {
             String::from_str(&env, "1"),
         ],
         commitments: contract.build_commitments_from_votes(
+            &id,
             &vec![&env, 0u32, 0u32, 1u32],
             &vec![&env, 0u32, 0u32, 0u32],
         ),
@@ -457,6 +458,7 @@ fn test() {
             String::from_str(&env, "rewrewr"),
         ],
         commitments: contract.build_commitments_from_votes(
+            &id,
             &vec![&env, 3u32, 1u32, 1u32],
             &vec![&env, 5u32, 4u32, 6u32],
         ),

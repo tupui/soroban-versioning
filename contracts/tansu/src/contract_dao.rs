@@ -16,8 +16,9 @@ impl DaoTrait for Tansu {
     ///
     /// # Arguments
     /// * `env` - The environment object
+    /// * `project_key` - Unique identifier for the project
     /// * `public_key` - Asymmetric public key to be used to encode seeds
-    fn anonymous_voting_setup(env: Env, public_key: String) {
+    fn anonymous_voting_setup(env: Env, project_key: Bytes, public_key: String) {
         let admin: Address = env
             .storage()
             .instance()
@@ -42,15 +43,18 @@ impl DaoTrait for Tansu {
             public_key,
         };
 
-        env.storage()
-            .instance()
-            .set(&types::DataKey::AnonymousVoteConfig, &vote_config);
+        env.storage().instance().set(
+            &types::ProjectKey::AnonymousVoteConfig(project_key),
+            &vote_config,
+        );
     }
 
-    fn get_anonymous_voting_config(env: Env) -> types::AnonymousVoteConfig {
+    fn get_anonymous_voting_config(env: Env, project_key: Bytes) -> types::AnonymousVoteConfig {
         env.storage()
             .instance()
-            .get::<types::DataKey, types::AnonymousVoteConfig>(&types::DataKey::AnonymousVoteConfig)
+            .get::<types::ProjectKey, types::AnonymousVoteConfig>(
+                &types::ProjectKey::AnonymousVoteConfig(project_key),
+            )
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &errors::ContractErrors::NoAnonymousVotingConfig);
             })
@@ -64,12 +68,19 @@ impl DaoTrait for Tansu {
     ///
     /// # Arguments
     /// * `env` - The environment object
+    /// * `project_key` - Unique identifier for the project
     /// * `votes` - Vector of votes.
     /// * `seeds` - Vector of seeds.
     /// # Returns
     /// * `Vec<BytesN<96>>` - The three voting commitments.
-    fn build_commitments_from_votes(env: Env, votes: Vec<u32>, seeds: Vec<u32>) -> Vec<BytesN<96>> {
-        let vote_config = <Tansu as DaoTrait>::get_anonymous_voting_config(env.clone());
+    fn build_commitments_from_votes(
+        env: Env,
+        project_key: Bytes,
+        votes: Vec<u32>,
+        seeds: Vec<u32>,
+    ) -> Vec<BytesN<96>> {
+        let vote_config =
+            <Tansu as DaoTrait>::get_anonymous_voting_config(env.clone(), project_key);
 
         let bls12_381 = env.crypto().bls12_381();
         let seed_generator_point = G1Affine::from_bytes(vote_config.seed_generator_point);
@@ -159,6 +170,7 @@ impl DaoTrait for Tansu {
                     ],
                     commitments: <Tansu as DaoTrait>::build_commitments_from_votes(
                         env.clone(),
+                        project_key_.clone(),
                         vec![&env, 0u32, 0u32, 1u32],
                         vec![&env, 0u32, 0u32, 0u32],
                     ),
@@ -334,6 +346,7 @@ impl DaoTrait for Tansu {
                 let tallies_ = tallies.unwrap();
                 if !<Tansu as DaoTrait>::proof(
                     env.clone(),
+                    project_key_.clone(),
                     proposal.clone(),
                     tallies_.clone(),
                     seeds.unwrap(),
@@ -366,12 +379,19 @@ impl DaoTrait for Tansu {
     ///
     /// # Arguments
     /// * `env` - The environment object
+    /// * `project_key` - Unique identifier for the project
     /// * `commitment` - Vote commitment
     /// * `tally` - decoded tally value
     /// * `seed` - decoded seed value
     /// # Returns
     /// * `bool` - True if the commitment match
-    fn proof(env: Env, proposal: types::Proposal, tallies: Vec<u32>, seeds: Vec<u32>) -> bool {
+    fn proof(
+        env: Env,
+        project_key: Bytes,
+        proposal: types::Proposal,
+        tallies: Vec<u32>,
+        seeds: Vec<u32>,
+    ) -> bool {
         // only allow to proof if proposal is not active
         if proposal.status != types::ProposalStatus::Active {
             panic_with_error!(&env, &errors::ContractErrors::ProposalActive);
@@ -387,7 +407,7 @@ impl DaoTrait for Tansu {
         let vote_config: types::AnonymousVoteConfig = env
             .storage()
             .instance()
-            .get(&types::DataKey::AnonymousVoteConfig)
+            .get(&types::ProjectKey::AnonymousVoteConfig(project_key))
             .unwrap();
 
         let seed_generator_point = G1Affine::from_bytes(vote_config.seed_generator_point);

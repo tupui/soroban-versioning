@@ -58,11 +58,16 @@ pub trait VersioningTrait {
 }
 
 pub trait DaoTrait {
-    fn anonymous_voting_setup(env: Env, public_key: String);
+    fn anonymous_voting_setup(env: Env, project_key: Bytes, public_key: String);
 
-    fn get_anonymous_voting_config(env: Env) -> types::AnonymousVoteConfig;
+    fn get_anonymous_voting_config(env: Env, project_key: Bytes) -> types::AnonymousVoteConfig;
 
-    fn build_commitments_from_votes(env: Env, votes: Vec<u32>, seeds: Vec<u32>) -> Vec<BytesN<96>>;
+    fn build_commitments_from_votes(
+        env: Env,
+        project_key: Bytes,
+        votes: Vec<u32>,
+        seeds: Vec<u32>,
+    ) -> Vec<BytesN<96>>;
 
     fn create_proposal(
         env: Env,
@@ -85,7 +90,13 @@ pub trait DaoTrait {
         seeds: Option<Vec<u32>>,
     ) -> types::ProposalStatus;
 
-    fn proof(env: Env, proposal: types::Proposal, tallies: Vec<u32>, seeds: Vec<u32>) -> bool;
+    fn proof(
+        env: Env,
+        project_key: Bytes,
+        proposal: types::Proposal,
+        tallies: Vec<u32>,
+        seeds: Vec<u32>,
+    ) -> bool;
 
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 
