@@ -1,35 +1,28 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Container from "../../components/layout/Container.astro";
-import GetCommit from "../../components/page/project/GetCommit.astro";
-import CommitComponent from "../../components/page/project/Commit.astro";
 import ProjectInfo from "../../components/page/project/ProjectInfo.astro";
-import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
+import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.astro";
 ---
 
 <script is:inline>
   var global = global || window;
 </script>
 
-<Layout title="Tansu">
-  <main class="space-y-20">
-    <Container>
-      <ProjectInfo />
-      <ProjectReadme />
-      <GetCommit />
-      <CommitComponent />
-    </Container>
-  </main>
+<Layout title="Tansu" page="project">
+  <Container>
+    <ProjectInfoTitle />
+    <ProjectInfo />
+  </Container>
 </Layout>
 
 <script>
   import { fetchTOMLFromConfigUrl } from "../../service/GithubService";
   import {
-    getProject,
+    getProjectFromName,
     getProjectHash,
   } from "../../service/ReadContractService";
   import {
-    initializeProjectState,
     refreshLocalStorage,
     setConfigData,
     setProject,
@@ -39,7 +32,7 @@ import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
   } from "../../service/StateService";
   import { getAuthorRepo } from "../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../utils/store";
-  import { extractConfigData } from "../../utils/utils";
+  import { extractConfigData, toast } from "../../utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -47,44 +40,44 @@ import ProjectReadme from "../../components/page/project/ProjectReadme.astro";
     if (projectName) {
       console.log("project info loading...");
       setProjectId(projectName);
-      const res = await getProject();
-      const project = res.data;
-      if (project && project.name && project.config && project.maintainers) {
-        setProject(project);
-        const { username, repoName } = getAuthorRepo(project.config.url);
-        if (username && repoName) {
-          setProjectRepoInfo(username, repoName);
-        }
-        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
-        if (tomlData) {
-          const configData = extractConfigData(tomlData, project);
-          setConfigData(configData);
-        } else {
-          setConfigData({});
-        }
-
-        const latestSha = await getProjectHash();
-
-        if (
-          latestSha.data &&
-          typeof latestSha.data === "string" &&
-          latestSha.data.match(/^[a-f0-9]{40}$/)
-        ) {
-          setProjectLatestSha(latestSha.data);
-        } else {
-          setProjectLatestSha("");
-          if (latestSha.error) {
-            alert(latestSha.errorMessage);
+      try {
+        const project = await getProjectFromName(projectName);
+        if (project && project.name && project.config && project.maintainers) {
+          setProject(project);
+          const { username, repoName } = getAuthorRepo(project.config.url);
+          if (username && repoName) {
+            setProjectRepoInfo(username, repoName);
           }
+          const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+          if (tomlData) {
+            const configData = extractConfigData(tomlData, project);
+            setConfigData(configData);
+          } else {
+            setConfigData({});
+          }
+          try {
+            const latestSha = await getProjectHash();
+            if (
+              latestSha &&
+              typeof latestSha === "string" &&
+              latestSha.match(/^[a-f0-9]{40}$/)
+            ) {
+              setProjectLatestSha(latestSha);
+            } else {
+              setProjectLatestSha("");
+            }
+          } catch (error: any) {
+            toast.error("Something Went Wrong!", error.message);
+          }
+          projectInfoLoaded.set(true);
+        } else {
+          refreshLocalStorage();
+          window.location.href = "/";
         }
-
-        initializeProjectState();
-        projectInfoLoaded.set(true);
-      } else {
+      } catch (error: any) {
+        console.error("Error fetching project info:", error);
+        toast.error("Something Went Wrong!", error.message);
         refreshLocalStorage();
-        if (res.error) {
-          alert(res.errorMessage);
-        }
         window.location.href = "/";
       }
     }

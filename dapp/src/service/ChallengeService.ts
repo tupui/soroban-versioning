@@ -1,13 +1,14 @@
-import { kit } from "../components/stellar-wallets-kit";
-import { loadedPublicKey } from "./walletService";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import CryptoJS from "crypto-js";
+import { toast } from "utils/utils";
+import { kit } from "../components/stellar-wallets-kit";
+import { loadedPublicKey } from "./walletService";
 
 const generateChallengeTransaction = async (memo: string) => {
   const proposerAddress = loadedPublicKey();
 
   if (!proposerAddress) {
-    alert("Please connect your wallet first");
+    toast.error("Connect wallet", "Please connect your wallet first");
     return;
   }
   const server = new StellarSdk.Horizon.Server(

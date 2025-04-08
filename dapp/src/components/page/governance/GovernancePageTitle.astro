@@ -1,76 +1,50 @@
 ---
-import PrimaryButton from "../../utils/PrimaryButton.astro";
-import Topic from "../../utils/Topic.astro";
+import Button from "components/utils/Button";
 ---
 
-<div
-  class="relative flex flex-col items-center md:flex-row justify-between mb-1.5 mt-4 sm:mt-8 md:mt-12 gap-y-4"
->
-  <Topic title="" description="" id="proposal-page-topic" />
-  <div id="create-proposal-button" class="">
-    <PrimaryButton
-      wrapId="wrap-create-proposal-button"
-      dataAttr="data-create-proposal-button"
-      ariaControls="create-proposal-modal"
-      buttonText="Submit Proposal"
-    />
-  </div>
+<div class="z-[1] flex justify-between items-center">
+  <a href="" id="back-link" class="flex gap-[14px]">
+    <img src="/icons/back.svg" />
+    <p class="leading-5 text-xl text-primary">Back to Project Page</p>
+  </a>
+  <Button id="create-proposal-button" className="hidden" icon="/icons/send.svg">
+    Submit Proposal
+  </Button>
 </div>
 
 <script>
   import { getProjectFromName } from "@service/ReadContractService";
-  import { navigate } from "astro:transitions/client";
-  import { connectedPublicKey, projectNameForGovernance } from "utils/store";
-  import { capitalizeFirstLetter } from "utils/utils";
+  import { connectedPublicKey } from "utils/store";
+  import { toast } from "utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
-    let projectName = "";
-    let maintainers: string[] = [];
-    let connectedAddress = "";
-    projectNameForGovernance.subscribe(async (_projectName) => {
-      if (_projectName) {
-        const titleElement = document
-          .getElementById("proposal-page-topic")
-          ?.querySelector("span");
-        if (titleElement) {
-          titleElement.textContent = `${capitalizeFirstLetter(_projectName)} Governance`;
-        }
-        projectName = _projectName;
-        const res = await getProjectFromName(_projectName);
-        const projectInfo = res.data;
-        if (projectInfo && projectInfo.maintainers) {
-          maintainers = projectInfo?.maintainers;
-        } else {
-          alert(res.errorMessage);
-        }
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectName = urlParams.get("name");
+
+    const backLink = document.getElementById("back-link");
+    if (backLink) {
+      if (backLink) {
+        backLink.setAttribute("href", `/project?name=${projectName}`);
       }
-    });
+    }
 
-    connectedPublicKey.subscribe((publicKey) => {
-      connectedAddress = publicKey;
-    });
-
-    const submitProposalButton = document.getElementById(
-      "wrap-create-proposal-button",
+    let maintainers: string[] = [];
+    const createProposalButton = document.querySelector(
+      "#create-proposal-button",
     );
 
-    if (submitProposalButton) {
-      submitProposalButton.addEventListener("click", () => {
-        if (!connectedAddress) {
-          alert("Please connect your wallet first");
-          return;
-        }
-
-        if (projectName) {
-          if (maintainers.includes(connectedAddress)) {
-            navigate(`/proposal/new?name=${projectName}`);
-          } else {
-            alert("Only maintainers can submit proposals");
-          }
-        } else {
-          alert("Project name is not provided");
-        }
-      });
+    try {
+      const projectInfo = await getProjectFromName(projectName!);
+      if (projectInfo && projectInfo.maintainers) {
+        maintainers = projectInfo?.maintainers;
+      }
+    } catch (error: any) {
+      toast.error("Something Went Wrong!", error.message);
     }
+    connectedPublicKey.subscribe((publicKey) => {
+      if (maintainers.includes(publicKey)) {
+        createProposalButton?.classList.remove("hidden");
+      }
+    });
   });
 </script>

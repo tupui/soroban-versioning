@@ -1,29 +1,21 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import GovernancePageTitle from "components/page/governance/GovernancePageTitle.astro";
+import CreateProposalModal from "components/page/proposal/CreateProposalModal";
 import Container from "../../components/layout/Container.astro";
 import GovernancePage from "../../components/page/governance/GovernancePage.astro";
+import Layout from "../../layouts/Layout.astro";
 ---
 
 <script is:inline>
   var global = global || window;
 </script>
 
-<Layout title="Tansu">
-  <main class="space-y-20">
-    <Container>
-      <GovernancePage />
-    </Container>
-  </main>
+<Layout title="Tansu" page="governance">
+  <Container>
+    <GovernancePageTitle />
+    <GovernancePage />
+    <CreateProposalModal client:load />
+  </Container>
 </Layout>
 
-<script>
-  import { projectNameForGovernance } from "utils/store";
-
-  document.addEventListener("astro:page-load", async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectName = urlParams.get("name") || "";
-    if (projectName) {
-      projectNameForGovernance.set(projectName);
-    }
-  });
-</script>
+<script></script>

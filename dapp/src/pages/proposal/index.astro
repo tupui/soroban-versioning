@@ -1,33 +1,19 @@
 ---
-import Layout from "../../layouts/Layout.astro";
+import ProposalPageTitle from "components/page/proposal/ProposalPageTitle.astro";
 import Container from "../../components/layout/Container.astro";
 import ProposalPage from "../../components/page/proposal/ProposalPage.tsx";
+import Layout from "../../layouts/Layout.astro";
 ---
 
 <script is:inline>
   var global = global || window;
 </script>
 
-<Layout title="Tansu">
-  <main class="space-y-20">
-    <Container>
-      <ProposalPage client:load />
-    </Container>
-  </main>
+<Layout title="Tansu" page="proposal">
+  <Container>
+    <ProposalPageTitle />
+    <ProposalPage client:only />
+  </Container>
 </Layout>
 
-<script>
-  import { projectNameForGovernance, proposalId } from "utils/store";
-
-  document.addEventListener("astro:page-load", async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get("id") || "";
-    if (id) {
-      proposalId.set(Number(id));
-    }
-    const projectName = urlParams.get("name") || "";
-    if (projectName) {
-      projectNameForGovernance.set(projectName);
-    }
-  });
-</script>
+<script></script>

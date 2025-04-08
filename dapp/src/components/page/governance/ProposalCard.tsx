@@ -1,74 +1,44 @@
+import Button from "components/utils/Button";
 import React from "react";
-import ProposalStatusShow from "./ProposalStatusShow";
-import { navigate } from "astro:transitions/client";
-import { useStore } from "@nanostores/react";
-import { calculateDateDifference } from "utils/formatTimeFunctions";
-import { projectNameForGovernance } from "utils/store";
-import type { ProposalCardView } from "types/proposal";
+import type { ProposalView } from "types/proposal";
+import ProposalStatusSection from "../proposal/ProposalStatusSection";
 
-const ProposalCard: React.FC<ProposalCardView> = ({
-  proposalNumber,
-  proposalTitle,
-  proposalStatus,
-  endDate,
-}) => {
-  const projectName = useStore(projectNameForGovernance);
+interface Props {
+  proposal: ProposalView;
+  onVoteClick?: () => void;
+}
+
+const ProposalCard: React.FC<Props> = ({ proposal, onVoteClick }) => {
+  const projectName =
+    new URLSearchParams(window.location.search).get("name") || "";
 
   return (
-    <div
-      className="w-full px-2 sm:px-4 md:pl-8 py-2 sm:py-3 md:py-4.5 bg-white border border-zinc-300 rounded-lg sm:rounded-xl cursor-pointer hover:border-lime hover:bg-zinc-500"
-      onClick={() =>
-        navigate(`/proposal?id=${proposalNumber}&name=${projectName}`)
-      }
+    <a
+      href={`/proposal?id=${proposal.id}&name=${projectName}`}
+      className="p-[30px] flex flex-col gap-6 bg-white cursor-pointer"
     >
-      <div className="w-full flex justify-between items-center">
-        <div className="lg:max-w-[calc(100%-240px)] flex items-start gap-2">
-          <div className="flex items-center gap-1">
-            <div className="text-base sm:text-xl md:text-2xl font-medium text-zinc-700 whitespace-nowrap">
-              {proposalNumber}
-            </div>
-          </div>
-          <div className="text-base sm:text-xl md:text-2xl font-medium text-gray-500">
-            {proposalTitle}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="hidden lg:block">
-            {proposalStatus === "active" &&
-              endDate &&
-              calculateDateDifference(endDate) && (
-                <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-                  Ends in {calculateDateDifference(endDate)}
-                </div>
-              )}
-            {proposalStatus === "voted" && (
-              <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-                Pending execution
-              </div>
-            )}
-          </div>
-          <div className="">
-            <ProposalStatusShow proposalStatus={proposalStatus} />
-          </div>
+      <div className="flex justify-between">
+        <p className="text-xl font-medium text-primary">{proposal.title}</p>
+        <div className="flex gap-[18px] text-xl">
+          <span className="text-tertiary">ID:</span>
+          <span className="text-primary">{proposal.id}</span>
         </div>
       </div>
-      <div className="flex lg:hidden">
-        <div className="pl-2 sm:pl-3 md:pl-4">
-          {proposalStatus === "active" &&
-            endDate &&
-            calculateDateDifference(endDate) && (
-              <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-                Ends in {calculateDateDifference(endDate)}
-              </div>
-            )}
-          {proposalStatus === "voted" && (
-            <div className="text-xs sm:text-sm md:text-base text-zinc-800 font-medium">
-              Pending execution
-            </div>
-          )}
-        </div>
+      <div className="flex justify-between">
+        <ProposalStatusSection proposal={proposal} />
+        {proposal.status == "active" && (
+          <Button
+            icon="/icons/vote.svg"
+            onClick={(e) => {
+              e.preventDefault();
+              onVoteClick?.();
+            }}
+          >
+            Vote
+          </Button>
+        )}
       </div>
-    </div>
+    </a>
   );
 };
 

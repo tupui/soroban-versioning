@@ -1,20 +1,16 @@
 // /src/pages/api/w3up-delegation/[did].js
-import * as Client from "@web3-storage/w3up-client";
-import { StoreMemory } from "@web3-storage/w3up-client/stores/memory";
-import * as Proof from "@web3-storage/w3up-client/proof";
-import { Signer } from "@web3-storage/w3up-client/principal/ed25519";
 import * as DID from "@ipld/dag-ucan/did";
+import { getProjectFromId } from "@service/ReadContractService";
 import {
   verifyChallengeSignature,
   verifyDidHash,
 } from "@service/VerifyChallengeService";
-import {
-  getProjectFromId,
-  getProjectFromName,
-} from "@service/ReadContractService";
-import crypto from "crypto";
-import decryptProof from "../../utils/decryptAES256";
+import * as Client from "@web3-storage/w3up-client";
+import { Signer } from "@web3-storage/w3up-client/principal/ed25519";
+import * as Proof from "@web3-storage/w3up-client/proof";
+import { StoreMemory } from "@web3-storage/w3up-client/stores/memory";
 import pkg from "js-sha3";
+import decryptProof from "../../utils/decryptAES256";
 const { keccak256 } = pkg;
 
 export const prerender = false;
@@ -71,13 +67,15 @@ const getProjectMaintainers = async (projectName) => {
     const projectId = Buffer.from(
       keccak256.create().update(projectName).digest(),
     );
-
-    const res = await getProjectFromId(projectId);
-    const projectInfo = res.data;
-
-    if (projectInfo && projectInfo.maintainers) {
-      return projectInfo.maintainers;
-    } else if (res.error) {
+    try {
+      const projectInfo = await getProjectFromId(projectId);
+      if (projectInfo && projectInfo.maintainers) {
+        return projectInfo.maintainers;
+      } else if (res.error) {
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching project info:", error);
       return null;
     }
   } else {

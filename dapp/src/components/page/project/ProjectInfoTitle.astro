@@ -1,0 +1,25 @@
+---
+import UpdateConfigModal from "./UpdateConfigModal";
+import UpdateHashModal from "./UpdateHashModal";
+---
+
+<!-- <div class="flex justify-between items-center"> -->
+<div class="flex items-center justify-between">
+  <a href="/" class="flex gap-[14px]">
+    <img src="/icons/back.svg" />
+    <p class="leading-5 text-xl text-primary">Back to Home Page</p>
+  </a>
+  <div class="flex gap-3">
+    <UpdateConfigModal client:only />
+    <UpdateHashModal client:only />
+  </div>
+</div>
+<!-- <div class="flex gap-3">
+    <div class="p-[12px_18px] bg-white">
+    <p class="leading-5 text-xl text-primary">Follow</p>
+    </div>
+    <div class="p-[11px] bg-white">
+    <img src="/icons/share.svg"/>"
+    </div>
+</div> -->
+<!-- </div> -->
