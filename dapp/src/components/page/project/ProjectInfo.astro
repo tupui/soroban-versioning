@@ -1,286 +1,238 @@
 ---
-import Topic from "../../utils/Topic.astro";
-import Modal from "../../utils/Modal.astro";
-import Loading from "../../utils/Loading.astro";
-import PrimaryButton from "../../utils/PrimaryButton.astro";
-import ModalInput from "../../utils/ModalInput.astro";
-import CommitHistory from "./CommitHistory.jsx";
-import DonateModal from "./DonateModal.astro";
+import CommitHistory from "./CommitHistory";
+import DonateModal from "./DonateModal";
+import LastHashModal from "./LastHashModal.astro";
+import LatestCommit from "./LatestCommit";
+import ReadMoreModal from "./ReadMoreModal.astro";
+import Button from "components/utils/Button";
 ---
 
-<div
-  class="relative flex flex-col items-center md:flex-row justify-between mb-1.5 mt-4 sm:mt-8 md:mt-12 gap-y-4"
->
-  <Topic
-    title="Project"
-    description="Details about the project"
-    id="project-name-topic"
-  />
-  <div class="flex gap-2 items-center">
-    <button
-      id="go-to-proposals-button"
-      class="px-2 sm:px-4 py-1.5 sm:py-3 bg-zinc-900 rounded-[14px] justify-center items-center gap-2.5 inline-flex"
-    >
-      <span
-        class="text-center text-white text-base sm:text-xl font-normal leading-7"
-      >
-        Governance
-      </span>
-      <img
-        id="right-arrow-icon"
-        src="/icons/arrow.svg"
-        alt="->"
-        class="w-7 h-5 object-contain"
-      />
-    </button>
-    <div id="open-donate-modal-button" class="pr-3">
-      <PrimaryButton
-        wrapId="wrap-donate-modal"
-        dataAttr="data-donate-modal"
-        ariaControls="donate-modal"
-        buttonText="♥ Support"
-      />
-    </div>
-    <div id="open-update-config-modal-button" class="pr-3 hidden">
-      <PrimaryButton
-        wrapId="wrap-update-config"
-        dataAttr="data-update-config"
-        ariaControls="update-config-modal"
-        buttonText="Update Config"
-      />
-    </div>
-  </div>
-</div>
-
-<div
-  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
->
-  <div
-    class="row items-center py-8 sm:py-12 px-4 sm:px-8 md:px-20 w-full md:py-10"
-  >
-    <div class="space-y-6 md:w-full sm:pl-4 md:pl-0">
-      <div id="project-name" class="flex justify-between items-end space-x-2">
-        <p id="project-name-value" class="text-2xl sm:text-4xl font-bold"></p>
-      </div>
-
-      <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
-        <img
-          id="project-thumbnail"
-          src="/fallback-image.jpg"
-          alt="Project Thumbnail"
-          class="w-full md:w-[40%] max-w-40 sm:max-w-56 md:max-w-80 object-cover rounded-lg"
-        />
-
-        <div class="flex-1">
-          <h3 class="text-base sm:text-lg md:text-2xl font-semibold">
-            Description
-          </h3>
-          <p id="project-description" class="flex-1 text-base sm:text-lg"></p>
+<div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
+  <div class="py-12 flex flex-col gap-12 bg-[#FFFFFFB8]">
+    <div class="px-[16px] lg:px-[72px] flex flex-col gap-9">
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-12">
+          <div class="flex max-lg:flex-col gap-6 items-center">
+            <img
+              id="project-thumbnail"
+              alt="Project Thumbnail"
+              src="/fallback-image.jpg"
+              class="w-[220px] object-cover"
+            />
+            <div class="flex flex-col gap-9">
+              <div class="flex flex-col gap-3">
+                <p
+                  id="project-organization-name"
+                  class="text-base sm:text-lg text-secondary"
+                >
+                </p>
+                <div class="flex gap-[18px]">
+                  <p id="project-name" class="text-2xl text-primary"></p>
+                  <div id="official-links" class="flex items-center gap-3">
+                  </div>
+                </div>
+                <p
+                  id="project-description"
+                  class="text-base sm:text-lg text-secondary"
+                >
+                </p>
+              </div>
+              <LatestCommit client:only />
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
-        <div
-          id="project-maintainers"
-          class="space-y-1 w-full md:w-[40%] md:max-w-80"
+      <div class="flex max-lg:flex-col gap-[18px]">
+        <Button id="goto-dao" icon="/icons/gear-white.svg">
+          <p class="leading-5 text-xl text-white">Governance</p>
+        </Button>
+        <DonateModal client:only>
+          <Button icon="/icons/heart.svg" size="xl" type="secondary">
+            Support
+          </Button>
+        </DonateModal>
+        <Button
+          id="read-more-button"
+          icon="/icons/book.svg"
+          size="xl"
+          type="secondary"
         >
-          <h3 class="text-base sm:text-lg md:text-2xl font-semibold">
-            Maintainers
-          </h3>
-          <ul class="list-disc list-outside pl-5"></ul>
-        </div>
-
-        <div id="project-organization" class="space-y-1">
-          <h3 class="text-base sm:text-lg md:text-2xl font-semibold">
-            Organization
-          </h3>
-          <p id="project-organization-name" class=""></p>
-        </div>
-      </div>
-
-      <div class="flex flex-col md:flex-row gap-6 lg:gap-12">
-        <div id="project-links" class="w-full md:w-[40%] md:max-w-80">
-          <div class="hidden sm:block space-y-2">
-            <div class="flex flex-col">
-              <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">
-                Official Links
-              </h3>
-              <div id="official-links" class="flex flex-wrap gap-x-2 min-h-7">
-              </div>
-            </div>
-
-            <div class="flex flex-col">
-              <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">
-                Socials
-              </h3>
-              <div id="social-links" class="flex flex-wrap gap-x-2 min-h-7">
-              </div>
-            </div>
-          </div>
-          <div id="links" class="sm:hidden mb-4 flex gap-2 items-center"></div>
-        </div>
-
-        <div class="md:w-[calc(60%-24px)]">
-          <div class="flex flex-col">
-            <h3 class="text-base sm:text-lg md:text-2xl font-semibold mb-2">
-              Syncronize status
-            </h3>
-            <div id="project-sync-status" class="flex flex-wrap gap-2 min-h-7">
-            </div>
-          </div>
-          <div>
-            <div class="min-h-7"></div>
-            <div
-              class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center sm:gap-x-4"
-            >
-              <div
-                id="view-commit-history"
-                class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    id="commit-icon-up"
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z"
-                    clip-rule="evenodd"></path>
-                  <path
-                    id="commit-icon-down"
-                    class="hidden"
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
-                    clip-rule="evenodd"></path>
-                </svg>
-                <span id="view-commit-text" class="text-sm sm:text-base"
-                  >View Commit History</span
-                >
-              </div>
-              <div
-                id="jump-to-latest-commit"
-                class="flex items-center space-x-2 cursor-pointer hover:bg-zinc-300 transition-colors duration-300 rounded-lg px-2 py-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
-                    clip-rule="evenodd"></path>
-                </svg>
-                <span class="text-sm sm:text-base">Jump to Latest Commit</span>
-              </div>
-            </div>
-          </div>
-        </div>
+          Read More
+        </Button>
+        <Button
+          id="last-hash-button"
+          icon="/icons/eye.svg"
+          size="xl"
+          type="secondary"
+        >
+          Last Hash
+        </Button>
       </div>
     </div>
     <div
-      id="commit-history-container"
-      class="mt-4 overflow-hidden transition-all duration-300 max-h-0"
+      id="project-maintainers"
+      class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
     >
-      <CommitHistory client:load />
+      <p class="leading-4 text-base text-secondary">Maintainers</p>
+      <ul class="grid grid-cols-3 gap-9"></ul>
+      <div class="flex view-all"></div>
     </div>
+    <CommitHistory client:load />
   </div>
 </div>
 
-<Modal id="update-config-modal" title="Update Config">
-  <div
-    id="modal-content"
-    class="space-y-4 w-[calc(100vw-80px)] sm:w-[calc(100vw-120px)] md:w-[600px]"
-  >
-    <h2
-      id="update-modal-project-name"
-      class="text-2xl sm:text-3xl font-bold mb-4"
-    >
-      Project Name
-    </h2>
+<ReadMoreModal />
 
-    <label class="block mb-2 text-base font-medium text-black">
-      Maintainers
-      <ModalInput
-        id="modal-maintainers"
-        placeholder="List of maintainers' addresses as G...,G..."
-        required
-      />
-    </label>
-
-    <label class="block mb-2 text-base font-medium text-black">
-      GitHub repository URL
-      <ModalInput
-        id="modal-config-url"
-        placeholder="GitHub repository URL"
-        required
-      />
-    </label>
-
-    <label class="block mb-2 text-base font-medium text-black">
-      Information file hash
-      <ModalInput
-        id="modal-config-hash"
-        placeholder="Information file hash"
-        required
-        minlength="64"
-        maxlength="64"
-      />
-    </label>
-
-    <div id="wrap-update-button" class="relative">
-      <PrimaryButton
-        wrapId="wrap-update-config-button"
-        dataAttr="update-config-button"
-        buttonId="update-config-button"
-        ariaControls="update-config-button"
-        buttonText="Update Config"
-      />
-      <div
-        id="update-config-loader"
-        class="absolute top-0 left-0 w-full h-full bg-zinc-900 rounded-[14px] justify-center items-center hidden"
-      >
-        <Loading theme="dark" />
-      </div>
-    </div>
-  </div>
-</Modal>
-
-<DonateModal />
+<LastHashModal />
 
 <script>
-  import { loadedPublicKey } from "../../../service/walletService";
-  import { updateConfig } from "../../../service/WriteContractService";
-  import { getProject } from "../../../service/ReadContractService";
+  import { getLatestCommitData, getTOMLFileHash } from "@service/GithubService";
+  import { navigate } from "astro:transitions/client";
+  import type { ConfigData } from "types/projectConfig";
+  import { formatDateTime } from "utils/formatTimeFunctions";
   import {
     loadConfigData,
     loadProjectInfo,
     loadProjectLatestSha,
     loadProjectName,
-    setProject,
   } from "../../../service/StateService";
-  import { projectInfoLoaded } from "../../../utils/store";
   import { convertGitHubLink } from "../../../utils/editLinkFunctions";
-  import {
-    getLatestCommitData,
-    getTOMLFileHash,
-  } from "../../../service/GithubService";
+  import { projectInfoLoaded } from "../../../utils/store";
 
   document.addEventListener("astro:page-load", () => {
-    const modal = document.getElementById(
+    const updateConfigButton = document.querySelector("[data-update-config]");
+    const udpateConfigModal = document.getElementById(
       "update-config-modal",
     ) as HTMLDialogElement;
+
+    if (updateConfigButton) {
+      updateConfigButton.addEventListener("click", () => {
+        udpateConfigModal.showModal();
+      });
+    }
+
+    const readMoreButton = document.getElementById("read-more-button");
+    const readMoreModal = document.getElementById(
+      "read-more-modal",
+    ) as HTMLDialogElement;
+
+    if (readMoreButton && readMoreModal) {
+      readMoreButton.addEventListener("click", () => {
+        readMoreModal.showModal();
+      });
+    }
+
+    const lastHashButton = document.getElementById("last-hash-button");
+    const lastHashModal = document.getElementById(
+      "last-hash-modal",
+    ) as HTMLDialogElement;
+
+    if (lastHashButton && lastHashModal) {
+      lastHashButton.addEventListener("click", () => {
+        lastHashModal.showModal();
+      });
+    }
+
+    const updateMaintainerList = (
+      projectInfo: any,
+      configData?: ConfigData,
+      viewAll?: boolean,
+    ) => {
+      const maintainersList = document.getElementById("project-maintainers");
+      if (maintainersList) {
+        const viewAllButtonContainer =
+          maintainersList.querySelector(".view-all");
+        if (viewAllButtonContainer) viewAllButtonContainer.innerHTML = "";
+        const viewAllButton = document.createElement("button");
+        viewAllButton.className =
+          "leading-[18px] text-lg font-[450] text-primary underline";
+        viewAllButton.textContent = viewAll ? "Less" : "View All";
+        if (viewAll) {
+          viewAllButton.addEventListener("click", () =>
+            updateMaintainerList(projectInfo, configData, !viewAll),
+          );
+        }
+        const ul = maintainersList.querySelector("ul");
+        if (ul) {
+          ul.innerHTML = "";
+          if (
+            configData &&
+            configData.authorGithubNames &&
+            configData.maintainersAddresses
+          ) {
+            configData.authorGithubNames
+              .filter((_: string, index: number) => index <= 5 || viewAll)
+              .forEach((authorName: string, index: number) => {
+                const li = document.createElement("li");
+                li.className = "flex flex-col gap-2";
+
+                const content = document.createElement("p");
+                content.className = "leading-6 text-xl text-primary";
+                content.textContent = `@${authorName}`;
+                li.appendChild(content);
+
+                const address = document.createElement("p");
+                address.className = "leading-[14px] text-sm text-secondary";
+                address.textContent = `(${configData.maintainersAddresses[index]?.slice(0, 28) || ""}...)`;
+                li.appendChild(address);
+
+                ul.appendChild(li);
+              });
+            if (
+              viewAllButtonContainer &&
+              configData.authorGithubNames.length > 5
+            ) {
+              viewAllButtonContainer.append(viewAllButton);
+            }
+          } else {
+            projectInfo.maintainers
+              .filter((_: string, index: number) => index <= 5 || viewAll)
+              .forEach((maintainer: string) => {
+                const li = document.createElement("li");
+                li.className = "relative";
+
+                const content = document.createElement("p");
+                content.className = "leading-6 text-xl text-primary truncate";
+                content.textContent = maintainer;
+                li.appendChild(content);
+
+                const popup = document.createElement("p");
+                popup.className =
+                  "absolute left-0 bottom-full mb-1 p-1 bg-black text-center text-xs text-white rounded hidden max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
+                popup.textContent = maintainer;
+                li.appendChild(popup);
+
+                li.addEventListener("mouseenter", () => {
+                  popup.classList.remove("hidden");
+                });
+
+                li.addEventListener("mouseleave", () => {
+                  popup.classList.add("hidden");
+                });
+
+                ul.appendChild(li);
+              });
+            if (viewAllButtonContainer && projectInfo.maintainers.length > 5) {
+              viewAllButtonContainer.append(viewAllButton);
+            }
+          }
+        }
+      }
+    };
 
     let projectInfo: any;
 
     async function updateProjectInfo() {
       projectInfo = loadProjectInfo();
       if (projectInfo) {
-        const projectNameElement =
-          document.getElementById("project-name-value");
+        const gotoDaoButton = document.getElementById("goto-dao");
+        if (gotoDaoButton) {
+          gotoDaoButton.addEventListener("click", () =>
+            navigate(`/governance?name=${projectInfo.name}`),
+          );
+        }
+
+        const projectNameElement = document.getElementById("project-name");
         if (projectNameElement) {
           projectNameElement.textContent = projectInfo.name;
         }
@@ -307,75 +259,7 @@ import DonateModal from "./DonateModal.astro";
           }
         }
 
-        const maintainersList = document.getElementById("project-maintainers");
-        if (maintainersList) {
-          const ul = maintainersList.querySelector("ul");
-          if (ul) {
-            ul.innerHTML = "";
-            if (
-              configData &&
-              configData.authorGithubNames &&
-              configData.maintainersAddresses
-            ) {
-              configData.authorGithubNames.forEach(
-                (authorName: string, index: number) => {
-                  const li = document.createElement("li");
-                  li.className = "relative";
-
-                  const content = document.createElement("p");
-                  content.className = "truncate";
-                  content.textContent = authorName;
-
-                  li.appendChild(content);
-
-                  const popup = document.createElement("p");
-                  popup.className =
-                    "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-5 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
-                  popup.textContent =
-                    configData.maintainersAddresses[index] || "";
-                  li.appendChild(popup);
-
-                  li.addEventListener("mouseenter", () => {
-                    popup.classList.remove("hidden");
-                  });
-
-                  li.addEventListener("mouseleave", () => {
-                    popup.classList.add("hidden");
-                  });
-
-                  ul.appendChild(li);
-                },
-              );
-            } else {
-              projectInfo.maintainers.forEach((maintainer: string) => {
-                const li = document.createElement("li");
-                li.className = "relative";
-
-                const content = document.createElement("p");
-                content.className = "truncate";
-                content.textContent = maintainer;
-
-                li.appendChild(content);
-
-                const popup = document.createElement("p");
-                popup.className =
-                  "absolute left-0 bottom-full mb-1 bg-black text-white text-xs text-center p-1 rounded hidden before:content-[''] before:absolute before:left-1/2 before:top-full before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-black max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
-                popup.textContent = maintainer;
-                li.appendChild(popup);
-
-                li.addEventListener("mouseenter", () => {
-                  popup.classList.remove("hidden");
-                });
-
-                li.addEventListener("mouseleave", () => {
-                  popup.classList.add("hidden");
-                });
-
-                ul.appendChild(li);
-              });
-            }
-          }
-        }
+        updateMaintainerList(projectInfo, configData, false);
 
         const organizationElement = document.getElementById(
           "project-organization-name",
@@ -388,133 +272,40 @@ import DonateModal from "./DonateModal.astro";
         }
 
         const officialLinks = document.getElementById("official-links");
-        const socialLinks = document.getElementById("social-links");
         if (officialLinks) {
           officialLinks.innerHTML = "";
           if (configData && configData.officials) {
-            if (configData.officials.websiteLink) {
-              addLinkButton(
-                officialLinks,
-                "Website",
-                configData.officials.websiteLink,
-                "web",
-              );
-            }
             if (configData.officials.githubLink) {
               addLinkButton(
                 officialLinks,
-                "GitHub",
                 configData.officials.githubLink,
                 "github",
               );
             }
-          } else {
-            addLinkButton(
-              officialLinks,
-              "GitHub",
-              projectInfo.config.url,
-              "github",
-            );
-          }
-        }
-
-        if (socialLinks) {
-          socialLinks.innerHTML = "";
-          if (configData && configData.socialLinks) {
-            if (configData.socialLinks.twitter) {
-              addLinkButton(
-                socialLinks,
-                "Twitter",
-                configData.socialLinks.twitter,
-                "twitter",
-              );
-            }
-            if (configData.socialLinks.telegram) {
-              addLinkButton(
-                socialLinks,
-                "Telegram",
-                configData.socialLinks.telegram,
-                "telegram",
-              );
-            }
-            if (configData.socialLinks.discord) {
-              addLinkButton(
-                socialLinks,
-                "Discord",
-                configData.socialLinks.discord,
-                "discord",
-              );
-            }
-          }
-        }
-
-        const links = document.getElementById("links");
-        if (links) {
-          links.innerHTML = "";
-          if (configData && configData.officials) {
             if (configData.officials.websiteLink) {
-              const websiteLink = document.createElement("a");
-              websiteLink.href = configData.officials.websiteLink;
-              websiteLink.target = "_blank";
-              websiteLink.rel = "noopener noreferrer";
-
-              const websiteIcon = document.createElement("img");
-              websiteIcon.src = "/icons/logos/web.svg";
-              websiteIcon.alt = "Website";
-              websiteIcon.className = "w-6 h-6";
-
-              websiteLink.appendChild(websiteIcon);
-              links.appendChild(websiteLink);
-            }
-
-            if (configData.officials.githubLink) {
-              const githubLink = document.createElement("a");
-              githubLink.href = configData.officials.githubLink;
-              githubLink.target = "_blank";
-              githubLink.rel = "noopener noreferrer";
-
-              const githubIcon = document.createElement("img");
-              githubIcon.src = "/icons/logos/github.svg";
-              githubIcon.alt = "Website";
-              githubIcon.className = "w-5 h-5";
-
-              githubLink.appendChild(githubIcon);
-              links.appendChild(githubLink);
+              addLinkButton(
+                officialLinks,
+                configData.officials.websiteLink,
+                "web",
+              );
             }
           } else {
-            const githubLink = document.createElement("a");
-            githubLink.href = projectInfo.config.url;
-            githubLink.target = "_blank";
-            githubLink.rel = "noopener noreferrer";
+            addLinkButton(officialLinks, projectInfo.config.url, "github");
+          }
+        }
 
-            const githubIcon = document.createElement("img");
-            githubIcon.src = "/icons/logos/github.svg";
-            githubIcon.alt = "Website";
-            githubIcon.className = "w-5 h-5";
-
-            githubLink.appendChild(githubIcon);
-            links.appendChild(githubLink);
+        //Support modal content
+        const loadedName = loadProjectName();
+        if (loadedName) {
+          const projectNameSpan = document.getElementById("contribute-text");
+          if (projectNameSpan) {
+            projectNameSpan.innerHTML = `Contribute to <span id="project-name">${loadedName}</span>.xlm`;
           }
 
-          if (configData && configData.socialLinks) {
-            Object.entries(configData.socialLinks).forEach(
-              ([socialName, socialLink]) => {
-                if (socialLink) {
-                  const linkElement = document.createElement("a");
-                  linkElement.href = socialLink;
-                  linkElement.target = "_blank";
-                  linkElement.rel = "noopener noreferrer";
-
-                  const iconElement = document.createElement("img");
-                  iconElement.src = `/icons/logos/${socialName}.svg`;
-                  iconElement.alt = socialName;
-                  iconElement.className = "w-6 h-6";
-
-                  linkElement.appendChild(iconElement);
-                  links.appendChild(linkElement);
-                }
-              },
-            );
+          const donateTipPopup = document.getElementById("donate-tip-popup");
+          if (donateTipPopup) {
+            donateTipPopup.innerHTML = `Help us run the Tansu platform sustainability
+                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>`;
           }
         }
 
@@ -535,7 +326,7 @@ import DonateModal from "./DonateModal.astro";
 
           const configComponent = document.createElement("div");
           configComponent.className =
-            "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
+            "flex items-center space-x-2 rounded-full relative group";
 
           const icon = document.createElement("img");
           icon.className = "w-5 h-5";
@@ -545,15 +336,9 @@ import DonateModal from "./DonateModal.astro";
           text.textContent = "Configuration";
 
           if (tomlFileHash && projectConfigHash === tomlFileHash) {
-            configComponent.classList.add("bg-lime");
             icon.src = "/icons/check.svg";
             icon.alt = "Check";
-          } else if (tomlFileHash) {
-            configComponent.classList.add("bg-orange-200");
-            icon.src = "/icons/failed.svg";
-            icon.alt = "Failed";
           } else {
-            configComponent.classList.add("bg-red-200");
             icon.src = "/icons/failed.svg";
             icon.alt = "Failed";
           }
@@ -587,7 +372,7 @@ import DonateModal from "./DonateModal.astro";
           const latestSha = loadProjectLatestSha();
           const commitComponent = document.createElement("div");
           commitComponent.className =
-            "flex items-center space-x-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full relative group";
+            "flex items-center space-x-2 rounded-full relative group";
 
           const commitIcon = document.createElement("img");
           commitIcon.className = "w-5 h-5";
@@ -616,98 +401,122 @@ import DonateModal from "./DonateModal.astro";
                 latestCommit.sha &&
                 latestCommit.sha === latestSha
               ) {
-                commitComponent.classList.add("bg-lime");
                 commitIcon.src = "/icons/check.svg";
                 commitIcon.alt = "Check";
                 commitPopup.innerHTML =
                   '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain exists on GitHub</p>';
               } else {
-                commitComponent.classList.add("bg-orange-200");
-                commitIcon.src = "/icons/failed.svg";
+                commitIcon.src = "/icons/check.svg";
                 commitIcon.alt = "Failed";
                 commitPopup.innerHTML =
                   '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain cannot be found on GitHub</p>';
               }
             } else {
-              commitComponent.classList.add("bg-orange-200");
               commitIcon.src = "/icons/failed.svg";
               commitIcon.alt = "Failed";
               commitPopup.innerHTML =
                 '<p class="text-sm w-36 sm:w-max">No commit SHA on-chain yet</p>';
             }
           } catch (error) {
-            commitComponent.classList.add("bg-orange-200");
             commitIcon.src = "/icons/failed.svg";
             commitIcon.alt = "Failed";
             commitPopup.innerHTML =
               '<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on GitHub</p>';
           }
-
-          commitPopup.appendChild(commitTriangle);
-          commitComponent.appendChild(commitIcon);
-          commitComponent.appendChild(commitText);
-          commitComponent.appendChild(commitPopup);
-
-          syncStatusContainer.appendChild(commitComponent);
         }
 
-        // Update modal content
-        const modalProjectName = document.getElementById(
-          "update-modal-project-name",
-        );
-        if (modalProjectName) {
-          modalProjectName.textContent = projectInfo.name;
-        }
-
-        const modalMaintainers = document.getElementById(
-          "modal-maintainers",
-        ) as HTMLInputElement;
-        if (modalMaintainers) {
-          modalMaintainers.value = projectInfo.maintainers.join(",");
-        }
-        const modalConfigUrl = document.getElementById(
-          "modal-config-url",
-        ) as HTMLInputElement;
-        if (modalConfigUrl) {
-          modalConfigUrl.value = projectInfo.config.url;
-        }
-        const modalConfigHash = document.getElementById(
-          "modal-config-hash",
-        ) as HTMLInputElement;
-        if (modalConfigHash) {
-          modalConfigHash.value = projectInfo.config.hash;
-        }
-
-        //Support modal content
-        const loadedName = loadProjectName();
-        if (loadedName) {
-          const projectNameSpan = document.getElementById("contribute-text");
-          if (projectNameSpan) {
-            projectNameSpan.innerHTML = `Contribute to <span id="project-name">${loadedName}</span>.xlm`;
+        // Read more modal content
+        const readMoreModal = document.getElementById("read-more-modal");
+        if (readMoreModal) {
+          const projectOrganizationContainer = readMoreModal.querySelector(
+            ".project-organization",
+          );
+          if (projectOrganizationContainer)
+            projectOrganizationContainer.textContent =
+              configData?.organizationName || "Not available";
+          const projectNameContainer =
+            readMoreModal.querySelector(".project-name");
+          if (projectNameContainer)
+            projectNameContainer.textContent = projectInfo.name;
+          const officialLinksContainer = readMoreModal.querySelector(
+            ".official-links",
+          ) as HTMLElement;
+          if (officialLinksContainer) {
+            if (configData?.officials) {
+              if (configData.officials.githubLink) {
+                addLinkButton(
+                  officialLinksContainer,
+                  configData.officials.githubLink,
+                  "github",
+                );
+              }
+              if (configData.officials.websiteLink) {
+                addLinkButton(
+                  officialLinksContainer,
+                  configData.officials.websiteLink,
+                  "web",
+                );
+              }
+            } else {
+              addLinkButton(
+                officialLinksContainer,
+                "GitHub",
+                projectInfo.config.url,
+              );
+            }
           }
+          const projectDescContainer = readMoreModal.querySelector(
+            ".project-description",
+          );
+          if (projectDescContainer && configData)
+            projectDescContainer.textContent = configData.description;
 
-          const donateTipPopup = document.getElementById("donate-tip-popup");
-          if (donateTipPopup) {
-            donateTipPopup.innerHTML = `Help us run the Tansu platform sustainability
-                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>`;
+          const projectThumbnail = readMoreModal.querySelector(
+            ".project-thumbnail",
+          ) as HTMLImageElement | null;
+          if (projectThumbnail) {
+            if (configData && configData.logoImageLink) {
+              projectThumbnail.src =
+                convertGitHubLink(configData.logoImageLink) ||
+                "/fallback-image.jpg";
+            } else projectThumbnail.src = "/fallback-image.jpg";
           }
         }
-      }
-    }
 
-    function updateUpgradeConfigButtonVisibility() {
-      const projectInfo = loadProjectInfo();
-
-      if (projectInfo) {
-        const connectedPublicKey = loadedPublicKey();
-        const isMaintainer = connectedPublicKey
-          ? projectInfo.maintainers.includes(connectedPublicKey)
-          : false;
-        const updateConfigButton = document.getElementById(
-          "open-update-config-modal-button",
-        );
-        if (updateConfigButton) {
-          updateConfigButton.classList.toggle("hidden", !isMaintainer);
+        // Last hash modal content
+        const latestSha = loadProjectLatestSha();
+        if (latestSha) {
+          const latestCommit = await getLatestCommitData(
+            projectInfo.config.url,
+            latestSha,
+          );
+          const lastHashModal = document.getElementById("last-hash-modal");
+          if (lastHashModal) {
+            const copyButton = lastHashModal.querySelector(
+              ".commit-link-copy",
+            ) as HTMLButtonElement;
+            copyButton.addEventListener("click", () => {
+              navigator.clipboard.writeText(latestCommit.html_url);
+            });
+            const commitLink = lastHashModal.querySelector(
+              ".commit-link",
+            ) as HTMLLinkElement;
+            commitLink.href = latestCommit.html_url;
+            const commitHash = lastHashModal.querySelector(
+              ".commit-hash",
+            ) as HTMLParagraphElement;
+            commitHash.textContent = `${latestCommit.sha.slice(0, 24)}...`;
+            const commitDate = lastHashModal.querySelector(
+              ".commit-date",
+            ) as HTMLParagraphElement;
+            commitDate.textContent = formatDateTime(
+              latestCommit?.commit.committer.date,
+            );
+            const commitAuthor = lastHashModal.querySelector(
+              ".commit-author",
+            ) as HTMLParagraphElement;
+            commitAuthor.textContent = `@${latestCommit?.commit.author.name}`;
+          }
         }
       }
     }
@@ -715,167 +524,11 @@ import DonateModal from "./DonateModal.astro";
     projectInfoLoaded.subscribe((loaded) => {
       if (loaded) {
         updateProjectInfo();
-        updateUpgradeConfigButtonVisibility();
       }
-    });
-
-    const button = document.querySelector(
-      "[data-update-config]",
-    ) as HTMLButtonElement;
-    if (button) {
-      button.addEventListener("click", async () => {
-        modal.showModal();
-      });
-    }
-
-    const updateConfigButton = document.getElementById("update-config-button");
-    const updateConfigLoader = document.getElementById("update-config-loader");
-    if (updateConfigButton && updateConfigLoader) {
-      updateConfigButton.addEventListener("click", async () => {
-        const modalMaintainers = (
-          document.getElementById("modal-maintainers") as HTMLInputElement
-        ).value;
-        const modalConfigUrl = (
-          document.getElementById("modal-config-url") as HTMLInputElement
-        ).value;
-        const modalConfigHash = (
-          document.getElementById("modal-config-hash") as HTMLInputElement
-        ).value;
-
-        updateConfigLoader.style.display = "inline-flex";
-
-        try {
-          const updateStatus = await updateConfig(
-            modalMaintainers,
-            modalConfigUrl,
-            modalConfigHash,
-          );
-
-          if (updateStatus.data && !updateStatus.error) {
-            const res = await getProject();
-            const project = res.data;
-            if (
-              project &&
-              project.name &&
-              project.config &&
-              project.maintainers
-            ) {
-              setProject(project);
-            } else if (res.error) {
-              alert(res.errorMessage);
-            }
-            updateProjectInfo();
-            (
-              document.getElementById(
-                "update-config-modal",
-              ) as HTMLDialogElement
-            ).close();
-          } else if (updateStatus.error) {
-            alert(updateStatus.errorMessage);
-          }
-        } catch (error) {
-          console.error("Error updating config:", error);
-          alert(
-            "An error occurred while updating the project configuration. Please try again.",
-          );
-        } finally {
-          updateConfigLoader.style.display = "none";
-        }
-      });
-    }
-
-    const supportButton = document.querySelector("[data-donate-modal]");
-    const donateModal = document.getElementById("donate-modal");
-
-    if (supportButton && donateModal) {
-      supportButton.addEventListener("click", () => {
-        donateModal.classList.remove("hidden");
-        donateModal.classList.add("flex");
-      });
-    }
-
-    const viewCommitHistory = document.getElementById("view-commit-history");
-    const jumpToLatestCommit = document.getElementById("jump-to-latest-commit");
-    const viewCommitText = document.getElementById("view-commit-text");
-    const commitHistoryContainer = document.getElementById(
-      "commit-history-container",
-    );
-    const commitIconUp = document.getElementById("commit-icon-up");
-    const commitIconDown = document.getElementById("commit-icon-down");
-
-    if (viewCommitHistory && commitHistoryContainer) {
-      viewCommitHistory.addEventListener("click", () => {
-        if (
-          commitHistoryContainer.style.maxHeight === "0px" ||
-          !commitHistoryContainer.style.maxHeight
-        ) {
-          commitHistoryContainer.style.maxHeight = `${commitHistoryContainer.scrollHeight}px`;
-        } else {
-          commitHistoryContainer.style.maxHeight = "0px";
-        }
-      });
-    }
-
-    if (jumpToLatestCommit && commitHistoryContainer) {
-      jumpToLatestCommit.addEventListener("click", () => {
-        if (
-          commitHistoryContainer.style.maxHeight === "0px" ||
-          !commitHistoryContainer.style.maxHeight
-        ) {
-          commitHistoryContainer.style.maxHeight = `${commitHistoryContainer.scrollHeight}px`;
-        } else {
-          setTimeout(() => {
-            const latestCommit = document.getElementById(
-              "latest-commit-record",
-            );
-            if (latestCommit) {
-              latestCommit.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-              });
-            }
-          }, 10);
-        }
-      });
-    }
-
-    if (
-      viewCommitText &&
-      commitHistoryContainer &&
-      commitIconUp &&
-      commitIconDown
-    ) {
-      commitHistoryContainer.addEventListener("transitionend", () => {
-        if (commitHistoryContainer.style.maxHeight === "0px") {
-          viewCommitText.textContent = "View Commit History";
-          commitIconUp.classList.remove("hidden");
-          commitIconDown.classList.add("hidden");
-        } else {
-          viewCommitText.textContent = "Hide Commit History";
-          commitIconUp.classList.add("hidden");
-          commitIconDown.classList.remove("hidden");
-          setTimeout(() => {
-            const latestCommit = document.getElementById(
-              "latest-commit-record",
-            );
-            if (latestCommit) {
-              latestCommit.scrollIntoView({
-                behavior: "smooth",
-                block: "center",
-              });
-            }
-          }, 10);
-        }
-      });
-    }
-
-    window.addEventListener("walletConnected", (_event: Event) => {
-      updateUpgradeConfigButtonVisibility();
     });
 
     function addLinkButton(
       container: HTMLElement,
-      title: string,
       url: string,
       iconName: string,
     ) {
@@ -883,19 +536,13 @@ import DonateModal from "./DonateModal.astro";
       button.href = url;
       button.target = "_blank";
       button.rel = "noopener noreferrer";
-      button.className =
-        "flex items-center space-x-1 bg-zinc-300 hover:bg-zinc-400 rounded-lg px-3 py-1 text-sm";
 
       const icon = document.createElement("img");
       icon.src = getIconSVG(iconName);
       icon.alt = iconName;
       icon.className = "w-4 h-4";
 
-      const text = document.createElement("span");
-      text.textContent = title;
-
       button.appendChild(icon);
-      button.appendChild(text);
       container.appendChild(button);
     }
 
@@ -908,16 +555,6 @@ import DonateModal from "./DonateModal.astro";
         discord: "/icons/logos/discord.svg",
       };
       return icons[iconName] || "";
-    }
-
-    const proposalsButton = document.getElementById("go-to-proposals-button");
-    if (proposalsButton) {
-      proposalsButton.addEventListener("click", () => {
-        if (projectInfo) {
-          const name = projectInfo.name;
-          window.location.href = `/governance?name=${name}`;
-        }
-      });
     }
   });
 </script>

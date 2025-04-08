@@ -4,6 +4,11 @@ const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import type { Project } from "soroban_versioning";
 import type { ConfigData } from "../types/projectConfig";
+import { projectState as projectStateStore } from "utils/store";
+import { projectInfo as projectInfoStore } from "utils/store";
+import { projectRepoInfo as projectRepoInfoStore } from "utils/store";
+import { projectLatestSha as projectLatestShaStore } from "utils/store";
+import { configData as configDataStore } from "utils/store";
 
 const projectState: {
   project_name: string | undefined;
@@ -42,67 +47,8 @@ const projectLatestSha: {
 // Add this new state variable
 let configData: ConfigData | undefined = undefined;
 
-function initializeProjectState() {
-  if (typeof window !== "undefined") {
-    const storedState = localStorage.getItem("projectState");
-    if (
-      storedState &&
-      projectState.project_name === undefined &&
-      projectState.project_id === undefined
-    ) {
-      const parsedState = JSON.parse(storedState);
-      projectState.project_name = parsedState.project_name;
-      projectState.project_id = parsedState.project_id
-        ? Buffer.from(parsedState.project_id, "hex")
-        : undefined;
-    }
-
-    const storedInfo = localStorage.getItem("projectInfo");
-    if (
-      storedInfo &&
-      projectInfo.project_config_hash === undefined &&
-      projectInfo.project_config_url === undefined &&
-      projectInfo.project_maintainers === undefined
-    ) {
-      const parsedInfo = JSON.parse(storedInfo);
-      projectInfo.project_maintainers = parsedInfo.project_maintainers;
-      projectInfo.project_config_url = parsedInfo.project_config_url;
-      projectInfo.project_config_hash = parsedInfo.project_config_hash;
-    }
-
-    const storedRepoInfo = localStorage.getItem("projectRepoInfo");
-    if (
-      storedRepoInfo &&
-      projectRepoInfo.project_author === undefined &&
-      projectRepoInfo.project_repository === undefined
-    ) {
-      const parsedRepoInfo = JSON.parse(storedRepoInfo);
-      projectRepoInfo.project_author = parsedRepoInfo.project_author;
-      projectRepoInfo.project_repository = parsedRepoInfo.project_repository;
-    }
-
-    const storedLatestSha = localStorage.getItem("projectLatestSha");
-    if (storedLatestSha && projectLatestSha.sha === undefined) {
-      const parsedLatestSha = JSON.parse(storedLatestSha);
-      projectLatestSha.sha = parsedLatestSha.sha;
-    }
-
-    // Add this new initialization
-    const storedConfigData = localStorage.getItem("configData");
-    if (storedConfigData) {
-      configData = JSON.parse(storedConfigData);
-    }
-  }
-}
-
 function refreshLocalStorage(): void {
   if (typeof window !== "undefined") {
-    localStorage.removeItem("projectState");
-    localStorage.removeItem("projectInfo");
-    localStorage.removeItem("projectRepoInfo");
-    localStorage.removeItem("projectLatestSha");
-    localStorage.removeItem("configData");
-
     projectState.project_name = undefined;
     projectState.project_id = undefined;
     projectInfo.project_maintainers = undefined;
@@ -118,11 +64,10 @@ function refreshLocalStorage(): void {
 function setProjectId(project_name: string): void {
   projectState.project_name = project_name;
   projectState.project_id = Buffer.from(
-    keccak256.create().update(project_name).digest(),
+    keccak256.create().update(project_name.toLowerCase()).digest(),
   );
   if (typeof window !== "undefined") {
-    localStorage.setItem(
-      "projectState",
+    projectStateStore.set(
       JSON.stringify({
         project_name: projectState.project_name,
         project_id: projectState.project_id
@@ -138,14 +83,7 @@ function setProject(project: Project): void {
   projectInfo.project_config_url = project.config.url;
   projectInfo.project_config_hash = project.config.hash;
   if (typeof window !== "undefined") {
-    localStorage.setItem(
-      "projectInfo",
-      JSON.stringify({
-        project_maintainers: projectInfo.project_maintainers,
-        project_config_url: projectInfo.project_config_url,
-        project_config_hash: projectInfo.project_config_hash,
-      }),
-    );
+    projectInfoStore.set(projectInfo);
   }
 }
 
@@ -153,25 +91,14 @@ function setProjectRepoInfo(author: string, repository: string): void {
   projectRepoInfo.project_author = author;
   projectRepoInfo.project_repository = repository;
   if (typeof window !== "undefined") {
-    localStorage.setItem(
-      "projectRepoInfo",
-      JSON.stringify({
-        project_author: projectRepoInfo.project_author,
-        project_repository: projectRepoInfo.project_repository,
-      }),
-    );
+    projectRepoInfoStore.set(projectRepoInfo);
   }
 }
 
 function setProjectLatestSha(sha: string): void {
   projectLatestSha.sha = sha;
   if (typeof window !== "undefined") {
-    localStorage.setItem(
-      "projectLatestSha",
-      JSON.stringify({
-        sha: projectLatestSha.sha,
-      }),
-    );
+    projectLatestShaStore.set(projectLatestSha);
   }
 }
 
@@ -185,7 +112,7 @@ function setConfigData(data: Partial<ConfigData>): void {
     };
   }
   if (typeof window !== "undefined") {
-    localStorage.setItem("configData", JSON.stringify(configData));
+    configDataStore.set(configData);
   }
 }
 
@@ -237,7 +164,6 @@ function loadConfigData(): ConfigData | undefined {
 }
 
 export {
-  initializeProjectState,
   setProjectId,
   setProject,
   setProjectRepoInfo,

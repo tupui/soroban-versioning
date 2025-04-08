@@ -1,58 +1,40 @@
-import React from "react";
-import { useState, useEffect } from "react";
 import { useStore } from "@nanostores/react";
-import ProposalPageTitle from "./ProposalPageTitle";
-import ProposalDetail from "./ProposalDetail";
-import ProposalStatusSection from "./ProposalStatusSection";
-import VoteStatusBar from "./VoteStatusBar";
-import VotersModal from "./VotersModal";
-import VotingModal from "./VotingModal";
-import ExecuteProposalModal from "./ExecuteProposalModal";
-import { modifyProposalToView } from "utils/utils";
-import {
-  connectedPublicKey,
-  projectNameForGovernance,
-  proposalId,
-} from "utils/store";
 import {
   fetchOutcomeDataFromIPFS,
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
 import { getProjectFromName, getProposal } from "@service/ReadContractService";
-import type { ProposalOutcome, ProposalView, VoteType } from "types/proposal";
 import Loading from "components/utils/Loading";
+import React, { useEffect, useState } from "react";
+import type { ProposalOutcome, ProposalView } from "types/proposal";
+import { connectedPublicKey } from "utils/store";
+import { modifyProposalToView, toast } from "utils/utils";
+import ExecuteProposalModal from "./ExecuteProposalModal";
+import ProposalDetail from "./ProposalDetail";
+import ProposalTitle from "./ProposalTitle";
+import VotingModal from "./VotingModal";
 
 const ProposalPage: React.FC = () => {
-  const id = useStore(proposalId);
-  const projectName = useStore(projectNameForGovernance);
+  const id = Number(new URLSearchParams(window.location.search).get("id"));
+  const projectName =
+    new URLSearchParams(window.location.search).get("name") || "";
   const connectedAddress = useStore(connectedPublicKey);
-  const [isVotersModalOpen, setIsVotersModalOpen] = useState(false);
   const [isVotingModalOpen, setIsVotingModalOpen] = useState(false);
   const [isExecuteProposalModalOpen, setIsExecuteProposalModalOpen] =
     useState(false);
   const [proposal, setProposal] = useState<ProposalView | null>(null);
   const [description, setDescription] = useState("");
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
-  const [voteType, setVoteType] = useState<VoteType>();
   const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isVoted, setIsVoted] = useState(false);
-
-  const openVotersModal = (voteType: VoteType) => {
-    if (proposal?.status !== "active") {
-      setVoteType(voteType);
-      setIsVotersModalOpen(true);
-    } else {
-      alert("Cannot show voters while voting is in progress");
-    }
-  };
 
   const openVotingModal = () => {
     if (proposal?.status === "active") {
       if (connectedAddress) {
         setIsVotingModalOpen(true);
       } else {
-        alert("Please connect your wallet first");
+        toast.error("Connect Wallet", "Please connect your wallet first.");
       }
     }
   };
@@ -61,33 +43,39 @@ const ProposalPage: React.FC = () => {
     if (proposal?.status === "voted") {
       setIsExecuteProposalModalOpen(true);
     } else {
-      alert("Cannot execute proposal.");
+      toast.error("Execute Proposal", "Cannot execute proposal.");
     }
   };
 
   const getProposalDetails = async () => {
-    if (id !== undefined && projectName) {
+    if (!id !== undefined && projectName) {
       setIsLoading(true);
-      const response = await getProposal(projectName, id);
-      const proposal = response.data;
-      const res = await getProjectFromName(projectName);
-      const projectInfo = res.data;
-      if (projectInfo && projectInfo.maintainers) {
-        setProjectMaintainers(projectInfo?.maintainers);
-      } else if (res.error) {
-        alert(res.errorMessage);
-      }
-      if (proposal) {
+      try {
+        const proposal = await getProposal(projectName, id);
         const proposalView = modifyProposalToView(proposal, projectName);
         setProposal(proposalView);
         const description = await fetchProposalFromIPFS(proposal.ipfs);
         setDescription(description);
         const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfs);
         setOutcome(outcome);
-      } else if (response.error) {
-        alert(response.errorMessage);
+      } catch (error: any) {
+        console.error("Error fetching proposal details:", error);
+        toast.error("Something Went Wrong!", error.message);
+      }
+      try {
+        const projectInfo = await getProjectFromName(projectName);
+        if (projectInfo && projectInfo.maintainers) {
+          setProjectMaintainers(projectInfo?.maintainers);
+        }
+      } catch (error: any) {
+        toast.error("Something Went Wrong!", error.message);
       }
       setIsLoading(false);
+    } else {
+      toast.error(
+        "Something Went Wrong!",
+        "Project name or proposal id is not provided",
+      );
     }
   };
 
@@ -102,45 +90,23 @@ const ProposalPage: React.FC = () => {
           <Loading />
         </div>
       ) : (
-        <>
-          <ProposalPageTitle
-            id={proposal?.id.toString() || ""}
-            title={proposal?.title || ""}
+        <div className="bg-[#FFFFFFB8] px-[72px] py-12 flex flex-col gap-12">
+          <ProposalTitle
+            proposal={proposal}
+            maintainers={projectMaintainers}
             submitVote={() => openVotingModal()}
             executeProposal={() => openExecuteProposalModal()}
-            status={proposal?.status || null}
-            maintainers={projectMaintainers}
           />
-          <div className="flex flex-col gap-3 sm:gap-5 md:gap-7">
-            <ProposalStatusSection
-              status={proposal?.status || null}
-              endDate={proposal?.endDate || null}
-            />
-            <VoteStatusBar
-              approve={proposal?.voteStatus?.approve?.score || 0}
-              reject={proposal?.voteStatus?.reject?.score || 0}
-              abstain={proposal?.voteStatus?.abstain?.score || 0}
-              onClick={(voteType) => openVotersModal(voteType)}
-            />
-            <ProposalDetail
-              ipfsLink={proposal?.ipfsLink || null}
-              description={description}
-              outcome={outcome}
-              status={proposal?.status || null}
-            />
-          </div>
-          {isVotersModalOpen && proposal?.voteStatus && (
-            <VotersModal
-              NQGScore={proposal?.nqg || 0}
-              voteData={(voteType && proposal?.voteStatus?.[voteType]) || null}
-              projectMaintainers={projectMaintainers}
-              onClose={() => setIsVotersModalOpen(false)}
-            />
-          )}
+          <ProposalDetail
+            ipfsLink={proposal?.ipfsLink || null}
+            description={description}
+            outcome={outcome}
+          />
           {isVotingModalOpen && (
             <VotingModal
               projectName={projectName}
               proposalId={id}
+              proposalTitle={proposal?.title}
               isVoted={isVoted}
               setIsVoted={setIsVoted}
               onClose={() => setIsVotingModalOpen(false)}
@@ -151,11 +117,11 @@ const ProposalPage: React.FC = () => {
               projectName={projectName}
               proposalId={id}
               outcome={outcome}
-              voteStatus={proposal?.voteStatus ?? null}
+              voteStatus={proposal?.voteStatus}
               onClose={() => setIsExecuteProposalModalOpen(false)}
             />
           )}
-        </>
+        </div>
       )}
     </>
   );

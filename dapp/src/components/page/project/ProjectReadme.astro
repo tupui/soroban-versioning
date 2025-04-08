@@ -1,40 +1,25 @@
 ---
-import ReadmeViewer from "./ReadmeViewer.tsx";
+import ReadmeViewer from "./ReadmeViewer";
+import Button from "components/utils/Button";
 ---
 
-<div
-  class="relative flex flex-col items-center md:flex-row my-6 bg-zinc-100 rounded-3xl sm:rounded-[45px]"
->
-  <div
-    class="row items-center pb-8 sm:pb-10 md:pb-14 px-4 sm:px-8 md:px-20 w-full"
-  >
-    <div class="w-full h-10 sm:h-14 md:h-18 flex items-center">
-      <div
-        id="copy-repo-link"
-        class="group w-[157px] sm:w-[173px] flex items-center space-x-2 cursor-pointer rounded-lg px-2 py-1"
-      >
-        <img
-          src="/icons/logos/git.svg"
-          alt="GitHub Icon"
-          class="h-4 w-4 m-0.5"
-        />
-        <span
-          id="copy-repo-text"
-          class="text-sm sm:text-base group-hover:text-blue-600"
-          >Clone repository</span
-        >
-      </div>
-      <div
+<div class="relative flex flex-col items-center">
+  <div class="flex flex-col gap-[15px] lg:gap-[30px]">
+    <div class="flex max-lg:flex-col gap-[9px] lg:gap-[18px]">
+      <Button id="copy-repo-link" type="secondary" icon="/icons/clipboard.svg">
+        <span id="copy-repo-text" class="leading-5 text-xl text-primary">
+          Clone Repository
+        </span>
+      </Button>
+      <a
         id="move-to-releases"
-        class="group w-[157px] sm:w-[173px] flex items-center space-x-2 cursor-pointer rounded-lg px-2 py-1"
+        class="p-[9px_30px] lg:p-[18px_30px] bg-[#F5F1F9] flex gap-3"
       >
-        <img src="/icons/release.svg" alt="GitHub Icon" class="h-4 w-4 m-0.5" />
-        <span
-          id="copy-repo-text"
-          class="text-sm sm:text-base group-hover:text-blue-600"
-          >Go to releases</span
-        >
-      </div>
+        <img src="/icons/link.svg" />
+        <span class="leading-5 text-xl text-primary cursor-pointer">
+          Go to Releases
+        </span>
+      </a>
     </div>
     <ReadmeViewer client:load />
   </div>
@@ -54,7 +39,7 @@ import ReadmeViewer from "./ReadmeViewer.tsx";
         if (copyRepoLink && copyRepoText) {
           copyRepoLink.addEventListener("click", async () => {
             try {
-              await navigator.clipboard.writeText(repositoryUrl);
+              await navigator.clipboard.writeText(`git clone ${repositoryUrl}`);
               copyRepoText.textContent = "Copied";
               setTimeout(() => {
                 copyRepoText.textContent = "Clone repository";

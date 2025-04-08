@@ -1,37 +1,55 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { useStore } from "@nanostores/react";
-import Pagination from "../../utils/Pagination";
-import ProposalCard from "./ProposalCard";
-import { projectNameForGovernance } from "utils/store";
-import { modifyProposalToView } from "utils/utils";
-import type { ProposalView } from "types/proposal";
-import { getProposals } from "@service/ReadContractService";
+import { getProposalPages, getProposals } from "@service/ReadContractService";
 import Loading from "components/utils/Loading";
+import React, { useEffect, useState } from "react";
+import type { ProposalView } from "types/proposal";
+import { modifyProposalToView, toast } from "utils/utils";
+import Pagination from "../../utils/Pagination";
+import VotingModal from "../proposal/VotingModal";
+import ProposalCard from "./ProposalCard";
 
 const ProposalList: React.FC = () => {
-  const projectName = useStore(projectNameForGovernance);
+  const projectName =
+    new URLSearchParams(window.location.search).get("name") || "";
+  const [totalPage, setTotalPage] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [proposalData, setProposalData] = useState<ProposalView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showVotingModal, setShowVotingModal] = useState(false);
+  const [proposalId, setProposalId] = useState<number>();
+  const [proposalTitle, setProposalTitle] = useState<string>();
+
+  const fetchProposalPages = async () => {
+    try {
+      if (projectName) {
+        const page = await getProposalPages(projectName);
+        setTotalPage(page);
+      }
+    } catch (err: any) {
+      toast.error("Proposal list", err.message);
+    }
+  };
 
   const fetchProposalData = async (_page: number) => {
     if (projectName) {
       setIsLoading(true);
-      const res = await getProposals(projectName, _page);
-      const proposals = res.data;
-
-      if (proposals && !res.error) {
-        const updatedProposalData = proposals.map((proposal) => {
-          return modifyProposalToView(proposal, projectName);
-        });
+      try {
+        const proposals = await getProposals(projectName, _page);
+        const updatedProposalData = proposals
+          .map((proposal) => {
+            return modifyProposalToView(proposal, projectName);
+          })
+          .sort((a, b) => b.id - a.id);
         setProposalData(updatedProposalData);
-      } else {
-        alert(res.errorMessage);
+      } catch (error: any) {
+        toast.error("Something Went Wrong!", error.message);
       }
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
+
+  useEffect(() => {
+    fetchProposalPages();
+  }, [projectName]);
 
   useEffect(() => {
     fetchProposalData(currentPage);
@@ -40,29 +58,35 @@ const ProposalList: React.FC = () => {
   return (
     <>
       {isLoading ? (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <Loading />
-        </div>
+        <Loading />
       ) : (
-        <div className="w-full py-4 sm:py-8 md:py-12 px-3 sm:px-9 md:px-13 bg-zinc-200 rounded-xl sm:rounded-3xl rounded-tl-none sm:rounded-tl-none">
-          <div className="flex flex-col gap-2 sm:gap-3 md:gap-5">
+        <div className="w-full flex flex-col gap-12">
+          <div className="flex flex-col gap-[18px]">
             {proposalData.map((proposal) => (
               <ProposalCard
-                key={proposal.id}
-                proposalNumber={proposal.id}
-                proposalTitle={proposal.title}
-                proposalStatus={proposal.status}
-                endDate={proposal.endDate}
+                proposal={proposal}
+                onVoteClick={() => {
+                  setProposalId(proposal.id);
+                  setProposalTitle(proposal.title);
+                  setShowVotingModal(true);
+                }}
               />
             ))}
           </div>
-          <div>
-            <Pagination
-              currentPage={currentPage + 1}
-              onPageChange={(page: number) => setCurrentPage(page - 1)}
-            />
-          </div>
+          <Pagination
+            totalPage={totalPage}
+            currentPage={currentPage + 1}
+            onPageChange={(page: number) => setCurrentPage(page - 1)}
+          />
         </div>
+      )}
+      {showVotingModal && (
+        <VotingModal
+          projectName={projectName}
+          proposalId={proposalId}
+          proposalTitle={proposalTitle}
+          onClose={() => setShowVotingModal(false)}
+        />
       )}
     </>
   );

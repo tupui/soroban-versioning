@@ -6,7 +6,6 @@ import { loadedProjectId } from "./StateService";
 import { modifyProposalFromContract } from "utils/utils";
 import type { Project, Proposal } from "soroban_versioning";
 import type { Proposal as ModifiedProposal } from "types/proposal";
-import type { Response } from "types/response";
 import {
   contractErrorMessages,
   type ContractErrorMessageKey,
@@ -24,92 +23,104 @@ function fetchErrorCode(error: any): {
   return { errorCode, errorMessage: contractErrorMessages[errorCode] };
 }
 
-async function getProjectHash(): Promise<Response<string>> {
+async function getProjectHash(): Promise<string> {
   const projectId = loadedProjectId();
 
   if (projectId === undefined) {
-    return {
-      data: null,
-      error: true,
-      errorCode: -1,
-      errorMessage: "No project defined",
-    };
+    throw new Error("No project defined");
   }
   try {
     const res = await Versioning.get_commit({
       project_key: projectId,
     });
-    return { data: res.result, error: false, errorCode: -1, errorMessage: "" };
+    return res.result;
   } catch (e: any) {
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: null, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
-async function getProject(): Promise<Response<Project>> {
+async function getProject(): Promise<Project> {
   const projectId = loadedProjectId();
 
   if (projectId === undefined) {
-    return {
-      data: null,
-      error: true,
-      errorCode: -1,
-      errorMessage: "No project defined",
-    };
+    throw new Error("No project defined");
   }
   try {
     const res = await Versioning.get_project({
       project_key: projectId,
     });
-    return { data: res.result, error: false, errorCode: -1, errorMessage: "" };
+    return res.result;
   } catch (e: any) {
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: null, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
-async function getProjectFromName(
-  projectName: string,
-): Promise<Response<Project>> {
+async function getProjectFromName(projectName: string): Promise<Project> {
   const projectId = Buffer.from(
-    keccak256.create().update(projectName).digest(),
+    keccak256.create().update(projectName.toLowerCase()).digest(),
   );
 
   if (projectId === undefined) {
-    return {
-      data: null,
-      error: true,
-      errorCode: -1,
-      errorMessage: "No project defined",
-    };
+    throw new Error("No project defined");
   }
   try {
     const res = await Versioning.get_project({
       project_key: projectId,
     });
-    return { data: res.result, error: false, errorCode: -1, errorMessage: "" };
+    return res.result;
   } catch (e: any) {
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: null, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
-async function getProjectFromId(projectId: Buffer): Promise<Response<Project>> {
+async function getProjectFromId(projectId: Buffer): Promise<Project> {
   try {
     const res = await Versioning.get_project({
       project_key: projectId,
     });
-    return { data: res.result, error: false, errorCode: -1, errorMessage: "" };
+    return res.result;
   } catch (e: any) {
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: null, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
+  }
+}
+
+async function getProposalPages(project_name: string) {
+  const project_key = Buffer.from(
+    keccak256.create().update(project_name).digest(),
+  );
+
+  const checkPageExist = async (page: number) => {
+    const res = await Versioning.get_dao({
+      project_key,
+      page,
+    });
+    return res.result.proposals.length > 0;
+  };
+
+  for (let page = 1; ; page *= 2) {
+    const isPageExist = await checkPageExist(page);
+    if (isPageExist) continue;
+    if (page <= 2) return 1;
+    let f = page / 2,
+      t = page;
+    while (t - f > 1) {
+      const m = Math.floor((f + t) / 2);
+      const isPageExist = await checkPageExist(m);
+      if (isPageExist) f = m;
+      else t = m;
+    }
+    return f;
   }
 }
 
 async function getProposals(
   project_name: string,
   page: number,
-): Promise<Response<ModifiedProposal[]>> {
+): Promise<ModifiedProposal[]> {
   const project_key = Buffer.from(
     keccak256.create().update(project_name).digest(),
   );
@@ -124,17 +135,17 @@ async function getProposals(
         return modifyProposalFromContract(proposal);
       },
     );
-    return { data: proposals, error: false, errorCode: -1, errorMessage: "" };
+    return proposals;
   } catch (e: any) {
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: null, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
 async function getProposal(
   projectName: string,
   proposalId: number,
-): Promise<Response<ModifiedProposal | null>> {
+): Promise<ModifiedProposal> {
   const project_key = Buffer.from(
     keccak256.create().update(projectName).digest(),
   );
@@ -145,15 +156,10 @@ async function getProposal(
     });
 
     const proposal: Proposal = res.result;
-    return {
-      data: modifyProposalFromContract(proposal),
-      error: false,
-      errorCode: -1,
-      errorMessage: "",
-    };
+    return modifyProposalFromContract(proposal);
   } catch (e: any) {
-    const { errorCode, errorMessage } = fetchErrorCode(e);
-    return { data: null, error: true, errorCode, errorMessage };
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
   }
 }
 
@@ -162,6 +168,7 @@ export {
   getProjectHash,
   getProjectFromName,
   getProjectFromId,
+  getProposalPages,
   getProposals,
   getProposal,
 };

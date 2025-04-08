@@ -58,19 +58,14 @@ async function getCommitHistory(
 
 async function fetchTOMLFromConfigUrl(configUrl: string) {
   const url = getGithubContentUrlFromConfigUrl(configUrl);
-
   if (url) {
     const response = await fetch(url);
-
     if (!response.ok) {
       return undefined;
     }
-
     const tomlText = await response.text();
-
     return toml.parse(tomlText);
   }
-
   return undefined;
 }
 
@@ -125,6 +120,37 @@ async function getLatestCommitData(
   return await getCommitDataFromSha(username, repoName, sha);
 }
 
+async function getLatestCommitHash(
+  configUrl: string,
+): Promise<string | undefined> {
+  const { username, repoName } = getAuthorRepo(configUrl);
+  if (!username || !repoName) {
+    return undefined;
+  }
+
+  try {
+    const repoRes = await fetch(
+      `https://api.github.com/repos/${username}/${repoName}`,
+    );
+    if (!repoRes.ok)
+      throw new Error(`Failed to fetch repo info: ${repoRes.status}`);
+    const repoData = await repoRes.json();
+    const defaultBranch = repoData.default_branch;
+
+    const commitRes = await fetch(
+      `https://api.github.com/repos/${username}/${repoName}/commits/${defaultBranch}`,
+    );
+    if (!commitRes.ok)
+      throw new Error(`Failed to fetch latest commit: ${commitRes.status}`);
+    const latestCommit = await commitRes.json();
+    const latestSha = latestCommit.sha;
+    return latestSha;
+  } catch (error: any) {
+    console.error("Error fetching latest commit:", error);
+    throw new Error(error.message);
+  }
+}
+
 async function fetchReadmeContentFromConfigUrl(configUrl: string) {
   const url = getGithubContentUrlFromReadmeUrl(configUrl);
 
@@ -149,4 +175,5 @@ export {
   fetchReadmeContentFromConfigUrl,
   getTOMLFileHash,
   getLatestCommitData,
+  getLatestCommitHash,
 };
