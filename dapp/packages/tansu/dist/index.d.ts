@@ -5,7 +5,7 @@ import {
   ClientOptions as ContractClientOptions,
   MethodOptions,
 } from "@stellar/stellar-sdk/contract";
-import type { u32, u64 } from "@stellar/stellar-sdk/contract";
+import type { u32, u64, Option } from "@stellar/stellar-sdk/contract";
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
@@ -46,6 +46,24 @@ export declare const Errors: {
   11: {
     message: string;
   };
+  12: {
+    message: string;
+  };
+  13: {
+    message: string;
+  };
+  14: {
+    message: string;
+  };
+  15: {
+    message: string;
+  };
+  16: {
+    message: string;
+  };
+  17: {
+    message: string;
+  };
 };
 export type DataKey = {
   tag: "Admin";
@@ -70,6 +88,15 @@ export type ProposalStatus =
     };
 export type Vote =
   | {
+      tag: "PublicVote";
+      values: readonly [PublicVote];
+    }
+  | {
+      tag: "AnonymousVote";
+      values: readonly [AnonymousVote];
+    };
+export type VoteChoice =
+  | {
       tag: "Approve";
       values: void;
     }
@@ -81,16 +108,32 @@ export type Vote =
       tag: "Abstain";
       values: void;
     };
+export interface PublicVote {
+  address: string;
+  vote_choice: VoteChoice;
+}
+export interface AnonymousVote {
+  address: string;
+  commitments: Array<Buffer>;
+  encrypted_seeds: Array<string>;
+  encrypted_votes: Array<string>;
+}
+export interface VoteData {
+  public_voting: boolean;
+  votes: Array<Vote>;
+  voting_ends_at: u64;
+}
+export interface AnonymousVoteConfig {
+  public_key: string;
+  seed_generator_point: Buffer;
+  vote_generator_point: Buffer;
+}
 export interface Proposal {
   id: u32;
   ipfs: string;
-  nqg: u32;
   status: ProposalStatus;
   title: string;
-  voters_abstain: Array<string>;
-  voters_approve: Array<string>;
-  voters_reject: Array<string>;
-  voting_ends_at: u64;
+  vote_data: VoteData;
 }
 export interface Dao {
   proposals: Array<Proposal>;
@@ -111,6 +154,10 @@ export type ProjectKey =
   | {
       tag: "DaoTotalProposals";
       values: readonly [Buffer];
+    }
+  | {
+      tag: "AnonymousVoteConfig";
+      values: readonly [Buffer];
     };
 export interface Config {
   hash: string;
@@ -122,6 +169,103 @@ export interface Project {
   name: string;
 }
 export interface Client {
+  /**
+   * Construct and simulate a anonymous_voting_setup transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Anonymous voting primitives.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - Unique identifier for the project
+   * * `public_key` - Asymmetric public key to be used to encode seeds
+   */
+  anonymous_voting_setup: (
+    {
+      project_key,
+      public_key,
+    }: {
+      project_key: Buffer;
+      public_key: string;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a get_anonymous_voting_config transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  get_anonymous_voting_config: (
+    {
+      project_key,
+    }: {
+      project_key: Buffer;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<AnonymousVoteConfig>>;
+  /**
+   * Construct and simulate a build_commitments_from_votes transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Build all three commitments from the votes and seeds.
+   *
+   * Calling that on the smart contract itself would reveal the votes and seeds.
+   * This can be run in simulation in your RPC or used as a basis for
+   * implementation client-side.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - Unique identifier for the project
+   * * `votes` - Vector of votes.
+   * * `seeds` - Vector of seeds.
+   * # Returns
+   * * `Vec<BytesN<96>>` - The three voting commitments.
+   */
+  build_commitments_from_votes: (
+    {
+      project_key,
+      votes,
+      seeds,
+    }: {
+      project_key: Buffer;
+      votes: Array<u32>;
+      seeds: Array<u32>;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<Array<Buffer>>>;
   /**
    * Construct and simulate a create_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Create a proposal on the DAO of the project.
@@ -143,12 +287,14 @@ export interface Client {
       title,
       ipfs,
       voting_ends_at,
+      public_voting,
     }: {
       proposer: string;
       project_key: Buffer;
       title: string;
       ipfs: string;
       voting_ends_at: u64;
+      public_voting: boolean;
     },
     options?: {
       /**
@@ -205,16 +351,38 @@ export interface Client {
   ) => Promise<AssembledTransaction<null>>;
   /**
    * Construct and simulate a execute transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Execute a vote after the voting period ends.
+   *
+   * When proposals are anonymous, `tally` is validated against the sum of
+   * all vote commitments. The `seed` is essential for the validation.
+   *
+   * # Panics
+   *
+   * Double votes are not allowed. Tally and seed must be present for
+   * anonymous votes and forbidden otherwise. For anonymous votes, it will
+   * panic if the commitment proof validation fails.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `maintainer` - Address of the maintainer
+   * * `project_key` - Unique identifier for the project
+   * * `proposal_id` - ID of the proposal
+   * * [`Option<tallies>`] - decoded tally values, respectively Approve, reject and abstain
+   * * [`Option<seeds>`] - decoded seed values, respectively Approve, reject and abstain
    */
   execute: (
     {
       maintainer,
       project_key,
       proposal_id,
+      tallies,
+      seeds,
     }: {
       maintainer: string;
       project_key: Buffer;
       proposal_id: u32;
+      tallies: Option<Array<u32>>;
+      seeds: Option<Array<u32>>;
     },
     options?: {
       /**
@@ -231,6 +399,55 @@ export interface Client {
       simulate?: boolean;
     },
   ) => Promise<AssembledTransaction<ProposalStatus>>;
+  /**
+   * Construct and simulate a proof transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Voting choice commitment.
+   *
+   * Recover the commitment by removing the randomization introduced by the
+   * seed.
+   *
+   * Vote commitment is:
+   *
+   * C = g^v * h^r (in additive notation: g*v + h*r),
+   *
+   * where g, h point generator and v is the vote choice, r is the seed.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - Unique identifier for the project
+   * * `commitment` - Vote commitment
+   * * `tally` - decoded tally value
+   * * `seed` - decoded seed value
+   * # Returns
+   * * `bool` - True if the commitment match
+   */
+  proof: (
+    {
+      project_key,
+      proposal,
+      tallies,
+      seeds,
+    }: {
+      project_key: Buffer;
+      proposal: Proposal;
+      tallies: Array<u32>;
+      seeds: Array<u32>;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<boolean>>;
   /**
    * Construct and simulate a get_dao transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get one page of proposal of the DAO.
@@ -508,9 +725,17 @@ export declare class Client extends ContractClient {
   ): Promise<AssembledTransaction<T>>;
   constructor(options: ContractClientOptions);
   readonly fromJSON: {
+    anonymous_voting_setup: (json: string) => AssembledTransaction<null>;
+    get_anonymous_voting_config: (
+      json: string,
+    ) => AssembledTransaction<AnonymousVoteConfig>;
+    build_commitments_from_votes: (
+      json: string,
+    ) => AssembledTransaction<Buffer<ArrayBufferLike>[]>;
     create_proposal: (json: string) => AssembledTransaction<number>;
     vote: (json: string) => AssembledTransaction<null>;
     execute: (json: string) => AssembledTransaction<ProposalStatus>;
+    proof: (json: string) => AssembledTransaction<boolean>;
     get_dao: (json: string) => AssembledTransaction<Dao>;
     get_proposal: (json: string) => AssembledTransaction<Proposal>;
     upgrade: (json: string) => AssembledTransaction<null>;

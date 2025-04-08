@@ -1,7 +1,7 @@
 #![no_std]
 
 use soroban_sdk::contractmeta;
-use soroban_sdk::{contract, panic_with_error, Address, Bytes, BytesN, Env, String, Vec};
+use soroban_sdk::{Address, Bytes, BytesN, Env, String, Vec, contract, panic_with_error};
 
 mod domain_contract {
     soroban_sdk::contractimport!(
@@ -14,6 +14,7 @@ mod contract_tansu;
 mod contract_versioning;
 mod errors;
 mod test;
+mod test_anonym_votes;
 mod types;
 
 contractmeta!(key = "Description", val = "Tansu - Soroban Versioning");
@@ -57,6 +58,17 @@ pub trait VersioningTrait {
 }
 
 pub trait DaoTrait {
+    fn anonymous_voting_setup(env: Env, project_key: Bytes, public_key: String);
+
+    fn get_anonymous_voting_config(env: Env, project_key: Bytes) -> types::AnonymousVoteConfig;
+
+    fn build_commitments_from_votes(
+        env: Env,
+        project_key: Bytes,
+        votes: Vec<u32>,
+        seeds: Vec<u32>,
+    ) -> Vec<BytesN<96>>;
+
     fn create_proposal(
         env: Env,
         proposer: Address,
@@ -64,6 +76,7 @@ pub trait DaoTrait {
         title: String,
         ipfs: String,
         voting_ends_at: u64,
+        public_voting: bool,
     ) -> u32;
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote);
@@ -73,7 +86,17 @@ pub trait DaoTrait {
         maintainer: Address,
         project_key: Bytes,
         proposal_id: u32,
+        tallies: Option<Vec<u32>>,
+        seeds: Option<Vec<u32>>,
     ) -> types::ProposalStatus;
+
+    fn proof(
+        env: Env,
+        project_key: Bytes,
+        proposal: types::Proposal,
+        tallies: Vec<u32>,
+        seeds: Vec<u32>,
+    ) -> bool;
 
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 

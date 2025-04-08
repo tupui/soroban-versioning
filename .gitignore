@@ -1,7 +1,7 @@
 # Soroban
 target
 contract/target
-contracts/versioning/test_snapshots
+contracts/tansu/test_snapshots
 .soroban/identity
 .soroban/network
 

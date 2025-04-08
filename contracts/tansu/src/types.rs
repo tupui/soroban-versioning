@@ -1,4 +1,4 @@
-use soroban_sdk::{contracttype, Address, Bytes, String, Vec};
+use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
 
 #[contracttype]
 pub enum DataKey {
@@ -17,9 +17,48 @@ pub enum ProposalStatus {
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Vote {
+    PublicVote(PublicVote),
+    AnonymousVote(AnonymousVote),
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub enum VoteChoice {
     Approve,
     Reject,
     Abstain,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct PublicVote {
+    pub address: Address,
+    pub vote_choice: VoteChoice,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct AnonymousVote {
+    pub address: Address,
+    pub encrypted_seeds: Vec<String>,
+    pub encrypted_votes: Vec<String>,
+    pub commitments: Vec<BytesN<96>>,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct VoteData {
+    pub voting_ends_at: u64,
+    pub public_voting: bool,
+    pub votes: Vec<Vote>,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct AnonymousVoteConfig {
+    pub vote_generator_point: BytesN<96>,
+    pub seed_generator_point: BytesN<96>,
+    pub public_key: String,
 }
 
 #[contracttype]
@@ -28,11 +67,7 @@ pub struct Proposal {
     pub id: u32,
     pub title: String,
     pub ipfs: String,
-    pub voting_ends_at: u64,
-    pub voters_approve: Vec<Address>,
-    pub voters_reject: Vec<Address>,
-    pub voters_abstain: Vec<Address>,
-    pub nqg: u32,
+    pub vote_data: VoteData,
     pub status: ProposalStatus,
 }
 
@@ -49,6 +84,7 @@ pub enum ProjectKey {
     LastHash(Bytes), // last hash of the project
     Dao(Bytes, u32), // Decentralized organization, pagination
     DaoTotalProposals(Bytes),
+    AnonymousVoteConfig(Bytes),
 }
 
 #[contracttype]

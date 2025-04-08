@@ -1,6 +1,6 @@
-use soroban_sdk::{contractimpl, Address, BytesN, Env};
+use soroban_sdk::{Address, BytesN, Env, contractimpl};
 
-use crate::{types, Tansu, TansuArgs, TansuClient, TansuTrait};
+use crate::{Tansu, TansuArgs, TansuClient, TansuTrait, types};
 
 #[contractimpl]
 impl TansuTrait for Tansu {
