@@ -253,13 +253,13 @@ async function execute(
     keccak256.create().update(project_name).digest(),
   );
 
-  const tx = await Versioning.execute({
-    maintainer: publicKey,
-    project_key: project_key,
-    proposal_id: Number(proposal_id),
-  });
-
   try {
+    const tx = await Versioning.execute({
+      maintainer: publicKey,
+      project_key: project_key,
+      proposal_id: Number(proposal_id),
+    });
+
     const result = await tx.signAndSend({
       signTransaction: async (xdr) => {
         return await kit.signTransaction(xdr);
@@ -281,12 +281,7 @@ async function executeProposal(
   const publicKey = loadedPublicKey();
 
   if (!publicKey) {
-    return {
-      data: false,
-      error: true,
-      errorCode: -1,
-      errorMessage: "Please connect your wallet first",
-    };
+    throw new Error("No public key found");
   }
 
   try {
@@ -325,10 +320,8 @@ async function executeProposal(
     } else {
       return result.hash;
     }
-  } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
-    throw new Error(errorMessage);
+  } catch (e: any) {
+    throw new Error(e.message);
   }
 }
 

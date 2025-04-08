@@ -75,9 +75,9 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
         proposalId,
         voteResultAndXdr.xdr,
       );
+      setStep(step + 1);
       console.log("execute result:", res.data);
       toast.success("Congratulation!", "Proposal executed successfully");
-      onClose();
     } catch (error: any) {
       toast.error("Execute Proposal", error.message);
       onClose();
@@ -142,7 +142,6 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
             <Button
               onClick={async () => {
                 await signAndExecute();
-                setStep(step + 1);
               }}
             >
               Execute Transaction

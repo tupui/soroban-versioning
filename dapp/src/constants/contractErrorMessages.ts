@@ -9,7 +9,7 @@ export const contractErrorMessages = {
   7: "There was a validation issue with the proposal input.",
   8: "Proposal or page could not be found.",
   9: "You have already voted.",
-  10: "The proposal voting time has expired.",
+  10: "The proposal is still in voting, so cannot be executed.",
   11: "The proposal has already been executed.",
 };
 

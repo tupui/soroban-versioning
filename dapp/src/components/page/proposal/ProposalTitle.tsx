@@ -110,24 +110,26 @@ const ProposalTitle: React.FC<Props> = ({
           <div className="flex flex-col gap-6">
             <div className="flex justify-between">
               <ProposalStatusSection proposal={proposal} />
-              {proposal?.status == "active" && (
-                <Button
-                  size="sm"
-                  icon="/icons/vote.svg"
-                  onClick={() => submitVote()}
-                >
-                  Vote
-                </Button>
-              )}
-              {proposal?.status == "voted" && isMaintainer && (
-                <Button
-                  size="sm"
-                  icon="/icons/finalize-vote.svg"
-                  onClick={() => executeProposal()}
-                >
-                  Finalize Vote
-                </Button>
-              )}
+              <div className="flex gap-6">
+                {proposal?.status == "active" && (
+                  <Button
+                    size="sm"
+                    icon="/icons/vote.svg"
+                    onClick={() => submitVote()}
+                  >
+                    Vote
+                  </Button>
+                )}
+                {proposal?.status == "voted" && isMaintainer && (
+                  <Button
+                    size="sm"
+                    icon="/icons/finalize-vote.svg"
+                    onClick={() => executeProposal()}
+                  >
+                    Finalize Vote
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="h-[1px] bg-[#EEEEEE]" />
           </div>
