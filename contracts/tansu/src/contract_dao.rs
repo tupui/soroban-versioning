@@ -116,7 +116,7 @@ impl DaoTrait for Tansu {
         title: String,
         ipfs: String,
         voting_ends_at: u64,
-        public: bool,
+        public_voting: bool,
     ) -> u32 {
         // Some input validations
         let curr_timestamp = env.ledger().timestamp();
@@ -148,7 +148,7 @@ impl DaoTrait for Tansu {
                 .unwrap_or(0);
 
             // proposer is automatically in the abstain group
-            let vote_ = match public {
+            let vote_ = match public_voting {
                 true => types::Vote::PublicVote(types::PublicVote {
                     address: proposer,
                     vote_choice: types::VoteChoice::Abstain,
@@ -179,7 +179,7 @@ impl DaoTrait for Tansu {
             let votes = vec![&env, vote_];
             let vote_data = types::VoteData {
                 voting_ends_at,
-                public,
+                public_voting,
                 votes,
             };
             let proposal = types::Proposal {
@@ -247,7 +247,7 @@ impl DaoTrait for Tansu {
         // proposals are either public or anonymous so only a single type of vote
         // can be registered for a given proposal
         let is_public_vote = matches!(vote, types::Vote::PublicVote(_));
-        if is_public_vote != proposal.vote_data.public {
+        if is_public_vote != proposal.vote_data.public_voting {
             panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
         }
 
@@ -328,7 +328,7 @@ impl DaoTrait for Tansu {
         }
 
         // tally to results
-        proposal.status = match proposal.vote_data.public {
+        proposal.status = match proposal.vote_data.public_voting {
             true => {
                 if tallies.is_some() | seeds.is_some() {
                     panic_with_error!(&env, &errors::ContractErrors::TallySeedError);
@@ -394,7 +394,7 @@ impl DaoTrait for Tansu {
         }
 
         // we can only proof anonymous votes
-        if proposal.vote_data.public {
+        if proposal.vote_data.public_voting {
             panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
         }
 

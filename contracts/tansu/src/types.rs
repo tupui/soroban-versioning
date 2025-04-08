@@ -49,7 +49,7 @@ pub struct AnonymousVote {
 #[derive(Clone, Debug, PartialEq)]
 pub struct VoteData {
     pub voting_ends_at: u64,
-    pub public: bool, // Public or anonymous vote
+    pub public_voting: bool,
     pub votes: Vec<Vote>,
 }
 

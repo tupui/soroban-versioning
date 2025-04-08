@@ -76,7 +76,7 @@ pub trait DaoTrait {
         title: String,
         ipfs: String,
         voting_ends_at: u64,
-        public: bool,
+        public_voting: bool,
     ) -> u32;
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote);

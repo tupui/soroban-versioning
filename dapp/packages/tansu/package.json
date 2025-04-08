@@ -1,6 +1,6 @@
 {
   "version": "0.0.0",
-  "name": "soroban_versioning",
+  "name": "tansu",
   "type": "module",
   "exports": "./dist/index.js",
   "typings": "dist/index.d.ts",
