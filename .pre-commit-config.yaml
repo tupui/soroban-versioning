@@ -3,7 +3,7 @@ fail_fast: true
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.4.2
+    rev: v0.11.4
     hooks:
       # Run the linter.
       - id: ruff
@@ -21,7 +21,7 @@ repos:
         name: Rust formatting
         language: rust
         pass_filenames: false
-        entry: cargo fmt --all --check
+        entry: cargo fmt --all
       - id: dapp
         name: dApp prettier
         additional_dependencies:

@@ -1,14 +1,14 @@
 #![cfg(test)]
 
-use super::{domain_contract, Tansu, TansuClient};
+use super::{Tansu, TansuClient, domain_contract};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
 use crate::types::{AnonymousVote, Dao, ProposalStatus, PublicVote, Vote, VoteChoice};
-use soroban_sdk::testutils::arbitrary::std::println;
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
+use soroban_sdk::testutils::arbitrary::std::println;
 use soroban_sdk::{
-    symbol_short, testutils::Events, token, vec, Address, Bytes, BytesN, Env, IntoVal, String, Vec,
+    Address, Bytes, BytesN, Env, IntoVal, String, Vec, symbol_short, testutils::Events, token, vec,
 };
 
 #[test]

@@ -88,6 +88,7 @@ contract_bindings: contract_build-release  ## Create bindings
 		--output-dir dapp/packages/tansu \
 		--overwrite && \
 	cd dapp/packages/tansu && \
+	bun update && \
 	bun run build && \
 	cd ../.. && \
 	bun formatter

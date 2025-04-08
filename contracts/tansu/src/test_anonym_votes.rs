@@ -3,7 +3,7 @@
 use core::ops::Add;
 use soroban_sdk::crypto::bls12_381::{Fr, G1Affine};
 
-use soroban_sdk::{bytesn, Bytes, Env, U256};
+use soroban_sdk::{Bytes, Env, U256, bytesn};
 
 fn commitment(
     env: &Env,

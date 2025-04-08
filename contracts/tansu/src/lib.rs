@@ -1,7 +1,7 @@
 #![no_std]
 
 use soroban_sdk::contractmeta;
-use soroban_sdk::{contract, panic_with_error, Address, Bytes, BytesN, Env, String, Vec};
+use soroban_sdk::{Address, Bytes, BytesN, Env, String, Vec, contract, panic_with_error};
 
 mod domain_contract {
     soroban_sdk::contractimport!(

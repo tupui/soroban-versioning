@@ -1,7 +1,7 @@
-use crate::{errors, types, DaoTrait, Tansu, TansuArgs, TansuClient};
+use crate::{DaoTrait, Tansu, TansuArgs, TansuClient, errors, types};
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
-    contractimpl, panic_with_error, vec, Address, Bytes, BytesN, Env, String, Vec, U256,
+    Address, Bytes, BytesN, Env, String, U256, Vec, contractimpl, panic_with_error, vec,
 };
 
 const MAX_TITLE_LENGTH: u32 = 256;
