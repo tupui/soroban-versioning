@@ -1,5 +1,5 @@
 import { TransactionBuilder } from "@stellar/stellar-sdk";
-import type { Proposal as ContractProposal, Project } from "soroban_versioning";
+import type { Proposal as ContractProposal, Project } from "tansu";
 import {
   VoteType,
   type Proposal,
@@ -123,7 +123,6 @@ export const modifyProposalToView = (
     projectName: projectName,
     ipfsLink: proposal.ipfs,
     endDate: proposal.voting_ends_at,
-    nqg: proposal.nqg,
     voteStatus: proposal.voteStatus,
     status: proposalStatusView as ProposalViewStatus,
   };
@@ -138,9 +137,8 @@ export const modifyProposalFromContract = (
     id: proposal.id,
     title: proposal.title,
     ipfs: proposal.ipfs,
-    nqg: proposal.nqg,
     status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
-    voting_ends_at: Number(proposal.voting_ends_at),
+    voting_ends_at: Number(proposal.vote_data.voting_ends_at),
     voteStatus: {
       approve: {
         voteType: VoteType.APPROVE,

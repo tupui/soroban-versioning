@@ -16,7 +16,7 @@ const IdeaList: React.FC = () => {
         <Pagination
           currentPage={currentPage}
           onPageChange={(page: number) => setCurrentPage(page)}
-        />
+          totalPage={1}/>
       </div>
     </div>
   );

@@ -11,7 +11,6 @@ export interface Proposal {
   id: number;
   title: string;
   ipfs: string;
-  nqg: number;
   status: ProposalStatus;
   voting_ends_at: number;
   voteStatus: VoteStatus;
@@ -24,7 +23,6 @@ export interface ProposalView {
   ipfsLink: string;
   status: ProposalViewStatus;
   endDate: number;
-  nqg: number;
   voteStatus: VoteStatus;
 }
 

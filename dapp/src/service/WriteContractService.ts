@@ -1,5 +1,5 @@
 import { kit } from "../components/stellar-wallets-kit";
-import Versioning from "../contracts/soroban_versioning";
+import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
 
 import {
@@ -13,7 +13,7 @@ import {
   type ContractErrorMessageKey,
 } from "constants/contractErrorMessages";
 import * as pkg from "js-sha3";
-import type { Vote } from "soroban_versioning";
+import type { Vote } from "tansu";
 import type { VoteType } from "types/proposal";
 // import type { Response } from "types/response";
 import { loadedProjectId } from "./StateService";
@@ -61,9 +61,9 @@ async function commitHash(commit_hash: string): Promise<boolean> {
     throw new Error("Please connect your wallet first");
   }
 
-  Versioning.options.publicKey = publicKey;
+  Tansu.options.publicKey = publicKey;
 
-  const tx = await Versioning.commit({
+  const tx = await Tansu.commit({
     maintainer: publicKey,
     project_key: projectId,
     hash: commit_hash,
@@ -95,11 +95,11 @@ async function registerProject(
     throw new Error("Please connect your wallet first");
   }
 
-  Versioning.options.publicKey = publicKey;
+  Tansu.options.publicKey = publicKey;
 
   const maintainers_ = maintainers.split(",");
 
-  const tx = await Versioning.register({
+  const tx = await Tansu.register({
     // @ts-ignore
     name: project_name,
     maintainer: publicKey,
@@ -140,7 +140,7 @@ async function updateConfig(
   }
   const maintainers_ = maintainers.split(",");
 
-  const tx = await Versioning.update_config({
+  const tx = await Tansu.update_config({
     maintainer: publicKey,
     key: projectId,
     maintainers: maintainers_,
@@ -173,17 +173,18 @@ async function createProposal(
   if (!publicKey) {
     throw new Error("Please connect your wallet first");
   }
-  Versioning.options.publicKey = publicKey;
+  Tansu.options.publicKey = publicKey;
   const project_key = Buffer.from(
     keccak256.create().update(project_name).digest(),
   );
 
-  const tx = await Versioning.create_proposal({
+  const tx = await Tansu.create_proposal({
     proposer: publicKey,
     project_key: project_key,
     title: title,
     ipfs: ipfs,
     voting_ends_at: BigInt(voting_ends_at),
+    public_voting: true,
   });
 
   try {
@@ -210,14 +211,14 @@ async function voteToProposal(
   if (!publicKey) {
     throw new Error("Please connect your wallet first");
   }
-  Versioning.options.publicKey = publicKey;
+  Tansu.options.publicKey = publicKey;
   const project_key = Buffer.from(
     keccak256.create().update(project_name).digest(),
   );
 
   const mappedVote = mapVoteTypeToVote(vote);
 
-  const tx = await Versioning.vote({
+  const tx = await Tansu.vote({
     voter: publicKey,
     project_key: project_key,
     proposal_id: Number(proposal_id),
@@ -247,17 +248,21 @@ async function execute(
   if (!publicKey) {
     throw new Error("Please connect your wallet first");
   }
-  Versioning.options.publicKey = publicKey;
+  Tansu.options.publicKey = publicKey;
 
   const project_key = Buffer.from(
     keccak256.create().update(project_name).digest(),
   );
 
   try {
-    const tx = await Versioning.execute({
+    const tx = await Tansu.execute({
       maintainer: publicKey,
       project_key: project_key,
       proposal_id: Number(proposal_id),
+      // @ts-ignore
+      tallies: null,
+      // @ts-ignore
+      seeds: null,
     });
 
     const result = await tx.signAndSend({

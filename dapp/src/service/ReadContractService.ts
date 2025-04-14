@@ -1,10 +1,10 @@
-import Versioning from "../contracts/soroban_versioning";
+import Tansu from "../contracts/soroban_tansu";
 import * as pkg from "js-sha3";
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import { loadedProjectId } from "./StateService";
 import { modifyProposalFromContract } from "utils/utils";
-import type { Project, Proposal } from "soroban_versioning";
+import type { Project, Proposal } from "tansu";
 import type { Proposal as ModifiedProposal } from "types/proposal";
 import {
   contractErrorMessages,
@@ -30,7 +30,7 @@ async function getProjectHash(): Promise<string> {
     throw new Error("No project defined");
   }
   try {
-    const res = await Versioning.get_commit({
+    const res = await Tansu.get_commit({
       project_key: projectId,
     });
     return res.result;
@@ -47,7 +47,7 @@ async function getProject(): Promise<Project> {
     throw new Error("No project defined");
   }
   try {
-    const res = await Versioning.get_project({
+    const res = await Tansu.get_project({
       project_key: projectId,
     });
     return res.result;
@@ -66,7 +66,7 @@ async function getProjectFromName(projectName: string): Promise<Project> {
     throw new Error("No project defined");
   }
   try {
-    const res = await Versioning.get_project({
+    const res = await Tansu.get_project({
       project_key: projectId,
     });
     return res.result;
@@ -78,7 +78,7 @@ async function getProjectFromName(projectName: string): Promise<Project> {
 
 async function getProjectFromId(projectId: Buffer): Promise<Project> {
   try {
-    const res = await Versioning.get_project({
+    const res = await Tansu.get_project({
       project_key: projectId,
     });
     return res.result;
@@ -94,7 +94,7 @@ async function getProposalPages(project_name: string) {
   );
 
   const checkPageExist = async (page: number) => {
-    const res = await Versioning.get_dao({
+    const res = await Tansu.get_dao({
       project_key,
       page,
     });
@@ -125,7 +125,7 @@ async function getProposals(
     keccak256.create().update(project_name).digest(),
   );
   try {
-    const res = await Versioning.get_dao({
+    const res = await Tansu.get_dao({
       project_key: project_key,
       page: page,
     });
@@ -150,7 +150,7 @@ async function getProposal(
     keccak256.create().update(projectName).digest(),
   );
   try {
-    const res = await Versioning.get_proposal({
+    const res = await Tansu.get_proposal({
       project_key: project_key,
       proposal_id: proposalId,
     });
