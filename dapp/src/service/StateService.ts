@@ -2,7 +2,7 @@ import * as pkg from "js-sha3";
 
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
-import type { Project } from "tansu";
+import type { Project } from "../../packages/tansu";
 import type { ConfigData } from "../types/projectConfig";
 import { projectState as projectStateStore } from "utils/store";
 import { projectInfo as projectInfoStore } from "utils/store";

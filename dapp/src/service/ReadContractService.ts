@@ -4,7 +4,7 @@ const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import { loadedProjectId } from "./StateService";
 import { modifyProposalFromContract } from "utils/utils";
-import type { Project, Proposal } from "tansu";
+import type { Project, Proposal } from "../../packages/tansu";
 import type { Proposal as ModifiedProposal } from "types/proposal";
 import {
   contractErrorMessages,
