@@ -5,11 +5,3 @@ export interface FormattedCommit {
   html_url: string;
   sha: string;
 }
-
-export interface CommitData {
-  sha: string;
-  message: string;
-  author: string;
-  date: Date;
-  url: string;
-}

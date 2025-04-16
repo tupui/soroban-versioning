@@ -11,7 +11,7 @@ ifndef domain_contract_id
 endif
 
 ifndef wasm
-override wasm = versioning_v1.0.0.wasm
+override wasm = tansu_v1.0.0.wasm
 endif
 
 # Add help text after each target name starting with '\#\#'
@@ -76,37 +76,38 @@ contract_test:
 	cargo test
 
 contract_build-release: contract_build
-	stellar contract optimize --wasm target/wasm32-unknown-unknown/release/versioning.wasm
+	stellar contract optimize --wasm target/wasm32-unknown-unknown/release/tansu.wasm
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 
-# --contract-id $(shell cat .soroban/soroban_versioning_id)
+# --contract-id $(shell cat .soroban/tansu_id)
 contract_bindings: contract_build-release  ## Create bindings
 	stellar contract bindings typescript \
 		--network $(network) \
-		--wasm target/wasm32-unknown-unknown/release/versioning.wasm \
-		--output-dir dapp/packages/soroban_versioning \
+		--wasm target/wasm32-unknown-unknown/release/tansu.wasm \
+		--output-dir dapp/packages/tansu \
 		--overwrite && \
-	cd dapp/packages/soroban_versioning && \
+	cd dapp/packages/tansu && \
+	bun update && \
 	bun run build && \
 	cd ../.. && \
 	bun formatter
 
 contract_deploy:  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
-  		--wasm target/wasm32-unknown-unknown/release/versioning.optimized.wasm \
+  		--wasm target/wasm32-unknown-unknown/release/tansu.optimized.wasm \
   		--source-account mando-$(network) \
   		--network $(network) \
   		-- \
   		--admin $(shell soroban keys address mando-$(network)) \
-  		> .soroban/soroban_versioning_id && \
-  	cat .soroban/soroban_versioning_id
+  		> .soroban/tansu_id && \
+  	cat .soroban/tansu_id
 
 contract_upgrade:  ## After manually pulling the wasm from the pipeline, update the contract
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
+    	--id $(shell cat .soroban/tansu_id) \
     	-- \
     	upgrade \
 		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm $(wasm))
@@ -140,7 +141,7 @@ contract_help:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
+    	--id $(shell cat .soroban/tansu_id) \
     	-- \
     	--help
 
@@ -148,7 +149,7 @@ contract_version:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
+    	--id $(shell cat .soroban/tansu_id) \
     	-- \
     	version
 
@@ -156,7 +157,7 @@ contract_register:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
+    	--id $(shell cat .soroban/tansu_id) \
     	-- \
     	register \
     	--maintainer $(shell soroban keys address mando-$(network)) \
@@ -170,7 +171,7 @@ contract_commit:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
+    	--id $(shell cat .soroban/tansu_id) \
     	-- \
     	commit \
     	--maintainer $(shell soroban keys address mando-$(network)) \
@@ -181,7 +182,7 @@ contract_get_commit:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/soroban_versioning_id) \
+    	--id $(shell cat .soroban/tansu_id) \
     	-- \
     	get_commit \
     	--project_key 37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156

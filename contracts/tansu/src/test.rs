@@ -1,13 +1,14 @@
 #![cfg(test)]
 
-use super::{domain_contract, Tansu, TansuClient};
+use super::{Tansu, TansuClient, domain_contract};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
-use crate::types::{Dao, ProposalStatus, Vote};
+use crate::types::{AnonymousVote, Dao, ProposalStatus, PublicVote, Vote, VoteChoice};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
+use soroban_sdk::testutils::arbitrary::std::println;
 use soroban_sdk::{
-    symbol_short, testutils::Events, token, vec, Address, Bytes, Env, IntoVal, String, Vec,
+    Address, Bytes, BytesN, Env, IntoVal, String, Vec, symbol_short, testutils::Events, token, vec,
 };
 
 #[test]
@@ -192,7 +193,7 @@ fn test() {
         "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
     );
     let voting_ends_at = env.ledger().timestamp() + 3600 * 24 * 2;
-    let proposal_id = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at);
+    let proposal_id = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &true);
 
     assert_eq!(proposal_id, 0);
 
@@ -200,10 +201,17 @@ fn test() {
     assert_eq!(proposal.id, 0);
     assert_eq!(proposal.title, title);
     assert_eq!(proposal.ipfs, ipfs);
-    assert_eq!(proposal.voting_ends_at, voting_ends_at);
-    assert_eq!(proposal.voters_approve, Vec::new(&env));
-    assert_eq!(proposal.voters_reject, Vec::new(&env));
-    assert_eq!(proposal.voters_abstain, vec![&env, grogu.clone()]);
+    assert_eq!(proposal.vote_data.voting_ends_at, voting_ends_at);
+    assert_eq!(
+        proposal.vote_data.votes,
+        vec![
+            &env,
+            Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                vote_choice: VoteChoice::Abstain
+            })
+        ]
+    );
 
     let dao = contract.get_dao(&id, &0);
     assert_eq!(
@@ -219,53 +227,261 @@ fn test() {
 
     // cannot vote for your own proposal
     let error = contract
-        .try_vote(&grogu, &id, &proposal_id, &Vote::Approve)
+        .try_vote(
+            &grogu,
+            &id,
+            &proposal_id,
+            &Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
+        )
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::AlreadyVoted.into());
 
-    contract.vote(&mando, &id, &proposal_id, &Vote::Approve);
+    contract.vote(
+        &mando,
+        &id,
+        &proposal_id,
+        &Vote::PublicVote(PublicVote {
+            address: mando.clone(),
+            vote_choice: VoteChoice::Approve,
+        }),
+    );
 
     // cannot vote twice
     let error = contract
-        .try_vote(&mando, &id, &proposal_id, &Vote::Approve)
+        .try_vote(
+            &mando,
+            &id,
+            &proposal_id,
+            &Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
+        )
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::AlreadyVoted.into());
 
     let proposal = contract.get_proposal(&id, &proposal_id);
     assert_eq!(proposal.status, ProposalStatus::Active);
-    assert_eq!(proposal.voters_approve, vec![&env, mando.clone()]);
-    assert_eq!(proposal.voters_reject, Vec::new(&env));
-    assert_eq!(proposal.voters_abstain, vec![&env, grogu.clone()]);
+
+    assert_eq!(
+        proposal.vote_data.votes,
+        vec![
+            &env,
+            Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                vote_choice: VoteChoice::Abstain,
+            }),
+            Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
+        ]
+    );
 
     // cast another vote and approve
     env.ledger().set_timestamp(1234567890);
     let kuiil = Address::generate(&env);
     let voting_ends_at = 1234567890 + 3600 * 24 * 2;
-    let proposal_id_2 = contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at);
-    contract.vote(&mando, &id, &proposal_id_2, &Vote::Approve);
-    contract.vote(&kuiil, &id, &proposal_id_2, &Vote::Approve);
+    let proposal_id_2 =
+        contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &true);
+    contract.vote(
+        &mando,
+        &id,
+        &proposal_id_2,
+        &Vote::PublicVote(PublicVote {
+            address: mando.clone(),
+            vote_choice: VoteChoice::Approve,
+        }),
+    );
+
+    // cannot vote with the wrong type for a proposal
+    let error = contract
+        .try_vote(
+            &kuiil,
+            &id,
+            &proposal_id_2,
+            &Vote::AnonymousVote(AnonymousVote {
+                address: kuiil.clone(),
+                encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
+                encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
+                commitments: vec![&env, BytesN::from_array(&env, &[0; 96])],
+            }),
+        )
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::WrongVoteType.into());
+
+    // cannot vote for someone else
+    let error = contract
+        .try_vote(
+            &kuiil,
+            &id,
+            &proposal_id_2,
+            &Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
+        )
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::WrongVoter.into());
+
+    contract.vote(
+        &kuiil,
+        &id,
+        &proposal_id_2,
+        &Vote::PublicVote(PublicVote {
+            address: kuiil.clone(),
+            vote_choice: VoteChoice::Approve,
+        }),
+    );
 
     // too early to execute
     let error = contract
-        .try_execute(&mando, &id, &proposal_id_2)
+        .try_execute(&mando, &id, &proposal_id_2, &None, &None)
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::ProposalVotingTime.into());
 
     env.ledger().set_timestamp(voting_ends_at + 1);
 
-    let vote_result = contract.execute(&mando, &id, &proposal_id_2);
+    let vote_result = contract.execute(&mando, &id, &proposal_id_2, &None, &None);
     assert_eq!(vote_result, ProposalStatus::Approved);
     let proposal_2 = contract.get_proposal(&id, &proposal_id_2);
+
     assert_eq!(
-        proposal_2.voters_approve,
-        vec![&env, mando.clone(), kuiil.clone()]
+        proposal_2.vote_data.votes,
+        vec![
+            &env,
+            Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                vote_choice: VoteChoice::Abstain,
+            }),
+            Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
+            Vote::PublicVote(PublicVote {
+                address: kuiil.clone(),
+                vote_choice: VoteChoice::Approve,
+            }),
+        ]
     );
-    assert_eq!(proposal_2.voters_reject, Vec::new(&env));
-    assert_eq!(proposal_2.voters_abstain, vec![&env, grogu.clone()]);
+
     assert_eq!(proposal_2.status, ProposalStatus::Approved);
+
+    // already executed
+    let error = contract
+        .try_execute(&mando, &id, &proposal_id_2, &None, &None)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::ProposalActive.into());
+
+    // anonymous voting
+    let voting_ends_at = env.ledger().timestamp() + 3600 * 24 * 2;
+    let error = contract
+        .try_create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &false)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::NoAnonymousVotingConfig.into());
+
+    let public_key = String::from_str(&env, "public key random");
+    contract.anonymous_voting_setup(&id, &public_key);
+
+    let proposal_id_3 =
+        contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &false);
+
+    let proposal_3 = contract.get_proposal(&id, &proposal_id_3);
+
+    // test build_commitments_from_votes and abstain
+    let abstain_vote = Vote::AnonymousVote(AnonymousVote {
+        address: grogu.clone(),
+        encrypted_seeds: vec![
+            &env,
+            String::from_str(&env, "0"),
+            String::from_str(&env, "0"),
+            String::from_str(&env, "0"),
+        ],
+        encrypted_votes: vec![
+            &env,
+            String::from_str(&env, "0"),
+            String::from_str(&env, "0"),
+            String::from_str(&env, "1"),
+        ],
+        commitments: contract.build_commitments_from_votes(
+            &id,
+            &vec![&env, 0u32, 0u32, 1u32],
+            &vec![&env, 0u32, 0u32, 0u32],
+        ),
+    });
+
+    assert_eq!(proposal_3.vote_data.votes, vec![&env, abstain_vote.clone()]);
+
+    //
+    let error = contract
+        .try_vote(
+            &kuiil,
+            &id,
+            &proposal_id_3,
+            &Vote::AnonymousVote(AnonymousVote {
+                address: kuiil.clone(),
+                encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
+                encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
+                commitments: vec![
+                    &env,
+                    BytesN::from_array(&env, &[0; 96]),
+                    BytesN::from_array(&env, &[0; 96]),
+                ],
+            }),
+        )
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::BadCommitment.into());
+
+    let vote_ = Vote::AnonymousVote(AnonymousVote {
+        address: kuiil.clone(),
+        encrypted_seeds: vec![
+            &env,
+            String::from_str(&env, "fafdas"),
+            String::from_str(&env, "fafdas"),
+            String::from_str(&env, "fafdas"),
+        ],
+        encrypted_votes: vec![
+            &env,
+            String::from_str(&env, "fafdas"),
+            String::from_str(&env, "fafdas"),
+            String::from_str(&env, "rewrewr"),
+        ],
+        commitments: contract.build_commitments_from_votes(
+            &id,
+            &vec![&env, 3u32, 1u32, 1u32],
+            &vec![&env, 5u32, 4u32, 6u32],
+        ),
+    });
+    contract.vote(&kuiil, &id, &proposal_id_3, &vote_);
+
+    env.ledger().set_timestamp(voting_ends_at + 1);
+
+    //env.cost_estimate().budget().reset_unlimited();
+    env.cost_estimate().budget().reset_default();
+
+    let vote_result = contract.execute(
+        &grogu,
+        &id,
+        &proposal_id_3,
+        &Some(vec![&env, 3u32, 1u32, 2u32]),
+        &Some(vec![&env, 5u32, 4u32, 6u32]),
+    );
+
+    let cost = env.cost_estimate().budget();
+    println!("{:#?}", cost);
+
+    assert_eq!(vote_result, ProposalStatus::Cancelled);
 }
 
 #[test]

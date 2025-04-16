@@ -1,9 +1,9 @@
 use soroban_sdk::{
-    contractimpl, panic_with_error, symbol_short, vec, Address, Bytes, BytesN, Env, IntoVal,
-    String, Symbol, Val, Vec,
+    Address, Bytes, BytesN, Env, IntoVal, String, Symbol, Val, Vec, contractimpl, panic_with_error,
+    symbol_short, vec,
 };
 
-use crate::{domain_contract, errors, types, Tansu, TansuArgs, TansuClient, VersioningTrait};
+use crate::{Tansu, TansuArgs, TansuClient, VersioningTrait, domain_contract, errors, types};
 
 #[contractimpl]
 impl VersioningTrait for Tansu {

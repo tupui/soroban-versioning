@@ -1,6 +1,6 @@
 {
   "version": "0.0.0",
-  "name": "soroban_versioning",
+  "name": "tansu",
   "type": "module",
   "exports": "./dist/index.js",
   "typings": "dist/index.d.ts",
@@ -8,10 +8,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@stellar/stellar-sdk": "13.2.0",
+    "@stellar/stellar-sdk": "^13.2.0",
     "buffer": "6.0.3"
   },
   "devDependencies": {
-    "typescript": "^5.6.2"
+    "typescript": "^5.8.3"
   }
 }

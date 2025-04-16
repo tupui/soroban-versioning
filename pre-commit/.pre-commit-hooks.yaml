@@ -1,9 +1,9 @@
-- id: soroban-versioning
-  name: Send hash to Soroban contract before push
+- id: tansu
+  name: Send hash to Tansu contract before push
   language: python
   additional_dependencies:
     - soroban
-  entry: soroban-versioning-pre-push
+  entry: tansu-pre-push
   pass_filenames: false
   always_run: true
   require_serial: true
