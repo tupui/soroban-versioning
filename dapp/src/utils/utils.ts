@@ -1,5 +1,9 @@
 import { TransactionBuilder } from "@stellar/stellar-sdk";
-import type { Proposal as ContractProposal, Project } from "tansu";
+import type {
+  Proposal as ContractProposal,
+  Project,
+} from "../../packages/tansu";
+import type { Vote } from "../../packages/tansu";
 import {
   VoteType,
   type Proposal,
@@ -133,51 +137,76 @@ export const modifyProposalToView = (
 export const modifyProposalFromContract = (
   proposal: ContractProposal,
 ): Proposal => {
-  return {
-    id: proposal.id,
-    title: proposal.title,
-    ipfs: proposal.ipfs,
-    status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
-    voting_ends_at: Number(proposal.vote_data.voting_ends_at),
-    voteStatus: {
-      approve: {
-        voteType: VoteType.APPROVE,
-        score: proposal.voters_approve.length,
-        voters: proposal.voters_approve.map((voter: string) => {
-          return {
-            address: voter,
-            image: null,
-            name: "",
-            github: "",
-          };
-        }),
+  if (proposal.vote_data.public_voting) {
+    const voters_approve = proposal.vote_data.votes
+      .filter(
+        (vote: Vote) =>
+          vote.tag === "PublicVote" &&
+          vote.values[0].vote_choice.tag === "Approve",
+      )
+      .map((vote: Vote) => vote.values[0].address);
+    const voters_reject = proposal.vote_data.votes
+      .filter(
+        (vote: Vote) =>
+          vote.tag === "PublicVote" &&
+          vote.values[0].vote_choice.tag === "Reject",
+      )
+      .map((vote: Vote) => vote.values[0].address);
+    const voters_abstain = proposal.vote_data.votes
+      .filter(
+        (vote: Vote) =>
+          vote.tag === "PublicVote" &&
+          vote.values[0].vote_choice.tag === "Abstain",
+      )
+      .map((vote: Vote) => vote.values[0].address);
+
+    return {
+      id: proposal.id,
+      title: proposal.title,
+      ipfs: proposal.ipfs,
+      status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
+      voting_ends_at: Number(proposal.vote_data.voting_ends_at),
+      voteStatus: {
+        approve: {
+          voteType: VoteType.APPROVE,
+          score: voters_approve.length,
+          voters: voters_approve.map((voter: string) => {
+            return {
+              address: voter,
+              image: null,
+              name: "",
+              github: "",
+            };
+          }),
+        },
+        reject: {
+          voteType: VoteType.REJECT,
+          score: voters_reject.length,
+          voters: voters_reject.map((voter: string) => {
+            return {
+              address: voter,
+              image: null,
+              name: "",
+              github: "",
+            };
+          }),
+        },
+        abstain: {
+          voteType: VoteType.CANCEL,
+          score: voters_abstain.length,
+          voters: voters_abstain.map((voter: string) => {
+            return {
+              address: voter,
+              image: null,
+              name: "",
+              github: "",
+            };
+          }),
+        },
       },
-      reject: {
-        voteType: VoteType.REJECT,
-        score: proposal.voters_reject.length,
-        voters: proposal.voters_reject.map((voter: string) => {
-          return {
-            address: voter,
-            image: null,
-            name: "",
-            github: "",
-          };
-        }),
-      },
-      abstain: {
-        voteType: VoteType.CANCEL,
-        score: proposal.voters_abstain.length,
-        voters: proposal.voters_abstain.map((voter: string) => {
-          return {
-            address: voter,
-            image: null,
-            name: "",
-            github: "",
-          };
-        }),
-      },
-    },
-  };
+    };
+  }
+  throw new Error("this is anonymous vote. current not working.");
 };
 
 const createModal = (imgSrc: string, title: string, description: string) => {

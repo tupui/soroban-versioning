@@ -11,6 +11,12 @@ export const contractErrorMessages = {
   9: "You have already voted.",
   10: "The proposal is still in voting, so cannot be executed.",
   11: "The proposal has already been executed.",
+  12: "The voting type is wrong.",
+  13: "You are invalid voter.",
+  14: "There is a tally seed error.",
+  15: "The proof is invalid.",
+  16: "This is not the anonymous voting config.",
+  17: "Bad commitment.",
 };
 
 export type ContractErrorMessageKey = keyof typeof contractErrorMessages;

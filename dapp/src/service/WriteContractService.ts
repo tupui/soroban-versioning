@@ -13,7 +13,7 @@ import {
   type ContractErrorMessageKey,
 } from "constants/contractErrorMessages";
 import * as pkg from "js-sha3";
-import type { Vote } from "tansu";
+import type { VoteChoice, Vote } from "../../packages/tansu";
 import type { VoteType } from "types/proposal";
 // import type { Response } from "types/response";
 import { loadedProjectId } from "./StateService";
@@ -22,7 +22,7 @@ const { keccak256 } = pkg;
 const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
 
 // Function to map VoteType to Vote
-function mapVoteTypeToVote(voteType: VoteType): Vote {
+function mapVoteTypeToVote(voteType: VoteType): VoteChoice {
   switch (voteType) {
     case "approve":
       return { tag: "Approve", values: undefined };
@@ -70,7 +70,7 @@ async function commitHash(commit_hash: string): Promise<boolean> {
   });
   try {
     await tx.signAndSend({
-      signTransaction: async (xdr) => {
+      signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
       },
     });
@@ -111,7 +111,7 @@ async function registerProject(
 
   try {
     await tx.signAndSend({
-      signTransaction: async (xdr) => {
+      signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
       },
     });
@@ -150,7 +150,7 @@ async function updateConfig(
 
   try {
     await tx.signAndSend({
-      signTransaction: async (xdr) => {
+      signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
       },
     });
@@ -189,7 +189,7 @@ async function createProposal(
 
   try {
     const result = await tx.signAndSend({
-      signTransaction: async (xdr) => {
+      signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
       },
     });
@@ -217,17 +217,26 @@ async function voteToProposal(
   );
 
   const mappedVote = mapVoteTypeToVote(vote);
+  const publicVote: Vote = {
+    tag: "PublicVote",
+    values: [
+      {
+        address: publicKey,
+        vote_choice: mappedVote,
+      },
+    ],
+  };
 
   const tx = await Tansu.vote({
     voter: publicKey,
     project_key: project_key,
     proposal_id: Number(proposal_id),
-    vote: mappedVote,
+    vote: publicVote,
   });
 
   try {
     await tx.signAndSend({
-      signTransaction: async (xdr) => {
+      signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
       },
     });
@@ -266,7 +275,7 @@ async function execute(
     });
 
     const result = await tx.signAndSend({
-      signTransaction: async (xdr) => {
+      signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
       },
     });

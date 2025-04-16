@@ -1,4 +1,4 @@
-import * as Client from "tansu";
+import * as Client from "../../packages/tansu";
 
 export default new Client.Client({
   networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
