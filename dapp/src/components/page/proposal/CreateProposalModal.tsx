@@ -626,7 +626,7 @@ const CreateProposalModal = () => {
       ) : step >= 5 && step <= 9 ? (
         <div className="flex flex-col gap-[30px]">
           <div className="flex gap-[18px]">
-            <img src="/images/loading.svg" />
+            <img className="rotate_image" src="/images/loading.svg" />
             <div className="flex-grow flex flex-col justify-center gap-[30px]">
               <Step step={step - 4} totalSteps={6} />
               {step == 5 ? (
