@@ -7,7 +7,7 @@ ifndef network
 endif
 
 ifndef domain_contract_id
-	override domain_contract_id = $(shell cat .soroban/soroban_domain_id)
+	override domain_contract_id = $(shell cat .stellar/soroban_domain_id)
 endif
 
 ifndef wasm
@@ -80,7 +80,7 @@ contract_build-release: contract_build
 	@ls -l target/wasm32-unknown-unknown/release/*.wasm
 
 
-# --contract-id $(shell cat .soroban/tansu_id)
+# --contract-id $(shell cat .stellar/tansu_id)
 contract_bindings: contract_build-release  ## Create bindings
 	stellar contract bindings typescript \
 		--network $(network) \
@@ -100,14 +100,14 @@ contract_deploy:  ## Deploy Soroban contract to testnet
   		--network $(network) \
   		-- \
   		--admin $(shell soroban keys address mando-$(network)) \
-  		> .soroban/tansu_id && \
-  	cat .soroban/tansu_id
+  		> .stellar/tansu_id && \
+  	cat .stellar/tansu_id
 
 contract_upgrade:  ## After manually pulling the wasm from the pipeline, update the contract
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/tansu_id) \
+    	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	upgrade \
 		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm $(wasm))
@@ -119,14 +119,14 @@ contract_domain_deploy:
   		--wasm contracts/domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm \
   		--source-account mando-$(network) \
   		--network $(network) \
-  		> .soroban/soroban_domain_id && \
-  	cat .soroban/soroban_domain_id
+  		> .stellar/soroban_domain_id && \
+  	cat .stellar/soroban_domain_id
 
 contract_domain_init:
 	stellar contract invoke \
 		--source-account mando-testnet \
 		--network testnet \
-		--id $(shell cat .soroban/soroban_domain_id) \
+		--id $(shell cat .stellar/soroban_domain_id) \
 		-- \
 		init \
 		--adm $(shell soroban keys address mando-$(network)) \
@@ -141,7 +141,7 @@ contract_help:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/tansu_id) \
+    	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	--help
 
@@ -149,7 +149,7 @@ contract_version:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/tansu_id) \
+    	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	version
 
@@ -157,7 +157,7 @@ contract_register:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/tansu_id) \
+    	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	register \
     	--maintainer $(shell soroban keys address mando-$(network)) \
@@ -171,7 +171,7 @@ contract_commit:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/tansu_id) \
+    	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	commit \
     	--maintainer $(shell soroban keys address mando-$(network)) \
@@ -182,7 +182,7 @@ contract_get_commit:
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
-    	--id $(shell cat .soroban/tansu_id) \
+    	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	get_commit \
     	--project_key 37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156

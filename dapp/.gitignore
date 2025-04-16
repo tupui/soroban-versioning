@@ -2,14 +2,11 @@
 target
 
 # Local Soroban settings
+.stellar
 .soroban
 
 
 # The following is from the Frontend Template's .gitignore
-
-# soroban/Rust output
-target
-.soroban
 
 # build output
 dist/
