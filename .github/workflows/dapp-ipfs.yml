@@ -39,7 +39,7 @@ jobs:
         run: bun run build
 
       - name: Generate artifact attestation for dist
-        uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2
+        uses: actions/attest-build-provenance@db473fddc028af60658334401dc6fa3ffd8669fd
         with:
           subject-path: "./dapp/dist/*"
 
