@@ -2,7 +2,42 @@ use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
 
 #[contracttype]
 pub enum DataKey {
-    Admin, // Contract administrator
+    Admin,           // Contract administrator
+    Member(Address), // Member of the DAO, address
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Badges {
+    pub maintainer: Vec<Address>,
+    pub triage: Vec<Address>,
+    pub community: Vec<Address>,
+    pub verified: Vec<Address>,
+    pub default: Vec<Address>,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub enum Badge {
+    Maintainer = 10_000_000,
+    Triage = 5_000_000,
+    Community = 1_000_000,
+    Verified = 500_000, // have a soroban domain
+    Default = 1,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct ProjectBadges {
+    pub project: Bytes,
+    pub badges: Vec<Badge>,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Member {
+    pub projects: Vec<ProjectBadges>,
+    pub meta: String,
 }
 
 #[contracttype]
@@ -81,6 +116,7 @@ pub struct Dao {
 #[derive(Clone, Debug, PartialEq)]
 pub enum ProjectKey {
     Key(Bytes),      // UUID of the project from keccak256(name)
+    Badges(Bytes),   // badges of the project
     LastHash(Bytes), // last hash of the project
     Dao(Bytes, u32), // Decentralized organization, pagination
     DaoTotalProposals(Bytes),

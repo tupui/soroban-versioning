@@ -26,4 +26,7 @@ pub enum ContractErrors {
     InvalidProof = 15,
     NoAnonymousVotingConfig = 16,
     BadCommitment = 17,
+    // Membership
+    UnknownMember = 18,
+    MemberAlreadyExist = 19,
 }

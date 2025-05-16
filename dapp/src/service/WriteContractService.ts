@@ -263,6 +263,9 @@ async function execute(
     keccak256.create().update(project_name).digest(),
   );
 
+  console.log(publicKey);
+  console.log(project_key);
+
   try {
     const tx = await Tansu.execute({
       maintainer: publicKey,
@@ -299,6 +302,8 @@ async function executeProposal(
   }
 
   try {
+    console.log(project_name)
+    console.log(proposal_id)
     await execute(project_name, proposal_id);
     const executorAccount = await server.getAccount(publicKey);
     const outcomeTransactionEnvelope = executeXdr
