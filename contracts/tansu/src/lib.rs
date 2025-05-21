@@ -43,6 +43,8 @@ pub trait MembershipTrait {
         member: Address,
         badges: Vec<types::Badge>,
     );
+
+    fn get_badges(env: Env, key: Bytes) -> types::Badges;
 }
 
 pub trait VersioningTrait {
@@ -125,19 +127,19 @@ fn auth_maintainers(env: &Env, maintainer: &Address, maintainers: &Vec<Address>)
     }
 }
 
-fn get_role(
-    principal: &Address,
-    maintainers: &Vec<Address>,
-    triage: &Vec<Address>,
-    community: &Vec<Address>,
-) -> types::Role {
-    if maintainers.contains(principal) {
-        types::Role::Maintainer
-    } else if triage.contains(principal) {
-        types::Role::Triage
-    } else if community.contains(principal) {
-        types::Role::Community
-    } else {
-        types::Role::Default
-    }
-}
+// fn get_role(
+//     principal: &Address,
+//     maintainers: &Vec<Address>,
+//     triage: &Vec<Address>,
+//     community: &Vec<Address>,
+// ) -> types::Badge {
+//     if maintainers.contains(principal) {
+//         types::Badge::Maintainer
+//     } else if triage.contains(principal) {
+//         types::Badge::Triage
+//     } else if community.contains(principal) {
+//         types::Badge::Community
+//     } else {
+//         types::Badge::Default
+//     }
+// }
