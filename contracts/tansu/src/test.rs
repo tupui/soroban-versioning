@@ -503,7 +503,7 @@ fn test() {
     assert_eq!(
         badges_for_id,
         Badges {
-            maintainer: Vec::new(&env),
+            developer: Vec::new(&env),
             triage: Vec::new(&env),
             community: Vec::new(&env),
             verified: Vec::new(&env),
@@ -512,7 +512,7 @@ fn test() {
     );
 
     // add some badges to the member and check again the member and project
-    let badges = vec![&env, Badge::Community, Badge::Maintainer];
+    let badges = vec![&env, Badge::Community, Badge::Developer];
     contract.add_badges(&mando, &id, &grogu, &badges);
 
     let member = contract.get_member(&grogu);
@@ -531,7 +531,7 @@ fn test() {
     assert_eq!(
         badges_for_id,
         Badges {
-            maintainer: vec![&env, grogu.clone()],
+            developer: vec![&env, grogu.clone()],
             triage: Vec::new(&env),
             community: vec![&env, grogu],
             verified: Vec::new(&env),

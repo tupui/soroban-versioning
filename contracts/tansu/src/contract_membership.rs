@@ -87,7 +87,7 @@ impl MembershipTrait for Tansu {
 
         for badge in badges.iter() {
             match badge {
-                types::Badge::Maintainer => badges_.maintainer.push_back(member.clone()),
+                types::Badge::Developer => badges_.developer.push_back(member.clone()),
                 types::Badge::Triage => badges_.triage.push_back(member.clone()),
                 types::Badge::Community => badges_.community.push_back(member.clone()),
                 _ => (),
@@ -109,7 +109,7 @@ impl MembershipTrait for Tansu {
             badges_
         } else {
             types::Badges {
-                maintainer: Vec::new(&env),
+                developer: Vec::new(&env),
                 triage: Vec::new(&env),
                 community: Vec::new(&env),
                 verified: Vec::new(&env),

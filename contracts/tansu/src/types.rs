@@ -9,7 +9,7 @@ pub enum DataKey {
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Badges {
-    pub maintainer: Vec<Address>,
+    pub developer: Vec<Address>,
     pub triage: Vec<Address>,
     pub community: Vec<Address>,
     pub verified: Vec<Address>,
@@ -19,7 +19,7 @@ pub struct Badges {
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub enum Badge {
-    Maintainer = 10_000_000,
+    Developer = 10_000_000,
     Triage = 5_000_000,
     Community = 1_000_000,
     Verified = 500_000, // have a soroban domain
