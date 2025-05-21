@@ -3,7 +3,10 @@
 use super::{Tansu, TansuClient, domain_contract};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
-use crate::types::{AnonymousVote, Dao, ProposalStatus, PublicVote, Vote, VoteChoice};
+use crate::types::{
+    AnonymousVote, Badge, Badges, Dao, Member, ProjectBadges, ProposalStatus, PublicVote, Vote,
+    VoteChoice,
+};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
 use soroban_sdk::testutils::arbitrary::std::println;
@@ -482,6 +485,59 @@ fn test() {
     println!("{:#?}", cost);
 
     assert_eq!(vote_result, ProposalStatus::Cancelled);
+
+    // membership
+    let meta = String::from_str(&env, "abcd");
+    contract.add_member(&grogu, &meta);
+
+    let member = contract.get_member(&grogu);
+    assert_eq!(
+        member,
+        Member {
+            projects: Vec::new(&env),
+            meta,
+        }
+    );
+
+    let badges_for_id = contract.get_badges(&id);
+    assert_eq!(
+        badges_for_id,
+        Badges {
+            maintainer: Vec::new(&env),
+            triage: Vec::new(&env),
+            community: Vec::new(&env),
+            verified: Vec::new(&env),
+            default: Vec::new(&env),
+        }
+    );
+
+    // add some badges to the member and check again the member and project
+    let badges = vec![&env, Badge::Community, Badge::Maintainer];
+    contract.add_badges(&mando, &id, &grogu, &badges);
+
+    let member = contract.get_member(&grogu);
+    assert_eq!(
+        member.projects,
+        vec![
+            &env,
+            ProjectBadges {
+                project: id.clone(),
+                badges: badges.clone()
+            }
+        ]
+    );
+
+    let badges_for_id = contract.get_badges(&id);
+    assert_eq!(
+        badges_for_id,
+        Badges {
+            maintainer: vec![&env, grogu.clone()],
+            triage: Vec::new(&env),
+            community: vec![&env, grogu],
+            verified: Vec::new(&env),
+            default: Vec::new(&env),
+        }
+    );
 }
 
 #[test]
