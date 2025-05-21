@@ -1,24 +1,11 @@
-use soroban_sdk::{Address, Bytes, Env, IntoVal, Vec, contractimpl, panic_with_error};
+use soroban_sdk::{Address, Bytes, Env, IntoVal, String, Vec, contractimpl, panic_with_error};
 
 use crate::{MembershipTrait, Tansu, TansuArgs, TansuClient, errors, types};
 
 #[contractimpl]
 impl MembershipTrait for Tansu {
-    fn add_member(
-        env: Env,
-        maintainer: Address,
-        key: Bytes,
-        member_address: Address,
-        member: types::Member,
-    ) {
-        let project_key_ = types::ProjectKey::Key(key.clone());
-        if let Some(mut project) = env
-            .storage()
-            .persistent()
-            .get::<types::ProjectKey, types::Project>(&project_key_)
-        {
-            crate::auth_maintainers(&env, &maintainer, &project.maintainers);
-        };
+    fn add_member(env: Env, member_address: Address, meta: String) {
+        member_address.require_auth();
 
         let member_key_ = types::DataKey::Member(member_address.clone());
         if env
@@ -28,8 +15,22 @@ impl MembershipTrait for Tansu {
         {
             panic_with_error!(&env, &errors::ContractErrors::MemberAlreadyExist)
         } else {
+            let member = types::Member {
+                projects: Vec::new(&env),
+                meta,
+            };
             env.storage().persistent().set(&member_key_, &member);
         };
+    }
+
+    fn get_member(env: Env, member_address: Address) -> types::Member {
+        let member_key_ = types::DataKey::Member(member_address.clone());
+        env.storage()
+            .persistent()
+            .get::<types::DataKey, types::Member>(&member_key_)
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &errors::ContractErrors::UnknownMember);
+            })
     }
 
     fn add_badges(

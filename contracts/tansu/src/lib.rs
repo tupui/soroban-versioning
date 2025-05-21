@@ -32,13 +32,9 @@ pub trait TansuTrait {
 }
 
 pub trait MembershipTrait {
-    fn add_member(
-        env: Env,
-        maintainer: Address,
-        key: Bytes,
-        member_address: Address,
-        member: types::Member,
-    );
+    fn add_member(env: Env, member_address: Address, meta: String);
+
+    fn get_member(env: Env, member_address: Address) -> types::Member;
 
     fn add_badges(
         env: Env,
