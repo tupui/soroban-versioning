@@ -268,10 +268,8 @@ async function execute(
       maintainer: publicKey,
       project_key: project_key,
       proposal_id: Number(proposal_id),
-      // @ts-ignore
-      tallies: null,
-      // @ts-ignore
-      seeds: null,
+      tallies: undefined,
+      seeds: undefined,
     });
 
     const result = await tx.signAndSend({
