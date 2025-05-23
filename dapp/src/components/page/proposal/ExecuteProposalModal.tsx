@@ -70,13 +70,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 
     try {
       const { executeProposal } = await import("@service/WriteContractService");
-      const res = await executeProposal(
-        projectName,
-        proposalId,
-        voteResultAndXdr.xdr,
-      );
+      await executeProposal(projectName, proposalId, voteResultAndXdr.xdr);
       setStep(step + 1);
-      console.log("execute result:", res.data);
       toast.success("Congratulation!", "Proposal executed successfully");
     } catch (error: any) {
       toast.error("Execute Proposal", error.message);
@@ -114,25 +109,24 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
               <Step step={step} totalSteps={3} />
               <Title
                 title="Finalize the Vote Execution"
-                description="Review the transaction details before execution. You can verify the XDR and proceed with the final step."
+                description={
+                  voteResultAndXdr.xdr
+                    ? "Review the transaction details before execution. You can verify the XDR and proceed with the final step."
+                    : "Review the vote outcome and proceed with finalizing the proposal."
+                }
               />
               <VotingResult voteStatus={voteStatus} />
-              {/* <div className="flex flex-col gap-[18px]">
-                  <p className="leading-4 text-base text-secondary">
-                    Description
-                  </p>
-                  <p className="text-lg text-primary">
-                  </p>
-                </div> */}
-              <div className="flex flex-col items-start gap-[18px]">
-                <p className="leading-4 text-base text-secondary">XDR</p>
-                <div className="p-[8px_18px] bg-[#FFEFA8] flex items-center gap-[18px]">
-                  <p className="leading-[18px] text-lg text-primary">
-                    {(voteResultAndXdr.xdr || "").slice(0, 24) + "..."}
-                  </p>
-                  <img src="/icons/clipboard.svg" />
+              {voteResultAndXdr.xdr && (
+                <div className="flex flex-col items-start gap-[18px]">
+                  <p className="leading-4 text-base text-secondary">XDR</p>
+                  <div className="p-[8px_18px] bg-[#FFEFA8] flex items-center gap-[18px]">
+                    <p className="leading-[18px] text-lg text-primary">
+                      {voteResultAndXdr.xdr.slice(0, 24) + "..."}
+                    </p>
+                    <img src="/icons/clipboard.svg" />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <div className="flex justify-end gap-[18px]">
