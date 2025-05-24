@@ -64,11 +64,44 @@ export declare const Errors: {
   17: {
     message: string;
   };
+  18: {
+    message: string;
+  };
+  19: {
+    message: string;
+  };
 };
-export type DataKey = {
-  tag: "Admin";
-  values: void;
-};
+export type DataKey =
+  | {
+      tag: "Admin";
+      values: void;
+    }
+  | {
+      tag: "Member";
+      values: readonly [string];
+    };
+export interface Badges {
+  community: Array<string>;
+  default: Array<string>;
+  developer: Array<string>;
+  triage: Array<string>;
+  verified: Array<string>;
+}
+export declare enum Badge {
+  Developer = 10000000,
+  Triage = 5000000,
+  Community = 1000000,
+  Verified = 500000,
+  Default = 1,
+}
+export interface ProjectBadges {
+  badges: Array<Badge>;
+  project: Buffer;
+}
+export interface Member {
+  meta: string;
+  projects: Array<ProjectBadges>;
+}
 export type ProposalStatus =
   | {
       tag: "Active";
@@ -141,6 +174,10 @@ export interface Dao {
 export type ProjectKey =
   | {
       tag: "Key";
+      values: readonly [Buffer];
+    }
+  | {
+      tag: "Badges";
       values: readonly [Buffer];
     }
   | {
@@ -516,6 +553,110 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<Proposal>>;
   /**
+   * Construct and simulate a add_member transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  add_member: (
+    {
+      member_address,
+      meta,
+    }: {
+      member_address: string;
+      meta: string;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a get_member transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  get_member: (
+    {
+      member_address,
+    }: {
+      member_address: string;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<Member>>;
+  /**
+   * Construct and simulate a add_badges transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  add_badges: (
+    {
+      maintainer,
+      key,
+      member,
+      badges,
+    }: {
+      maintainer: string;
+      key: Buffer;
+      member: string;
+      badges: Array<Badge>;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a get_badges transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  get_badges: (
+    {
+      key,
+    }: {
+      key: Buffer;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<Badges>>;
+  /**
    * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   upgrade: (
@@ -738,6 +879,10 @@ export declare class Client extends ContractClient {
     proof: (json: string) => AssembledTransaction<boolean>;
     get_dao: (json: string) => AssembledTransaction<Dao>;
     get_proposal: (json: string) => AssembledTransaction<Proposal>;
+    add_member: (json: string) => AssembledTransaction<null>;
+    get_member: (json: string) => AssembledTransaction<Member>;
+    add_badges: (json: string) => AssembledTransaction<null>;
+    get_badges: (json: string) => AssembledTransaction<Badges>;
     upgrade: (json: string) => AssembledTransaction<null>;
     version: (json: string) => AssembledTransaction<number>;
     register: (json: string) => AssembledTransaction<Buffer<ArrayBufferLike>>;
