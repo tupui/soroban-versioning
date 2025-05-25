@@ -344,6 +344,38 @@ async function executeProposal(
   }
 }
 
+async function addMember(
+  member_address: string,
+  meta: string,
+): Promise<boolean> {
+  // Default to loaded public key if member_address empty
+  const address = member_address || loadedPublicKey();
+
+  if (!address) {
+    throw new Error("Please connect your wallet first");
+  }
+
+  Tansu.options.publicKey = address;
+
+  const tx = await Tansu.add_member({
+    member_address: address,
+    meta: meta,
+  });
+
+  try {
+    await tx.signAndSend({
+      signTransaction: async (xdr: string) => {
+        return await kit.signTransaction(xdr);
+      },
+    });
+    return true;
+  } catch (e: any) {
+    console.error(e);
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
+  }
+}
+
 export {
   commitHash,
   registerProject,
@@ -351,4 +383,5 @@ export {
   createProposal,
   voteToProposal,
   executeProposal,
+  addMember,
 };

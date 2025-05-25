@@ -1,6 +1,7 @@
 ---
 import DiscoverTansu from "components/DiscoverTansu.astro";
 import ConnectWallet from "../ConnectWallet.astro";
+import JoinCommunityButton from "../JoinCommunityButton.tsx";
 
 const { page } = Astro.props;
 ---
@@ -23,7 +24,10 @@ const { page } = Astro.props;
           }
         </div>
         <div class="md:order-2 ml-auto md:w-auto" id="navbar-default">
-          <ConnectWallet />
+          <div class="flex gap-[12px] items-center">
+            <ConnectWallet />
+            <JoinCommunityButton client:load />
+          </div>
         </div>
         <div class="md:order-0 md:w-auto">
           {page === "home" && <DiscoverTansu />}
