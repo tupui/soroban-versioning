@@ -32,8 +32,6 @@ import {
   type CodeBlockEditorDescriptor,
 } from "@mdxeditor/editor";
 import { getProjectFromName } from "@service/ReadContractService";
-import * as Client from "@web3-storage/w3up-client";
-import * as Delegation from "@web3-storage/w3up-client/delegation";
 import Button from "components/utils/Button";
 import { DatePicker } from "components/utils/DatePicker";
 import { ExpandableText } from "components/utils/ExpandableText";
@@ -172,13 +170,14 @@ const CreateProposalModal = () => {
 
       setStep(6);
 
-      const client = await Client.create();
+      const { create } = await import("@web3-storage/w3up-client");
       const apiUrl = `/api/w3up-delegation`;
 
       const { generateChallengeTransaction } = await import(
         "@service/ChallengeService"
       );
 
+      const client = await create();
       const did = client.agent.did();
 
       setStep(7);
@@ -200,7 +199,8 @@ const CreateProposalModal = () => {
 
       const data = await response.arrayBuffer();
 
-      const delegation = await Delegation.extract(new Uint8Array(data));
+      const { extract } = await import("@web3-storage/w3up-client/delegation");
+      const delegation = await extract(new Uint8Array(data));
       if (!delegation.ok) {
         throw new Error("Failed to extract delegation", {
           cause: delegation.error,
@@ -669,7 +669,7 @@ const CreateProposalModal = () => {
           <div className="flex-grow flex flex-col gap-[30px]">
             <Title
               title="Your Proposal Is Live!"
-              description="Congratulations! You've successfully submitted your proposal. Let’s move forward and make it a success!"
+              description="Congratulations! You've successfully submitted your proposal. Let's move forward and make it a success!"
             />
             <div className="flex justify-end gap-[18px]">
               <Button type="secondary" onClick={() => setShowModal(false)}>
