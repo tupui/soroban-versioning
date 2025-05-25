@@ -5,7 +5,10 @@ import Modal, { type ModalProps } from "components/utils/Modal";
 import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
 
-const JoinCommunityModal: FC<ModalProps> = ({ onClose }) => {
+const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
+  onClose,
+  onJoined,
+}) => {
   const [address, setAddress] = useState<string>(loadedPublicKey() ?? "");
   const [meta, setMeta] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +28,7 @@ const JoinCommunityModal: FC<ModalProps> = ({ onClose }) => {
       const { addMember } = await import("@service/WriteContractService");
       await addMember(address, meta);
       toast.success("Success", "You have successfully joined the community!");
+      onJoined?.();
       onClose?.();
     } catch (err: any) {
       toast.error("Something Went Wrong!", err.message);

@@ -4,7 +4,7 @@ const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import { loadedProjectId } from "./StateService";
 import { modifyProposalFromContract } from "utils/utils";
-import type { Project, Proposal } from "../../packages/tansu";
+import type { Project, Proposal, Member } from "../../packages/tansu";
 import type { Proposal as ModifiedProposal } from "types/proposal";
 import {
   contractErrorMessages,
@@ -163,6 +163,19 @@ async function getProposal(
   }
 }
 
+async function getMember(memberAddress: string): Promise<Member> {
+  try {
+    const res = await Tansu.get_member({
+      member_address: memberAddress,
+    });
+    return res.result;
+  } catch (e: any) {
+    const { errorMessage, errorCode } = fetchErrorCode(e);
+    // If unknown member error (18), propagate with specific code to caller
+    throw { message: errorMessage, code: errorCode };
+  }
+}
+
 export {
   getProject,
   getProjectHash,
@@ -171,4 +184,5 @@ export {
   getProposalPages,
   getProposals,
   getProposal,
+  getMember,
 };
