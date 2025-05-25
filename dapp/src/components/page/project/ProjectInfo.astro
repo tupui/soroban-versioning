@@ -77,6 +77,13 @@ import Button from "components/utils/Button";
       <ul class="grid grid-cols-3 gap-9"></ul>
       <div class="flex view-all"></div>
     </div>
+    <div
+      id="project-community"
+      class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
+    >
+      <p class="leading-4 text-base text-secondary">Community</p>
+      <div class="community-content flex flex-col gap-4"></div>
+    </div>
     <CommitHistory client:load />
   </div>
 </div>
@@ -98,6 +105,7 @@ import Button from "components/utils/Button";
   } from "../../../service/StateService";
   import { convertGitHubLink } from "../../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../../utils/store";
+  import { getBadges } from "@service/ReadContractService";
 
   document.addEventListener("astro:page-load", () => {
     const updateConfigButton = document.querySelector("[data-update-config]");
@@ -556,5 +564,56 @@ import Button from "components/utils/Button";
       };
       return icons[iconName] || "";
     }
+
+    const updateCommunityList = async () => {
+      try {
+        const badgeData = await getBadges();
+        const communityContainer = document.getElementById("project-community");
+        if (!communityContainer) return;
+        const contentDiv =
+          communityContainer.querySelector(".community-content");
+        if (!contentDiv) return;
+        contentDiv.innerHTML = "";
+
+        const sections = [
+          { key: "developer", label: "Developer", list: badgeData.developer },
+          { key: "triage", label: "Triage", list: badgeData.triage },
+          { key: "community", label: "Community", list: badgeData.community },
+          { key: "verified", label: "Verified", list: badgeData.verified },
+          { key: "default", label: "Default", list: badgeData.default },
+        ];
+
+        sections.forEach((sec) => {
+          if (sec.list && sec.list.length > 0) {
+            const secDiv = document.createElement("div");
+            const title = document.createElement("p");
+            title.className = "leading-4 text-base text-secondary";
+            title.textContent = sec.label;
+            secDiv.appendChild(title);
+
+            const ul = document.createElement("ul");
+            ul.className = "grid grid-cols-3 gap-9";
+            sec.list.forEach((addr) => {
+              const li = document.createElement("li");
+              li.className = "relative";
+              const addrP = document.createElement("p");
+              addrP.className = "leading-[14px] text-sm text-primary truncate";
+              addrP.textContent = addr;
+              li.appendChild(addrP);
+              ul.appendChild(li);
+            });
+            secDiv.appendChild(ul);
+            contentDiv.appendChild(secDiv);
+          }
+        });
+      } catch (e) {
+        console.error("Error fetching badges", e);
+      }
+    };
+
+    // initial community load
+    updateCommunityList();
+
+    window.addEventListener("badgesUpdated", updateCommunityList);
   });
 </script>

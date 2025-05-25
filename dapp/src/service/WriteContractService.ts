@@ -15,6 +15,7 @@ import {
 import * as pkg from "js-sha3";
 import type { VoteChoice, Vote } from "../../packages/tansu";
 import type { VoteType } from "types/proposal";
+import type { Badge } from "../../packages/tansu";
 // import type { Response } from "types/response";
 import { loadedProjectId } from "./StateService";
 const { keccak256 } = pkg;
@@ -376,6 +377,36 @@ async function addMember(
   }
 }
 
+async function addBadges(
+  member_address: string,
+  badges: Badge[],
+): Promise<boolean> {
+  const projectId = loadedProjectId();
+  if (!projectId) throw new Error("No project defined");
+  const publicKey = loadedPublicKey();
+  if (!publicKey) throw new Error("Please connect your wallet first");
+
+  Tansu.options.publicKey = publicKey;
+
+  const tx = await Tansu.add_badges({
+    maintainer: publicKey,
+    key: projectId,
+    member: member_address,
+    badges,
+  });
+
+  try {
+    await tx.signAndSend({
+      signTransaction: async (xdr: string) => await kit.signTransaction(xdr),
+    });
+    return true;
+  } catch (e: any) {
+    console.error(e);
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
+  }
+}
+
 export {
   commitHash,
   registerProject,
@@ -384,4 +415,5 @@ export {
   voteToProposal,
   executeProposal,
   addMember,
+  addBadges,
 };

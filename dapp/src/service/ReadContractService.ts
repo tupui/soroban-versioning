@@ -4,7 +4,7 @@ const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import { loadedProjectId } from "./StateService";
 import { modifyProposalFromContract } from "utils/utils";
-import type { Project, Proposal, Member } from "../../packages/tansu";
+import type { Project, Proposal, Member, Badges } from "../../packages/tansu";
 import type { Proposal as ModifiedProposal } from "types/proposal";
 import {
   contractErrorMessages,
@@ -176,6 +176,18 @@ async function getMember(memberAddress: string): Promise<Member> {
   }
 }
 
+async function getBadges(): Promise<Badges> {
+  const projectId = loadedProjectId();
+  if (!projectId) throw new Error("No project defined");
+  try {
+    const res = await Tansu.get_badges({ key: projectId });
+    return res.result;
+  } catch (e: any) {
+    const { errorMessage } = fetchErrorCode(e);
+    throw new Error(errorMessage);
+  }
+}
+
 export {
   getProject,
   getProjectHash,
@@ -185,4 +197,5 @@ export {
   getProposals,
   getProposal,
   getMember,
+  getBadges,
 };

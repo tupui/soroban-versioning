@@ -1,6 +1,7 @@
 ---
 import UpdateConfigModal from "./UpdateConfigModal";
 import UpdateHashModal from "./UpdateHashModal";
+import AddBadgeModal from "./AddBadgeModal";
 ---
 
 <!-- <div class="flex justify-between items-center"> -->
@@ -11,6 +12,7 @@ import UpdateHashModal from "./UpdateHashModal";
   </a>
   <div class="flex gap-3">
     <UpdateConfigModal client:only />
+    <AddBadgeModal client:only />
     <UpdateHashModal client:only />
   </div>
 </div>
