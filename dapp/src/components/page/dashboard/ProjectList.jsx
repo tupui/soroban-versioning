@@ -2,7 +2,10 @@ import { useStore } from "@nanostores/react";
 import { useEffect, useState } from "react";
 import { getDemoConfigData } from "../../../constants/demoConfigData";
 import { fetchTOMLFromConfigUrl } from "../../../service/GithubService.ts";
-import { getProjectFromName } from "../../../service/ReadContractService.ts";
+import {
+  getProjectFromName,
+  getMember,
+} from "../../../service/ReadContractService.ts";
 import { loadConfigData } from "../../../service/StateService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
 import { projectCardModalOpen } from "../../../utils/store.ts";
@@ -11,6 +14,8 @@ import CreateProjectModal from "./CreateProjectModal.tsx";
 import ProjectCard from "./ProjectCard.jsx";
 import ProjectInfoModal from "./ProjectInfoModal.jsx";
 import Button from "components/utils/Button.tsx";
+import MemberProfileModal from "./MemberProfileModal.tsx";
+import Modal from "components/utils/Modal.tsx";
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);
@@ -27,6 +32,13 @@ const ProjectList = () => {
   const [isFilterClose, setIsFilterClose] = useState(true);
   const [showProjectInfoModal, setShowProjectInfoModal] = useState(false);
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
+
+  const [showCommunityModal, setShowCommunityModal] = useState(false);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [memberResult, setMemberResult] = useState(undefined);
+  const [memberLoading, setMemberLoading] = useState(false);
+
+  const [showMemberProfileModal, setShowMemberProfileModal] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -135,6 +147,21 @@ const ProjectList = () => {
     setIsFilterClose(false);
   };
 
+  const handleMemberSearch = async () => {
+    if (!memberSearch) return;
+    setMemberLoading(true);
+    try {
+      const member = await getMember(memberSearch);
+      setMemberResult(member);
+      setShowCommunityModal(false);
+      setShowMemberProfileModal(true);
+    } catch (e) {
+      setMemberResult(null);
+    } finally {
+      setMemberLoading(false);
+    }
+  };
+
   return (
     <div className="project-list-container relative mx-auto w-full max-w-[984px]">
       <div className="flex flex-col items-start lg:items-center gap-[60px]">
@@ -147,6 +174,16 @@ const ProjectList = () => {
           >
             <p className="text-xl leading-5 font-firacode text-pink">
               Explore Projects
+            </p>
+          </Button>
+          <Button
+            type="secondary"
+            icon="/icons/search.svg"
+            className="px-[30px] py-[18px]"
+            onClick={() => setShowCommunityModal(true)}
+          >
+            <p className="text-xl leading-5 font-firacode text-pink">
+              Explore Community
             </p>
           </Button>
           <Button
@@ -264,6 +301,41 @@ const ProjectList = () => {
       )}
       {showCreateProjectModal && (
         <CreateProjectModal onClose={() => setShowCreateProjectModal(false)} />
+      )}
+
+      {showCommunityModal && (
+        <Modal onClose={() => setShowCommunityModal(false)}>
+          <div className="flex flex-col gap-6 w-[360px]">
+            <h3 className="text-xl font-semibold text-primary">
+              Explore Community
+            </h3>
+            <input
+              type="text"
+              placeholder="Member address as G..."
+              className="p-[18px] border border-zinc-800 outline-none"
+              value={memberSearch}
+              onChange={(e) => setMemberSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleMemberSearch();
+              }}
+            />
+            {memberResult === null && (
+              <p className="text-red-500 text-sm">Member not found</p>
+            )}
+            <div className="flex justify-end">
+              <Button onClick={handleMemberSearch} isLoading={memberLoading}>
+                Search
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {showMemberProfileModal && memberResult && (
+        <MemberProfileModal
+          member={memberResult}
+          onClose={() => setShowMemberProfileModal(false)}
+        />
       )}
     </div>
   );
