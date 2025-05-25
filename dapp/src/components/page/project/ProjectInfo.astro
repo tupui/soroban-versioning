@@ -163,42 +163,44 @@ import Button from "components/utils/Button";
         const ul = maintainersList.querySelector("ul");
         if (ul) {
           ul.innerHTML = "";
+          // Always use maintainer addresses from contract (projectInfo.maintainers)
+          const contractMaintainers: string[] = projectInfo.maintainers || [];
+
+          // Build address → githubName map from tansu.toml if available
+          let addrMap: Record<string, string> = {};
           if (
             configData &&
-            configData.authorGithubNames &&
-            configData.maintainersAddresses
+            Array.isArray(configData.maintainersAddresses) &&
+            Array.isArray(configData.authorGithubNames)
           ) {
-            configData.authorGithubNames
-              .filter((_: string, index: number) => index <= 5 || viewAll)
-              .forEach((authorName: string, index: number) => {
-                const li = document.createElement("li");
-                li.className = "flex flex-col gap-2";
+            configData.maintainersAddresses.forEach(
+              (addr: string, idx: number) => {
+                const name = configData.authorGithubNames[idx];
+                if (addr && name) addrMap[addr] = name;
+              },
+            );
+          }
 
-                const content = document.createElement("p");
-                content.className = "leading-6 text-xl text-primary";
-                content.textContent = `@${authorName}`;
-                li.appendChild(content);
+          contractMaintainers
+            .filter((_: string, index: number) => index <= 5 || viewAll)
+            .forEach((maintainer: string) => {
+              const li = document.createElement("li");
+              li.className = "flex flex-col gap-2";
 
-                const address = document.createElement("p");
-                address.className = "leading-[14px] text-sm text-secondary";
-                address.textContent = `(${configData.maintainersAddresses[index]?.slice(0, 28) || ""}...)`;
-                li.appendChild(address);
+              const displayName = addrMap[maintainer];
 
-                ul.appendChild(li);
-              });
-            if (
-              viewAllButtonContainer &&
-              configData.authorGithubNames.length > 5
-            ) {
-              viewAllButtonContainer.append(viewAllButton);
-            }
-          } else {
-            projectInfo.maintainers
-              .filter((_: string, index: number) => index <= 5 || viewAll)
-              .forEach((maintainer: string) => {
-                const li = document.createElement("li");
-                li.className = "relative";
+              if (displayName) {
+                const nameP = document.createElement("p");
+                nameP.className = "leading-6 text-xl text-primary";
+                nameP.textContent = `@${displayName}`;
+                li.appendChild(nameP);
 
+                const addrP = document.createElement("p");
+                addrP.className = "leading-[14px] text-sm text-secondary";
+                addrP.textContent = `(${maintainer.slice(0, 28)}...)`;
+                li.appendChild(addrP);
+              } else {
+                // no mapping, show address only with tooltip
                 const content = document.createElement("p");
                 content.className = "leading-6 text-xl text-primary truncate";
                 content.textContent = maintainer;
@@ -210,19 +212,20 @@ import Button from "components/utils/Button";
                 popup.textContent = maintainer;
                 li.appendChild(popup);
 
-                li.addEventListener("mouseenter", () => {
-                  popup.classList.remove("hidden");
-                });
+                li.addEventListener("mouseenter", () =>
+                  popup.classList.remove("hidden"),
+                );
+                li.addEventListener("mouseleave", () =>
+                  popup.classList.add("hidden"),
+                );
+              }
 
-                li.addEventListener("mouseleave", () => {
-                  popup.classList.add("hidden");
-                });
+              ul.appendChild(li);
+            });
 
-                ul.appendChild(li);
-              });
-            if (viewAllButtonContainer && projectInfo.maintainers.length > 5) {
-              viewAllButtonContainer.append(viewAllButton);
-            }
+          // view-all display logic
+          if (viewAllButtonContainer && contractMaintainers.length > 5) {
+            viewAllButtonContainer.append(viewAllButton);
           }
         }
       }
