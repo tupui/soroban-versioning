@@ -4,68 +4,342 @@ import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
+import {
+  MDXEditor,
+  headingsPlugin,
+  listsPlugin,
+  quotePlugin,
+  thematicBreakPlugin,
+  linkPlugin,
+  linkDialogPlugin,
+  markdownShortcutPlugin,
+  toolbarPlugin,
+  UndoRedo,
+  BoldItalicUnderlineToggles,
+  BlockTypeSelect,
+  CodeToggle,
+  CreateLink,
+  ListsToggle,
+  Separator,
+} from "@mdxeditor/editor";
+import "@mdxeditor/editor/style.css";
+
+interface ProfileImageFile {
+  localUrl: string;
+  source: File;
+}
 
 const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
   onClose,
   onJoined,
 }) => {
   const [address, setAddress] = useState<string>(loadedPublicKey() ?? "");
-  const [meta, setMeta] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [social, setSocial] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [profileImage, setProfileImage] = useState<ProfileImageFile | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check if it's PNG or JPG
+      const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Invalid file type", "Please upload a PNG or JPG image");
+        return;
+      }
+
+      // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(
+          "File too large",
+          "Please upload an image smaller than 5MB",
+        );
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      setProfileImage({ localUrl: url, source: file });
+    }
+  };
+
+  const handleRemoveImage = () => {
+    if (profileImage) {
+      URL.revokeObjectURL(profileImage.localUrl);
+      setProfileImage(null);
+    }
+  };
+
+  const hasProfileData = () => {
+    return name.trim() || social.trim() || description.trim() || profileImage;
+  };
 
   const handleJoin = async () => {
     if (!address) {
       toast.error("Address", "Address is required");
       return;
     }
-    if (!meta) {
-      toast.error("Metadata", "Metadata is required");
-      return;
-    }
 
     try {
       setIsLoading(true);
-      const { addMember } = await import("@service/WriteContractService");
-      await addMember(address, meta);
-      toast.success("Success", "You have successfully joined the community!");
-      onJoined?.();
-      onClose?.();
+
+      // Check if user has provided any profile data
+      if (!hasProfileData()) {
+        // No profile data, just add member with empty metadata
+        const { addMember } = await import("@service/WriteContractService");
+        await addMember(address, " ");
+
+        toast.success("Success", "You have successfully joined the community!");
+        onJoined?.();
+        onClose?.();
+        return;
+      }
+
+      // User has profile data, proceed with IPFS upload
+      setIsUploading(true);
+
+      try {
+        // Import web3 storage client dynamically to avoid module issues
+        const { create } = await import("@web3-storage/w3up-client");
+        const apiUrl = `/api/w3up-delegation`;
+
+        const { generateChallengeTransaction } = await import(
+          "@service/ChallengeService"
+        );
+
+        const client = await create();
+        const did = client.agent.did();
+
+        const signedTxXdr = await generateChallengeTransaction(did);
+
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ signedTxXdr, did, type: "member" }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error);
+        }
+
+        const data = await response.arrayBuffer();
+
+        const { extract } = await import(
+          "@web3-storage/w3up-client/delegation"
+        );
+        const delegation = await extract(new Uint8Array(data));
+        if (!delegation.ok) {
+          throw new Error("Failed to extract delegation", {
+            cause: delegation.error,
+          });
+        }
+
+        const space = await client.addSpace(delegation.ok);
+        await client.setCurrentSpace(space.did());
+
+        // Create profile data JSON
+        const profileData = {
+          name: name.trim(),
+          description: description.trim(),
+          social: social.trim(),
+        };
+
+        const profileBlob = new Blob([JSON.stringify(profileData)], {
+          type: "application/json",
+        });
+
+        // Create files array
+        const files = [new File([profileBlob], "profile.json")];
+
+        // Add image if provided
+        if (profileImage) {
+          files.push(
+            new File(
+              [profileImage.source],
+              "profile-image." + profileImage.source.type.split("/")[1],
+            ),
+          );
+        }
+
+        // Upload to IPFS
+        const directoryCid = await client.uploadDirectory(files);
+        if (!directoryCid) throw new Error("Failed to upload profile to IPFS");
+
+        setIsUploading(false);
+
+        // Add member with IPFS CID as metadata
+        const { addMember } = await import("@service/WriteContractService");
+        await addMember(address, directoryCid.toString());
+
+        toast.success("Success", "You have successfully joined the community!");
+        onJoined?.();
+        onClose?.();
+      } catch (ipfsError: any) {
+        console.error("IPFS upload error:", ipfsError);
+        setIsUploading(false);
+
+        // If IPFS fails, ask user if they want to join without profile data
+        if (
+          window.confirm(
+            "Failed to upload profile data. Would you like to join without a profile?",
+          )
+        ) {
+          const { addMember } = await import("@service/WriteContractService");
+          await addMember(address, " ");
+
+          toast.success(
+            "Success",
+            "You have successfully joined the community!",
+          );
+          onJoined?.();
+          onClose?.();
+        }
+      }
     } catch (err: any) {
       toast.error("Something Went Wrong!", err.message);
     } finally {
       setIsLoading(false);
+      setIsUploading(false);
     }
   };
 
   return (
     <Modal onClose={onClose}>
-      <div className="flex items-center gap-[18px]">
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex flex-col gap-[30px] w-[360px] md:w-[480px]">
-            <h2 className="text-2xl font-bold text-primary">
-              Join the Community
-            </h2>
-            <Input
-              label="Member Address"
-              placeholder="Write the address as G..."
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-            <Input
-              label="Metadata"
-              placeholder="Write some metadata (e.g., profile link)"
-              value={meta}
-              onChange={(e) => setMeta(e.target.value)}
-            />
+      <div className="flex flex-col gap-[42px]">
+        <div className="flex flex-col gap-[30px] w-[360px] md:w-[600px]">
+          <h2 className="text-2xl font-bold text-primary">
+            Join the Community
+          </h2>
+
+          <Input
+            label="Member Address *"
+            placeholder="Write the address as G..."
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+          />
+
+          <div className="border-t pt-4">
+            <p className="text-sm text-secondary mb-4">
+              Optional: Add a profile to introduce yourself to the community
+            </p>
+
+            <div className="flex flex-col gap-[30px]">
+              <Input
+                label="Name"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+
+              <Input
+                label="Social Profile Link"
+                placeholder="https://twitter.com/yourhandle"
+                value={social}
+                onChange={(e) => setSocial(e.target.value)}
+              />
+
+              <div className="flex flex-col gap-[18px]">
+                <p className="text-base font-[600] text-primary">
+                  Profile Picture
+                </p>
+                {profileImage ? (
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={profileImage.localUrl}
+                      alt="Profile preview"
+                      className="w-24 h-24 object-cover rounded-full border-2 border-primary"
+                    />
+                    <Button type="secondary" onClick={handleRemoveImage}>
+                      Remove Image
+                    </Button>
+                  </div>
+                ) : (
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#978AA1] rounded-lg cursor-pointer bg-zinc-50 hover:bg-zinc-100">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg
+                        className="w-8 h-8 mb-4 text-secondary"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 20 16"
+                      >
+                        <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                        />
+                      </svg>
+                      <p className="mb-2 text-sm text-secondary">
+                        <span className="font-semibold">Click to upload</span>{" "}
+                        or drag and drop
+                      </p>
+                      <p className="text-xs text-secondary">
+                        PNG or JPG (MAX. 5MB)
+                      </p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/png,image/jpeg,image/jpg"
+                      onChange={handleImageUpload}
+                    />
+                  </label>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-[18px]">
+                <p className="text-base font-[600] text-primary">Description</p>
+                <div className="rounded-md border border-zinc-700 overflow-hidden min-h-[150px]">
+                  <MDXEditor
+                    plugins={[
+                      markdownShortcutPlugin(),
+                      headingsPlugin(),
+                      listsPlugin(),
+                      quotePlugin(),
+                      thematicBreakPlugin(),
+                      linkPlugin(),
+                      linkDialogPlugin(),
+                      toolbarPlugin({
+                        toolbarClassName: "my-classname",
+                        toolbarContents: () => (
+                          <>
+                            <UndoRedo />
+                            <Separator />
+                            <BoldItalicUnderlineToggles />
+                            <CodeToggle />
+                            <BlockTypeSelect />
+                            <Separator />
+                            <ListsToggle />
+                            <Separator />
+                            <CreateLink />
+                          </>
+                        ),
+                      }),
+                    ]}
+                    markdown={description}
+                    onChange={(value) => setDescription(value || "")}
+                    placeholder="Tell us about yourself..."
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
-            <Button type="secondary" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button isLoading={isLoading} onClick={handleJoin}>
-              Join
-            </Button>
-          </div>
+        </div>
+
+        <div className="flex justify-end gap-[18px]">
+          <Button type="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button isLoading={isLoading} onClick={handleJoin}>
+            {isUploading ? "Uploading to IPFS..." : "Join"}
+          </Button>
         </div>
       </div>
     </Modal>
