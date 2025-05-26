@@ -5,6 +5,8 @@ import LastHashModal from "./LastHashModal.astro";
 import LatestCommit from "./LatestCommit";
 import ReadMoreModal from "./ReadMoreModal.astro";
 import Button from "components/utils/Button";
+import { getMember } from "@service/ReadContractService";
+import { toast } from "utils/utils";
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
@@ -105,7 +107,7 @@ import Button from "components/utils/Button";
   } from "../../../service/StateService";
   import { convertGitHubLink } from "../../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../../utils/store";
-  import { getBadges } from "@service/ReadContractService";
+  import { getBadges, getMember } from "@service/ReadContractService";
 
   document.addEventListener("astro:page-load", () => {
     const updateConfigButton = document.querySelector("[data-update-config]");
@@ -196,13 +198,15 @@ import Button from "components/utils/Button";
                 li.appendChild(nameP);
 
                 const addrP = document.createElement("p");
-                addrP.className = "leading-[14px] text-sm text-secondary";
+                addrP.className =
+                  "leading-[14px] text-sm text-secondary cursor-pointer underline";
                 addrP.textContent = `(${maintainer.slice(0, 28)}...)`;
                 li.appendChild(addrP);
               } else {
                 // no mapping, show address only with tooltip
                 const content = document.createElement("p");
-                content.className = "leading-6 text-xl text-primary truncate";
+                content.className =
+                  "leading-6 text-xl text-primary truncate cursor-pointer underline";
                 content.textContent = maintainer;
                 li.appendChild(content);
 
@@ -219,6 +223,11 @@ import Button from "components/utils/Button";
                   popup.classList.add("hidden"),
                 );
               }
+
+              li.onclick = (e) => {
+                e.stopPropagation();
+                openProfileModal(maintainer);
+              };
 
               ul.appendChild(li);
             });
@@ -598,9 +607,14 @@ import Button from "components/utils/Button";
             ul.className = "grid grid-cols-3 gap-9";
             sec.list.forEach((addr) => {
               const li = document.createElement("li");
-              li.className = "relative";
+              li.className = "relative cursor-pointer";
+              li.onclick = (e) => {
+                e.stopPropagation();
+                openProfileModal(addr);
+              };
               const addrP = document.createElement("p");
-              addrP.className = "leading-[14px] text-sm text-primary truncate";
+              addrP.className =
+                "leading-[14px] text-sm text-primary truncate underline";
               addrP.textContent = addr;
               li.appendChild(addrP);
               ul.appendChild(li);
@@ -618,5 +632,48 @@ import Button from "components/utils/Button";
     updateCommunityList();
 
     window.addEventListener("badgesUpdated", updateCommunityList);
+
+    // refresh community list when project info finished loading
+    projectInfoLoaded.subscribe((loaded) => {
+      if (loaded) updateCommunityList();
+    });
+
+    // Helper to open member profile modal; attached globally for click handlers
+    async function openProfileModal(address) {
+      try {
+        const memberData = await getMember(address);
+
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: MemberProfileModal } = await import(
+          "components/page/dashboard/MemberProfileModal.tsx"
+        );
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        // Use setTimeout to ensure the modal is opened after the current click event completes
+        setTimeout(() => {
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: memberData,
+              onClose: handleClose,
+            }),
+          );
+        }, 0);
+      } catch (e) {
+        console.error(e);
+        toast.error("Profile", "Member not found");
+      }
+    }
   });
 </script>
