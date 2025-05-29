@@ -10,6 +10,7 @@ import {
   contractErrorMessages,
   type ContractErrorMessageKey,
 } from "constants/contractErrorMessages";
+import { checkSimulationError } from "utils/contractErrors";
 
 function fetchErrorCode(error: any): {
   errorCode: ContractErrorMessageKey;
@@ -33,6 +34,10 @@ async function getProjectHash(): Promise<string> {
     const res = await Tansu.get_commit({
       project_key: projectId,
     });
+
+    // Check for simulation errors
+    checkSimulationError(res);
+
     return res.result;
   } catch (e: any) {
     const { errorMessage } = fetchErrorCode(e);
@@ -50,6 +55,10 @@ async function getProject(): Promise<Project> {
     const res = await Tansu.get_project({
       project_key: projectId,
     });
+
+    // Check for simulation errors
+    checkSimulationError(res);
+
     return res.result;
   } catch (e: any) {
     const { errorMessage } = fetchErrorCode(e);
@@ -69,6 +78,10 @@ async function getProjectFromName(projectName: string): Promise<Project> {
     const res = await Tansu.get_project({
       project_key: projectId,
     });
+
+    // Check for simulation errors
+    checkSimulationError(res);
+
     return res.result;
   } catch (e: any) {
     const { errorMessage } = fetchErrorCode(e);
@@ -81,6 +94,10 @@ async function getProjectFromId(projectId: Buffer): Promise<Project> {
     const res = await Tansu.get_project({
       project_key: projectId,
     });
+
+    // Check for simulation errors
+    checkSimulationError(res);
+
     return res.result;
   } catch (e: any) {
     const { errorMessage } = fetchErrorCode(e);
@@ -98,6 +115,10 @@ async function getProposalPages(project_name: string) {
       project_key,
       page,
     });
+
+    // Check for simulation errors
+    checkSimulationError(res);
+
     return res.result.proposals.length > 0;
   };
 
@@ -130,6 +151,9 @@ async function getProposals(
       page: page,
     });
 
+    // Check for simulation errors
+    checkSimulationError(res);
+
     const proposals: ModifiedProposal[] = res.result.proposals.map(
       (proposal: Proposal) => {
         return modifyProposalFromContract(proposal);
@@ -155,6 +179,9 @@ async function getProposal(
       proposal_id: proposalId,
     });
 
+    // Check for simulation errors
+    checkSimulationError(res);
+
     const proposal: Proposal = res.result;
     return modifyProposalFromContract(proposal);
   } catch (e: any) {
@@ -168,6 +195,10 @@ async function getMember(memberAddress: string): Promise<Member> {
     const res = await Tansu.get_member({
       member_address: memberAddress,
     });
+
+    // Check for simulation errors
+    checkSimulationError(res);
+
     return res.result;
   } catch (e: any) {
     const { errorMessage, errorCode } = fetchErrorCode(e);
@@ -181,6 +212,10 @@ async function getBadges(): Promise<Badges> {
   if (!projectId) throw new Error("No project defined");
   try {
     const res = await Tansu.get_badges({ key: projectId });
+
+    // Check for simulation errors
+    checkSimulationError(res);
+
     return res.result;
   } catch (e: any) {
     const { errorMessage } = fetchErrorCode(e);

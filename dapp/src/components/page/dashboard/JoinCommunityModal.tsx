@@ -89,9 +89,12 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
 
       // Check if user has provided any profile data
       if (!hasProfileData()) {
-        // No profile data, just add member with empty metadata
-        const { addMember } = await import("@service/WriteContractService");
-        await addMember(address, " ");
+        // No profile data, use the new flow with empty files
+        const { joinCommunityFlow } = await import("@service/FlowService");
+        await joinCommunityFlow({
+          memberAddress: address,
+          profileFiles: [],
+        });
 
         toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
@@ -99,49 +102,10 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
         return;
       }
 
-      // User has profile data, proceed with IPFS upload
+      // User has profile data, prepare files for IPFS
       setIsUploading(true);
 
       try {
-        // Import web3 storage client dynamically to avoid module issues
-        const { create } = await import("@web3-storage/w3up-client");
-        const apiUrl = `/api/w3up-delegation`;
-
-        const { generateChallengeTransaction } = await import(
-          "@service/ChallengeService"
-        );
-
-        const client = await create();
-        const did = client.agent.did();
-
-        const signedTxXdr = await generateChallengeTransaction(did);
-
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ signedTxXdr, did, type: "member" }),
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.error);
-        }
-
-        const data = await response.arrayBuffer();
-
-        const { extract } = await import(
-          "@web3-storage/w3up-client/delegation"
-        );
-        const delegation = await extract(new Uint8Array(data));
-        if (!delegation.ok) {
-          throw new Error("Failed to extract delegation", {
-            cause: delegation.error,
-          });
-        }
-
-        const space = await client.addSpace(delegation.ok);
-        await client.setCurrentSpace(space.did());
-
         // Create profile data JSON
         const profileData = {
           name: name.trim(),
@@ -166,15 +130,12 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
           );
         }
 
-        // Upload to IPFS
-        const directoryCid = await client.uploadDirectory(files);
-        if (!directoryCid) throw new Error("Failed to upload profile to IPFS");
-
-        setIsUploading(false);
-
-        // Add member with IPFS CID as metadata
-        const { addMember } = await import("@service/WriteContractService");
-        await addMember(address, directoryCid.toString());
+        // Use the new Flow 2
+        const { joinCommunityFlow } = await import("@service/FlowService");
+        await joinCommunityFlow({
+          memberAddress: address,
+          profileFiles: files,
+        });
 
         toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
@@ -182,23 +143,7 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
       } catch (ipfsError: any) {
         console.error("IPFS upload error:", ipfsError);
         setIsUploading(false);
-
-        // If IPFS fails, ask user if they want to join without profile data
-        if (
-          window.confirm(
-            "Failed to upload profile data. Would you like to join without a profile?",
-          )
-        ) {
-          const { addMember } = await import("@service/WriteContractService");
-          await addMember(address, " ");
-
-          toast.success(
-            "Success",
-            "You have successfully joined the community!",
-          );
-          onJoined?.();
-          onClose?.();
-        }
+        throw ipfsError;
       }
     } catch (err: any) {
       toast.error("Something Went Wrong!", err.message);

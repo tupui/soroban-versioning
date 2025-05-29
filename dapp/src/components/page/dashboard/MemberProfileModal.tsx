@@ -210,7 +210,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member }) => {
             </p>
           ) : (
             <div className="flex flex-col gap-3">
-              {member.projects.map((proj, idx) => (
+              {member.projects?.map((proj, idx) => (
                 <div key={idx} className="border p-3 rounded-lg">
                   <p className="font-medium text-primary mb-2 text-sm break-words">
                     Project:{" "}

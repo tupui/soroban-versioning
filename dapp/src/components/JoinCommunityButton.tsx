@@ -17,25 +17,14 @@ const JoinCommunityButton = () => {
   const fetchMember = async (address: string) => {
     try {
       const member = await getMember(address);
-      const isRealMember =
-        (member.meta && member.meta.trim().length > 0) ||
-        (member.projects && member.projects.length > 0);
-
-      if (isRealMember) {
-        setIsMember(true);
-        setMemberData(member);
-      } else {
-        setIsMember(false);
-        setMemberData(null);
-      }
+      // If getMember succeeds, they are a member regardless of metadata content
+      setIsMember(true);
+      setMemberData(member);
     } catch (e: any) {
-      // if error code 18 unknown member, treat as not member
-      if (e?.code === 18 || e?.errorCode === 18) {
-        setIsMember(false);
-        setMemberData(null);
-      } else {
-        console.error(e);
-      }
+      // If getMember fails for any reason, treat as not a member
+      console.log("getMember error:", e);
+      setIsMember(false);
+      setMemberData(null);
     }
   };
 

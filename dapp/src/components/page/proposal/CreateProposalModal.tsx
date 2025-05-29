@@ -168,49 +168,7 @@ const CreateProposalModal = () => {
 
       checkSubmitAvailability();
 
-      setStep(6);
-
-      const { create } = await import("@web3-storage/w3up-client");
-      const apiUrl = `/api/w3up-delegation`;
-
-      const { generateChallengeTransaction } = await import(
-        "@service/ChallengeService"
-      );
-
-      const client = await create();
-      const did = client.agent.did();
-
-      setStep(7);
-
-      const signedTxXdr = await generateChallengeTransaction(did);
-
-      setStep(8);
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signedTxXdr, projectName, did }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error);
-      }
-
-      const data = await response.arrayBuffer();
-
-      const { extract } = await import("@web3-storage/w3up-client/delegation");
-      const delegation = await extract(new Uint8Array(data));
-      if (!delegation.ok) {
-        throw new Error("Failed to extract delegation", {
-          cause: delegation.error,
-        });
-      }
-
-      const space = await client.addSpace(delegation.ok);
-
-      await client.setCurrentSpace(space.did());
-
+      // Prepare the proposal files
       const proposalOutcome: ProposalOutcome = {
         approved: {
           description: approveDescription,
@@ -246,23 +204,29 @@ const CreateProposalModal = () => {
       files.push(new File([description], "proposal.md"));
       if (!files) throw new Error("Failed to create proposal files");
 
-      const directoryCid = await client.uploadDirectory(files);
-      if (!directoryCid) throw new Error("Failed to upload proposal");
+      setStep(6);
 
-      setStep(9);
-
-      const { createProposal } = await import("@service/WriteContractService");
-
+      // Calculate voting end timestamp
       const votingDays = getDeltaDays(selectedDate);
-      const res = await createProposal(
-        projectName!,
-        proposalName,
-        directoryCid.toString(),
-        Math.floor(Date.now() / 1000) + 86400 * votingDays,
-      );
+      const votingEndsAt = Math.floor(Date.now() / 1000) + 86400 * votingDays;
 
-      setProposalId(res);
-      setIpfsLink(getIpfsBasicLink(directoryCid.toString()));
+      // Use the new Flow 2
+      const { createProposalFlow } = await import("@service/FlowService");
+
+      const proposalId = await createProposalFlow({
+        projectName: projectName!,
+        proposalName,
+        proposalFiles: files,
+        votingEndsAt,
+        onProgress: setStep,
+      });
+
+      setProposalId(proposalId);
+
+      // Calculate the CID for the IPFS link
+      const { calculateDirectoryCid } = await import("utils/ipfs");
+      const cid = await calculateDirectoryCid(files);
+      setIpfsLink(getIpfsBasicLink(cid));
 
       setStep(10);
     } catch (err: any) {
@@ -631,28 +595,28 @@ const CreateProposalModal = () => {
               <Step step={step - 4} totalSteps={6} />
               {step == 5 ? (
                 <Title
-                  title="Verifying transaction details..."
-                  description="Checking if everything is correctly set"
+                  title="Preparing proposal data..."
+                  description="Calculating content identifier"
                 />
               ) : step == 6 ? (
                 <Title
-                  title="Connecting to the network..."
-                  description="Ensuring a stable connection"
+                  title="Creating transaction..."
+                  description="Preparing smart contract call"
                 />
               ) : step == 7 ? (
                 <Title
-                  title="Waiting for confirmation..."
-                  description="This might take a few seconds"
+                  title="Sign transaction"
+                  description="Please sign the transaction in your wallet"
                 />
               ) : step == 8 ? (
                 <Title
                   title="Uploading to IPFS..."
-                  description="Storing data securely"
+                  description="Storing proposal data securely"
                 />
               ) : (
                 <Title
-                  title="Finalizing transaction..."
-                  description="Completing all necessary steps"
+                  title="Sending transaction..."
+                  description="Broadcasting to the network"
                 />
               )}
               <div className="flex justify-end gap-[18px]">

@@ -1,10 +1,6 @@
 // /src/pages/api/w3up-delegation/[did].js
 import * as DID from "@ipld/dag-ucan/did";
 import { getProjectFromId } from "@service/ReadContractService";
-import {
-  verifyChallengeSignature,
-  verifyDidHash,
-} from "@service/VerifyChallengeService";
 import pkg from "js-sha3";
 import decryptProof from "../../utils/decryptAES256";
 const { keccak256 } = pkg;
@@ -19,6 +15,15 @@ export const prerender = false;
  * @returns {Promise<string[]|null>} - Returns maintainer public keys for proposals, or an empty array for members
  */
 async function validateRequest(type, signedTxXdr, projectName) {
+  const { Transaction, xdr } = await import("@stellar/stellar-sdk");
+  const tx = new Transaction(
+    signedTxXdr,
+    import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+  );
+
+  // Extract the signer's public key from the transaction
+  const signerPublicKey = tx.source;
+
   switch (type) {
     case "proposal":
       if (!projectName) {
@@ -36,7 +41,17 @@ async function validateRequest(type, signedTxXdr, projectName) {
         }
 
         // Verify that the signer is a maintainer
-        verifyChallengeSignature(signedTxXdr, projectInfo.maintainers);
+        if (!projectInfo.maintainers.includes(signerPublicKey)) {
+          throw new Error("Only maintainers can create proposals");
+        }
+
+        // Verify this is a create_proposal transaction
+        // The transaction should have invoke host function operation
+        const operation = tx.operations[0];
+        if (!operation || operation.type !== "invokeHostFunction") {
+          throw new Error("Invalid transaction: expected create_proposal call");
+        }
+
         return projectInfo.maintainers;
       } catch (error) {
         console.error("Error validating proposal request:", error);
@@ -44,19 +59,14 @@ async function validateRequest(type, signedTxXdr, projectName) {
       }
 
     case "member":
-      // For member registration, we only need to verify the signature is valid
-      // No project-specific validation needed
+      // For member registration, verify this is an add_member transaction
       try {
-        // Extract the signer's public key from the transaction
-        const { Transaction } = await import("@stellar/stellar-sdk");
-        const tx = new Transaction(
-          signedTxXdr,
-          import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-        );
-        const signerPublicKey = tx.source;
+        // Verify this is an add_member transaction
+        const operation = tx.operations[0];
+        if (!operation || operation.type !== "invokeHostFunction") {
+          throw new Error("Invalid transaction: expected add_member call");
+        }
 
-        // Verify the signature is valid (using a single-element array)
-        verifyChallengeSignature(signedTxXdr, [signerPublicKey]);
         return [];
       } catch (error) {
         console.error("Error validating member request:", error);
@@ -76,19 +86,6 @@ export const POST = async ({ request }) => {
   try {
     const body = await request.json();
     const { signedTxXdr, projectName, did, type = "proposal" } = body;
-
-    // Verify the DID hash matches the transaction memo
-    const didVerified = verifyDidHash(signedTxXdr, did);
-    if (!didVerified) {
-      return new Response(
-        JSON.stringify({
-          error: "DID hash does not match the transaction memo",
-        }),
-        {
-          status: 400,
-        },
-      );
-    }
 
     // Validate the request based on type
     await validateRequest(type, signedTxXdr, projectName);

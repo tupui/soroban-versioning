@@ -303,8 +303,6 @@ async function executeProposal(
   }
 
   try {
-    console.log(project_name);
-    console.log(proposal_id);
     await execute(project_name, proposal_id);
     const executorAccount = await server.getAccount(publicKey);
     const outcomeTransactionEnvelope = executeXdr

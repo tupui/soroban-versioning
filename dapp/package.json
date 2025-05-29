@@ -12,6 +12,7 @@
     "@stellar/stellar-xdr-json": "^22.0.0-rc.1.1",
     "@web3-storage/access": "^20.3.0",
     "@web3-storage/w3up-client": "^17.3.0",
+    "ipfs-car": "^3.0.0",
     "astro": "5.7.12",
     "astro-seo": "^0.8.4",
     "crypto-js": "^4.2.0",
