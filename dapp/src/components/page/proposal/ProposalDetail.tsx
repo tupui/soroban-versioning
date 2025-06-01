@@ -6,11 +6,8 @@ import JsonView from "react18-json-view";
 import type { ProposalOutcome } from "types/proposal";
 import { parseToLosslessJson } from "utils/passToLosslessJson";
 import * as StellarXdr from "utils/stellarXdr";
-import {
-  capitalizeFirstLetter,
-  getIpfsBasicLink,
-  getOutcomeLinkFromIpfs,
-} from "utils/utils";
+import { capitalizeFirstLetter } from "utils/utils";
+import { getIpfsBasicLink, getOutcomeLinkFromIpfs } from "utils/ipfsFunctions";
 
 import "github-markdown-css";
 import "react18-json-view/src/style.css";
