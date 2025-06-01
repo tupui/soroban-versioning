@@ -13,7 +13,6 @@ import { extractConfigData } from "../../../utils/utils";
 import CreateProjectModal from "./CreateProjectModal.tsx";
 import ProjectCard from "./ProjectCard.jsx";
 import ProjectInfoModal from "./ProjectInfoModal.jsx";
-import Button from "components/utils/Button.tsx";
 import MemberProfileModal from "./MemberProfileModal.tsx";
 import Modal from "components/utils/Modal.tsx";
 
@@ -25,19 +24,13 @@ const ProjectList = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isInOnChain, setIsInOnChain] = useState(false);
   const [configInfo, setConfigInfo] = useState();
-  const [registerButtonVisible, setRegisterButtonVisible] = useState(false);
+  const [prevPath, setPrevPath] = useState("");
+  const [memberNotFound, setMemberNotFound] = useState(false);
 
   const [projectInfo, setProjectInfo] = useState(null);
-  const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const [isFilterClose, setIsFilterClose] = useState(true);
   const [showProjectInfoModal, setShowProjectInfoModal] = useState(false);
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
-
-  const [showCommunityModal, setShowCommunityModal] = useState(false);
-  const [memberSearch, setMemberSearch] = useState("");
   const [memberResult, setMemberResult] = useState(undefined);
-  const [memberLoading, setMemberLoading] = useState(false);
-
   const [showMemberProfileModal, setShowMemberProfileModal] = useState(false);
 
   useEffect(() => {
@@ -49,24 +42,109 @@ const ProjectList = () => {
     };
 
     fetchProjects();
+
+    // Save previous path if coming from another page
+    const referrer = document.referrer;
+    if (referrer && !referrer.includes(window.location.host)) {
+      setPrevPath(referrer);
+    }
+
+    // Check for search parameters in URL
+    const searchParams = new URLSearchParams(window.location.search);
+    const urlSearchTerm = searchParams.get("search");
+    if (urlSearchTerm) {
+      setSearchTerm(urlSearchTerm);
+      // Set timeout to ensure projects are loaded before searching
+      setTimeout(() => handleSearch(), 300);
+    }
+
+    // Check if searching for a member
+    const isMemberSearch = searchParams.get("member") === "true";
+    if (isMemberSearch && urlSearchTerm) {
+      handleMemberSearch(urlSearchTerm);
+    }
+
+    // Check for stored member profile
+    const pendingMemberProfile = sessionStorage.getItem("pendingMemberProfile");
+    if (pendingMemberProfile) {
+      try {
+        const memberData = JSON.parse(pendingMemberProfile);
+        setMemberResult(memberData);
+        setShowMemberProfileModal(true);
+        sessionStorage.removeItem("pendingMemberProfile");
+      } catch (e) {
+        console.error("Error loading pending member profile", e);
+      }
+    }
+
+    // Check if we should open create project modal
+    const openCreateProjectModal = sessionStorage.getItem(
+      "openCreateProjectModal",
+    );
+    if (openCreateProjectModal === "true") {
+      setShowCreateProjectModal(true);
+      sessionStorage.removeItem("openCreateProjectModal");
+    }
+
+    // Add event listeners for navbar search
+    window.addEventListener("search-projects", handleSearchProjectEvent);
+    window.addEventListener("show-member-profile", handleMemberProfileEvent);
+    window.addEventListener("search-member", handleSearchMemberEvent);
+
+    // Add event listener for create project modal
+    const handleCreateProjectModal = () => {
+      setShowCreateProjectModal(true);
+    };
+
+    document.addEventListener(
+      "show-create-project-modal",
+      handleCreateProjectModal,
+    );
+    document.addEventListener(
+      "create-project-global",
+      handleCreateProjectModal,
+    );
+
+    return () => {
+      window.removeEventListener("search-projects", handleSearchProjectEvent);
+      window.removeEventListener(
+        "show-member-profile",
+        handleMemberProfileEvent,
+      );
+      window.removeEventListener("search-member", handleSearchMemberEvent);
+      document.removeEventListener(
+        "show-create-project-modal",
+        handleCreateProjectModal,
+      );
+      document.removeEventListener(
+        "create-project-global",
+        handleCreateProjectModal,
+      );
+    };
   }, []);
 
+  const handleSearchProjectEvent = (event) => {
+    const term = event.detail;
+    setSearchTerm(term);
+    setMemberNotFound(false);
+    setTimeout(() => handleSearch(), 100);
+  };
+
+  const handleSearchMemberEvent = (event) => {
+    const address = event.detail;
+    setSearchTerm(address);
+    handleMemberSearch(address);
+  };
+
+  const handleMemberProfileEvent = (event) => {
+    const member = event.detail;
+    setMemberResult(member);
+    setShowMemberProfileModal(true);
+  };
+
   useEffect(() => {
-    if (projects) {
-      setRegisterButtonVisible(false);
-      const filtered = projects.filter((project) =>
-        project?.projectName.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-      setFilteredProjects(filtered);
-
-      if (searchTerm && filtered.length === 0) {
-        const timer = setTimeout(() => {
-          checkProjectOnChain(searchTerm);
-          setRegisterButtonVisible(true);
-        }, 1000);
-
-        return () => clearTimeout(timer);
-      }
+    if (projects && searchTerm) {
+      handleSearch();
     }
   }, [projects, searchTerm]);
 
@@ -86,17 +164,29 @@ const ProjectList = () => {
   }, [isProjectInfoModalOpen]);
 
   const handleSearch = () => {
-    if (projects) {
-      setRegisterButtonVisible(false);
-      const filtered = projects.filter((project) =>
-        project?.projectName.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
+    if (!projects) return;
+
+    setMemberNotFound(false);
+
+    try {
+      const filtered = projects.filter((project) => {
+        // Safe check for null/undefined projectName
+        return (
+          project &&
+          project.projectName &&
+          project.projectName.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      });
+
       setFilteredProjects(filtered);
 
       if (searchTerm && filtered.length === 0) {
         checkProjectOnChain(searchTerm);
-        setRegisterButtonVisible(true);
       }
+    } catch (error) {
+      console.error("Error during project filtering:", error);
+      // Fallback to empty array on error
+      setFilteredProjects([]);
     }
   };
 
@@ -137,159 +227,89 @@ const ProjectList = () => {
     }
   };
 
-  const closeSearchBox = () => {
-    setIsFilterClose(true);
-    setTimeout(() => setIsFilterVisible(false), 200);
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setMemberNotFound(false);
+
+    // Instead of navigating back, reload home page
+    window.location.href = "/";
   };
 
-  const openSearchBox = () => {
-    setIsFilterVisible(true);
-    setIsFilterClose(false);
-  };
+  const handleMemberSearch = async (address) => {
+    if (!address) return;
 
-  const handleMemberSearch = async () => {
-    if (!memberSearch) return;
-    setMemberLoading(true);
+    setIsLoading(true);
+    setMemberNotFound(false);
+
     try {
-      const member = await getMember(memberSearch);
-      setMemberResult(member);
-      setShowCommunityModal(false);
-      setShowMemberProfileModal(true);
+      const member = await getMember(address);
+      if (member) {
+        setMemberResult(member);
+        setShowMemberProfileModal(true);
+      } else {
+        setMemberNotFound(true);
+      }
     } catch (e) {
-      setMemberResult(null);
+      setMemberNotFound(true);
     } finally {
-      setMemberLoading(false);
+      setIsLoading(false);
     }
   };
 
+  // Determine if we should show the featured projects heading
+  const showFeaturedHeading =
+    !searchTerm ||
+    (filteredProjects && filteredProjects.length > 0 && !isInOnChain);
+
   return (
     <div className="project-list-container relative mx-auto w-full max-w-[984px]">
-      <div className="flex flex-col items-start lg:items-center gap-[60px]">
-        <div className="flex max-lg:flex-col justify-center items-start lg:items-center gap-6">
-          <Button
-            type="secondary"
-            icon="/icons/search.svg"
-            className="px-[30px] py-[18px]"
-            onClick={() => openSearchBox()}
-          >
-            <p className="text-xl leading-5 font-firacode text-pink">
-              Explore Projects
+      {showFeaturedHeading && (
+        <div className="flex flex-col items-center gap-[30px] md:gap-[60px] mb-8">
+          <div className="w-full flex justify-center items-center">
+            <p className="text-[26px] leading-[42px] font-firamono text-pink">
+              Featured Projects
             </p>
-          </Button>
-          <Button
-            type="secondary"
-            icon="/icons/search.svg"
-            className="px-[30px] py-[18px]"
-            onClick={() => setShowCommunityModal(true)}
-          >
-            <p className="text-xl leading-5 font-firacode text-pink">
-              Explore Community
-            </p>
-          </Button>
-          <Button
-            type="quaternary"
-            order="secondary"
-            icon="/icons/plus-fill.svg"
-            className="px-[30px] py-[18px]"
-            onClick={() => setShowCreateProjectModal(true)}
-          >
-            <p className="text-xl leading-5">Add Project</p>
-          </Button>
+          </div>
         </div>
-        <div className="w-full flex justify-center items-center gap-[18px]">
-          <p className="text-[26px] leading-[42px] font-firamono text-pink">
-            Featured Projects
+      )}
+
+      {isLoading ? (
+        <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
+          <p className="px-3 py-1 text-base sm:text-lg font-medium border-2 border-zinc-700 rounded-lg">
+            looking for results...
           </p>
         </div>
-      </div>
-
-      {/* This div is the search inbox component */}
-      <div
-        className={`filters bg-white shadow-modal absolute top-0 w-full ${isFilterVisible ? "opacity-100" : "opacity-0"}`}
-      >
-        <div
-          className={`w-full px-9 flex flex-col gap-8 items-center overflow-hidden transition-all duration-200 ${isFilterClose ? "h-0 py-0" : "h-fit py-9"}`}
-        >
-          <div className="w-full flex max-lg:flex-col gap-[10px]">
-            <div className="search-container relative w-full">
-              <input
-                type="text"
-                placeholder="What Are You Looking For?"
-                className="w-full font-firacode text-xl leading-5 border border-zinc-800 p-[18px] pr-10"
-                value={searchTerm}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleSearch();
-                  }
-                }}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <div
-                className="absolute right-[18px] top-1/2 transform -translate-y-1/2 cursor-pointer"
-                onClick={() => {
-                  setSearchTerm("");
-                  setRegisterButtonVisible(false);
-                }}
-              >
-                <img
-                  src="/icons/cancel.svg"
-                  width={20}
-                  height={20}
-                  className="icon-cancel"
-                />
-              </div>
-            </div>
-            <Button
-              icon="/icons/search-white.svg"
-              className="px-[30px] py-[18px]"
-              onClick={handleSearch}
-            >
-              <p className="text-xl leading-5">Search</p>
-            </Button>
-          </div>
-          <div
-            id="search-result"
-            className="font-firacode text-lg leading-[18px] text-pink"
-          >
-            Results ({filteredProjects?.length || 0})
-          </div>
+      ) : memberNotFound ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <img className="mx-auto mb-8" src="/images/no-result.svg" />
+          <p className="text-xl text-center font-medium text-zinc-700">
+            Member not found. Try searching for something else.
+          </p>
         </div>
-        <div
-          className="absolute top-0 right-0 lg:translate-x-1/2 -translate-y-1/2 p-[18px] bg-red cursor-pointer"
-          onClick={() => {
-            setSearchTerm("");
-            closeSearchBox();
-          }}
-        >
-          <img
-            src="/icons/cancel-white.svg"
-            width={20}
-            height={20}
-            className="icon-cancel"
-          />
+      ) : filteredProjects && filteredProjects.length > 0 ? (
+        <div className="project-list grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 justify-items-center">
+          {filteredProjects.map((project, index) => (
+            <ProjectCard key={index} config={project} />
+          ))}
         </div>
-      </div>
-
-      {filteredProjects !== undefined &&
-        (filteredProjects.length > 0 ? (
-          <div className="project-list pt-[42px] grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 justify-items-center">
-            {filteredProjects.map((project, index) => (
-              <ProjectCard key={index} config={project} />
-            ))}
-          </div>
-        ) : isLoading ? (
-          <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
-            <p className="px-3 py-1 text-base sm:text-lg font-medium border-2 border-zinc-700 rounded-lg">
-              looking if the project is registered on chain...
-            </p>
-          </div>
-        ) : isInOnChain ? (
-          <div className="w-1/2 mx-auto pt-[42px] pb-[120px]">
-            <ProjectCard key={1} config={configInfo} />
-          </div>
-        ) : (
-          <img className="mx-auto" src="/images/no-result.svg" />
-        ))}
+      ) : isInOnChain ? (
+        <div className="w-full sm:w-1/2 mx-auto pb-[120px]">
+          <ProjectCard key={1} config={configInfo} />
+        </div>
+      ) : searchTerm ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <img className="mx-auto mb-8" src="/images/no-result.svg" />
+          <p className="text-xl text-center font-medium text-zinc-700">
+            Project not found. Try searching for something else.
+          </p>
+        </div>
+      ) : (
+        <div className="h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
+          <p className="px-3 py-1 text-base sm:text-lg font-medium">
+            No projects found. Try searching for something.
+          </p>
+        </div>
+      )}
 
       {showProjectInfoModal && (
         <ProjectInfoModal
@@ -299,36 +319,9 @@ const ProjectList = () => {
           onClose={() => projectCardModalOpen.set(false)}
         />
       )}
+
       {showCreateProjectModal && (
         <CreateProjectModal onClose={() => setShowCreateProjectModal(false)} />
-      )}
-
-      {showCommunityModal && (
-        <Modal onClose={() => setShowCommunityModal(false)}>
-          <div className="flex flex-col gap-6 w-[360px]">
-            <h3 className="text-xl font-semibold text-primary">
-              Explore Community
-            </h3>
-            <input
-              type="text"
-              placeholder="Member address as G..."
-              className="p-[18px] border border-zinc-800 outline-none"
-              value={memberSearch}
-              onChange={(e) => setMemberSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleMemberSearch();
-              }}
-            />
-            {memberResult === null && (
-              <p className="text-red-500 text-sm">Member not found</p>
-            )}
-            <div className="flex justify-end">
-              <Button onClick={handleMemberSearch} isLoading={memberLoading}>
-                Search
-              </Button>
-            </div>
-          </div>
-        </Modal>
       )}
 
       {showMemberProfileModal && memberResult && (

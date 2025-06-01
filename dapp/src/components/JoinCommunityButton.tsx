@@ -48,20 +48,20 @@ const JoinCommunityButton = () => {
       {isMember ? (
         <Button
           type="secondary"
-          className="w-[162px] md:w-[195px] h-12 md:h-14 px-[30px]"
+          className="w-[130px] sm:w-[162px] md:w-[180px] h-10 md:h-12 px-2 sm:px-4 md:px-[30px]"
           onClick={() => setShowProfileModal(true)}
         >
-          <p className="text-base md:text-xl leading-4 md:leading-5 text-primary">
+          <p className="text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-primary truncate">
             My Profile
           </p>
         </Button>
       ) : (
         <Button
           type="secondary"
-          className="w-[162px] md:w-[195px] h-12 md:h-14 px-[30px]"
+          className="w-[130px] sm:w-[162px] md:w-[180px] h-10 md:h-12 px-2 sm:px-4 md:px-[30px]"
           onClick={() => setShowJoinModal(true)}
         >
-          <p className="text-base md:text-xl leading-4 md:leading-5 text-primary">
+          <p className="text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-primary truncate">
             Join community
           </p>
         </Button>
