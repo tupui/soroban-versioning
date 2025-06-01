@@ -4,9 +4,17 @@ export interface ModalProps {
   id?: string | undefined;
   children?: ReactNode | undefined;
   onClose: () => void | undefined;
+  size?: "small" | "medium" | "large";
 }
 
-const Modal: FC<ModalProps> = ({ id, children, onClose }) => {
+const Modal: FC<ModalProps> = ({ id, children, onClose, size = "medium" }) => {
+  // Define width classes based on size prop
+  const widthClasses = {
+    small: "w-[342px] lg:w-[400px]",
+    medium: "w-[342px] lg:w-[550px]",
+    large: "w-[342px] lg:w-[800px]",
+  };
+
   return (
     <div
       className="fixed inset-0 bg-white/35 backdrop-blur-md flex justify-center items-center z-[2]"
@@ -21,7 +29,7 @@ const Modal: FC<ModalProps> = ({ id, children, onClose }) => {
         className="modal relative bg-white shadow-modal"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 lg:p-9 w-[342px] lg:w-[1048px] max-h-[90vh] overflow-auto">
+        <div className={`p-4 lg:p-6 ${widthClasses[size]} max-h-[90vh] overflow-auto`}>
           {children}
         </div>
         <div

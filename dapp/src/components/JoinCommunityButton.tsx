@@ -43,6 +43,11 @@ const JoinCommunityButton = () => {
     if (publicKey) fetchMember(publicKey);
   };
 
+  // If user is connected (publicKey exists), don't render the button
+  if (publicKey) {
+    return null;
+  }
+
   return (
     <>
       {isMember ? (

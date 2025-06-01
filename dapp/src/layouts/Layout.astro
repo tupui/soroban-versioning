@@ -17,6 +17,94 @@ const { title, page } = Astro.props;
 <script>
   import { Buffer } from "buffer";
   global.Buffer = Buffer;
+
+  // Add these event listeners to handle the new button events
+  document.addEventListener("astro:page-load", () => {
+    // Handle Join Community button click
+    window.addEventListener("openJoinCommunity", async () => {
+      try {
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: JoinCommunityModal } = await import(
+          "components/page/dashboard/JoinCommunityModal.tsx"
+        );
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        root.render(
+          React.createElement(JoinCommunityModal, {
+            onClose: handleClose,
+            onJoined: () => {
+              // Trigger wallet connected to refresh UI
+              const publicKey = localStorage.getItem("publicKey");
+              if (publicKey) {
+                window.dispatchEvent(
+                  new CustomEvent("walletConnected", { detail: publicKey })
+                );
+              }
+            },
+          })
+        );
+      } catch (e) {
+        console.error("Error opening join community modal:", e);
+      }
+    });
+
+    // Handle Profile button click
+    window.addEventListener("openProfileModal", async () => {
+      try {
+        const publicKey = localStorage.getItem("publicKey");
+        if (!publicKey) return;
+
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const [{ default: MemberProfileModal }, { getMember }] = await Promise.all([
+          import("components/page/dashboard/MemberProfileModal.tsx"),
+          import("@service/ReadContractService")
+        ]);
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        try {
+          const memberData = await getMember(publicKey);
+          
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: memberData,
+              onClose: handleClose,
+            })
+          );
+        } catch (e) {
+          console.error("Error fetching member data:", e);
+          // If member doesn't exist, open join community modal instead
+          window.dispatchEvent(new CustomEvent("openJoinCommunity"));
+          handleClose();
+        }
+      } catch (e) {
+        console.error("Error opening profile modal:", e);
+      }
+    });
+  });
 </script>
 
 <html lang="en">
