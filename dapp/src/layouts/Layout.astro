@@ -52,7 +52,9 @@ const { title, page } = Astro.props;
         const handleClose = () => {
           try {
             root.unmount();
-            document.body.removeChild(container);
+            if (document.body.contains(container)) {
+              document.body.removeChild(container);
+            }
           } catch (e) {
             console.error("Error closing modal:", e);
             // Fallback removal method
@@ -61,6 +63,13 @@ const { title, page } = Astro.props;
             }
           }
         };
+
+        // Add a click event listener to the container that will close the modal when clicking outside
+        container.addEventListener("click", (e) => {
+          if (e.target === container) {
+            handleClose();
+          }
+        });
 
         root.render(
           React.createElement(CreateProjectModal, {

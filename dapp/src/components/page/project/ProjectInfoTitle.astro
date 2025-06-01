@@ -4,13 +4,15 @@ import UpdateHashModal from "./UpdateHashModal";
 import AddBadgeModal from "./AddBadgeModal";
 ---
 
-<!-- <div class="flex justify-between items-center"> -->
-<div class="flex items-center justify-between">
-  <a href="/" class="flex gap-[14px]">
-    <img src="/icons/back.svg" />
-    <p class="leading-5 text-xl text-primary">Back to Home Page</p>
+<!-- Navigation with improved mobile responsiveness -->
+<div
+  class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-4 sm:mb-0"
+>
+  <a href="/" class="flex gap-[14px] items-center mb-3 sm:mb-0">
+    <img src="/icons/back.svg" alt="Back" />
+    <p class="leading-5 text-base sm:text-xl text-primary">Back to Home Page</p>
   </a>
-  <div class="flex gap-3">
+  <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
     <UpdateConfigModal client:only />
     <AddBadgeModal client:only />
     <UpdateHashModal client:only />

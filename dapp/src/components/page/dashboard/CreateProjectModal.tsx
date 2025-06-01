@@ -292,10 +292,10 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
             <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-[18px]">
               <Button
                 type="secondary"
-                onClick={() => setStep(step - 1)}
+                onClick={onClose}
                 className="w-full sm:w-auto"
               >
-                Back
+                Cancel
               </Button>
               <Button
                 onClick={() => {
@@ -364,10 +364,10 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
             <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-[18px]">
               <Button
                 type="secondary"
-                onClick={() => setStep(step - 1)}
+                onClick={onClose}
                 className="w-full sm:w-auto"
               >
-                Back
+                Cancel
               </Button>
               <Button
                 onClick={() => {
@@ -409,8 +409,8 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 <Button isLoading={isLoading} onClick={handleRegisterProject}>
                   Register Project
                 </Button>
-                <Button type="secondary" onClick={() => setStep(step - 1)}>
-                  Back
+                <Button type="secondary" onClick={onClose}>
+                  Cancel
                 </Button>
               </div>
             </div>

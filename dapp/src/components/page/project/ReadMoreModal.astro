@@ -5,21 +5,32 @@ import ProjectReadme from "./ProjectReadme.astro";
 
 <Modal id="read-more-modal">
   <div
-    class="p-4 lg:p-9 w-[342px] lg:w-[1048px] flex max-lg:flex-col gap-6 lg:gap-12"
+    class="p-3 sm:p-4 lg:p-9 w-full sm:w-[342px] lg:w-[1048px] flex flex-col items-center sm:items-start gap-4 sm:gap-6 lg:gap-12"
   >
     <img
-      class="project-thumbnail w-[110px] h-[110px] lg:w-[220px] lg:h-[220px]"
+      class="project-thumbnail w-[90px] h-[90px] sm:w-[110px] sm:h-[110px] lg:w-[220px] lg:h-[220px]"
       alt="project-thumbnail"
       src=""
     />
-    <div class="flex flex-col gap-[15px] gap-[30px]">
-      <div class="flex flex-col gap-3">
-        <p class="project-organization leading-4 text-base text-secondary"></p>
-        <div class="flex gap-[18px]">
-          <p class="project-name text-2xl text-primary"></p>
+    <div class="flex flex-col gap-3 sm:gap-[15px] lg:gap-[30px] w-full">
+      <div class="flex flex-col gap-2 sm:gap-3">
+        <p
+          class="project-organization leading-4 text-sm sm:text-base text-secondary text-center sm:text-left"
+        >
+        </p>
+        <div
+          class="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-[18px]"
+        >
+          <p
+            class="project-name text-xl sm:text-2xl text-primary text-center sm:text-left"
+          >
+          </p>
           <div class="official-links flex items-center gap-3"></div>
         </div>
-        <p class="project-description text-base text-primary"></p>
+        <p
+          class="project-description text-sm sm:text-base text-primary text-center sm:text-left"
+        >
+        </p>
       </div>
       <ProjectReadme />
     </div>

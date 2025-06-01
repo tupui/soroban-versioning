@@ -44,12 +44,23 @@ import { toast } from "utils/utils";
           </div>
         </div>
       </div>
-      <div class="flex max-lg:flex-col gap-[18px]">
-        <Button id="goto-dao" icon="/icons/gear-white.svg">
-          <p class="leading-5 text-xl text-white">Governance</p>
+      <div
+        class="flex flex-col gap-[18px] sm:flex-row sm:flex-wrap md:flex-nowrap"
+      >
+        <Button
+          id="goto-dao"
+          icon="/icons/gear-white.svg"
+          className="w-full sm:w-auto"
+        >
+          <p class="leading-5 text-base sm:text-xl text-white">Governance</p>
         </Button>
         <DonateModal client:only>
-          <Button icon="/icons/heart.svg" size="xl" type="secondary">
+          <Button
+            icon="/icons/heart.svg"
+            size="xl"
+            type="secondary"
+            className="w-full sm:w-auto"
+          >
             Support
           </Button>
         </DonateModal>
@@ -58,6 +69,7 @@ import { toast } from "utils/utils";
           icon="/icons/book.svg"
           size="xl"
           type="secondary"
+          className="w-full sm:w-auto"
         >
           Read More
         </Button>
@@ -66,6 +78,7 @@ import { toast } from "utils/utils";
           icon="/icons/eye.svg"
           size="xl"
           type="secondary"
+          className="w-full sm:w-auto"
         >
           Last Hash
         </Button>

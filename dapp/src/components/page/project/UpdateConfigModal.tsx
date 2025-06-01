@@ -65,55 +65,60 @@ const UpdateConfigModal = () => {
     <>
       {showButton && (
         <button
-          className="p-[18px_30px] flex gap-3 bg-white cursor-pointer"
+          className="p-[12px_16px] sm:p-[18px_30px] flex gap-2 sm:gap-3 bg-white cursor-pointer w-full sm:w-auto text-left"
           onClick={() => setIsOpen(true)}
         >
-          <img src="/icons/gear.svg" />
-          <p className="leading-5 text-xl text-primary">Update config</p>
+          <img src="/icons/gear.svg" className="w-5 h-5 sm:w-auto sm:h-auto" />
+          <p className="leading-5 text-base sm:text-xl text-primary whitespace-nowrap">
+            Update config
+          </p>
         </button>
       )}
       {isOpen && (
         <Modal onClose={() => setIsOpen(false)}>
-          <div className="flex items-start gap-[18px]">
-            <img src="/images/scan.svg" />
-            <div className="flex-grow flex flex-col gap-9">
-              <h6 className="text-2xl font-medium text-primary">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
+            <img
+              src="/images/scan.svg"
+              className="w-16 h-16 sm:w-auto sm:h-auto mx-auto sm:mx-0"
+            />
+            <div className="flex-grow flex flex-col gap-6 sm:gap-9 w-full">
+              <h6 className="text-xl sm:text-2xl font-medium text-primary text-center sm:text-left">
                 Update config
               </h6>
-              <div className="flex flex-col gap-[18px]">
-                <div className="flex flex-col gap-3">
-                  <p className="text-base font-[600] text-primary">
+              <div className="flex flex-col gap-4 sm:gap-[18px]">
+                <div className="flex flex-col gap-2 sm:gap-3">
+                  <p className="text-sm sm:text-base font-[600] text-primary">
                     Maintainers
                   </p>
                   <input
                     type="text"
-                    className="p-[18px] border border-[#978AA1] outline-none"
+                    className="p-3 sm:p-[18px] border border-[#978AA1] outline-none w-full text-sm sm:text-base"
                     placeholder="List of maintainers' addresses as G...,G..."
                     value={maintainers}
                     onChange={(e) => setMaintainers(e.target.value)}
                     required
                   />
                 </div>
-                <div className="flex flex-col gap-3">
-                  <p className="text-base font-[600] text-primary">
+                <div className="flex flex-col gap-2 sm:gap-3">
+                  <p className="text-sm sm:text-base font-[600] text-primary">
                     GitHub repository URL
                   </p>
                   <input
                     type="url"
-                    className="p-[18px] border border-[#978AA1] outline-none"
+                    className="p-3 sm:p-[18px] border border-[#978AA1] outline-none w-full text-sm sm:text-base"
                     placeholder="GitHub repository URL"
                     value={configUrl}
                     onChange={(e) => setConfigUrl(e.target.value)}
                     required
                   />
                 </div>
-                <div className="flex flex-col gap-3">
-                  <p className="text-base font-[600] text-primary">
+                <div className="flex flex-col gap-2 sm:gap-3">
+                  <p className="text-sm sm:text-base font-[600] text-primary">
                     Information file hash
                   </p>
                   <input
                     type="text"
-                    className="p-[18px] border border-[#978AA1] outline-none"
+                    className="p-3 sm:p-[18px] border border-[#978AA1] outline-none w-full text-sm sm:text-base"
                     placeholder="Information file hash"
                     value={configHash}
                     onChange={(e) => setConfigHash(e.target.value)}
@@ -122,8 +127,12 @@ const UpdateConfigModal = () => {
                     maxLength={64}
                   />
                 </div>
-                <div className="flex justify-end">
-                  <Button onClick={handleUpdate} isLoading={isLoading}>
+                <div className="flex justify-end mt-2 sm:mt-0">
+                  <Button
+                    onClick={handleUpdate}
+                    isLoading={isLoading}
+                    className="w-full sm:w-auto"
+                  >
                     Update Config
                   </Button>
                 </div>

@@ -69,37 +69,46 @@ const UpdateHashModal = () => {
     <>
       {showButton && (
         <button
-          className="p-[18px_30px] flex gap-3 bg-white cursor-pointer"
+          className="p-[12px_16px] sm:p-[18px_30px] flex gap-2 sm:gap-3 bg-white cursor-pointer w-full sm:w-auto text-left"
           onClick={() => setIsOpen(true)}
         >
-          <img src="/icons/gear.svg" />
-          <p className="leading-5 text-xl text-primary">Update Hash</p>
+          <img src="/icons/gear.svg" className="w-5 h-5 sm:w-auto sm:h-auto" />
+          <p className="leading-5 text-base sm:text-xl text-primary whitespace-nowrap">
+            Update Hash
+          </p>
         </button>
       )}
       {isOpen && (
         <Modal onClose={() => setIsOpen(false)}>
-          <div className="flex items-start gap-[18px]">
-            <img src="/images/scan.svg" />
-            <div className="flex-grow flex flex-col gap-9">
-              <h6 className="text-2xl font-medium text-primary">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
+            <img
+              src="/images/scan.svg"
+              className="w-16 h-16 sm:w-auto sm:h-auto mx-auto sm:mx-0"
+            />
+            <div className="flex-grow flex flex-col gap-6 sm:gap-9 w-full">
+              <h6 className="text-xl sm:text-2xl font-medium text-primary text-center sm:text-left">
                 Update Commit Hash
               </h6>
-              <div className="flex flex-col gap-10">
-                <div className="flex flex-col gap-3">
-                  <p className="text-base font-[600] text-primary">
+              <div className="flex flex-col gap-6 sm:gap-10">
+                <div className="flex flex-col gap-2 sm:gap-3">
+                  <p className="text-sm sm:text-base font-[600] text-primary">
                     Latest Hash
                   </p>
                   <input
                     type="text"
-                    className="p-[18px] border border-[#978AA1] outline-none"
-                    placeholder="Lastest Commit Hash"
+                    className="p-3 sm:p-[18px] border border-[#978AA1] outline-none w-full text-sm sm:text-base"
+                    placeholder="Latest Commit Hash"
                     value={lastestHash}
                     onChange={(e) => setLatestHash(e.target.value)}
                     required
                   />
                 </div>
-                <div className="flex justify-end">
-                  <Button onClick={handleUpdate} isLoading={isLoading}>
+                <div className="flex justify-end mt-2 sm:mt-0">
+                  <Button
+                    onClick={handleUpdate}
+                    isLoading={isLoading}
+                    className="w-full sm:w-auto"
+                  >
                     Update Hash
                   </Button>
                 </div>
