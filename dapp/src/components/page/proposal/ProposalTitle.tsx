@@ -63,16 +63,22 @@ const ProposalTitle: React.FC<Props> = ({
 
   return (
     <>
-      <div className="flex gap-[30px]">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-[30px]">
         {proposal?.status == "active" ? (
-          <img src="/images/box-with-coin-outside.svg" />
+          <img
+            src="/images/box-with-coin-outside.svg"
+            className="w-12 sm:w-16 md:w-auto"
+          />
         ) : proposal?.status == "cancelled" || proposal?.status == "voted" ? (
-          <img src="/images/box-with-coin-inside.svg" />
+          <img
+            src="/images/box-with-coin-inside.svg"
+            className="w-12 sm:w-16 md:w-auto"
+          />
         ) : (
-          <img src="/images/box.svg" />
+          <img src="/images/box.svg" className="w-12 sm:w-16 md:w-auto" />
         )}
-        <div className="flex-grow flex flex-col gap-[30px]">
-          <div className="flex flex-col gap-[18px]">
+        <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
+          <div className="flex flex-col gap-3 md:gap-[18px]">
             {isMaintainer && (
               <div className="flex items-center gap-3">
                 {/* <p className="leading-4 text-base text-[#695A77]">Created by</p> */}
@@ -89,10 +95,10 @@ const ProposalTitle: React.FC<Props> = ({
               </div>
             )}
             <div className="flex flex-col gap-3">
-              <p className="text-2xl font-medium text-primary">
+              <p className="text-xl sm:text-2xl font-medium text-primary break-words">
                 {proposal?.id} {proposal?.title}
               </p>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <VoteStatusBar
                   approve={proposal?.voteStatus?.approve?.score || 0}
                   reject={proposal?.voteStatus?.reject?.score || 0}
@@ -108,9 +114,9 @@ const ProposalTitle: React.FC<Props> = ({
             </div>
           </div>
           <div className="flex flex-col gap-6">
-            <div className="flex justify-between">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-4 sm:gap-0">
               <ProposalStatusSection proposal={proposal} />
-              <div className="flex gap-6">
+              <div className="flex gap-4 sm:gap-6">
                 {proposal?.status == "active" && (
                   <Button
                     size="sm"

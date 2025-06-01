@@ -2,10 +2,14 @@
 import Button from "components/utils/Button";
 ---
 
-<div class="z-[1] flex justify-between items-center">
-  <a href="" id="back-link" class="flex gap-[14px]">
+<div
+  class="z-[1] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0"
+>
+  <a href="" id="back-link" class="flex gap-[14px] items-center">
     <img src="/icons/back.svg" />
-    <p class="leading-5 text-xl text-primary">Back to Project Page</p>
+    <p class="leading-5 text-base sm:text-xl text-primary">
+      Back to Project Page
+    </p>
   </a>
   <Button id="create-proposal-button" className="hidden" icon="/icons/send.svg">
     Submit Proposal

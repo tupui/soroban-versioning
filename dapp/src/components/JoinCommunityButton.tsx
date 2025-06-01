@@ -52,11 +52,11 @@ const JoinCommunityButton = () => {
     <>
       <Button
         type="secondary"
-        className="w-[130px] sm:w-[162px] md:w-[180px] h-10 md:h-12 px-2 sm:px-4 md:px-[30px]"
+        className="w-[130px] sm:w-[162px] md:w-[180px] h-10 md:h-12 flex justify-center items-center gap-2 md:gap-3"
         onClick={() => setShowJoinModal(true)}
       >
         <p className="text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-primary truncate">
-          Join community
+          Join
         </p>
       </Button>
       {showJoinModal && (

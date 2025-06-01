@@ -8,43 +8,52 @@ interface NavbarSearchProps {
   onAddProject: () => void;
 }
 
+// Constants for URL handling
+const HOME_PATH = "/";
+
 const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [originalUrl, setOriginalUrl] = useState("");
 
-  // Store the original URL when the component mounts
   useEffect(() => {
-    // Save the complete URL (path + query parameters) when starting a search from a different page
-    if (window.location.pathname !== "/") {
-      // Save full URL including query parameters
-      setOriginalUrl(window.location.pathname + window.location.search);
-    } else {
-      // Check if we have a referrer that's from the same origin
-      const referrer = document.referrer;
-      if (
-        referrer &&
-        referrer.includes(window.location.origin) &&
-        !referrer.endsWith("/")
-      ) {
-        try {
-          const referrerUrl = new URL(referrer);
-          // Store the full path with query parameters
-          setOriginalUrl(referrerUrl.pathname + referrerUrl.search);
-        } catch (e) {
-          // Don't log to console - silently handle the error
-        }
-      }
+    saveOriginalUrl();
+    initializeSearchTerm();
+  }, []);
 
-      // Check if we have a 'from' parameter in the URL
-      const searchParams = new URLSearchParams(window.location.search);
-      const fromUrl = searchParams.get("from");
-      if (fromUrl) {
-        setOriginalUrl(fromUrl);
+  // Save the original URL when the component mounts
+  const saveOriginalUrl = () => {
+    // If not on homepage, save current path with query params
+    if (window.location.pathname !== HOME_PATH) {
+      setOriginalUrl(window.location.pathname + window.location.search);
+      return;
+    }
+
+    // Check if we have a referrer from the same origin
+    const referrer = document.referrer;
+    if (
+      referrer &&
+      referrer.includes(window.location.origin) &&
+      !referrer.endsWith("/")
+    ) {
+      try {
+        const referrerUrl = new URL(referrer);
+        setOriginalUrl(referrerUrl.pathname + referrerUrl.search);
+      } catch (e) {
+        // Silent error handling
       }
     }
 
-    // Initialize search term from URL on component mount
+    // Check for 'from' parameter in URL
+    const searchParams = new URLSearchParams(window.location.search);
+    const fromUrl = searchParams.get("from");
+    if (fromUrl) {
+      setOriginalUrl(fromUrl);
+    }
+  };
+
+  // Initialize search term from URL
+  const initializeSearchTerm = () => {
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const urlSearchTerm = searchParams.get("search");
@@ -52,48 +61,40 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
         setSearchTerm(urlSearchTerm);
       }
     } catch (error) {
-      // Don't log to console - silently handle the error
+      // Silent error handling
     }
-  }, []);
+  };
 
   const handleSearch = async () => {
     if (!searchTerm) return;
 
-    // Save current URL before searching if not home
-    if (window.location.pathname !== "/") {
-      // Include full path and query parameters
+    // Save current URL if not on home page
+    if (window.location.pathname !== HOME_PATH) {
       setOriginalUrl(window.location.pathname + window.location.search);
     }
 
-    // Check if the search term looks like a Stellar address (starts with G and has appropriate length)
     const isStellarAddress =
       searchTerm.startsWith("G") && searchTerm.length >= 56;
 
+    const isOnHomePage = window.location.pathname === HOME_PATH;
+    const currentFullUrl = window.location.pathname + window.location.search;
+
     if (isStellarAddress) {
-      // Use the community search logic
-      if (window.location.pathname === "/") {
-        // On home page - search directly
+      // Member search
+      if (isOnHomePage) {
         window.dispatchEvent(
           new CustomEvent("search-member", { detail: searchTerm }),
         );
       } else {
-        // On other pages - redirect with search parameter
-        // Encode the complete URL including path and query parameters
-        const currentFullUrl =
-          window.location.pathname + window.location.search;
         window.location.href = `/?search=${encodeURIComponent(searchTerm)}&member=true&from=${encodeURIComponent(currentFullUrl)}`;
       }
     } else {
-      // Use the project search logic
-      if (window.location.pathname === "/") {
-        // On home page - dispatch event directly
+      // Project search
+      if (isOnHomePage) {
         window.dispatchEvent(
           new CustomEvent("search-projects", { detail: searchTerm }),
         );
       } else {
-        // On other pages - redirect with search parameter and remember the origin page with its full URL
-        const currentFullUrl =
-          window.location.pathname + window.location.search;
         window.location.href = `/?search=${encodeURIComponent(searchTerm)}&from=${encodeURIComponent(currentFullUrl)}`;
       }
     }
@@ -110,7 +111,6 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
 
   const handleAddProject = () => {
     if (!loadedPublicKey()) {
-      // User is not connected, show toast error
       toast.error(
         "Connect Wallet",
         "Please connect your wallet first to add a project",
@@ -118,26 +118,24 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
       return;
     }
 
-    // User is connected, show project creation modal
     document.dispatchEvent(new CustomEvent("show-create-project-modal"));
   };
 
   const handleClearSearch = () => {
     setSearchTerm("");
 
-    // Check if we need to go back to a previous page
     const searchParams = new URLSearchParams(window.location.search);
     const fromUrl = searchParams.get("from");
 
     if (fromUrl) {
-      // Navigate back to the original URL with all parameters
       window.location.href = fromUrl;
     } else if (originalUrl) {
-      // Navigate back to the stored original URL
       window.location.href = originalUrl;
-    } else if (window.location.pathname === "/" && window.location.search) {
-      // If we're on the home page with search parameters, refresh to clear the search
-      window.location.href = "/";
+    } else if (
+      window.location.pathname === HOME_PATH &&
+      window.location.search
+    ) {
+      window.location.href = HOME_PATH;
     }
   };
 
@@ -191,7 +189,7 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
 
       {/* Mobile search icon */}
       <div
-        className="md:hidden flex-shrink-0 cursor-pointer"
+        className={`md:hidden flex-shrink-0 cursor-pointer ${isExpanded ? "hidden" : "block"}`}
         onClick={toggleSearch}
       >
         <img

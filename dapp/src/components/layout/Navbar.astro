@@ -31,7 +31,10 @@ const { page } = Astro.props;
           class="flex-shrink-0 flex gap-[8px] md:gap-[12px] items-center ml-auto"
         >
           <ConnectWallet />
-          <div id="join-community-wrapper">
+          <div
+            id="join-community-wrapper"
+            class="w-[130px] sm:w-[162px] md:w-[180px]"
+          >
             <JoinCommunityButton client:load />
           </div>
         </div>

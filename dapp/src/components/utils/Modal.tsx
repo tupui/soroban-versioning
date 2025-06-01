@@ -8,7 +8,12 @@ export interface ModalProps {
   fullWidth?: boolean; // Optional prop to allow full width modals
 }
 
-const Modal: FC<ModalProps> = ({ id, children, onClose, fullWidth = false }) => {
+const Modal: FC<ModalProps> = ({
+  id,
+  children,
+  onClose,
+  fullWidth = false,
+}) => {
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
@@ -32,27 +37,30 @@ const Modal: FC<ModalProps> = ({ id, children, onClose, fullWidth = false }) => 
 
   return (
     <div
-      className="fixed inset-0 bg-white/35 backdrop-blur-md flex justify-center items-center z-[2] p-4"
+      className="fixed inset-0 bg-white/35 backdrop-blur-md flex justify-center items-center z-[2] p-3 sm:p-4"
       onClick={() => onClose?.()}
     >
       <div
         id={id}
-        className={`modal relative bg-white shadow-modal rounded-lg ${
-          fullWidth ? 'w-full max-w-6xl' : ''
+        className={`modal relative bg-white shadow-modal rounded-lg max-w-[95vw] ${
+          fullWidth ? "w-full max-w-6xl" : "w-full sm:w-auto"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`p-4 md:p-6 lg:p-8 max-h-[90vh] overflow-auto ${
-          !fullWidth ? 'w-full sm:w-auto' : 'w-full'
-        }`}>
+        <div className={`p-4 md:p-6 lg:p-8 max-h-[85vh] overflow-auto`}>
           {children}
         </div>
-        <div
-          className="absolute top-0 right-0 lg:translate-x-1/2 -translate-y-1/2 p-[18px] bg-red cursor-pointer"
+        <button
+          className="absolute top-2 right-2 sm:top-0 sm:right-0 sm:lg:translate-x-1/2 sm:-translate-y-1/2 p-2 sm:p-[18px] bg-red cursor-pointer z-10"
           onClick={onClose}
+          aria-label="Close modal"
         >
-          <img src="/icons/cancel-white.svg" alt="Close" />
-        </div>
+          <img
+            src="/icons/cancel-white.svg"
+            alt="Close"
+            className="w-4 h-4 sm:w-auto sm:h-auto"
+          />
+        </button>
       </div>
     </div>
   );

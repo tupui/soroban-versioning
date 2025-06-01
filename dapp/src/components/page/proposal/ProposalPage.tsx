@@ -90,7 +90,7 @@ const ProposalPage: React.FC = () => {
           <Loading />
         </div>
       ) : (
-        <div className="bg-[#FFFFFFB8] px-[72px] py-12 flex flex-col gap-12">
+        <div className="bg-[#FFFFFFB8] px-4 sm:px-6 md:px-[72px] py-6 sm:py-8 md:py-12 flex flex-col gap-6 sm:gap-8 md:gap-12">
           <ProposalTitle
             proposal={proposal}
             maintainers={projectMaintainers}

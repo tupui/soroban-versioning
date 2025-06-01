@@ -11,6 +11,12 @@ import {
   type ProposalView,
   type ProposalViewStatus,
 } from "types/proposal";
+// Import the extracted IPFS functions
+import {
+  getIpfsBasicLink,
+  getProposalLinkFromIpfs,
+  getOutcomeLinkFromIpfs,
+} from "./ipfsFunctions";
 
 export function isValidGithubUrl(url: string) {
   return /^https:\/\/github\.com\/[^\/]+\/[^\/]+$/.test(url);
@@ -78,32 +84,9 @@ export const modifySlashInXdr = (xdr: string) => {
   return xdr.replaceAll("/", "//");
 };
 
-export const getIpfsBasicLink = (ipfsLink: string) => {
-  // Clean up the input first
-  const cleanIpfsLink = ipfsLink.trim();
-  
-  // Check if it's already a URL
-  if (cleanIpfsLink.startsWith('http')) {
-    return cleanIpfsLink;
-  }
-  
-  // Check if it's a CID (starts with bafy or Qm)
-  if (/^(bafy|Qm)/.test(cleanIpfsLink)) {
-    // Use w3s.link gateway with proper format
-    return `https://${cleanIpfsLink}.ipfs.w3s.link`;
-  }
-  
-  // If it's something else, return a placeholder
-  return `https://ipfs.io/ipfs/${cleanIpfsLink}`;
-};
-
-export const getProposalLinkFromIpfs = (ipfsLink: string) => {
-  return `https://${ipfsLink}.ipfs.w3s.link/proposal.md`;
-};
-
-export const getOutcomeLinkFromIpfs = (ipfsLink: string) => {
-  return `https://${ipfsLink}.ipfs.w3s.link/outcomes.json`;
-};
+// The IPFS functions have been moved to ipfsFunctions.ts
+// Re-export them for backward compatibility
+export { getIpfsBasicLink, getProposalLinkFromIpfs, getOutcomeLinkFromIpfs };
 
 export const modifyProposalStatusToView = (
   status: ProposalStatus,

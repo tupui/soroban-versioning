@@ -165,13 +165,13 @@ const JoinCommunityModal: FC<
 
   return (
     <Modal onClose={onClose}>
-      <div className="flex items-center gap-[18px]">
+      <div className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]">
         <img
-          className="flex-none w-[360px] hidden md:block"
+          className="flex-none w-[200px] md:w-[360px]"
           src="/images/team.svg"
         />
-        <div className="flex flex-col gap-[30px] w-full md:w-[600px]">
-          <h2 className="text-2xl font-bold text-primary">
+        <div className="flex flex-col gap-4 md:gap-[30px] w-full">
+          <h2 className="text-xl md:text-2xl font-bold text-primary">
             Join the Community
           </h2>
 
@@ -182,12 +182,12 @@ const JoinCommunityModal: FC<
             onChange={(e) => setAddress(e.target.value)}
           />
 
-          <div className="pt-4">
-            <p className="text-base font-medium text-primary mb-4">
+          <div className="pt-2 md:pt-4">
+            <p className="text-base font-medium text-primary mb-3 md:mb-4">
               Profile Information
             </p>
 
-            <div className="flex flex-col gap-[30px]">
+            <div className="flex flex-col gap-4 md:gap-[30px]">
               <Input
                 label="Name"
                 placeholder="Enter your name"

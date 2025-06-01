@@ -163,12 +163,18 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   return (
     <Modal onClose={onClose}>
       {step == 1 ? (
-        <div key={step} className="flex items-center gap-[18px]">
-          <img className="flex-none w-[360px]" src="/images/megaphone.svg" />
-          <div className="flex flex-col gap-[42px]">
-            <div className="flex flex-col gap-[30px]">
-              <div className="flex-grow flex flex-col gap-[30px]">
-                <div className="flex flex-col gap-5">
+        <div
+          key={step}
+          className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]"
+        >
+          <img
+            className="flex-none w-[200px] md:w-[360px]"
+            src="/images/megaphone.svg"
+          />
+          <div className="flex flex-col gap-6 md:gap-[42px] w-full">
+            <div className="flex flex-col gap-4 md:gap-[30px]">
+              <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
+                <div className="flex flex-col gap-3 md:gap-5">
                   <Step step={step} totalSteps={5} />
                   <Title
                     title="Welcome to Your New Project!"
@@ -187,12 +193,17 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-[18px]">
-              <Button type="secondary" onClick={onClose}>
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-[18px]">
+              <Button
+                type="secondary"
+                onClick={onClose}
+                className="w-full sm:w-auto"
+              >
                 Cancel
               </Button>
               <Button
                 isLoading={isLoading}
+                className="w-full sm:w-auto"
                 onClick={async () => {
                   if (!projectName.trim()) {
                     toast.error("Project Name", "Project name cannot be empty");
@@ -222,12 +233,18 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
           </div>
         </div>
       ) : step == 2 ? (
-        <div key={step} className="flex items-center gap-[18px]">
-          <img className="flex-none w-[360px]" src="/images/team.svg" />
-          <div className="flex flex-col gap-[42px]">
-            <div className="flex flex-col gap-[30px]">
-              <div className="flex-grow flex flex-col gap-[30px]">
-                <div className="flex flex-col gap-5">
+        <div
+          key={step}
+          className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]"
+        >
+          <img
+            className="flex-none w-[200px] md:w-[360px]"
+            src="/images/team.svg"
+          />
+          <div className="flex flex-col gap-6 md:gap-[42px] w-full">
+            <div className="flex flex-col gap-4 md:gap-[30px]">
+              <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
+                <div className="flex flex-col gap-3 md:gap-5">
                   <Step step={step} totalSteps={5} />
                   <Title
                     title="Build Your Team"
@@ -272,8 +289,12 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-[18px]">
-              <Button type="secondary" onClick={() => setStep(step - 1)}>
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-[18px]">
+              <Button
+                type="secondary"
+                onClick={() => setStep(step - 1)}
+                className="w-full sm:w-auto"
+              >
                 Back
               </Button>
               <Button
@@ -298,6 +319,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
 
                   setStep(step + 1);
                 }}
+                className="w-full sm:w-auto"
               >
                 Next
               </Button>
@@ -305,12 +327,18 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
           </div>
         </div>
       ) : step == 3 ? (
-        <div key={step} className="flex items-center gap-[18px]">
-          <img className="flex-none w-[360px]" src="/images/arrow.svg" />
-          <div className="flex flex-col gap-[42px]">
-            <div className="flex flex-col gap-[30px]">
-              <div className="flex-grow flex flex-col gap-[30px]">
-                <div className="flex flex-col gap-5">
+        <div
+          key={step}
+          className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]"
+        >
+          <img
+            className="flex-none w-[200px] md:w-[360px]"
+            src="/images/arrow.svg"
+          />
+          <div className="flex flex-col gap-6 md:gap-[42px] w-full">
+            <div className="flex flex-col gap-4 md:gap-[30px]">
+              <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
+                <div className="flex flex-col gap-3 md:gap-5">
                   <Step step={step} totalSteps={5} />
                   <Title
                     title="Add Supporting Materials"
@@ -333,8 +361,12 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-[18px]">
-              <Button type="secondary" onClick={() => setStep(step - 1)}>
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-[18px]">
+              <Button
+                type="secondary"
+                onClick={() => setStep(step - 1)}
+                className="w-full sm:w-auto"
+              >
                 Back
               </Button>
               <Button
@@ -354,6 +386,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
 
                   setStep(step + 1);
                 }}
+                className="w-full sm:w-auto"
               >
                 Next
               </Button>

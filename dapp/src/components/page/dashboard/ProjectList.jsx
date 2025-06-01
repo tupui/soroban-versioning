@@ -266,7 +266,7 @@ const ProjectList = () => {
     (filteredProjects && filteredProjects.length > 0 && !isInOnChain);
 
   return (
-    <div className="project-list-container relative mx-auto w-full max-w-[984px]">
+    <div className="project-list-container relative mx-auto w-full max-w-[984px] px-4">
       {showFeaturedHeading && (
         <div className="flex flex-col items-center gap-[30px] md:gap-[60px] mb-8">
           <div className="w-full flex justify-center items-center">
@@ -291,9 +291,11 @@ const ProjectList = () => {
           </p>
         </div>
       ) : filteredProjects && filteredProjects.length > 0 ? (
-        <div className="project-list grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 justify-items-center">
+        <div className="project-list grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 justify-items-center">
           {filteredProjects.map((project, index) => (
-            <ProjectCard key={index} config={project} />
+            <div className="w-full" key={index}>
+              <ProjectCard config={project} />
+            </div>
           ))}
         </div>
       ) : isInOnChain ? (

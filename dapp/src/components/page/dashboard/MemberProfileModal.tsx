@@ -12,7 +12,7 @@ import { toast } from "../../../utils/utils";
 import { getProjectFromId } from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
 
-const network = import.meta.env.SOROBAN_NETWORK || 'testnet';
+const network = import.meta.env.SOROBAN_NETWORK || "testnet";
 
 interface Props extends ModalProps {
   member: Member | null;
@@ -54,7 +54,9 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [hasValidMetadata, setHasValidMetadata] = useState(false);
-  const [projectsWithNames, setProjectsWithNames] = useState<ProjectWithName[]>([]);
+  const [projectsWithNames, setProjectsWithNames] = useState<ProjectWithName[]>(
+    [],
+  );
 
   // Use the address prop directly or extract the address from the search query if needed
   const memberAddress = address || "";
@@ -74,20 +76,29 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
   useEffect(() => {
     const fetchProfileData = async () => {
       // Check if member exists and has valid metadata
-      if (member && member.meta && member.meta.trim() && member.meta.trim() !== " ") {
+      if (
+        member &&
+        member.meta &&
+        member.meta.trim() &&
+        member.meta.trim() !== " "
+      ) {
         try {
           setIsLoading(true);
           const ipfsUrl = getIpfsBasicLink(member.meta);
-          
+
           // Add a small delay to avoid too many concurrent requests
-          const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 10000) => {
+          const fetchWithTimeout = async (
+            url: string,
+            options: RequestInit = {},
+            timeout = 10000,
+          ) => {
             const controller = new AbortController();
             const id = setTimeout(() => controller.abort(), timeout);
-            
+
             try {
               const response = await fetch(url, {
                 ...options,
-                signal: controller.signal
+                signal: controller.signal,
               });
               clearTimeout(id);
               return response;
@@ -100,15 +111,19 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
           // Fetch profile.json
           try {
             // Try first path format (with trailing slash from the base URL)
-            const profileResponse = await fetchWithTimeout(`${ipfsUrl}/profile.json`);
-            
+            const profileResponse = await fetchWithTimeout(
+              `${ipfsUrl}/profile.json`,
+            );
+
             if (profileResponse.ok) {
               const data = await profileResponse.json();
               setProfileData(data);
               setHasValidMetadata(true);
-            } else if (ipfsUrl.endsWith('/')) {
+            } else if (ipfsUrl.endsWith("/")) {
               // If URL already has trailing slash, try without additional slash
-              const altProfileResponse = await fetchWithTimeout(`${ipfsUrl}profile.json`);
+              const altProfileResponse = await fetchWithTimeout(
+                `${ipfsUrl}profile.json`,
+              );
               if (altProfileResponse.ok) {
                 const data = await altProfileResponse.json();
                 setProfileData(data);
@@ -123,7 +138,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
           // we'll set a default image URL and handle errors in the img tag's onError handler
           if (ipfsUrl) {
             // Check if URL already has trailing slash
-            if (ipfsUrl.endsWith('/')) {
+            if (ipfsUrl.endsWith("/")) {
               setProfileImageUrl(`${ipfsUrl}profile-image.png`);
             } else {
               setProfileImageUrl(`${ipfsUrl}/profile-image.png`);
@@ -131,7 +146,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
           }
         } catch (error) {
           console.log("Error fetching profile data:", error);
-          
+
           // Check if it's legacy metadata (not an IPFS CID)
           if (member.meta && !member.meta.match(/^(bafy|Qm)/)) {
             setHasValidMetadata(true);
@@ -153,15 +168,15 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
         try {
           const projectData = await getProjectFromId(proj.project);
           return {
-            name: projectData?.name || 'Unknown Project',
+            name: projectData?.name || "Unknown Project",
             badges: proj.badges,
-            projectId: proj.project
+            projectId: proj.project,
           };
         } catch (error) {
           return {
-            name: 'Unknown Project',
+            name: "Unknown Project",
             badges: proj.badges,
-            projectId: proj.project
+            projectId: proj.project,
           };
         }
       });
@@ -180,7 +195,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
 
   // Remove the complex avatar generation and use a simpler approach
   const getInitialLetter = (name: string | undefined): string => {
-    if (!name || name === 'Anonymous') return 'A';
+    if (!name || name === "Anonymous") return "A";
     return name.charAt(0).toUpperCase();
   };
 
@@ -200,18 +215,20 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
     // Show registration modal or redirect to registration page
     onClose();
     // Dispatch event to show join community modal with the address
-    window.dispatchEvent(new CustomEvent("openJoinCommunity", { 
-      detail: { address: memberAddress } 
-    }));
+    window.dispatchEvent(
+      new CustomEvent("openJoinCommunity", {
+        detail: { address: memberAddress },
+      }),
+    );
   };
 
   // Address display component with copy functionality
   const AddressDisplay = ({ address }: { address: string }) => {
     if (!address) return null;
-    
+
     // Create link to Stellar Expert explorer for the address using the correct network
     const explorerUrl = `https://stellar.expert/explorer/${network}/account/${address}`;
-    
+
     return (
       <div className="mt-2 w-full">
         <div className="p-[8px_12px] flex items-center justify-between bg-[#FFEFA8] rounded-md">
@@ -221,21 +238,31 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
             </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button 
+            <button
               onClick={handleCopyAddress}
               className="hover:opacity-70 transition-opacity"
               title="Copy address to clipboard"
             >
-              <img src="/icons/clipboard.svg" alt="Copy" width={16} height={16} />
+              <img
+                src="/icons/clipboard.svg"
+                alt="Copy"
+                width={16}
+                height={16}
+              />
             </button>
-            <a 
+            <a
               href={explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-70 transition-opacity"
               title="View on Stellar Explorer"
             >
-              <img src="/icons/link.svg" alt="View on Explorer" width={16} height={16} />
+              <img
+                src="/icons/link.svg"
+                alt="View on Explorer"
+                width={16}
+                height={16}
+              />
             </a>
           </div>
         </div>
@@ -248,15 +275,17 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
     return (
       <Modal onClose={onClose}>
         <div className="flex flex-col gap-4 w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto">
-          <h2 className="text-xl font-bold text-primary text-center">Member Not Registered</h2>
-          
+          <h2 className="text-xl font-bold text-primary text-center">
+            Member Not Registered
+          </h2>
+
           <div className="flex flex-col items-center gap-3">
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-zinc-200 flex items-center justify-center">
               <span className="text-3xl text-zinc-500">❓</span>
             </div>
-            
+
             {memberAddress && <AddressDisplay address={memberAddress} />}
-            
+
             <div className="text-center mt-1">
               <p className="text-sm sm:text-base text-secondary mb-1">
                 This member hasn't registered on the platform yet.
@@ -265,7 +294,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 To participate in the community, please register first.
               </p>
             </div>
-            
+
             <div className="flex w-full justify-between gap-2 sm:gap-3 mt-3">
               <Button
                 type="primary"
@@ -302,31 +331,37 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 onError={(e) => {
                   const imgElement = e.currentTarget;
                   const currentSrc = imgElement.src;
-                  
+
                   // Parse the URL to check path structure
-                  let baseUrl = currentSrc.substring(0, currentSrc.lastIndexOf('/'));
-                  const hasTrailingSlash = baseUrl.endsWith('/');
-                  
+                  let baseUrl = currentSrc.substring(
+                    0,
+                    currentSrc.lastIndexOf("/"),
+                  );
+                  const hasTrailingSlash = baseUrl.endsWith("/");
+
                   // If path already has double slash (url/ + /profile-image.png), fix it
-                  if (baseUrl.endsWith('/') && currentSrc.includes('//profile-image')) {
+                  if (
+                    baseUrl.endsWith("/") &&
+                    currentSrc.includes("//profile-image")
+                  ) {
                     baseUrl = baseUrl.slice(0, -1);
                   }
-                  
+
                   // Try different formats if the current one fails
-                  if (currentSrc.endsWith('profile-image.png')) {
+                  if (currentSrc.endsWith("profile-image.png")) {
                     // Try jpg next
-                    imgElement.src = hasTrailingSlash 
-                      ? `${baseUrl}profile-image.jpg` 
+                    imgElement.src = hasTrailingSlash
+                      ? `${baseUrl}profile-image.jpg`
                       : `${baseUrl}/profile-image.jpg`;
-                  } else if (currentSrc.includes('profile-image.jpg')) {
+                  } else if (currentSrc.includes("profile-image.jpg")) {
                     // Try jpeg next
-                    imgElement.src = hasTrailingSlash 
-                      ? `${baseUrl}profile-image.jpeg` 
+                    imgElement.src = hasTrailingSlash
+                      ? `${baseUrl}profile-image.jpeg`
                       : `${baseUrl}/profile-image.jpeg`;
-                  } else if (currentSrc.includes('profile-image.jpeg')) {
+                  } else if (currentSrc.includes("profile-image.jpeg")) {
                     // If all formats fail, hide the image and show fallback
-                    imgElement.style.display = 'none';
-                    setProfileImageUrl('');
+                    imgElement.style.display = "none";
+                    setProfileImageUrl("");
                   }
                 }}
               />
@@ -343,9 +378,9 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
               <h3 className="text-xl sm:text-2xl font-semibold text-primary">
                 {profileData?.name || "Anonymous"}
               </h3>
-              
+
               {memberAddress && <AddressDisplay address={memberAddress} />}
-              
+
               {profileData?.social && (
                 <a
                   href={profileData.social}
@@ -357,7 +392,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 </a>
               )}
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex w-full justify-between gap-2 sm:gap-3 mt-2 sm:mt-4">
               {publicKey === memberAddress && (
@@ -371,7 +406,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
               )}
             </div>
           </div>
-          
+
           <div className="md:w-2/3 flex flex-col gap-4">
             {/* Description - Only show if exists */}
             {profileData?.description && (
@@ -437,8 +472,8 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto">
                   {projectsWithNames.map((proj, idx) => (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       className="p-3 bg-zinc-50 cursor-pointer hover:bg-zinc-100 transition-colors rounded"
                       onClick={() => navigateToProject(proj.name)}
                     >
