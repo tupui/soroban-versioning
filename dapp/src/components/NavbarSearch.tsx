@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import Button from "./utils/Button.tsx";
 import { getMember } from "../service/ReadContractService.ts";
+import { loadedPublicKey } from "../service/walletService.ts";
+import { toast } from "../utils/utils.ts";
 
 interface NavbarSearchProps {
   onAddProject: () => void;
@@ -107,7 +109,16 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
   };
 
   const handleAddProject = () => {
-    // Use document event for better cross-page compatibility
+    if (!loadedPublicKey()) {
+      // User is not connected, show toast error
+      toast.error(
+        "Connect Wallet",
+        "Please connect your wallet first to add a project",
+      );
+      return;
+    }
+
+    // User is connected, show project creation modal
     document.dispatchEvent(new CustomEvent("show-create-project-modal"));
   };
 
@@ -194,6 +205,9 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
         icon="/icons/plus-fill.svg"
         className={`px-[15px] py-[8px] whitespace-nowrap transition-all duration-200 ${isExpanded ? "hidden md:block" : "block"}`}
         onClick={handleAddProject}
+        title={
+          loadedPublicKey() ? "Add Project" : "Connect wallet to add project"
+        }
       >
         <p className="text-base leading-5 hidden sm:block">Add Project</p>
       </Button>

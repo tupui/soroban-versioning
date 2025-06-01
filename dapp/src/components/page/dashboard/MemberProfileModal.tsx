@@ -93,11 +93,13 @@ const MemberProfileModal: FC<Props> = ({ onClose, member }) => {
 
   // Get the connected public key
   const publicKey = connectedPublicKey.get();
-  
+
   // Handle disconnect button click
   const handleDisconnect = () => {
     window.dispatchEvent(new CustomEvent("walletDisconnected"));
     onClose();
+    // Force reload and navigate to main page
+    window.location.href = "/";
   };
 
   return (
@@ -150,7 +152,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member }) => {
                 <h4 className="text-lg font-semibold text-primary mb-2 text-center">
                   About
                 </h4>
-                <div className="prose prose-sm max-w-none text-secondary bg-zinc-50 p-3 rounded-lg">
+                <div className="prose prose-sm max-w-none text-secondary bg-zinc-50 p-3">
                   <Markdown
                     options={{
                       overrides: {
@@ -197,7 +199,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member }) => {
             )}
 
             {/* Badges Section */}
-            <div className="w-full border-t pt-4 mt-2">
+            <div className="w-full mt-2">
               <h4 className="text-lg font-semibold text-primary mb-3 text-center">
                 Badges
               </h4>
@@ -208,16 +210,17 @@ const MemberProfileModal: FC<Props> = ({ onClose, member }) => {
               ) : (
                 <div className="flex flex-col gap-3 max-h-48 overflow-y-auto">
                   {member.projects?.map((proj, idx) => (
-                    <div key={idx} className="border p-3 rounded-lg bg-zinc-50">
+                    <div key={idx} className="p-3 bg-zinc-50">
                       <p className="font-medium text-primary mb-2 text-sm break-words text-center">
                         Project:{" "}
-                        {Buffer.from(proj.project).toString("hex").slice(0, 16)}...
+                        {Buffer.from(proj.project).toString("hex").slice(0, 16)}
+                        ...
                       </p>
                       <div className="flex flex-wrap justify-center gap-2">
                         {proj.badges.map((b, i) => (
                           <span
                             key={i}
-                            className="px-3 py-1 bg-primary text-white text-xs rounded-full"
+                            className="px-3 py-1 bg-primary text-white text-xs"
                           >
                             {badgeName(b)}
                           </span>
@@ -230,11 +233,11 @@ const MemberProfileModal: FC<Props> = ({ onClose, member }) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex w-full justify-between gap-3 mt-4 pt-4 border-t">
-              <Button 
-                type="tertiary" 
-                onClick={handleDisconnect} 
-                className="bg-red-500 text-white hover:bg-red-600 w-full"
+            <div className="flex w-full justify-between gap-3 mt-4">
+              <Button
+                type="primary"
+                onClick={handleDisconnect}
+                className="bg-red-500 text-white hover:bg-red-600 w-full border-0"
               >
                 Disconnect
               </Button>

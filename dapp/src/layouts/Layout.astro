@@ -20,6 +20,61 @@ const { title, page } = Astro.props;
 
   // Add these event listeners to handle the new button events
   document.addEventListener("astro:page-load", () => {
+    // Handle Add Project button on any page
+    document.addEventListener("show-create-project-modal", async () => {
+      try {
+        // Remove any existing project modals first
+        const existingModals = document.querySelectorAll(
+          ".project-modal-container",
+        );
+        existingModals.forEach((modal) => {
+          try {
+            document.body.removeChild(modal);
+          } catch (e) {
+            console.error("Error removing existing modal:", e);
+          }
+        });
+
+        const container = document.createElement("div");
+        container.className = "project-modal-container";
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: CreateProjectModal } = await import(
+          "components/page/dashboard/CreateProjectModal.tsx"
+        );
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          try {
+            root.unmount();
+            document.body.removeChild(container);
+          } catch (e) {
+            console.error("Error closing modal:", e);
+            // Fallback removal method
+            if (container.parentNode) {
+              container.parentNode.removeChild(container);
+            }
+          }
+        };
+
+        root.render(
+          React.createElement(CreateProjectModal, {
+            onClose: handleClose,
+          }),
+        );
+      } catch (e) {
+        console.error("Error opening create project modal:", e);
+        alert(
+          "There was an error opening the project creation dialog. Please try again.",
+        );
+      }
+    });
+
     // Handle Join Community button click
     window.addEventListener("openJoinCommunity", async () => {
       try {
@@ -49,11 +104,11 @@ const { title, page } = Astro.props;
               const publicKey = localStorage.getItem("publicKey");
               if (publicKey) {
                 window.dispatchEvent(
-                  new CustomEvent("walletConnected", { detail: publicKey })
+                  new CustomEvent("walletConnected", { detail: publicKey }),
                 );
               }
             },
-          })
+          }),
         );
       } catch (e) {
         console.error("Error opening join community modal:", e);
@@ -66,7 +121,16 @@ const { title, page } = Astro.props;
         const publicKey = localStorage.getItem("publicKey");
         if (!publicKey) return;
 
+        // Remove any existing profile modals to prevent stacking
+        const existingModals = document.querySelectorAll(
+          ".profile-modal-container",
+        );
+        existingModals.forEach((modal) => {
+          document.body.removeChild(modal);
+        });
+
         const container = document.createElement("div");
+        container.className = "profile-modal-container";
         document.body.appendChild(container);
 
         const [{ default: React }, { createRoot }] = await Promise.all([
@@ -74,10 +138,11 @@ const { title, page } = Astro.props;
           import("react-dom/client"),
         ]);
 
-        const [{ default: MemberProfileModal }, { getMember }] = await Promise.all([
-          import("components/page/dashboard/MemberProfileModal.tsx"),
-          import("@service/ReadContractService")
-        ]);
+        const [{ default: MemberProfileModal }, { getMember }] =
+          await Promise.all([
+            import("components/page/dashboard/MemberProfileModal.tsx"),
+            import("@service/ReadContractService"),
+          ]);
 
         const root = createRoot(container);
         const handleClose = () => {
@@ -87,12 +152,12 @@ const { title, page } = Astro.props;
 
         try {
           const memberData = await getMember(publicKey);
-          
+
           root.render(
             React.createElement(MemberProfileModal, {
               member: memberData,
               onClose: handleClose,
-            })
+            }),
           );
         } catch (e) {
           console.error("Error fetching member data:", e);
@@ -104,6 +169,17 @@ const { title, page } = Astro.props;
         console.error("Error opening profile modal:", e);
       }
     });
+
+    // Check if we need to open create project modal from URL param
+    if (
+      window.location.pathname === "/" &&
+      new URLSearchParams(window.location.search).get(
+        "openCreateProjectModal",
+      ) === "true"
+    ) {
+      // Fire the event to open the modal
+      document.dispatchEvent(new CustomEvent("create-project-global"));
+    }
   });
 </script>
 

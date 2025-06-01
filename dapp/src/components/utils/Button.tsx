@@ -12,6 +12,7 @@ interface Props {
   icon?: string;
   isLoading?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
+  title?: string;
 }
 
 const sizeMap: AnyObject = {
@@ -32,12 +33,14 @@ const Button: FC<Props> = ({
   icon,
   isLoading,
   onClick,
+  title,
 }) => {
   return (
     <button
       id={id}
       className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" : type == "tertiary" ? "border border-primary text-primary" : "bg-white text-primary"} cursor-pointer flex justify-center items-center ${sizeMap[size]}`}
       onClick={onClick}
+      title={title}
     >
       {isLoading && <Spinner />}
       {order === "primary" && (

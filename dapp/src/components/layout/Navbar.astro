@@ -31,7 +31,9 @@ const { page } = Astro.props;
           class="flex-shrink-0 flex gap-[8px] md:gap-[12px] items-center ml-auto"
         >
           <ConnectWallet />
-          <JoinCommunityButton client:load />
+          <div id="join-community-wrapper">
+            <JoinCommunityButton client:load />
+          </div>
         </div>
       </div>
     </div>
@@ -40,7 +42,7 @@ const { page } = Astro.props;
 
 <script>
   // Ensure global event listeners are set up on all pages
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("astro:page-load", () => {
     // Create a global event listener for creating a project
     const createProjectEvent = new CustomEvent("create-project-global");
 
@@ -54,6 +56,27 @@ const { page } = Astro.props;
         // On home page, dispatch the event to open modal
         document.dispatchEvent(createProjectEvent);
       }
+    });
+
+    // Hide join community button when logged in
+    const updateJoinButtonVisibility = () => {
+      const publicKey = localStorage.getItem("publicKey");
+      const wrapper = document.getElementById("join-community-wrapper");
+      if (wrapper) {
+        wrapper.style.display = publicKey ? "none" : "block";
+      }
+    };
+
+    // Run immediately and on every page load
+    updateJoinButtonVisibility();
+
+    // Listen for wallet connection/disconnection events
+    window.addEventListener("walletConnected", () => {
+      updateJoinButtonVisibility();
+    });
+
+    window.addEventListener("walletDisconnected", () => {
+      updateJoinButtonVisibility();
     });
   });
 </script>

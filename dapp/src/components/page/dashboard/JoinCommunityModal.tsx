@@ -155,8 +155,12 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
 
   return (
     <Modal onClose={onClose}>
-      <div className="flex flex-col gap-[42px]">
-        <div className="flex flex-col gap-[30px] w-[360px] md:w-[600px]">
+      <div className="flex items-center gap-[18px]">
+        <img
+          className="flex-none w-[360px] hidden md:block"
+          src="/images/team.svg"
+        />
+        <div className="flex flex-col gap-[30px] w-full md:w-[600px]">
           <h2 className="text-2xl font-bold text-primary">
             Join the Community
           </h2>
@@ -168,9 +172,9 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
             onChange={(e) => setAddress(e.target.value)}
           />
 
-          <div className="border-t pt-4">
-            <p className="text-sm text-secondary mb-4">
-              Optional: Add a profile to introduce yourself to the community
+          <div className="pt-4">
+            <p className="text-base font-medium text-primary mb-4">
+              Profile Information
             </p>
 
             <div className="flex flex-col gap-[30px]">
@@ -204,7 +208,7 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
                     </Button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#978AA1] rounded-lg cursor-pointer bg-zinc-50 hover:bg-zinc-100">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#978AA1] cursor-pointer bg-zinc-50 hover:bg-zinc-100">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <svg
                         className="w-8 h-8 mb-4 text-secondary"
@@ -241,7 +245,7 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
 
               <div className="flex flex-col gap-[18px]">
                 <p className="text-base font-[600] text-primary">Description</p>
-                <div className="rounded-md border border-zinc-700 overflow-hidden min-h-[150px]">
+                <div className="rounded-md border border-zinc-400 overflow-hidden min-h-[150px]">
                   <MDXEditor
                     plugins={[
                       markdownShortcutPlugin(),
@@ -276,15 +280,15 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex justify-end gap-[18px]">
-          <Button type="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button isLoading={isLoading} onClick={handleJoin}>
-            {isUploading ? "Uploading to IPFS..." : "Join"}
-          </Button>
+          <div className="flex justify-end gap-[18px]">
+            <Button type="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button isLoading={isLoading} onClick={handleJoin}>
+              {isUploading ? "Uploading to IPFS..." : "Join"}
+            </Button>
+          </div>
         </div>
       </div>
     </Modal>

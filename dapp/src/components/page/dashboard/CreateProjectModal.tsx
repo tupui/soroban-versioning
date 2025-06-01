@@ -16,11 +16,14 @@ import Label from "components/utils/Label";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Step from "components/utils/Step";
 import Title from "components/utils/Title";
-import { useState, type FC } from "react";
+import { useState, type FC, useCallback, useEffect } from "react";
 import { getAuthorRepo } from "utils/editLinkFunctions";
 import { extractConfigData, isValidGithubUrl, toast } from "utils/utils";
 
-const SOROBAN_DOMAIN_CONTRACT_ID = `${import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID}`;
+// Get domain contract ID from environment with fallback
+const SOROBAN_DOMAIN_CONTRACT_ID =
+  import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID ||
+  "CCWXBS4ZFOC5QVY5AUEVFBSTOEKJUSB4JBULT6TRWDH4PPDOTVRV4UJM"; // Fallback value
 
 const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [step, setStep] = useState(1);
@@ -29,6 +32,69 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [infoFileHash, setInfoFileHash] = useState("");
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [domainContractId, setDomainContractId] = useState(
+    SOROBAN_DOMAIN_CONTRACT_ID,
+  );
+
+  // Verify domain contract ID on mount
+  useEffect(() => {
+    console.log("Using domain contract ID:", domainContractId);
+    // Ensure it's a valid Stellar address format
+    if (!/^[A-Z0-9]{56}$/.test(domainContractId)) {
+      console.warn(
+        "Domain contract ID appears to be invalid:",
+        domainContractId,
+      );
+    }
+  }, [domainContractId]);
+
+  const validateProjectName = useCallback(async () => {
+    if (!projectName.trim()) {
+      throw new Error("Project name cannot be empty");
+    }
+
+    if (projectName.length < 4 || projectName.length > 15) {
+      throw new Error("The length of project name should be between 4 and 15.");
+    }
+
+    if (!/^[a-z]+$/.test(projectName)) {
+      throw new Error("Project name can only contain lowercase letters (a-z)");
+    }
+
+    try {
+      // First check in a try/catch to protect against non-existent projects
+      const project = await getProjectFromName(projectName);
+
+      // If we reach here, the project exists
+      if (project && project.name === projectName) {
+        throw new Error("Project name already registered");
+      }
+    } catch (err: any) {
+      // Check if it's a specific error that indicates the project doesn't exist
+      if (
+        err.message &&
+        (err.message.includes("No project defined") ||
+          err.message.includes("not found") ||
+          err.message.includes("record not found") ||
+          err.message.includes("Invalid Key"))
+      ) {
+        // This means the project doesn't exist, which is what we want
+        return true;
+      } else if (err.message && err.message.includes("already registered")) {
+        // Re-throw specific errors about project already being registered
+        throw err;
+      }
+      // For any other errors, assume it's safe to proceed
+      console.log(
+        "Non-critical error during project name validation:",
+        err.message,
+      );
+      return true;
+    }
+
+    // If we get here, project exists but the name doesn't match exactly
+    return true;
+  }, [projectName]);
 
   const handleRegisterProject = async () => {
     setIsLoading(true);
@@ -40,7 +106,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
         maintainers.join(","),
         githubRepoUrl,
         infoFileHash,
-        SOROBAN_DOMAIN_CONTRACT_ID,
+        domainContractId,
       );
 
       const project = await getProjectFromName(projectName);
@@ -76,14 +142,22 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
           toast.error("Something Went Wrong!", error.message);
         }
       }
+
+      // Show success message
+      toast.success("Success", "Project has been registered successfully!");
+
+      // Close the modal
+      onClose();
+
+      // Navigate to the new project page
+      navigate(`/project?name=${projectName}`);
     } catch (err: any) {
+      console.error("Project registration error:", err);
       toast.error("Something Went Wrong!", err.message);
       return;
     } finally {
       setIsLoading(false);
     }
-
-    setStep(step + 1);
   };
 
   return (
@@ -98,16 +172,18 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                   <Step step={step} totalSteps={5} />
                   <Title
                     title="Welcome to Your New Project!"
-                    description="Add your project’s name, slogan, and description to showcase its goals."
+                    description="Add your project's name, slogan, and description to showcase its goals."
                   />
                 </div>
                 <Input
                   label="Project Name"
                   placeholder="Write the name"
                   value={projectName}
-                  onChange={(e) =>
-                    setProjectName(e.target.value.replace(/[^a-z]/, ""))
-                  }
+                  onChange={(e) => {
+                    // Only allow lowercase letters a-z
+                    const validInput = e.target.value.replace(/[^a-z]/g, "");
+                    setProjectName(validInput);
+                  }}
                 />
               </div>
             </div>
@@ -118,23 +194,26 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
               <Button
                 isLoading={isLoading}
                 onClick={async () => {
+                  if (!projectName.trim()) {
+                    toast.error("Project Name", "Project name cannot be empty");
+                    return;
+                  }
+
                   setIsLoading(true);
                   try {
-                    const project = await getProjectFromName(projectName);
-                    if (projectName.length < 4 || projectName.length > 15)
-                      throw new Error(
-                        "The length of project name should be between 4 and 15.",
-                      );
-                    if (project?.name == projectName)
-                      throw new Error("Project name already registered");
+                    // Perform validation
+                    await validateProjectName();
+                    // If we got here, validation passed
+                    setStep(step + 1);
                   } catch (err: any) {
-                    toast.error("Project Name", err.message);
-                    return;
+                    console.error("Project name validation error:", err);
+                    toast.error(
+                      "Project Name",
+                      err.message || "Project name validation failed",
+                    );
                   } finally {
                     setIsLoading(false);
                   }
-
-                  setStep(step + 1);
                 }}
               >
                 Next
@@ -161,7 +240,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                       <Input
                         value={maintainer}
                         {...(i == 0 && { label: "First Maintainer" })}
-                        placeholder="Write the maintainer’s address as G..."
+                        placeholder="Write the maintainer's address as G..."
                         onChange={(e) => {
                           setMaintainers(
                             maintainers.map((maintainer, j) =>
@@ -380,7 +459,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
               <Step step={step} totalSteps={5} />
               <Title
                 title="Your Project Is Live!"
-                description="Congratulations! You've successfully created your project. Let’s get the ball rolling!"
+                description="Congratulations! You've successfully created your project. Let's get the ball rolling!"
               />
             </div>
           </div>

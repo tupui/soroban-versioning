@@ -1,6 +1,11 @@
 import { kit } from "../components/stellar-wallets-kit";
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
+import { loadedProjectId } from "./StateService";
+import type { Badge } from "../../packages/tansu";
+import { Buffer } from "buffer";
+import * as pkg from "js-sha3";
+import { isValidGithubUrl } from "../utils/utils";
 
 import {
   rpc,
@@ -12,15 +17,14 @@ import {
   contractErrorMessages,
   type ContractErrorMessageKey,
 } from "constants/contractErrorMessages";
-import * as pkg from "js-sha3";
 import type { VoteChoice, Vote } from "../../packages/tansu";
 import type { VoteType } from "types/proposal";
-import type { Badge } from "../../packages/tansu";
-// import type { Response } from "types/response";
-import { loadedProjectId } from "./StateService";
+import type { Response } from "types/response";
+
 const { keccak256 } = pkg;
 
 const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
+const contractId = import.meta.env.PUBLIC_SOROBAN_CONTRACT_ID;
 
 // Function to map VoteType to Vote
 function mapVoteTypeToVote(voteType: VoteType): VoteChoice {
@@ -96,21 +100,52 @@ async function registerProject(
     throw new Error("Please connect your wallet first");
   }
 
+  // Additional validation before calling contract
+  if (!project_name || project_name.length < 4 || project_name.length > 15) {
+    throw new Error("Project name must be between 4 and 15 characters");
+  }
+
+  if (!/^[a-z]+$/.test(project_name)) {
+    throw new Error("Project name can only contain lowercase letters (a-z)");
+  }
+
+  if (!maintainers) {
+    throw new Error("Maintainers cannot be empty");
+  }
+
+  const validGithubUrl = /^https:\/\/github\.com\/[^\/]+\/[^\/]+\/?$/;
+  if (!config_url || !validGithubUrl.test(config_url)) {
+    throw new Error("Invalid GitHub repository URL");
+  }
+
+  if (!config_hash || config_hash.length !== 64) {
+    throw new Error("File hash must be 64 characters long");
+  }
+
   Tansu.options.publicKey = publicKey;
 
-  const maintainers_ = maintainers.split(",");
+  // Split maintainers into array and trim each address
+  const maintainers_ = maintainers.split(",").map((addr) => addr.trim());
 
-  const tx = await Tansu.register({
-    // @ts-ignore
+  console.log("Registering project with parameters:", {
     name: project_name,
     maintainer: publicKey,
-    maintainers: maintainers_,
+    maintainersCount: maintainers_.length,
     url: config_url,
     hash: config_hash,
     domain_contract_id: domain_contract_id,
   });
 
   try {
+    const tx = await Tansu.register({
+      name: project_name,
+      maintainer: publicKey,
+      maintainers: maintainers_,
+      url: config_url,
+      hash: config_hash,
+      domain_contract_id: domain_contract_id,
+    });
+
     await tx.signAndSend({
       signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
@@ -118,9 +153,11 @@ async function registerProject(
     });
     return true;
   } catch (e) {
-    console.error(e);
+    console.error("Project registration error:", e);
     const { errorMessage } = fetchErrorCode(e);
-    throw new Error(errorMessage);
+    throw new Error(
+      errorMessage || "Failed to register project. Please try again.",
+    );
   }
 }
 

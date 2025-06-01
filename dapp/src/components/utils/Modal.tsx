@@ -1,35 +1,45 @@
 import type { FC, ReactNode } from "react";
+import { useEffect } from "react";
 
 export interface ModalProps {
   id?: string | undefined;
   children?: ReactNode | undefined;
   onClose: () => void | undefined;
-  size?: "small" | "medium" | "large";
 }
 
-const Modal: FC<ModalProps> = ({ id, children, onClose, size = "medium" }) => {
-  // Define width classes based on size prop
-  const widthClasses = {
-    small: "w-[342px] lg:w-[400px]",
-    medium: "w-[342px] lg:w-[550px]",
-    large: "w-[342px] lg:w-[800px]",
-  };
+const Modal: FC<ModalProps> = ({ id, children, onClose }) => {
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose?.();
+      }
+    };
+
+    // Add event listener for ESC key
+    window.addEventListener("keydown", handleEsc);
+
+    // Prevent scrolling on body when modal is open
+    document.body.style.overflow = "hidden";
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
 
   return (
     <div
       className="fixed inset-0 bg-white/35 backdrop-blur-md flex justify-center items-center z-[2]"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose?.();
-        }
-      }}
+      onClick={() => onClose?.()}
     >
       <div
         id={id}
         className="modal relative bg-white shadow-modal"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`p-4 lg:p-6 ${widthClasses[size]} max-h-[90vh] overflow-auto`}>
+        <div className="p-4 lg:p-9 w-[342px] lg:w-[1048px] max-h-[90vh] overflow-auto">
           {children}
         </div>
         <div
