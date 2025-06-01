@@ -31,39 +31,15 @@ const CopyButton = ({
     if (!textToCopy) return;
 
     try {
-      // Try the modern Clipboard API first
+      // Use the Clipboard API
       await navigator.clipboard.writeText(textToCopy);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
     } catch (error) {
-      console.error("Failed to copy using Clipboard API:", error);
-
-      // Fallback method for browsers that don't support clipboard API
-      try {
-        const textArea = document.createElement("textarea");
-        textArea.value = textToCopy;
-
-        // Make the textarea out of viewport
-        textArea.style.position = "fixed";
-        textArea.style.left = "-999999px";
-        textArea.style.top = "-999999px";
-        document.body.appendChild(textArea);
-
-        // Select and copy the text
-        textArea.focus();
-        textArea.select();
-        const successful = document.execCommand("copy");
-
-        // Clean up
-        document.body.removeChild(textArea);
-
-        if (successful) {
-          setIsCopied(true);
-          setTimeout(() => setIsCopied(false), 2000);
-        }
-      } catch (fallbackError) {
-        console.error("Fallback copy method failed:", fallbackError);
-      }
+      // Most modern browsers support the Clipboard API,
+      // so we'll just log the error if it doesn't work
+      // instead of using the deprecated execCommand
+      console.error("Failed to copy text:", error);
     }
   }, [textToCopy]);
 

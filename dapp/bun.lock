@@ -16,11 +16,10 @@
         "@stellar/stellar-xdr-json": "^22.0.0-rc.1.1",
         "@web3-storage/access": "^20.3.0",
         "@web3-storage/w3up-client": "^17.3.0",
-        "astro": "5.7.12",
+        "astro": "^5.7.12",
         "astro-seo": "^0.8.4",
         "crypto-js": "^4.2.0",
         "github-markdown-css": "^5.8.1",
-        "install": "^0.13.0",
         "ipfs-car": "^3.0.0",
         "js-sha3": "^0.9.3",
         "lossless-json": "^4.1.0",
@@ -1831,8 +1830,6 @@
     "inherits": ["inherits@2.0.4", "", {}, "sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ=="],
 
     "ini": ["ini@4.1.1", "", {}, "sha512-QQnnxNyfvmHFIsj7gkPcYymR8Jdw/o7mp5ZFihxn6h8Ci6fh3Dx4E1gPjpQEpIuPo9XVNY/ZUwh4BPMjGyL01g=="],
-
-    "install": ["install@0.13.0", "", {}, "sha512-zDml/jzr2PKU9I8J/xyZBQn8rPCAY//UOYNmR01XwNwyfhEWObo2SWfSl1+0tm1u6PhxLwDnfsT/6jB7OUxqFA=="],
 
     "int64-buffer": ["int64-buffer@1.1.0", "", {}, "sha512-94smTCQOvigN4d/2R/YDjz8YVG0Sufvv2aAh8P5m42gwhCsDAJqnbNOrxJsrADuAFAA69Q/ptGzxvNcNuIJcvw=="],
 
