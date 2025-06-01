@@ -13,10 +13,19 @@ import {
  * @returns The markdown content with image paths corrected, or null if not found
  */
 async function fetchProposalFromIPFS(url: string) {
+  // Validate CID format
+  const validCidPattern = /^(bafy|Qm)[a-zA-Z0-9]{44,}$/;
+  if (!url || !validCidPattern.test(url)) {
+    return null;
+  }
+
   try {
     const proposalUrl = getProposalLinkFromIpfs(url);
-    const response = await fetchFromIPFS(proposalUrl);
+    if (!proposalUrl) {
+      return null;
+    }
 
+    const response = await fetchFromIPFS(proposalUrl);
     if (!response.ok) {
       return null;
     }
@@ -32,7 +41,6 @@ async function fetchProposalFromIPFS(url: string) {
 
     return updatedContent;
   } catch (error) {
-    console.error("Error fetching proposal content:", error);
     return null;
   }
 }
@@ -44,11 +52,20 @@ async function fetchProposalFromIPFS(url: string) {
  * @returns The outcome JSON data or null if not found
  */
 async function fetchOutcomeDataFromIPFS(url: string) {
+  // Validate CID format
+  const validCidPattern = /^(bafy|Qm)[a-zA-Z0-9]{44,}$/;
+  if (!url || !validCidPattern.test(url)) {
+    return null;
+  }
+
   try {
     const outcomeUrl = getOutcomeLinkFromIpfs(url);
+    if (!outcomeUrl) {
+      return null;
+    }
+
     return await fetchJSONFromIPFS(outcomeUrl);
   } catch (error) {
-    console.error("Error fetching outcome data:", error);
     return null;
   }
 }

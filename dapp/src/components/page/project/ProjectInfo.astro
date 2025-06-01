@@ -529,7 +529,6 @@ import { toast } from "utils/utils";
         const latestSha = loadProjectLatestSha();
         if (latestSha) {
           try {
-            console.log("Loading commit data for SHA:", latestSha);
             const latestCommit = await getLatestCommitData(
               projectInfo.config.url,
               latestSha,

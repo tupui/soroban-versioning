@@ -83,44 +83,39 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
       ) {
         try {
           setIsLoading(true);
+
+          // Validate that meta is a proper IPFS CID before attempting to fetch
+          const validCidPattern = /^(bafy|Qm)[a-zA-Z0-9]{44,}$/;
+          if (!validCidPattern.test(member.meta)) {
+            // Invalid CID format, nothing to fetch
+            setIsLoading(false);
+            return;
+          }
+
           const ipfsUrl = getIpfsBasicLink(member.meta);
+          if (!ipfsUrl) {
+            setIsLoading(false);
+            return;
+          }
 
           // Fetch profile.json
           try {
-            // Try first path format (with trailing slash from the base URL)
+            // Standard path format
             const profileUrl = `${ipfsUrl}/profile.json`;
-            let profileData = await fetchJSONFromIPFS(profileUrl);
-
-            // If URL already has trailing slash, try without additional slash
-            if (!profileData && ipfsUrl.endsWith("/")) {
-              const altProfileUrl = `${ipfsUrl}profile.json`;
-              profileData = await fetchJSONFromIPFS(altProfileUrl);
-            }
+            const profileData = await fetchJSONFromIPFS(profileUrl);
 
             if (profileData) {
               setProfileData(profileData);
               setHasValidMetadata(true);
             }
           } catch (error) {
-            console.log("Failed to fetch profile data:", error);
+            // Silent failure - this is an expected case for missing profile data
           }
 
-          // Set profile image URL
-          if (ipfsUrl) {
-            // Check if URL already has trailing slash
-            if (ipfsUrl.endsWith("/")) {
-              setProfileImageUrl(`${ipfsUrl}profile-image.png`);
-            } else {
-              setProfileImageUrl(`${ipfsUrl}/profile-image.png`);
-            }
-          }
+          // Set profile image URL - use standard path format
+          setProfileImageUrl(`${ipfsUrl}/profile-image.png`);
         } catch (error) {
-          console.log("Error fetching profile data:", error);
-
-          // Check if it's legacy metadata (not an IPFS CID)
-          if (member.meta && !member.meta.match(/^(bafy|Qm)/)) {
-            setHasValidMetadata(true);
-          }
+          // Silent error handling
         } finally {
           setIsLoading(false);
         }
@@ -163,7 +158,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
     }
   }, [member]);
 
-  // Remove the complex avatar generation and use a simpler approach
+  // Get the initial letter for the avatar
   const getInitialLetter = (name: string | undefined): string => {
     if (!name || name === "Anonymous") return "A";
     return name.charAt(0).toUpperCase();
@@ -286,41 +281,9 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 src={profileImageUrl}
                 alt={profileData?.name || "Profile"}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-3 border-primary"
-                onError={(e) => {
-                  const imgElement = e.currentTarget;
-                  const currentSrc = imgElement.src;
-
-                  // Parse the URL to check path structure
-                  let baseUrl = currentSrc.substring(
-                    0,
-                    currentSrc.lastIndexOf("/"),
-                  );
-                  const hasTrailingSlash = baseUrl.endsWith("/");
-
-                  // If path already has double slash (url/ + /profile-image.png), fix it
-                  if (
-                    baseUrl.endsWith("/") &&
-                    currentSrc.includes("//profile-image")
-                  ) {
-                    baseUrl = baseUrl.slice(0, -1);
-                  }
-
-                  // Try different formats if the current one fails
-                  if (currentSrc.endsWith("profile-image.png")) {
-                    // Try jpg next
-                    imgElement.src = hasTrailingSlash
-                      ? `${baseUrl}profile-image.jpg`
-                      : `${baseUrl}/profile-image.jpg`;
-                  } else if (currentSrc.includes("profile-image.jpg")) {
-                    // Try jpeg next
-                    imgElement.src = hasTrailingSlash
-                      ? `${baseUrl}profile-image.jpeg`
-                      : `${baseUrl}/profile-image.jpeg`;
-                  } else if (currentSrc.includes("profile-image.jpeg")) {
-                    // If all formats fail, hide the image and show fallback
-                    imgElement.style.display = "none";
-                    setProfileImageUrl("");
-                  }
+                onError={() => {
+                  // If image fails to load, just hide it and show fallback
+                  setProfileImageUrl("");
                 }}
               />
             ) : (

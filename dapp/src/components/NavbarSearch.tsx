@@ -15,10 +15,25 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [originalUrl, setOriginalUrl] = useState("");
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
 
   useEffect(() => {
     saveOriginalUrl();
     initializeSearchTerm();
+
+    // Check wallet connection status on client-side only
+    setIsWalletConnected(!!loadedPublicKey());
+
+    // Listen for wallet connection/disconnection events
+    const handleWalletConnection = () =>
+      setIsWalletConnected(!!loadedPublicKey());
+    window.addEventListener("walletConnected", handleWalletConnection);
+    window.addEventListener("walletDisconnected", handleWalletConnection);
+
+    return () => {
+      window.removeEventListener("walletConnected", handleWalletConnection);
+      window.removeEventListener("walletDisconnected", handleWalletConnection);
+    };
   }, []);
 
   // Save the original URL when the component mounts
@@ -110,7 +125,7 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
   };
 
   const handleAddProject = () => {
-    if (!loadedPublicKey()) {
+    if (!isWalletConnected) {
       toast.error(
         "Connect Wallet",
         "Please connect your wallet first to add a project",
@@ -138,6 +153,11 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
       window.location.href = HOME_PATH;
     }
   };
+
+  // Use client-side state for button title to ensure consistency between renders
+  const buttonTitle = isWalletConnected
+    ? "Add Project"
+    : "Connect wallet to add project";
 
   return (
     <div className="flex items-center gap-2 w-full max-w-[500px]">
@@ -206,9 +226,7 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
         icon="/icons/plus-fill.svg"
         className={`px-[15px] py-[8px] whitespace-nowrap transition-all duration-200 ${isExpanded ? "hidden md:block" : "block"}`}
         onClick={handleAddProject}
-        title={
-          loadedPublicKey() ? "Add Project" : "Connect wallet to add project"
-        }
+        title={buttonTitle}
       >
         <p className="text-base leading-5 hidden sm:block">Add Project</p>
       </Button>

@@ -15,6 +15,14 @@ const ipfsCache: Record<string, any> = {};
  */
 export const getIpfsBasicLink = (cid: string): string => {
   if (!cid) return "";
+
+  // Validate CID format before constructing URL
+  const validCidPattern = /^(bafy|Qm)[a-zA-Z0-9]{44,}$/;
+  if (!validCidPattern.test(cid)) {
+    // Invalid CID format is a normal case, silently return empty string
+    return "";
+  }
+
   return `https://w3s.link/ipfs/${cid}`;
 };
 
@@ -120,6 +128,8 @@ export const calculateDirectoryCid = async (
       return dirCid.toString();
     }
   } catch (error) {
+    // This is a truly unexpected error during CID calculation
+    // Keep this log since it's a critical operation that shouldn't fail
     console.error("Error calculating directory CID:", error);
     throw error;
   }
@@ -179,14 +189,20 @@ export const fetchJSONFromIPFS = async (
   url: string,
   options: RequestInit = {},
 ): Promise<any> => {
+  // Skip empty or invalid URLs
+  if (!url) {
+    return null;
+  }
+
   try {
     const response = await fetchFromIPFS(url, options);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Not finding content is a normal case for IPFS, silently return null
+      return null;
     }
     return await response.json();
   } catch (error) {
-    console.error(`Error fetching JSON from ${url}:`, error);
+    // Network errors or parsing errors are expected cases, silently return null
     return null;
   }
 };
