@@ -666,13 +666,41 @@ import { toast } from "utils/utils";
           root.render(
             React.createElement(MemberProfileModal, {
               member: memberData,
+              address: address,
               onClose: handleClose,
             }),
           );
         }, 0);
       } catch (e) {
-        console.error(e);
-        toast.error("Profile", "Member not found");
+        // Show the member not registered modal instead of an error toast
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: MemberProfileModal } = await import(
+          "components/page/dashboard/MemberProfileModal.tsx"
+        );
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        // Use setTimeout to ensure the modal is opened after the current click event completes
+        setTimeout(() => {
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: null,
+              address: address,
+              onClose: handleClose,
+            }),
+          );
+        }, 0);
       }
     }
   });

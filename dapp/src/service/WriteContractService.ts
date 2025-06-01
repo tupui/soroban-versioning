@@ -6,6 +6,8 @@ import type { Badge } from "../../packages/tansu";
 import { Buffer } from "buffer";
 import * as pkg from "js-sha3";
 import { isValidGithubUrl } from "../utils/utils";
+import { handleError, extractContractError } from "../utils/errorHandler";
+import { validateProjectRegistration } from "../utils/validations";
 
 import {
   rpc,
@@ -68,12 +70,13 @@ async function commitHash(commit_hash: string): Promise<boolean> {
 
   Tansu.options.publicKey = publicKey;
 
-  const tx = await Tansu.commit({
-    maintainer: publicKey,
-    project_key: projectId,
-    hash: commit_hash,
-  });
   try {
+    const tx = await Tansu.commit({
+      maintainer: publicKey,
+      project_key: projectId,
+      hash: commit_hash,
+    });
+
     await tx.signAndSend({
       signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
@@ -81,8 +84,7 @@ async function commitHash(commit_hash: string): Promise<boolean> {
     });
     return true;
   } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -100,41 +102,25 @@ async function registerProject(
     throw new Error("Please connect your wallet first");
   }
 
-  // Additional validation before calling contract
-  if (!project_name || project_name.length < 4 || project_name.length > 15) {
-    throw new Error("Project name must be between 4 and 15 characters");
-  }
+  // Validate all inputs
+  const validationErrors = validateProjectRegistration({
+    project_name,
+    maintainers,
+    config_url,
+    config_hash,
+  });
 
-  if (!/^[a-z]+$/.test(project_name)) {
-    throw new Error("Project name can only contain lowercase letters (a-z)");
-  }
-
-  if (!maintainers) {
-    throw new Error("Maintainers cannot be empty");
-  }
-
-  const validGithubUrl = /^https:\/\/github\.com\/[^\/]+\/[^\/]+\/?$/;
-  if (!config_url || !validGithubUrl.test(config_url)) {
-    throw new Error("Invalid GitHub repository URL");
-  }
-
-  if (!config_hash || config_hash.length !== 64) {
-    throw new Error("File hash must be 64 characters long");
+  // If any validation errors, throw the first one
+  const errorKeys = Object.keys(validationErrors);
+  if (errorKeys.length > 0) {
+    const firstKey = errorKeys[0] as keyof typeof validationErrors;
+    throw new Error(validationErrors[firstKey]);
   }
 
   Tansu.options.publicKey = publicKey;
 
   // Split maintainers into array and trim each address
   const maintainers_ = maintainers.split(",").map((addr) => addr.trim());
-
-  console.log("Registering project with parameters:", {
-    name: project_name,
-    maintainer: publicKey,
-    maintainersCount: maintainers_.length,
-    url: config_url,
-    hash: config_hash,
-    domain_contract_id: domain_contract_id,
-  });
 
   try {
     const tx = await Tansu.register({
@@ -153,8 +139,7 @@ async function registerProject(
     });
     return true;
   } catch (e) {
-    console.error("Project registration error:", e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(
       errorMessage || "Failed to register project. Please try again.",
     );
@@ -194,8 +179,7 @@ async function updateConfig(
     });
     return true;
   } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -233,8 +217,7 @@ async function createProposal(
     });
     return result.result;
   } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -280,8 +263,7 @@ async function voteToProposal(
     });
     return true;
   } catch (e: any) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -301,9 +283,6 @@ async function execute(
     keccak256.create().update(project_name).digest(),
   );
 
-  console.log(publicKey);
-  console.log(project_key);
-
   try {
     const tx = await Tansu.execute({
       maintainer: publicKey,
@@ -322,8 +301,7 @@ async function execute(
     });
     return result.result;
   } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -406,8 +384,7 @@ async function addMember(
     });
     return true;
   } catch (e: any) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -436,8 +413,7 @@ async function addBadges(
     });
     return true;
   } catch (e: any) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }

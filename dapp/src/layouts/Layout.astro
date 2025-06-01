@@ -76,7 +76,7 @@ const { title, page } = Astro.props;
     });
 
     // Handle Join Community button click
-    window.addEventListener("openJoinCommunity", async () => {
+    window.addEventListener("openJoinCommunity", async (event) => {
       try {
         const container = document.createElement("div");
         document.body.appendChild(container);
@@ -96,9 +96,13 @@ const { title, page } = Astro.props;
           document.body.removeChild(container);
         };
 
+        // Get the address from the event detail if available
+        const prefillAddress = event.detail?.address || "";
+
         root.render(
           React.createElement(JoinCommunityModal, {
             onClose: handleClose,
+            prefillAddress: prefillAddress,
             onJoined: () => {
               // Trigger wallet connected to refresh UI
               const publicKey = localStorage.getItem("publicKey");
@@ -156,14 +160,19 @@ const { title, page } = Astro.props;
           root.render(
             React.createElement(MemberProfileModal, {
               member: memberData,
+              address: publicKey,
               onClose: handleClose,
             }),
           );
         } catch (e) {
-          console.error("Error fetching member data:", e);
-          // If member doesn't exist, open join community modal instead
-          window.dispatchEvent(new CustomEvent("openJoinCommunity"));
-          handleClose();
+          // Show the member not registered modal instead of join community
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: null,
+              address: publicKey,
+              onClose: handleClose,
+            }),
+          );
         }
       } catch (e) {
         console.error("Error opening profile modal:", e);

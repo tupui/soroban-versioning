@@ -1,4 +1,4 @@
-import { useState, type FC } from "react";
+import { useState, type FC, useEffect } from "react";
 import Input from "components/utils/Input";
 import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
@@ -29,11 +29,15 @@ interface ProfileImageFile {
   source: File;
 }
 
-const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
-  onClose,
-  onJoined,
-}) => {
-  const [address, setAddress] = useState<string>(loadedPublicKey() ?? "");
+const JoinCommunityModal: FC<
+  ModalProps & {
+    onJoined?: () => void;
+    prefillAddress?: string;
+  }
+> = ({ onClose, onJoined, prefillAddress = "" }) => {
+  const [address, setAddress] = useState<string>(
+    prefillAddress || loadedPublicKey() || "",
+  );
   const [name, setName] = useState<string>("");
   const [social, setSocial] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -42,6 +46,12 @@ const JoinCommunityModal: FC<ModalProps & { onJoined?: () => void }> = ({
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (prefillAddress) {
+      setAddress(prefillAddress);
+    }
+  }, [prefillAddress]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

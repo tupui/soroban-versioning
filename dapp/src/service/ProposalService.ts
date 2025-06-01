@@ -4,6 +4,7 @@ import {
   getOutcomeLinkFromIpfs,
   getProposalLinkFromIpfs,
 } from "utils/utils";
+import { toast } from "utils/utils";
 
 async function fetchProposalFromIPFS(url: string) {
   try {
@@ -20,8 +21,9 @@ async function fetchProposalFromIPFS(url: string) {
 
     return updatedContent;
   } catch (error) {
-    console.error("Error fetching the IPFS file:", error);
-    throw error;
+    // Don't show error toast for IPFS failures as they may be expected
+    // For example, if the proposal hasn't been uploaded yet
+    return null;
   }
 }
 
@@ -31,8 +33,9 @@ async function fetchOutcomeDataFromIPFS(url: string) {
     const response = await axios.get(outcomeUrl);
     return response.data;
   } catch (error) {
-    console.error("Error fetching the outcomes data from IPFS:", error);
-    throw error;
+    // Don't show error toast for IPFS failures as they may be expected
+    // For example, if the outcome data hasn't been uploaded yet
+    return null;
   }
 }
 

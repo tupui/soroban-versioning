@@ -63,17 +63,15 @@ export function capitalizeFirstLetter(str: string): string {
 }
 
 export const processDecodedData = (xdrData: string): any => {
-  let trxFromXdr;
   try {
-    trxFromXdr = TransactionBuilder.fromXDR(
+    return TransactionBuilder.fromXDR(
       xdrData,
       import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
     );
   } catch (error) {
-    console.error("Error decoding XDR:", error);
+    // Don't log to console, just return null to indicate failure
+    return null;
   }
-
-  return trxFromXdr;
 };
 
 export const modifySlashInXdr = (xdr: string) => {
@@ -81,7 +79,22 @@ export const modifySlashInXdr = (xdr: string) => {
 };
 
 export const getIpfsBasicLink = (ipfsLink: string) => {
-  return `https://${ipfsLink}.ipfs.w3s.link/`;
+  // Clean up the input first
+  const cleanIpfsLink = ipfsLink.trim();
+  
+  // Check if it's already a URL
+  if (cleanIpfsLink.startsWith('http')) {
+    return cleanIpfsLink;
+  }
+  
+  // Check if it's a CID (starts with bafy or Qm)
+  if (/^(bafy|Qm)/.test(cleanIpfsLink)) {
+    // Use w3s.link gateway with proper format
+    return `https://${cleanIpfsLink}.ipfs.w3s.link`;
+  }
+  
+  // If it's something else, return a placeholder
+  return `https://ipfs.io/ipfs/${cleanIpfsLink}`;
 };
 
 export const getProposalLinkFromIpfs = (ipfsLink: string) => {

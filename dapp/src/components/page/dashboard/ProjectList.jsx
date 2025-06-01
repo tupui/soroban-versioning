@@ -184,7 +184,7 @@ const ProjectList = () => {
         checkProjectOnChain(searchTerm);
       }
     } catch (error) {
-      console.error("Error during project filtering:", error);
+      // Remove console.error as it's an expected condition
       // Fallback to empty array on error
       setFilteredProjects([]);
     }
@@ -218,10 +218,12 @@ const ProjectList = () => {
         setIsInOnChain(true);
       } else {
         setIsInOnChain(false);
+        // No toast error for expected "not found" condition
       }
     } catch (error) {
+      // No toast error for expected "not found" condition
       setIsInOnChain(false);
-      console.error("Error checking project on-chain:", error);
+      // Remove console.error as it's an expected condition
     } finally {
       setIsLoading(false);
     }
@@ -247,9 +249,11 @@ const ProjectList = () => {
         setMemberResult(member);
         setShowMemberProfileModal(true);
       } else {
+        // No toast error for expected "not found" condition
         setMemberNotFound(true);
       }
     } catch (e) {
+      // No toast error for expected "not found" condition
       setMemberNotFound(true);
     } finally {
       setIsLoading(false);
@@ -327,6 +331,7 @@ const ProjectList = () => {
       {showMemberProfileModal && memberResult && (
         <MemberProfileModal
           member={memberResult}
+          address={searchTerm}
           onClose={() => setShowMemberProfileModal(false)}
         />
       )}

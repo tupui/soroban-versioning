@@ -32,7 +32,7 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
           // Store the full path with query parameters
           setOriginalUrl(referrerUrl.pathname + referrerUrl.search);
         } catch (e) {
-          console.error("Error parsing referrer URL:", e);
+          // Don't log to console - silently handle the error
         }
       }
 
@@ -52,7 +52,7 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
         setSearchTerm(urlSearchTerm);
       }
     } catch (error) {
-      console.error("Error parsing search params:", error);
+      // Don't log to console - silently handle the error
     }
   }, []);
 
@@ -170,18 +170,21 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
             }}
           />
           {searchTerm && (
-            <div
-              className="absolute right-[10px] top-1/2 transform -translate-y-1/2 cursor-pointer"
+            <button
+              className="absolute right-[10px] top-1/2 transform -translate-y-1/2 cursor-pointer p-1"
               onClick={handleClearSearch}
+              type="button"
               title="Clear search"
+              aria-label="Clear search"
             >
               <img
                 src="/icons/cancel.svg"
                 width={16}
                 height={16}
                 className="icon-cancel"
+                alt="Clear"
               />
-            </div>
+            </button>
           )}
         </div>
       </div>
