@@ -11,12 +11,7 @@ import {
   type ProposalView,
   type ProposalViewStatus,
 } from "types/proposal";
-// Import the extracted IPFS functions
-import {
-  getIpfsBasicLink,
-  getProposalLinkFromIpfs,
-  getOutcomeLinkFromIpfs,
-} from "./ipfsFunctions";
+// Import the extracted IPFS functions have been moved to ipfsFunctions.ts
 
 export function isValidGithubUrl(url: string) {
   return /^https:\/\/github\.com\/[^\/]+\/[^\/]+$/.test(url);
@@ -84,9 +79,7 @@ export const modifySlashInXdr = (xdr: string) => {
   return xdr.replaceAll("/", "//");
 };
 
-// The IPFS functions have been moved to ipfsFunctions.ts
-// Re-export them for backward compatibility
-export { getIpfsBasicLink, getProposalLinkFromIpfs, getOutcomeLinkFromIpfs };
+// IPFS functions are now directly imported from ipfsFunctions.ts
 
 export const modifyProposalStatusToView = (
   status: ProposalStatus,
@@ -205,70 +198,19 @@ export const modifyProposalFromContract = (
   throw new Error("this is anonymous vote. current not working.");
 };
 
-const createModal = (imgSrc: string, title: string, description: string) => {
-  const body = document.getElementsByTagName("body")[0];
-  if (!body) throw new Error("Body couldn't be found");
-  const modal = document.createElement("div");
-  modal.className =
-    "fixed inset-0 bg-white/35 backdrop-blur-md flex justify-center items-center z-[9999]";
-  modal.onclick = () => body.removeChild(modal);
-  const modalContent = document.createElement("div");
-  modalContent.className =
-    "modal relative p-9 w-[1048px] max-h-[90vh] bg-white shadow-modal";
-  modalContent.onclick = (e) => e.stopPropagation();
-  modal.appendChild(modalContent);
-  const content = document.createElement("div");
-  content.className = "flex items-center gap-[18px]";
-  const img = document.createElement("img");
-  img.src = imgSrc;
-  content.appendChild(img);
-  const div1 = document.createElement("div");
-  div1.className = "flex-grow flex flex-col gap-[30px]";
-  const div2 = document.createElement("div");
-  div2.className = "flex flex-col gap-3";
-  const p1 = document.createElement("p");
-  p1.className = "leading-6 text-2xl font-medium text-primary";
-  p1.textContent = title;
-  div2.appendChild(p1);
-  if (description) {
-    const p2 = document.createElement("p");
-    p2.className = "text-base text-secondary";
-    p2.textContent = description;
-    div2.appendChild(p2);
-  }
-  const div3 = document.createElement("div");
-  div3.className = "flex justify-end gap-[18px]";
-  const cancelButton = document.createElement("button");
-  cancelButton.className =
-    "p-[18px_36px] bg-[#F5F1F9] leading-5 text-xl text-primary";
-  cancelButton.textContent = "Cancel";
-  cancelButton.onclick = () => body.removeChild(modal);
-  div3.appendChild(cancelButton);
-  const okButton = document.createElement("button");
-  okButton.className = "p-[18px_36px] bg-primary leading-5 text-xl text-white";
-  okButton.textContent = "Ok";
-  okButton.onclick = () => body.removeChild(modal);
-  div3.appendChild(okButton);
-  div1.appendChild(div2);
-  div1.appendChild(div3);
-  content.appendChild(div1);
-  modalContent.append(content);
-  const closeButton = document.createElement("button");
-  closeButton.className =
-    "absolute top-0 right-0 lg:translate-x-1/2 -translate-y-1/2 p-[18px] bg-red cursor-pointer";
-  closeButton.onclick = () => body.removeChild(modal);
-  const closeSvg = document.createElement("img");
-  closeSvg.src = "/icons/cancel-white.svg";
-  closeButton.appendChild(closeSvg);
-  modalContent.appendChild(closeButton);
-  body.appendChild(modal);
-};
-
+/**
+ * Toast notification system
+ *
+ * This object provides methods for showing toast notifications.
+ * Under the hood, it creates a React root and renders a Modal component.
+ */
 export const toast = {
   success: (title: string, description: string) => {
-    createModal("/images/flower.svg", title, description);
+    const { renderToastModal } = require("./toastHelper");
+    renderToastModal("/images/flower.svg", title, description);
   },
   error: (title: string, description: string) => {
-    createModal("/images/wrong.svg", title, description);
+    const { renderToastModal } = require("./toastHelper");
+    renderToastModal("/images/wrong.svg", title, description);
   },
 };

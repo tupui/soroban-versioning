@@ -55,7 +55,13 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
           </Button>
         </div>
         <div className="markdown-body w-full px-4 sm:px-6 md:px-8 py-6">
-          <Markdown>{description}</Markdown>
+          {description ? (
+            <Markdown>{description}</Markdown>
+          ) : (
+            <p className="text-gray-500 italic">
+              No description available or IPFS content could not be loaded.
+            </p>
+          )}
         </div>
       </div>
       <div className="flex flex-col gap-6">
@@ -79,6 +85,11 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
                 isXdrInit={isReady}
               />
             ))}
+          {!outcome && (
+            <p className="p-[30px] text-gray-500 italic bg-white">
+              No outcome data available or IPFS content could not be loaded.
+            </p>
+          )}
         </div>
       </div>
     </div>

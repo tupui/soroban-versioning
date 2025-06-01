@@ -51,13 +51,23 @@ const ProposalPage: React.FC = () => {
     if (!id !== undefined && projectName) {
       setIsLoading(true);
       try {
-        const proposal = await getProposal(projectName, id);
-        const proposalView = modifyProposalToView(proposal, projectName);
-        setProposal(proposalView);
-        const description = await fetchProposalFromIPFS(proposal.ipfs);
-        setDescription(description);
-        const outcome = await fetchOutcomeDataFromIPFS(proposal.ipfs);
-        setOutcome(outcome);
+        const proposalData = await getProposal(projectName, id);
+        if (proposalData) {
+          const proposalView = modifyProposalToView(proposalData, projectName);
+          setProposal(proposalView);
+
+          if (proposalData.ipfs) {
+            const fetchedDescription = await fetchProposalFromIPFS(
+              proposalData.ipfs,
+            );
+            setDescription(fetchedDescription || ""); // Ensure description is never null
+
+            const outcomeData = await fetchOutcomeDataFromIPFS(
+              proposalData.ipfs,
+            );
+            setOutcome(outcomeData);
+          }
+        }
       } catch (error: any) {
         console.error("Error fetching proposal details:", error);
         toast.error("Something Went Wrong!", error.message);

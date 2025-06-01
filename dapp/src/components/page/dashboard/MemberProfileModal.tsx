@@ -4,13 +4,19 @@ import Modal, { type ModalProps } from "components/utils/Modal";
 import Button from "components/utils/Button";
 import type { Member, Badge, Project } from "../../../../packages/tansu";
 import { Buffer } from "buffer";
-import { getIpfsBasicLink } from "utils/utils";
+import {
+  getIpfsBasicLink,
+  fetchFromIPFS,
+  fetchJSONFromIPFS,
+} from "utils/ipfsFunctions";
 import Markdown from "markdown-to-jsx";
 import { truncateMiddle } from "../../../utils/utils";
 import { connectedPublicKey } from "../../../utils/store";
 import { toast } from "../../../utils/utils";
 import { getProjectFromId } from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
+import { getStellarExplorerURL } from "../../../utils/urls";
+import CopyButton from "components/utils/CopyButton";
 
 const network = import.meta.env.SOROBAN_NETWORK || "testnet";
 
@@ -61,13 +67,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
   // Use the address prop directly or extract the address from the search query if needed
   const memberAddress = address || "";
 
-  const handleCopyAddress = () => {
-    if (memberAddress) {
-      navigator.clipboard.writeText(memberAddress);
-      toast.success("Copied", "Address copied to clipboard");
-    }
-  };
-
   // Navigate to project page
   const navigateToProject = (projectName: string) => {
     navigate(`/project?name=${encodeURIComponent(projectName)}`);
@@ -86,56 +85,27 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
           setIsLoading(true);
           const ipfsUrl = getIpfsBasicLink(member.meta);
 
-          // Add a small delay to avoid too many concurrent requests
-          const fetchWithTimeout = async (
-            url: string,
-            options: RequestInit = {},
-            timeout = 10000,
-          ) => {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), timeout);
-
-            try {
-              const response = await fetch(url, {
-                ...options,
-                signal: controller.signal,
-              });
-              clearTimeout(id);
-              return response;
-            } catch (error) {
-              clearTimeout(id);
-              throw error;
-            }
-          };
-
           // Fetch profile.json
           try {
             // Try first path format (with trailing slash from the base URL)
-            const profileResponse = await fetchWithTimeout(
-              `${ipfsUrl}/profile.json`,
-            );
+            const profileUrl = `${ipfsUrl}/profile.json`;
+            let profileData = await fetchJSONFromIPFS(profileUrl);
 
-            if (profileResponse.ok) {
-              const data = await profileResponse.json();
-              setProfileData(data);
+            // If URL already has trailing slash, try without additional slash
+            if (!profileData && ipfsUrl.endsWith("/")) {
+              const altProfileUrl = `${ipfsUrl}profile.json`;
+              profileData = await fetchJSONFromIPFS(altProfileUrl);
+            }
+
+            if (profileData) {
+              setProfileData(profileData);
               setHasValidMetadata(true);
-            } else if (ipfsUrl.endsWith("/")) {
-              // If URL already has trailing slash, try without additional slash
-              const altProfileResponse = await fetchWithTimeout(
-                `${ipfsUrl}profile.json`,
-              );
-              if (altProfileResponse.ok) {
-                const data = await altProfileResponse.json();
-                setProfileData(data);
-                setHasValidMetadata(true);
-              }
             }
           } catch (error) {
             console.log("Failed to fetch profile data:", error);
           }
 
-          // Instead of checking with HEAD requests which cause 404 errors in console,
-          // we'll set a default image URL and handle errors in the img tag's onError handler
+          // Set profile image URL
           if (ipfsUrl) {
             // Check if URL already has trailing slash
             if (ipfsUrl.endsWith("/")) {
@@ -224,47 +194,35 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
 
   // Address display component with copy functionality
   const AddressDisplay = ({ address }: { address: string }) => {
-    if (!address) return null;
-
-    // Create link to Stellar Expert explorer for the address using the correct network
-    const explorerUrl = `https://stellar.expert/explorer/${network}/account/${address}`;
+    const explorerUrl = getStellarExplorerURL(address);
 
     return (
-      <div className="mt-2 w-full">
-        <div className="p-[8px_12px] flex items-center justify-between bg-[#FFEFA8] rounded-md">
-          <div className="flex-grow text-center">
-            <p className="text-sm font-mono text-primary overflow-hidden">
-              {truncateMiddle(address, 20)}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={handleCopyAddress}
-              className="hover:opacity-70 transition-opacity"
-              title="Copy address to clipboard"
-            >
-              <img
-                src="/icons/clipboard.svg"
-                alt="Copy"
-                width={16}
-                height={16}
-              />
-            </button>
-            <a
-              href={explorerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:opacity-70 transition-opacity"
-              title="View on Stellar Explorer"
-            >
-              <img
-                src="/icons/link.svg"
-                alt="View on Explorer"
-                width={16}
-                height={16}
-              />
-            </a>
-          </div>
+      <div className="mt-1 bg-zinc-50 p-2 rounded flex items-center gap-2 w-full">
+        <div className="flex-grow text-center">
+          <p className="text-sm font-mono text-primary overflow-hidden">
+            {truncateMiddle(address, 20)}
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <CopyButton
+            textToCopy={address}
+            size="sm"
+            className="hover:opacity-70 transition-opacity"
+          />
+          <a
+            href={explorerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:opacity-70 transition-opacity"
+            title="View on Stellar Explorer"
+          >
+            <img
+              src="/icons/link.svg"
+              alt="View on Explorer"
+              width={16}
+              height={16}
+            />
+          </a>
         </div>
       </div>
     );

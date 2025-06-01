@@ -44,7 +44,8 @@ import { useCallback, useEffect, useState } from "react";
 import type { ProposalOutcome } from "types/proposal";
 import { formatDate } from "utils/formatTimeFunctions";
 import { connectedPublicKey } from "utils/store";
-import { capitalizeFirstLetter, getIpfsBasicLink, toast } from "utils/utils";
+import { capitalizeFirstLetter, toast } from "utils/utils";
+import { getIpfsBasicLink } from "utils/ipfsFunctions";
 import OutcomeInput from "./OutcomeInput";
 
 import "@mdxeditor/editor/style.css";
@@ -224,7 +225,7 @@ const CreateProposalModal = () => {
       setProposalId(proposalId);
 
       // Calculate the CID for the IPFS link
-      const { calculateDirectoryCid } = await import("utils/ipfs");
+      const { calculateDirectoryCid } = await import("utils/ipfsFunctions");
       const cid = await calculateDirectoryCid(files);
       setIpfsLink(getIpfsBasicLink(cid));
 

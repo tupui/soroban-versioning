@@ -1,19 +1,30 @@
-import axios from "axios";
 import {
   getIpfsBasicLink,
   getOutcomeLinkFromIpfs,
   getProposalLinkFromIpfs,
-} from "utils/utils";
-import { toast } from "utils/utils";
+  fetchFromIPFS,
+  fetchJSONFromIPFS,
+} from "utils/ipfsFunctions";
 
+/**
+ * Fetches proposal markdown content from IPFS
+ *
+ * @param url - The IPFS CID
+ * @returns The markdown content with image paths corrected, or null if not found
+ */
 async function fetchProposalFromIPFS(url: string) {
   try {
     const proposalUrl = getProposalLinkFromIpfs(url);
-    const response = await axios.get(proposalUrl);
-    const content = response.data;
+    const response = await fetchFromIPFS(proposalUrl);
 
+    if (!response.ok) {
+      return null;
+    }
+
+    const content = await response.text();
     const basicUrl = getIpfsBasicLink(url);
 
+    // Update relative image paths to absolute IPFS paths
     const updatedContent = content.replace(
       /!\[([^\]]*)\]\(([^http][^)]+|[^)]+)\)/g,
       `![$1](${basicUrl}/$2)`,
@@ -21,20 +32,23 @@ async function fetchProposalFromIPFS(url: string) {
 
     return updatedContent;
   } catch (error) {
-    // Don't show error toast for IPFS failures as they may be expected
-    // For example, if the proposal hasn't been uploaded yet
+    console.error("Error fetching proposal content:", error);
     return null;
   }
 }
 
+/**
+ * Fetches proposal outcome data from IPFS
+ *
+ * @param url - The IPFS CID
+ * @returns The outcome JSON data or null if not found
+ */
 async function fetchOutcomeDataFromIPFS(url: string) {
   try {
     const outcomeUrl = getOutcomeLinkFromIpfs(url);
-    const response = await axios.get(outcomeUrl);
-    return response.data;
+    return await fetchJSONFromIPFS(outcomeUrl);
   } catch (error) {
-    // Don't show error toast for IPFS failures as they may be expected
-    // For example, if the outcome data hasn't been uploaded yet
+    console.error("Error fetching outcome data:", error);
     return null;
   }
 }

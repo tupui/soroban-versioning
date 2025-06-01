@@ -3,6 +3,7 @@ import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Step from "components/utils/Step";
 import Title from "components/utils/Title";
+import CopyButton from "components/utils/CopyButton";
 import React, { useMemo, useState } from "react";
 import {
   VoteResultType,
@@ -117,20 +118,16 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
                 description="Review the transaction details before execution. You can verify the XDR and proceed with the final step."
               />
               <VotingResult voteStatus={voteStatus} />
-              {/* <div className="flex flex-col gap-[18px]">
-                  <p className="leading-4 text-base text-secondary">
-                    Description
-                  </p>
-                  <p className="text-lg text-primary">
-                  </p>
-                </div> */}
               <div className="flex flex-col items-start gap-[18px]">
                 <p className="leading-4 text-base text-secondary">XDR</p>
                 <div className="p-[8px_18px] bg-[#FFEFA8] flex items-center gap-[18px]">
                   <p className="leading-[18px] text-lg text-primary">
                     {(voteResultAndXdr.xdr || "").slice(0, 24) + "..."}
                   </p>
-                  <img src="/icons/clipboard.svg" />
+                  <CopyButton
+                    textToCopy={voteResultAndXdr.xdr || ""}
+                    size="sm"
+                  />
                 </div>
               </div>
             </div>

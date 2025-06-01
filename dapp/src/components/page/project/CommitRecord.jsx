@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { loadProjectLatestSha } from "../../../service/StateService.ts";
 import { formatTime } from "../../../utils/formatTimeFunctions";
+import CopyButton from "components/utils/CopyButton";
 
 const CommitRecord = ({
   message,
@@ -12,7 +13,6 @@ const CommitRecord = ({
   isMaintainer,
 }) => {
   const messageRef = useRef();
-  const [isCopied, setIsCopied] = useState(false);
   const [isLatestCommit, setIsLatestCommit] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -46,16 +46,6 @@ const CommitRecord = ({
     window.addEventListener("resize", checkOverflow);
     return () => window.removeEventListener("resize", checkOverflow);
   }, [message]);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(sha);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy: ", err);
-    }
-  };
 
   return (
     <div
@@ -120,17 +110,11 @@ const CommitRecord = ({
             )}
           </div>
           <div className="commit-sha flex items-center gap-[5px] lg:gap-[10px]">
-            {/* <img src="/icons/logos/github.svg" /> */}
-            <button
-              className="copy-button hover:bg-zinc-400 transition-colors duration-200 p-1 rounded"
-              onClick={handleCopy}
-            >
-              {isCopied ? (
-                <img src="/icons/check.svg" />
-              ) : (
-                <img src="/icons/clipboard.svg" />
-              )}
-            </button>
+            <CopyButton
+              textToCopy={sha}
+              size="sm"
+              className="hover:bg-zinc-400"
+            />
             <a
               href={commitLink}
               target="_blank"

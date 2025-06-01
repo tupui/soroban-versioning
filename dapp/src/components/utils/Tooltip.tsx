@@ -1,3 +1,14 @@
+/**
+ * React Tooltip Component
+ *
+ * This is the React implementation of the Tooltip component, used for dynamic tooltips
+ * that require React state management (like hover state). It's used throughout the
+ * React components in the application.
+ *
+ * NOTE: For static tooltips in Astro components, use Tooltip.astro instead.
+ * The two implementations should maintain similar styling for consistency.
+ */
+
 import { useState, type ReactNode } from "react";
 
 interface TooltipProps {

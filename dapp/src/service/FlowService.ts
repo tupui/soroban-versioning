@@ -1,4 +1,4 @@
-import { calculateDirectoryCid } from "../utils/ipfs";
+import { calculateDirectoryCid } from "../utils/ipfsFunctions";
 import { create } from "@web3-storage/w3up-client";
 import { extract } from "@web3-storage/w3up-client/delegation";
 import { kit } from "../components/stellar-wallets-kit";

@@ -179,14 +179,7 @@ const DonateModal: FC<Props> = ({ children }) => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-[18px] w-full">
-                <Button
-                  type="secondary"
-                  className="w-full sm:w-[220px] h-[48px] sm:h-[56px]"
-                  onClick={onClose}
-                >
-                  Cancel
-                </Button>
+              <div className="flex justify-end w-full">
                 <Button
                   className="w-full sm:w-[220px] h-[48px] sm:h-[56px]"
                   onClick={handleContribute}

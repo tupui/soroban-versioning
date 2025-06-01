@@ -1,9 +1,7 @@
 ---
 import CommitHistory from "./CommitHistory";
 import DonateModal from "./DonateModal";
-import LastHashModal from "./LastHashModal.astro";
 import LatestCommit from "./LatestCommit";
-import ReadMoreModal from "./ReadMoreModal.astro";
 import Button from "components/utils/Button";
 import { getMember } from "@service/ReadContractService";
 import { toast } from "utils/utils";
@@ -103,9 +101,8 @@ import { toast } from "utils/utils";
   </div>
 </div>
 
-<ReadMoreModal />
-
-<LastHashModal />
+<div id="last-hash-modal-container"></div>
+<div id="read-more-modal-container"></div>
 
 <script>
   import { getLatestCommitData, getTOMLFileHash } from "@service/GithubService";
@@ -122,7 +119,70 @@ import { toast } from "utils/utils";
   import { projectInfoLoaded } from "../../../utils/store";
   import { getBadges, getMember } from "@service/ReadContractService";
 
-  document.addEventListener("astro:page-load", () => {
+  document.addEventListener("astro:page-load", async () => {
+    // Dynamically import React components
+    const [
+      { default: React },
+      { createRoot },
+      { default: LastHashModal },
+      { default: ReadMoreModal },
+    ] = await Promise.all([
+      import("react"),
+      import("react-dom/client"),
+      import("./LastHashModal"),
+      import("./ReadMoreModal"),
+    ]);
+
+    // Create React roots for modals
+    const lastHashContainer = document.getElementById(
+      "last-hash-modal-container",
+    );
+    const readMoreContainer = document.getElementById(
+      "read-more-modal-container",
+    );
+
+    if (!lastHashContainer || !readMoreContainer) {
+      console.error("Modal containers not found");
+      return;
+    }
+
+    const lastHashRoot = createRoot(lastHashContainer);
+    const readMoreRoot = createRoot(readMoreContainer);
+
+    // Modal state
+    let isLastHashModalOpen = false;
+    let isReadMoreModalOpen = false;
+    let commitData = null;
+    let projectData = null;
+
+    // Render function for modals
+    const renderModals = () => {
+      lastHashRoot.render(
+        React.createElement(LastHashModal, {
+          isOpen: isLastHashModalOpen,
+          onClose: () => {
+            isLastHashModalOpen = false;
+            renderModals();
+          },
+          commitData,
+        }),
+      );
+
+      readMoreRoot.render(
+        React.createElement(ReadMoreModal, {
+          isOpen: isReadMoreModalOpen,
+          onClose: () => {
+            isReadMoreModalOpen = false;
+            renderModals();
+          },
+          projectData,
+        }),
+      );
+    };
+
+    // Initial render
+    renderModals();
+
     const updateConfigButton = document.querySelector("[data-update-config]");
     const udpateConfigModal = document.getElementById(
       "update-config-modal",
@@ -135,24 +195,18 @@ import { toast } from "utils/utils";
     }
 
     const readMoreButton = document.getElementById("read-more-button");
-    const readMoreModal = document.getElementById(
-      "read-more-modal",
-    ) as HTMLDialogElement;
-
-    if (readMoreButton && readMoreModal) {
+    if (readMoreButton) {
       readMoreButton.addEventListener("click", () => {
-        readMoreModal.showModal();
+        isReadMoreModalOpen = true;
+        renderModals();
       });
     }
 
     const lastHashButton = document.getElementById("last-hash-button");
-    const lastHashModal = document.getElementById(
-      "last-hash-modal",
-    ) as HTMLDialogElement;
-
-    if (lastHashButton && lastHashModal) {
+    if (lastHashButton) {
       lastHashButton.addEventListener("click", () => {
-        lastHashModal.showModal();
+        isLastHashModalOpen = true;
+        renderModals();
       });
     }
 
@@ -351,7 +405,7 @@ import { toast } from "utils/utils";
           // Add configuration badge
           const projectConfigHash = projectInfo.config.hash;
           if (!projectConfigHash || typeof projectConfigHash !== "string") {
-            alert("Error: Invalid project configuration hash");
+            console.error("Error: Invalid project configuration hash");
             return;
           }
 
@@ -458,99 +512,44 @@ import { toast } from "utils/utils";
           }
         }
 
-        // Read more modal content
-        const readMoreModal = document.getElementById("read-more-modal");
-        if (readMoreModal) {
-          const projectOrganizationContainer = readMoreModal.querySelector(
-            ".project-organization",
-          );
-          if (projectOrganizationContainer)
-            projectOrganizationContainer.textContent =
-              configData?.organizationName || "Not available";
-          const projectNameContainer =
-            readMoreModal.querySelector(".project-name");
-          if (projectNameContainer)
-            projectNameContainer.textContent = projectInfo.name;
-          const officialLinksContainer = readMoreModal.querySelector(
-            ".official-links",
-          ) as HTMLElement;
-          if (officialLinksContainer) {
-            if (configData?.officials) {
-              if (configData.officials.githubLink) {
-                addLinkButton(
-                  officialLinksContainer,
-                  configData.officials.githubLink,
-                  "github",
-                );
-              }
-              if (configData.officials.websiteLink) {
-                addLinkButton(
-                  officialLinksContainer,
-                  configData.officials.websiteLink,
-                  "web",
-                );
-              }
-            } else {
-              addLinkButton(
-                officialLinksContainer,
-                "GitHub",
-                projectInfo.config.url,
-              );
-            }
-          }
-          const projectDescContainer = readMoreModal.querySelector(
-            ".project-description",
-          );
-          if (projectDescContainer && configData)
-            projectDescContainer.textContent = configData.description;
+        // Set up project data for ReadMoreModal
+        projectData = {
+          name: projectInfo.name,
+          description: configData?.description || "",
+          organization: configData?.organizationName || "",
+          logoImageLink: configData?.logoImageLink
+            ? convertGitHubLink(configData.logoImageLink)
+            : "",
+          githubUrl:
+            configData?.officials?.githubLink || projectInfo.config.url,
+          websiteUrl: configData?.officials?.websiteLink,
+        };
 
-          const projectThumbnail = readMoreModal.querySelector(
-            ".project-thumbnail",
-          ) as HTMLImageElement | null;
-          if (projectThumbnail) {
-            if (configData && configData.logoImageLink) {
-              projectThumbnail.src =
-                convertGitHubLink(configData.logoImageLink) ||
-                "/fallback-image.jpg";
-            } else projectThumbnail.src = "/fallback-image.jpg";
-          }
-        }
-
-        // Last hash modal content
+        // Set up commit data for LastHashModal
         const latestSha = loadProjectLatestSha();
         if (latestSha) {
-          const latestCommit = await getLatestCommitData(
-            projectInfo.config.url,
-            latestSha,
-          );
-          const lastHashModal = document.getElementById("last-hash-modal");
-          if (lastHashModal) {
-            const copyButton = lastHashModal.querySelector(
-              ".commit-link-copy",
-            ) as HTMLButtonElement;
-            copyButton.addEventListener("click", () => {
-              navigator.clipboard.writeText(latestCommit.html_url);
-            });
-            const commitLink = lastHashModal.querySelector(
-              ".commit-link",
-            ) as HTMLLinkElement;
-            commitLink.href = latestCommit.html_url;
-            const commitHash = lastHashModal.querySelector(
-              ".commit-hash",
-            ) as HTMLParagraphElement;
-            commitHash.textContent = `${latestCommit.sha.slice(0, 24)}...`;
-            const commitDate = lastHashModal.querySelector(
-              ".commit-date",
-            ) as HTMLParagraphElement;
-            commitDate.textContent = formatDateTime(
-              latestCommit?.commit.committer.date,
+          try {
+            console.log("Loading commit data for SHA:", latestSha);
+            const latestCommit = await getLatestCommitData(
+              projectInfo.config.url,
+              latestSha,
             );
-            const commitAuthor = lastHashModal.querySelector(
-              ".commit-author",
-            ) as HTMLParagraphElement;
-            commitAuthor.textContent = `@${latestCommit?.commit.author.name}`;
+
+            if (latestCommit) {
+              commitData = {
+                sha: latestCommit.sha,
+                html_url: latestCommit.html_url,
+                date: formatDateTime(latestCommit.commit.committer.date),
+                author: latestCommit.commit.author.name,
+              };
+            }
+          } catch (error) {
+            console.error("Error loading commit data:", error);
           }
         }
+
+        // Re-render modals with the updated data
+        renderModals();
       }
     }
 

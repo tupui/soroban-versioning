@@ -7,6 +7,15 @@ const { theme = "light" } = Astro.props;
 const bgColor = theme === "dark" ? "bg-white" : "bg-black";
 ---
 
+<!--
+  Astro Loading Component
+  
+  This is the Astro implementation of the Loading component, used for static loading indicators
+  in Astro components. It provides a simple loading animation with theme options.
+  
+  NOTE: For dynamic loading indicators in React components, use Loading.tsx instead.
+  The two implementations should maintain identical styling for consistency.
+-->
 <div class="flex space-y-4 space-x-2 justify-center items-center dark:invert">
   <span class="sr-only">Loading...</span>
   <div
