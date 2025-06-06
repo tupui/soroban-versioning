@@ -256,6 +256,16 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
               >
                 Register Now
               </Button>
+
+              {publicKey === memberAddress && (
+                <Button
+                  type="primary"
+                  onClick={handleDisconnect}
+                  className="bg-red-500 text-white hover:bg-red-600 w-full border-0"
+                >
+                  Disconnect
+                </Button>
+              )}
             </div>
           </div>
         </div>

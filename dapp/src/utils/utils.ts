@@ -206,11 +206,21 @@ export const modifyProposalFromContract = (
  */
 export const toast = {
   success: (title: string, description: string) => {
-    const { renderToastModal } = require("./toastHelper");
-    renderToastModal("/images/flower.svg", title, description);
+    import("./toastHelper")
+      .then(({ renderToastModal }) => {
+        renderToastModal("/images/flower.svg", title, description);
+      })
+      .catch((err) => {
+        console.error("Failed to show success toast:", err);
+      });
   },
   error: (title: string, description: string) => {
-    const { renderToastModal } = require("./toastHelper");
-    renderToastModal("/images/wrong.svg", title, description);
+    import("./toastHelper")
+      .then(({ renderToastModal }) => {
+        renderToastModal("/images/wrong.svg", title, description);
+      })
+      .catch((err) => {
+        console.error("Failed to show error toast:", err);
+      });
   },
 };

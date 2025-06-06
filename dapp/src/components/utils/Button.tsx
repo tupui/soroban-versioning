@@ -38,21 +38,21 @@ const Button: FC<Props> = ({
   return (
     <button
       id={id}
-      className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" : type == "tertiary" ? "border border-primary text-primary" : "bg-white text-primary"} cursor-pointer flex justify-center items-center ${sizeMap[size]}`}
+      className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" : type == "tertiary" ? "border border-primary text-primary" : "bg-white text-primary"} cursor-pointer flex justify-center items-center ${sizeMap[size]} hover:opacity-90 transition-opacity`}
       onClick={onClick}
       title={title}
     >
       {isLoading && <Spinner />}
-      {order === "primary" && (
+      {!isLoading && order === "primary" && (
         <>
-          {icon && <img src={icon} />}
+          {icon && <img src={icon} alt="" className="w-6 h-6 min-w-[24px]" />}
           {children}
         </>
       )}
-      {order === "secondary" && (
+      {!isLoading && order === "secondary" && (
         <>
           {children}
-          {icon && <img src={icon} />}
+          {icon && <img src={icon} alt="" className="w-6 h-6 min-w-[24px]" />}
         </>
       )}
     </button>

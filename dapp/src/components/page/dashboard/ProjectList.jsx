@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getDemoConfigData } from "../../../constants/demoConfigData";
 import { fetchTOMLFromConfigUrl } from "../../../service/GithubService.ts";
 import {
@@ -32,6 +32,16 @@ const ProjectList = () => {
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [memberResult, setMemberResult] = useState(undefined);
   const [showMemberProfileModal, setShowMemberProfileModal] = useState(false);
+
+  // Define the handler function at component level so it's available everywhere
+  const handleCreateProjectModal = useCallback(() => {
+    setShowCreateProjectModal(true);
+  }, []);
+
+  // Function to handle closing the modal - simplified to match other modals
+  const closeCreateProjectModal = useCallback(() => {
+    setShowCreateProjectModal(false);
+  }, []);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -92,10 +102,6 @@ const ProjectList = () => {
     window.addEventListener("search-member", handleSearchMemberEvent);
 
     // Add event listener for create project modal
-    const handleCreateProjectModal = () => {
-      setShowCreateProjectModal(true);
-    };
-
     document.addEventListener(
       "show-create-project-modal",
       handleCreateProjectModal,
@@ -121,7 +127,7 @@ const ProjectList = () => {
         handleCreateProjectModal,
       );
     };
-  }, []);
+  }, [handleCreateProjectModal]);
 
   const handleSearchProjectEvent = (event) => {
     const term = event.detail;
@@ -321,13 +327,12 @@ const ProjectList = () => {
         <ProjectInfoModal
           id="project-info-modal"
           projectInfo={projectInfo}
-          onClickSupport={() => setShowDonateModal(true)}
           onClose={() => projectCardModalOpen.set(false)}
         />
       )}
 
       {showCreateProjectModal && (
-        <CreateProjectModal onClose={() => setShowCreateProjectModal(false)} />
+        <CreateProjectModal onClose={closeCreateProjectModal} />
       )}
 
       {showMemberProfileModal && memberResult && (

@@ -4,7 +4,6 @@ import { loadProjectName } from "@service/StateService";
 import { navigate } from "astro:transitions/client";
 import Button from "components/utils/Button";
 import Modal from "../../utils/Modal";
-import DonateModal from "../project/DonateModal";
 
 const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
   const [projectName, setProjectName] = useState("");
@@ -81,6 +80,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                   icon="/icons/search-white.svg"
                   size="xl"
                   onClick={() => navigate(`/project?name=${projectName}`)}
+                  className="whitespace-nowrap"
                 >
                   View Details
                 </Button>
@@ -92,16 +92,6 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                 >
                   Governance
                 </Button>
-                <DonateModal>
-                  <Button
-                    className="w-full"
-                    type="secondary"
-                    icon="/icons/heart.svg"
-                    size="xl"
-                  >
-                    Support
-                  </Button>
-                </DonateModal>
               </div>
             </div>
           </div>
@@ -130,6 +120,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
               icon="/icons/search-white.svg"
               size="xl"
               onClick={() => navigate(`/project?name=${projectName}`)}
+              className="whitespace-nowrap"
             >
               View Details
             </Button>

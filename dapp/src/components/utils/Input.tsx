@@ -7,6 +7,7 @@ interface Props {
   placeholder?: string;
   value?: string | number | readonly string[];
   onChange?: ChangeEventHandler<HTMLInputElement>;
+  error?: string | null | undefined;
 }
 
 const Input: FC<Props> = ({
@@ -16,6 +17,7 @@ const Input: FC<Props> = ({
   placeholder,
   value,
   onChange,
+  error,
 }) => {
   return (
     <div className="flex-grow flex flex-col gap-[18px]">
@@ -28,11 +30,13 @@ const Input: FC<Props> = ({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`p-[18px] border border-[#978AA1] outline-none ${className}`}
+        className={`p-[18px] border ${error ? "border-red-500" : "border-[#978AA1]"} outline-none ${className}`}
       />
-      {description && (
+      {error ? (
+        <p className="leading-[16px] text-base text-red-500">{error}</p>
+      ) : description ? (
         <p className="leading-[16px] text-base text-tertiary">{description}</p>
-      )}
+      ) : null}
     </div>
   );
 };

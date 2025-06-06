@@ -4,6 +4,7 @@ import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
+import { validateStellarAddress, validateUrl } from "utils/validations";
 import {
   MDXEditor,
   headingsPlugin,
@@ -47,6 +48,11 @@ const JoinCommunityModal: FC<
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Validation errors
+  const [addressError, setAddressError] = useState<string | null>(null);
+  const [socialError, setSocialError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
+
   useEffect(() => {
     if (prefillAddress) {
       setAddress(prefillAddress);
@@ -54,21 +60,20 @@ const JoinCommunityModal: FC<
   }, [prefillAddress]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setImageError(null);
+
     const file = e.target.files?.[0];
     if (file) {
       // Check if it's PNG or JPG
       const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
       if (!allowedTypes.includes(file.type)) {
-        toast.error("Invalid file type", "Please upload a PNG or JPG image");
+        setImageError("Please upload a PNG or JPG image");
         return;
       }
 
       // Check file size (limit to 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error(
-          "File too large",
-          "Please upload an image smaller than 5MB",
-        );
+        setImageError("Please upload an image smaller than 5MB");
         return;
       }
 
@@ -88,9 +93,27 @@ const JoinCommunityModal: FC<
     return name.trim() || social.trim() || description.trim() || profileImage;
   };
 
+  const validateAddressField = (): boolean => {
+    const error = validateStellarAddress(address);
+    setAddressError(error);
+    return error === null;
+  };
+
+  const validateSocialField = (): boolean => {
+    const error = validateUrl(social);
+    setSocialError(error);
+    return error === null;
+  };
+
+  const validateForm = (): boolean => {
+    const isAddressValid = validateAddressField();
+    const isSocialValid = validateSocialField();
+
+    return isAddressValid && isSocialValid;
+  };
+
   const handleJoin = async () => {
-    if (!address) {
-      toast.error("Address", "Address is required");
+    if (!validateForm()) {
       return;
     }
 
@@ -179,7 +202,11 @@ const JoinCommunityModal: FC<
             label="Member Address *"
             placeholder="Write the address as G..."
             value={address}
-            onChange={(e) => setAddress(e.target.value)}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              setAddressError(null);
+            }}
+            error={addressError}
           />
 
           <div className="pt-2 md:pt-4">
@@ -199,7 +226,11 @@ const JoinCommunityModal: FC<
                 label="Social Profile Link"
                 placeholder="https://twitter.com/yourhandle"
                 value={social}
-                onChange={(e) => setSocial(e.target.value)}
+                onChange={(e) => {
+                  setSocial(e.target.value);
+                  setSocialError(null);
+                }}
+                error={socialError}
               />
 
               <div className="flex flex-col gap-[18px]">
@@ -218,10 +249,12 @@ const JoinCommunityModal: FC<
                     </Button>
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#978AA1] cursor-pointer bg-zinc-50 hover:bg-zinc-100">
+                  <label
+                    className={`flex flex-col items-center justify-center w-full h-32 border-2 ${imageError ? "border-red-500" : "border-dashed border-[#978AA1]"} cursor-pointer bg-zinc-50 hover:bg-zinc-100`}
+                  >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <svg
-                        className="w-8 h-8 mb-4 text-secondary"
+                        className={`w-8 h-8 mb-4 ${imageError ? "text-red-500" : "text-secondary"}`}
                         aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -242,6 +275,11 @@ const JoinCommunityModal: FC<
                       <p className="text-xs text-secondary">
                         PNG or JPG (MAX. 5MB)
                       </p>
+                      {imageError && (
+                        <p className="mt-2 text-sm text-red-500">
+                          {imageError}
+                        </p>
+                      )}
                     </div>
                     <input
                       type="file"

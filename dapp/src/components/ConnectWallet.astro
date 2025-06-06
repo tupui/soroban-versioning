@@ -51,6 +51,9 @@
       button.classList.toggle("bg-white", false);
       button.classList.toggle("bg-primary", true);
       button.classList.toggle("text-white", true);
+      button.classList.toggle("hover:opacity-90", true);
+      button.classList.toggle("transition-opacity", true);
+      button.classList.toggle("cursor-pointer", true);
 
       // Change click handler to open profile instead of connect wallet
       button.onclick = () => {

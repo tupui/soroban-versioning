@@ -23,20 +23,14 @@ const { title, page } = Astro.props;
     // Handle Add Project button on any page
     document.addEventListener("show-create-project-modal", async () => {
       try {
-        // Remove any existing project modals first
-        const existingModals = document.querySelectorAll(
-          ".project-modal-container",
-        );
-        existingModals.forEach((modal) => {
-          try {
-            document.body.removeChild(modal);
-          } catch (e) {
-            console.error("Error removing existing modal:", e);
-          }
-        });
+        // Check if modal is already open
+        if (document.querySelector(".project-modal-container")) {
+          return; // Don't open multiple instances
+        }
 
+        // Create modal container with a distinct class for styling and selection
         const container = document.createElement("div");
-        container.className = "project-modal-container";
+        container.className = "project-modal-container fixed inset-0 z-[9999]";
         document.body.appendChild(container);
 
         const [{ default: React }, { createRoot }] = await Promise.all([
@@ -49,28 +43,30 @@ const { title, page } = Astro.props;
         );
 
         const root = createRoot(container);
+
+        // Create a clean close function
         const handleClose = () => {
+          // Remove the container from DOM
+          if (document.body.contains(container)) {
+            document.body.removeChild(container);
+          }
+
+          // Unmount React component immediately
           try {
             root.unmount();
-            if (document.body.contains(container)) {
-              document.body.removeChild(container);
-            }
           } catch (e) {
-            console.error("Error closing modal:", e);
-            // Fallback removal method
-            if (container.parentNode) {
-              container.parentNode.removeChild(container);
-            }
+            console.error("Error unmounting root:", e);
           }
         };
 
-        // Add a click event listener to the container that will close the modal when clicking outside
+        // Handle direct clicks on the backdrop
         container.addEventListener("click", (e) => {
           if (e.target === container) {
             handleClose();
           }
         });
 
+        // Render the modal with the close handler
         root.render(
           React.createElement(CreateProjectModal, {
             onClose: handleClose,

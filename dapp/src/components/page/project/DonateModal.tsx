@@ -7,9 +7,10 @@ import Button from "components/utils/Button";
 
 interface Props {
   children: ReactNode;
+  onBeforeOpen?: () => void;
 }
 
-const DonateModal: FC<Props> = ({ children }) => {
+const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [amount, setAmount] = useState<number>(10);
   const [tipAmount, setTipAmount] = useState<string>("");
@@ -73,9 +74,18 @@ const DonateModal: FC<Props> = ({ children }) => {
     }
   };
 
+  const handleOpen = () => {
+    // Close parent modal if onBeforeOpen is provided
+    if (onBeforeOpen) {
+      onBeforeOpen();
+    }
+    // Then open this modal
+    setIsOpen(true);
+  };
+
   return (
     <>
-      <div onClick={() => setIsOpen(true)}>{children}</div>
+      <div onClick={handleOpen}>{children}</div>
       {isOpen && (
         <Modal onClose={onClose}>
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">

@@ -165,7 +165,7 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
         className={`search-container relative flex-grow transition-all duration-200 ${isExpanded ? "w-full" : "w-0 md:w-full"}`}
       >
         <div
-          className={`flex items-center border border-zinc-800 transition-all duration-200 ${isExpanded ? "w-full" : "w-0 md:w-full overflow-hidden"}`}
+          className={`flex items-center border border-zinc-800 h-10 md:h-12 transition-all duration-200 ${isExpanded ? "w-full" : "w-0 md:w-full overflow-hidden"}`}
         >
           <div className="flex-shrink-0 pl-2">
             <img
@@ -178,7 +178,7 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
           <input
             type="text"
             placeholder="Search projects or community..."
-            className="w-full font-firacode text-base leading-5 p-[10px] pl-2 pr-8 border-none outline-none"
+            className="w-full h-full font-firacode text-base leading-5 px-2 border-none outline-none"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => {
@@ -221,14 +221,15 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
       </div>
 
       <Button
-        type="quaternary"
+        type="primary"
         order="secondary"
         icon="/icons/plus-fill.svg"
-        className={`px-[15px] py-[8px] whitespace-nowrap transition-all duration-200 ${isExpanded ? "hidden md:block" : "block"}`}
+        className={`h-10 md:h-12 px-2 sm:px-[15px] whitespace-nowrap transition-all duration-200 flex items-center justify-center ${isExpanded ? "hidden md:flex" : "flex"}`}
         onClick={handleAddProject}
         title={buttonTitle}
+        size="xs"
       >
-        <p className="text-base leading-5 hidden sm:block">Add Project</p>
+        <span className="hidden sm:inline-block">Add Project</span>
       </Button>
     </div>
   );

@@ -36,9 +36,19 @@ const Modal: FC<ModalProps> = ({
   );
 
   // Handle backdrop click
-  const handleBackdropClick = useCallback(() => {
-    onClose();
-  }, [onClose]);
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Only close if the click was directly on the backdrop element
+      if (e.target === e.currentTarget) {
+        // First remove any event listeners to prevent double-triggering
+        window.removeEventListener("keydown", handleEsc);
+
+        // Then close the modal
+        onClose();
+      }
+    },
+    [onClose, handleEsc],
+  );
 
   // Prevent propagation from modal content to backdrop
   const handleModalClick = useCallback((e: React.MouseEvent) => {

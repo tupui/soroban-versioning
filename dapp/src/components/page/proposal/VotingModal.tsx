@@ -28,26 +28,42 @@ const VotingModal: React.FC<VotersModalProps> = ({
   );
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
+  const [voteError, setVoteError] = useState<string | null>(null);
 
-  const handleVote = async () => {
+  const validateVote = (): boolean => {
     if (!selectedOption) {
-      toast.error("Vote", "You should select one option to vote");
-      return;
+      setVoteError("You must select one option to vote");
+      return false;
     }
 
     if (isVoted) {
-      toast.error("Vote", "You have already voted");
+      setVoteError("You have already voted");
+      return false;
+    }
+
+    if (proposalId === undefined) {
+      setVoteError("Proposal ID is required");
+      return false;
+    }
+
+    setVoteError(null);
+    return true;
+  };
+
+  const handleVote = async () => {
+    if (!validateVote()) {
       return;
     }
 
     setIsLoading(true);
     const { voteToProposal } = await import("@service/WriteContractService");
-    if (proposalId === undefined) {
-      toast.error("Vote", "Proposal ID is required");
-      return;
-    }
+
     try {
-      await voteToProposal(projectName, proposalId, selectedOption);
+      await voteToProposal(
+        projectName,
+        proposalId!,
+        selectedOption as VoteType,
+      );
       setIsLoading(false);
       toast.success(
         "Congratulation!",
@@ -56,7 +72,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
       setIsVoted?.(true);
     } catch (error: any) {
       setIsLoading(false);
-      toast.error("Vote", error.message);
+      setVoteError(error.message || "Failed to cast vote");
       return;
     }
     setStep(2);
@@ -83,11 +99,14 @@ const VotingModal: React.FC<VotersModalProps> = ({
             {[VoteType.APPROVE, VoteType.REJECT, VoteType.CANCEL].map(
               (voteType, index) => (
                 <div
+                  key={index}
                   className="flex gap-3"
-                  onClick={() => setSelectedOption(voteType)}
+                  onClick={() => {
+                    setSelectedOption(voteType);
+                    setVoteError(null);
+                  }}
                 >
                   <VoteTypeCheckbox
-                    key={index}
                     voteType={voteType}
                     currentVoteType={selectedOption}
                   />
@@ -103,6 +122,11 @@ const VotingModal: React.FC<VotersModalProps> = ({
                   </div>
                 </div>
               ),
+            )}
+            {voteError && (
+              <div className="bg-red-50 border border-red-200 text-red-500 px-4 py-2 rounded">
+                {voteError}
+              </div>
             )}
             <div className="flex flex-col items-end gap-[18px]">
               <div className="flex gap-[18px]">
