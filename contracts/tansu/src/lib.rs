@@ -45,6 +45,8 @@ pub trait MembershipTrait {
     );
 
     fn get_badges(env: Env, key: Bytes) -> types::Badges;
+
+    fn get_max_weight(env: Env, key: Bytes, member_address: Address) -> u32;
 }
 
 pub trait VersioningTrait {

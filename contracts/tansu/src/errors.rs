@@ -29,4 +29,5 @@ pub enum ContractErrors {
     // Membership
     UnknownMember = 18,
     MemberAlreadyExist = 19,
+    VoterWeight = 20,
 }

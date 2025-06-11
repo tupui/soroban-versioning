@@ -117,4 +117,35 @@ impl MembershipTrait for Tansu {
             }
         }
     }
+
+    fn get_max_weight(env: Env, project_key: Bytes, member_address: Address) -> u32 {
+        let member_key = types::DataKey::Member(member_address.clone());
+
+        if let Some(member) = env
+            .storage()
+            .persistent()
+            .get::<types::DataKey, types::Member>(&member_key)
+        {
+            match member
+                .projects
+                .iter()
+                .find(|project_badges| project_badges.project == project_key)
+            {
+                Some(project_badges) => {
+                    if project_badges.badges.is_empty() {
+                        types::Badge::Default as u32
+                    } else {
+                        project_badges
+                            .badges
+                            .iter()
+                            .map(|badge| badge as u32)
+                            .sum::<u32>()
+                    }
+                }
+                _ => types::Badge::Default as u32,
+            }
+        } else {
+            types::Badge::Default as u32
+        }
+    }
 }

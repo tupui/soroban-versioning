@@ -68,6 +68,7 @@ pub enum VoteChoice {
 #[derive(Clone, Debug, PartialEq)]
 pub struct PublicVote {
     pub address: Address,
+    pub weight: u32,
     pub vote_choice: VoteChoice,
 }
 
@@ -75,6 +76,7 @@ pub struct PublicVote {
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnonymousVote {
     pub address: Address,
+    pub weight: u32,
     pub encrypted_seeds: Vec<String>,
     pub encrypted_votes: Vec<String>,
     pub commitments: Vec<BytesN<96>>,
