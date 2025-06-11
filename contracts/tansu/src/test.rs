@@ -561,10 +561,61 @@ fn test() {
         Badges {
             developer: vec![&env, grogu.clone()],
             triage: Vec::new(&env),
-            community: vec![&env, grogu],
+            community: vec![&env, grogu.clone()],
             verified: Vec::new(&env),
             default: Vec::new(&env),
         }
+    );
+
+    // vote and adjust power
+    env.ledger().set_timestamp(1234567890);
+    let voting_ends_at = 1234567890 + 3600 * 24 * 2;
+    let proposal_id_4 =
+        contract.create_proposal(&mando, &id, &title, &ipfs, &voting_ends_at, &true);
+
+    let error = contract
+        .try_vote(
+            &kuiil,
+            &id,
+            &proposal_id_4,
+            &Vote::PublicVote(PublicVote {
+                address: kuiil.clone(),
+                weight: u32::MAX,
+                vote_choice: VoteChoice::Approve,
+            }),
+        )
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::VoterWeight.into());
+
+    // vote with reduced weight and check
+    contract.vote(
+        &grogu,
+        &id,
+        &proposal_id_4,
+        &Vote::PublicVote(PublicVote {
+            address: grogu.clone(),
+            weight: 42, // grogu has up to 11M
+            vote_choice: VoteChoice::Approve,
+        }),
+    );
+
+    let proposal = contract.get_proposal(&id, &proposal_id_4);
+    assert_eq!(
+        proposal.vote_data.votes,
+        vec![
+            &env,
+            Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                weight: 1,
+                vote_choice: VoteChoice::Abstain
+            }),
+            Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                weight: 42,
+                vote_choice: VoteChoice::Approve
+            })
+        ]
     );
 }
 
