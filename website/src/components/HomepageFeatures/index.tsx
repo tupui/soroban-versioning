@@ -11,29 +11,29 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Secure',
+    title: 'On-chain Project Registration',
     Svg: require('@site/static/img/soroban-wordmark-temp.svg').default,
     description: (
       <>
-        Tansu's Soroban smart contract runs on the Stellar blockchain. This allows extremely low operational costs, efficiency and security.
+        Register and track open source projects directly on the Stellar blockchain. Commit hashes and metadata are verifiable by anyone, ensuring transparency and security.
       </>
     ),
   },
   {
-    title: 'Decentralized',
-    Svg: require('@site/static/img/git-logo.svg').default,
+    title: 'DAO Governance',
+    Svg: require('@site/static/img/box-with-coin-outside.svg').default,
     description: (
       <>
-        Tansu brings decentralization back to Git. From pushing new hashes to making governance decision, all on the Stellar blockchain.
+        Every project gets its own DAO. Propose, vote, and execute decisions on-chain with public or anonymous voting, and weighted votes based on badges.
       </>
     ),
   },
   {
-    title: 'Open Source',
-    Svg: require('@site/static/img/open_source_initiative.svg').default,
+    title: 'Badge-based Membership',
+    Svg: require('@site/static/img/team.svg').default,
     description: (
       <>
-        Tansu track Open Source projects so you can build with confidence with Open Source. Everything Tansu is Open Source.
+        Roles and voting power are managed through on-chain badges. Earn badges for your contributions and participate in project governance.
       </>
     ),
   },
