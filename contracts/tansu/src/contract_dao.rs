@@ -148,20 +148,18 @@ impl DaoTrait for Tansu {
                 .unwrap_or(0);
 
             // proposer is automatically in the abstain group
-            let max_weight = <Tansu as MembershipTrait>::get_max_weight(
-                env.clone(),
-                project_key.clone(),
-                proposer.clone(),
-            );
+            // use the first level to not block a vote from proposer with
+            // a very high level of trust
+            let abstain_weight = types::Badge::Verified as u32;
             let vote_ = match public_voting {
                 true => types::Vote::PublicVote(types::PublicVote {
                     address: proposer,
-                    weight: max_weight,
+                    weight: abstain_weight,
                     vote_choice: types::VoteChoice::Abstain,
                 }),
                 false => types::Vote::AnonymousVote(types::AnonymousVote {
                     address: proposer,
-                    weight: max_weight,
+                    weight: abstain_weight,
                     encrypted_seeds: vec![
                         &env,
                         String::from_str(&env, "0"),

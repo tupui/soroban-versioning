@@ -211,7 +211,7 @@ fn test() {
             &env,
             Vote::PublicVote(PublicVote {
                 address: grogu.clone(),
-                weight: 1,
+                weight: Badge::Verified as u32,
                 vote_choice: VoteChoice::Abstain
             })
         ]
@@ -281,7 +281,7 @@ fn test() {
             &env,
             Vote::PublicVote(PublicVote {
                 address: grogu.clone(),
-                weight: 1,
+                weight: Badge::Verified as u32,
                 vote_choice: VoteChoice::Abstain,
             }),
             Vote::PublicVote(PublicVote {
@@ -295,6 +295,12 @@ fn test() {
     // cast another vote and approve
     env.ledger().set_timestamp(1234567890);
     let kuiil = Address::generate(&env);
+
+    let meta = String::from_str(&env, "abcd");
+    contract.add_member(&kuiil, &meta);
+    let badges = vec![&env, Badge::Community];
+    contract.add_badges(&mando, &id, &kuiil, &badges);
+
     let voting_ends_at = 1234567890 + 3600 * 24 * 2;
     let proposal_id_2 =
         contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &true);
@@ -349,7 +355,7 @@ fn test() {
         &proposal_id_2,
         &Vote::PublicVote(PublicVote {
             address: kuiil.clone(),
-            weight: 1,
+            weight: Badge::Verified as u32 + 1,
             vote_choice: VoteChoice::Approve,
         }),
     );
@@ -373,7 +379,7 @@ fn test() {
             &env,
             Vote::PublicVote(PublicVote {
                 address: grogu.clone(),
-                weight: 1,
+                weight: Badge::Verified as u32,
                 vote_choice: VoteChoice::Abstain,
             }),
             Vote::PublicVote(PublicVote {
@@ -383,7 +389,7 @@ fn test() {
             }),
             Vote::PublicVote(PublicVote {
                 address: kuiil.clone(),
-                weight: 1,
+                weight: Badge::Verified as u32 + 1,
                 vote_choice: VoteChoice::Approve,
             }),
         ]
@@ -417,7 +423,7 @@ fn test() {
     // test build_commitments_from_votes and abstain
     let abstain_vote = Vote::AnonymousVote(AnonymousVote {
         address: grogu.clone(),
-        weight: 1,
+        weight: Badge::Verified as u32,
         encrypted_seeds: vec![
             &env,
             String::from_str(&env, "0"),
@@ -447,7 +453,7 @@ fn test() {
             &proposal_id_3,
             &Vote::AnonymousVote(AnonymousVote {
                 address: kuiil.clone(),
-                weight: 1,
+                weight: Badge::Verified as u32,
                 encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
                 encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
                 commitments: vec![
@@ -521,7 +527,7 @@ fn test() {
         Badges {
             developer: Vec::new(&env),
             triage: Vec::new(&env),
-            community: Vec::new(&env),
+            community: vec![&env, kuiil.clone()],
             verified: Vec::new(&env),
             default: Vec::new(&env),
         }
@@ -561,7 +567,7 @@ fn test() {
         Badges {
             developer: vec![&env, grogu.clone()],
             triage: Vec::new(&env),
-            community: vec![&env, grogu.clone()],
+            community: vec![&env, kuiil.clone(), grogu.clone()],
             verified: Vec::new(&env),
             default: Vec::new(&env),
         }
@@ -607,7 +613,7 @@ fn test() {
             &env,
             Vote::PublicVote(PublicVote {
                 address: mando.clone(),
-                weight: 1,
+                weight: Badge::Verified as u32,
                 vote_choice: VoteChoice::Abstain
             }),
             Vote::PublicVote(PublicVote {
