@@ -22,11 +22,13 @@ graph LR;
 
 1. **create_proposal** – a maintainer submits a new proposal (title, ipfs, voting_ends_at, public_voting).
 2. **Active** – during the voting window members cast weighted votes (approve, reject, abstain).
-3. **Tallies** – once voting ends, anyone can tally (using execute) – if anonymous, tallies & seeds are supplied.
+3. **Tallies** – once voting ends, a maintainer can tally (using execute) – if anonymous, tallies & seeds are supplied.
 4. The proposal status becomes **Approved**, **Rejected** or **Cancelled** (see `_types.ProposalStatus_`).
 5. In case of **Approved**, a follow‑up XDR transaction (embedded in the proposal) is submitted automatically.
 
 ## Public vs. Anonymous voting
+
+Anonymous voting in Tansu uses a cryptographic commitment scheme (BLS12-381) to keep individual votes private until tallying. This is ideal for sensitive decisions or when you want to reduce social pressure and bias.
 
 | Mode | Call | On-chain storage | Who can see the vote? |
 | --- | --- | --- | --- |
@@ -36,6 +38,18 @@ graph LR;
 Anonymous voting requires a one-time configuration (`anonymous_voting_setup`). The contract stores two generator points and the ECDH public key used to encrypt voters' seeds.
 
 The helper `build_commitments_from_votes` can be called in simulation to reproduce the exact commitments client-side.
+
+- Each vote is committed as:  
+  $C = G(v) \cdot H(r)$ where `G`, `H` are generator points, `v` is the vote, and `r` is a random seed.
+- Only commitments are stored on-chain. The actual votes and seeds are encrypted off-chain and revealed at tally time.
+- At tally, the contract checks that the sum of commitments matches the commitments derived from the revealed tallies and seeds.
+
+### Workflow
+
+1. **Setup**: maintainers calls `anonymous_voting_setup` to share a public key.
+2. **Proposal**: Maintainer creates an anonymous proposal with `public_voting: false`.
+3. **Voting**: Members generate commitments and encrypted payloads off-chain, then submit `AnonymousVote` via the contract.
+4. **Tally**: After voting ends, encrypted votes and seeds are decrypted off-chain, summed, and submitted to the contract for verification and execution.
 
 ## Weights & quorum
 
