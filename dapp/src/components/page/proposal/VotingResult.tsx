@@ -12,10 +12,10 @@ const VotingResult: FC<Props> = ({ voteStatus, withDetail }) => {
   const voteResult = useMemo(() => {
     if (voteStatus) {
       let voteResult: VoteType | undefined = undefined;
-      const { approve, abstain } = voteStatus;
-      if (approve.score > abstain.score) {
+      const { approve, abstain, reject } = voteStatus;
+      if (approve.score > abstain.score + reject.score) {
         voteResult = VoteType.APPROVE;
-      } else if (approve.score < abstain.score) {
+      } else if (reject.score > approve.score + abstain.score) {
         voteResult = VoteType.REJECT;
       } else {
         voteResult = VoteType.CANCEL;

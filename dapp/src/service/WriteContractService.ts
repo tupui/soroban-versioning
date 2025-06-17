@@ -288,10 +288,8 @@ async function execute(
       maintainer: publicKey,
       project_key: project_key,
       proposal_id: Number(proposal_id),
-      // @ts-ignore
-      tallies: null,
-      // @ts-ignore
-      seeds: null,
+      tallies: undefined,
+      seeds: undefined,
     });
 
     const result = await tx.signAndSend({
@@ -318,41 +316,49 @@ async function executeProposal(
   }
 
   try {
-    await execute(project_name, proposal_id);
-    const executorAccount = await server.getAccount(publicKey);
-    const outcomeTransactionEnvelope = executeXdr
-      ? xdr.TransactionEnvelope.fromXDR(executeXdr, "base64")
-      : undefined;
+    // Execute the proposal in the smart contract first
+    const result = await execute(project_name, proposal_id);
 
-    const outcomeTransaction = outcomeTransactionEnvelope?.v1().tx();
+    // Only proceed with the outcome transaction if we have an XDR to execute
+    if (executeXdr) {
+      const executorAccount = await server.getAccount(publicKey);
+      const outcomeTransactionEnvelope = xdr.TransactionEnvelope.fromXDR(
+        executeXdr,
+        "base64",
+      );
+      const outcomeTransaction = outcomeTransactionEnvelope?.v1().tx();
 
-    const transactionBuilder = new TransactionBuilder(executorAccount, {
-      fee: import.meta.env.PUBLIC_DEFAULT_FEE,
-      networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-    });
+      const transactionBuilder = new TransactionBuilder(executorAccount, {
+        fee: import.meta.env.PUBLIC_DEFAULT_FEE,
+        networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+      });
 
-    outcomeTransaction?.operations().forEach((operation) => {
-      transactionBuilder.addOperation(operation);
-    });
+      outcomeTransaction?.operations().forEach((operation) => {
+        transactionBuilder.addOperation(operation);
+      });
 
-    const compositeTransaction = transactionBuilder.setTimeout(180).build();
+      const compositeTransaction = transactionBuilder.setTimeout(180).build();
 
-    const { signedTxXdr } = await kit.signTransaction(
-      compositeTransaction.toXDR(),
-    );
+      const { signedTxXdr } = await kit.signTransaction(
+        compositeTransaction.toXDR(),
+      );
 
-    const signedTransaction = new Transaction(
-      signedTxXdr,
-      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-    );
+      const signedTransaction = new Transaction(
+        signedTxXdr,
+        import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+      );
 
-    const result = await server.sendTransaction(signedTransaction);
+      const txResult = await server.sendTransaction(signedTransaction);
 
-    if (result.status === "ERROR") {
-      throw new Error("Transaction failed");
-    } else {
-      return result.hash;
+      if (txResult.status === "ERROR") {
+        throw new Error("Outcome transaction failed");
+      }
+
+      return txResult.hash;
     }
+
+    // If no XDR to execute, just return the execution result
+    return result.result;
   } catch (e: any) {
     throw new Error(e.message);
   }
