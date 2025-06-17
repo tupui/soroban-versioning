@@ -1,4 +1,4 @@
-use crate::{DaoTrait, Tansu, TansuArgs, TansuClient, errors, types};
+use crate::{DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, errors, types};
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
     Address, Bytes, BytesN, Env, String, U256, Vec, contractimpl, panic_with_error, vec,
@@ -148,13 +148,18 @@ impl DaoTrait for Tansu {
                 .unwrap_or(0);
 
             // proposer is automatically in the abstain group
+            // use the first level to not block a vote from proposer with
+            // a very high level of trust
+            let abstain_weight = types::Badge::Verified as u32;
             let vote_ = match public_voting {
                 true => types::Vote::PublicVote(types::PublicVote {
                     address: proposer,
+                    weight: abstain_weight,
                     vote_choice: types::VoteChoice::Abstain,
                 }),
                 false => types::Vote::AnonymousVote(types::AnonymousVote {
                     address: proposer,
+                    weight: abstain_weight,
                     encrypted_seeds: vec![
                         &env,
                         String::from_str(&env, "0"),
@@ -236,8 +241,8 @@ impl DaoTrait for Tansu {
 
         // only allow to vote once per voter
         let has_already_voted = proposal.vote_data.votes.iter().any(|vote_| match vote_ {
-            types::Vote::PublicVote(public_vote) => public_vote.address == voter,
-            types::Vote::AnonymousVote(anonymous_vote) => anonymous_vote.address == voter,
+            types::Vote::PublicVote(vote_choice) => vote_choice.address == voter,
+            types::Vote::AnonymousVote(vote_choice) => vote_choice.address == voter,
         });
 
         if has_already_voted {
@@ -269,6 +274,22 @@ impl DaoTrait for Tansu {
         };
         if vote_address != &voter {
             panic_with_error!(&env, &errors::ContractErrors::WrongVoter);
+        }
+
+        // Voter can use up to their max allowed voting weight
+        let vote_weight = match &vote {
+            types::Vote::PublicVote(vote_choice) => &vote_choice.weight,
+            types::Vote::AnonymousVote(vote_choice) => &vote_choice.weight,
+        };
+
+        let voter_max_weight = <Tansu as MembershipTrait>::get_max_weight(
+            env.clone(),
+            project_key.clone(),
+            vote_address.clone(),
+        );
+
+        if vote_weight > &voter_max_weight {
+            panic_with_error!(&env, &errors::ContractErrors::VoterWeight);
         }
 
         // Record the vote
@@ -515,9 +536,9 @@ pub fn public_execute(proposal: &types::Proposal) -> types::ProposalStatus {
     for vote_ in &proposal.vote_data.votes {
         if let types::Vote::PublicVote(vote) = &vote_ {
             match vote.vote_choice {
-                types::VoteChoice::Approve => voted_approve += 1,
-                types::VoteChoice::Reject => voted_reject += 1,
-                types::VoteChoice::Abstain => voted_abstain += 1,
+                types::VoteChoice::Approve => voted_approve += vote.weight,
+                types::VoteChoice::Reject => voted_reject += vote.weight,
+                types::VoteChoice::Abstain => voted_abstain += vote.weight,
             };
         }
     }

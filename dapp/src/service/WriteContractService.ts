@@ -1,6 +1,13 @@
 import { kit } from "../components/stellar-wallets-kit";
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
+import { loadedProjectId } from "./StateService";
+import type { Badge } from "../../packages/tansu";
+import { Buffer } from "buffer";
+import * as pkg from "js-sha3";
+import { isValidGithubUrl } from "../utils/utils";
+import { handleError, extractContractError } from "../utils/errorHandler";
+import { validateProjectRegistration } from "../utils/validations";
 
 import {
   rpc,
@@ -12,14 +19,14 @@ import {
   contractErrorMessages,
   type ContractErrorMessageKey,
 } from "constants/contractErrorMessages";
-import * as pkg from "js-sha3";
 import type { VoteChoice, Vote } from "../../packages/tansu";
 import type { VoteType } from "types/proposal";
-// import type { Response } from "types/response";
-import { loadedProjectId } from "./StateService";
+import type { Response } from "types/response";
+
 const { keccak256 } = pkg;
 
 const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
+const contractId = import.meta.env.PUBLIC_SOROBAN_CONTRACT_ID;
 
 // Function to map VoteType to Vote
 function mapVoteTypeToVote(voteType: VoteType): VoteChoice {
@@ -63,12 +70,13 @@ async function commitHash(commit_hash: string): Promise<boolean> {
 
   Tansu.options.publicKey = publicKey;
 
-  const tx = await Tansu.commit({
-    maintainer: publicKey,
-    project_key: projectId,
-    hash: commit_hash,
-  });
   try {
+    const tx = await Tansu.commit({
+      maintainer: publicKey,
+      project_key: projectId,
+      hash: commit_hash,
+    });
+
     await tx.signAndSend({
       signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
@@ -76,8 +84,7 @@ async function commitHash(commit_hash: string): Promise<boolean> {
     });
     return true;
   } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -95,21 +102,36 @@ async function registerProject(
     throw new Error("Please connect your wallet first");
   }
 
-  Tansu.options.publicKey = publicKey;
-
-  const maintainers_ = maintainers.split(",");
-
-  const tx = await Tansu.register({
-    // @ts-ignore
-    name: project_name,
-    maintainer: publicKey,
-    maintainers: maintainers_,
-    url: config_url,
-    hash: config_hash,
-    domain_contract_id: domain_contract_id,
+  // Validate all inputs
+  const validationErrors = validateProjectRegistration({
+    project_name,
+    maintainers,
+    config_url,
+    config_hash,
   });
 
+  // If any validation errors, throw the first one
+  const errorKeys = Object.keys(validationErrors);
+  if (errorKeys.length > 0) {
+    const firstKey = errorKeys[0] as keyof typeof validationErrors;
+    throw new Error(validationErrors[firstKey]);
+  }
+
+  Tansu.options.publicKey = publicKey;
+
+  // Split maintainers into array and trim each address
+  const maintainers_ = maintainers.split(",").map((addr) => addr.trim());
+
   try {
+    const tx = await Tansu.register({
+      name: project_name,
+      maintainer: publicKey,
+      maintainers: maintainers_,
+      url: config_url,
+      hash: config_hash,
+      domain_contract_id: domain_contract_id,
+    });
+
     await tx.signAndSend({
       signTransaction: async (xdr: string) => {
         return await kit.signTransaction(xdr);
@@ -117,9 +139,10 @@ async function registerProject(
     });
     return true;
   } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
-    throw new Error(errorMessage);
+    const { errorMessage } = extractContractError(e);
+    throw new Error(
+      errorMessage || "Failed to register project. Please try again.",
+    );
   }
 }
 
@@ -156,8 +179,7 @@ async function updateConfig(
     });
     return true;
   } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -195,8 +217,7 @@ async function createProposal(
     });
     return result.result;
   } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -242,8 +263,7 @@ async function voteToProposal(
     });
     return true;
   } catch (e: any) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -279,8 +299,7 @@ async function execute(
     });
     return result.result;
   } catch (e) {
-    console.error(e);
-    const { errorMessage } = fetchErrorCode(e);
+    const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
 }
@@ -345,6 +364,66 @@ async function executeProposal(
   }
 }
 
+async function addMember(
+  member_address: string,
+  meta: string,
+): Promise<boolean> {
+  // Default to loaded public key if member_address empty
+  const address = member_address || loadedPublicKey();
+
+  if (!address) {
+    throw new Error("Please connect your wallet first");
+  }
+
+  Tansu.options.publicKey = address;
+
+  const tx = await Tansu.add_member({
+    member_address: address,
+    meta: meta,
+  });
+
+  try {
+    await tx.signAndSend({
+      signTransaction: async (xdr: string) => {
+        return await kit.signTransaction(xdr);
+      },
+    });
+    return true;
+  } catch (e: any) {
+    const { errorMessage } = extractContractError(e);
+    throw new Error(errorMessage);
+  }
+}
+
+async function addBadges(
+  member_address: string,
+  badges: Badge[],
+): Promise<boolean> {
+  const projectId = loadedProjectId();
+  if (!projectId) throw new Error("No project defined");
+  const publicKey = loadedPublicKey();
+  if (!publicKey) throw new Error("Please connect your wallet first");
+
+  Tansu.options.publicKey = publicKey;
+
+  const tx = await Tansu.add_badges({
+    maintainer: publicKey,
+    key: projectId,
+    member: member_address,
+    badges,
+  });
+
+  try {
+    await tx.signAndSend({
+      signTransaction: async (xdr: string) => await kit.signTransaction(xdr),
+    });
+    return true;
+  } catch (e: any) {
+    const { errorMessage } = extractContractError(e);
+    throw new Error(errorMessage);
+  }
+}
+
 export {
   commitHash,
   registerProject,
@@ -352,4 +431,6 @@ export {
   createProposal,
   voteToProposal,
   executeProposal,
+  addMember,
+  addBadges,
 };

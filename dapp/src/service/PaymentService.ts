@@ -3,6 +3,30 @@ import { toast } from "utils/utils";
 import { kit } from "../components/stellar-wallets-kit";
 import { loadedPublicKey } from "./walletService";
 
+/**
+ * Checks if an error is expected (user rejected transaction, insufficient balance, etc.)
+ */
+function isExpectedTransactionError(error: any): boolean {
+  if (!error) return false;
+
+  // Common expected errors in Stellar transactions
+  const expectedErrorPatterns = [
+    "op_underfunded", // Insufficient balance
+    "tx_bad_auth", // Signature issues (often from user rejecting)
+    "user rejected", // User explicitly rejected
+    "declined to sign", // User declined to sign
+    "canceled", // User canceled
+    "Request was rejected", // Generic rejection
+  ];
+
+  const errorString =
+    typeof error === "string" ? error : error.message || error.toString();
+
+  return expectedErrorPatterns.some((pattern) =>
+    errorString.toLowerCase().includes(pattern.toLowerCase()),
+  );
+}
+
 async function sendXLM(
   donateAmount: string,
   projectAddress: string,
@@ -14,6 +38,7 @@ async function sendXLM(
   const tansuAddress = import.meta.env.PUBLIC_TANSU_OWNER_ID;
 
   if (!senderPublicKey) {
+    // This is a user action request, not an unexpected error
     toast.error("Connect Wallet", "Please connect your wallet first");
     return false;
   }
@@ -64,17 +89,22 @@ async function sendXLM(
           StellarSdk.Networks.TESTNET,
         ),
       );
-      console.log("Transaction successful:", JSON.stringify(result, null, 2));
       return true;
     } catch (error) {
-      console.error(
-        "Error response from Stellar:",
-        JSON.stringify(error, null, 2),
-      );
+      // Only show error toast for unexpected errors
+      if (!isExpectedTransactionError(error)) {
+        toast.error(
+          "Transaction Failed",
+          "Error submitting transaction to Stellar network",
+        );
+      }
       return false;
     }
   } catch (error) {
-    console.error("Error sending XLM:", JSON.stringify(error, null, 2));
+    // Only show error toast for unexpected errors
+    if (!isExpectedTransactionError(error)) {
+      toast.error("Transaction Failed", "Error preparing transaction");
+    }
     return false;
   }
 }

@@ -1,0 +1,65 @@
+---
+sidebar_position: 4
+---
+
+# Using the dApp
+
+The web interface at [https://testnet.tansu.dev](https://testnet.tansu.dev) is the easiest way to interact with Tansu. It wraps all contract calls behind a familiar UI and never asks for your secret key – signature and account management are delegated to the [Stellar Wallets Kit](https://github.com/stellar/js-wallets-kit).
+
+> The steps below assume you are connected to **Testnet**. For Mainnet the flow is identical – only network selection and contract ID will differ.
+
+## 1. Connect your wallet
+
+1. Click **Connect** at the top-right corner.
+2. Select your preferred wallet (Freighter, Albedo, …).
+3. Authorise the connection – your public key now appears in the header.
+
+## 2. Register a project
+
+1. Go to **Projects ▶ Register**.
+2. Fill in:
+   - **Name** – 15 characters max (must be available as a Soroban Domain)
+   - **Maintainers** – comma-separated list of Stellar addresses
+   - **Config URL** – URL of your `tansu.toml`
+   - **Config Hash** – SHA-256 of the file above
+3. Press **Register** and sign the transaction.
+
+The dApp shows a **pending** status until the transaction is confirmed. Once done the new project appears on the dashboard.
+
+## 3. Update your commit hash
+
+Inside a project page click **Set commit hash**, paste the 40-character Git commit SHA and sign. The commit is stored on-chain and displayed alongside a link to the corresponding GitHub commit.
+
+For an automated workflow, install the pre-push hook described in the [Git Hooks](developers/on_chain.mdx#git-hooks) section.
+
+## 4. Manage maintainers & badges
+
+- **Add Member** – registers a contributor on-chain so they can receive badges.
+- **Add Badge** – maintainers can grant `Developer`, `Triage`, `Community`, `Verified` or `Default` badges to any member.
+
+See the [Membership](developers/membership.mdx) page for details.
+
+## 5. Create a proposal
+
+1. Go to the **Governance** tab inside a project.
+2. Press **New proposal**.
+3. Fill in:
+   - **Title**
+   - **Description** – rich-text editor (stored on IPFS)
+   - **Voting end** – calendar picker (1-30 days)
+   - **Outcome** – JSON describing XDR to execute on approval (optional)
+4. Submit and sign.
+
+The proposal immediately appears with status **Active**.
+
+## 6. Vote
+
+While a proposal is **Active** press **Vote** and choose **Approve**, **Reject** or **Abstain**. The dApp automatically selects the correct call (public or anonymous) based on the proposal settings.
+
+## 7. Execute
+
+After the voting window closes any maintainer can press **Execute**. If the proposal is **Approved** and contains an XDR payload the dApp will prompt for an additional signature to broadcast the follow-up transaction.
+
+---
+
+Need a feature that is not yet in the UI but exists on-chain? The website is open-source – feel free to open an issue or a pull-request!

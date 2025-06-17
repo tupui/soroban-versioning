@@ -14,6 +14,12 @@ function setPublicKey(data: string): void {
   connectedPublicKey.set(data);
 }
 
+function disconnect(): void {
+  connectionState.publicKey = undefined;
+  localStorage.removeItem("publicKey");
+  connectedPublicKey.set("");
+}
+
 function initializeConnection(): void {
   const storedPublicKey = localStorage.getItem("publicKey");
   if (storedPublicKey) {
@@ -21,4 +27,4 @@ function initializeConnection(): void {
   }
 }
 
-export { loadedPublicKey, setPublicKey, initializeConnection };
+export { loadedPublicKey, setPublicKey, disconnect, initializeConnection };

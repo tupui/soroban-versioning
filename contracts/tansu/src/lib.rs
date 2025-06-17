@@ -10,6 +10,7 @@ mod domain_contract {
 }
 
 mod contract_dao;
+mod contract_membership;
 mod contract_tansu;
 mod contract_versioning;
 mod errors;
@@ -28,6 +29,24 @@ pub trait TansuTrait {
     fn upgrade(env: Env, hash: BytesN<32>);
 
     fn version() -> u32;
+}
+
+pub trait MembershipTrait {
+    fn add_member(env: Env, member_address: Address, meta: String);
+
+    fn get_member(env: Env, member_address: Address) -> types::Member;
+
+    fn add_badges(
+        env: Env,
+        maintainer: Address,
+        key: Bytes,
+        member: Address,
+        badges: Vec<types::Badge>,
+    );
+
+    fn get_badges(env: Env, key: Bytes) -> types::Badges;
+
+    fn get_max_weight(env: Env, key: Bytes, member_address: Address) -> u32;
 }
 
 pub trait VersioningTrait {
@@ -109,3 +128,20 @@ fn auth_maintainers(env: &Env, maintainer: &Address, maintainers: &Vec<Address>)
         panic_with_error!(&env, &errors::ContractErrors::UnregisteredMaintainer);
     }
 }
+
+// fn get_role(
+//     principal: &Address,
+//     maintainers: &Vec<Address>,
+//     triage: &Vec<Address>,
+//     community: &Vec<Address>,
+// ) -> types::Badge {
+//     if maintainers.contains(principal) {
+//         types::Badge::Maintainer
+//     } else if triage.contains(principal) {
+//         types::Badge::Triage
+//     } else if community.contains(principal) {
+//         types::Badge::Community
+//     } else {
+//         types::Badge::Default
+//     }
+// }

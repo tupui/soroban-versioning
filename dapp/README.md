@@ -1,31 +1,54 @@
-# Soroban Project
+# Tansu - Soroban Governance dApp
+
+A decentralized application built on Soroban for governance and voting, powered by [Astro](https://astro.build/).
 
 ## Project Structure
 
-This repository uses the recommended structure for a Soroban project:
-
 ```text
 .
-├── contracts
-│   └── hello_world
-│       ├── src
-│       │   ├── lib.rs
-│       │   └── test.rs
-│       └── Cargo.toml
-├── Cargo.toml
-└── README.md
+├── src/                    # Source code for the dApp
+│   ├── components/         # UI components
+│   ├── layouts/            # Page layouts
+│   ├── pages/              # Astro pages
+│   ├── contracts/          # Contract interfaces
+│   ├── service/            # Contract interaction services
+│   ├── utils/              # Utility functions
+│   └── types/              # TypeScript type definitions
+├── packages/               # Reusable packages
+│   └── tansu/              # Core governance utilities
+├── public/                 # Static assets
+└── voting.ts               # Cryptographic voting utilities
 ```
 
-- New Soroban contracts can be put in `contracts`, each in their own directory.
+## Features
 
----
+- Project management
+- Proposal creation and voting
+- Governance dashboard
+- Secure cryptographic voting with BLS12-381 curve
+- IPFS integration for decentralized storage
 
-# Soroban Frontend in Astro
+## Getting Started
 
-A Frontend Template suitable for use with `stellar contract init --frontend-template`, powered by [Astro](https://astro.build/).
+1. Clone the repository
+2. Create environment configuration:
+   ```bash
+   cp .env.example .env
+   ```
+3. Install dependencies:
+   ```bash
+   bun install
+   ```
+4. Start the development server:
+   ```bash
+   bun dev
+   ```
 
-# Getting Started
+## Technology Stack
 
-- `cp .env.example .env`
-- `bun install`
-- `bun dev`
+- Astro: Core framework
+- React: Interactive components
+- TypeScript: Type-safe development
+- Tailwind CSS: Styling
+- Soroban: Smart contract platform
+- IPFS: Decentralized storage

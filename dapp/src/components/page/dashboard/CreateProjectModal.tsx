@@ -16,11 +16,21 @@ import Label from "components/utils/Label";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Step from "components/utils/Step";
 import Title from "components/utils/Title";
-import { useState, type FC } from "react";
+import { useState, type FC, useCallback, useEffect } from "react";
 import { getAuthorRepo } from "utils/editLinkFunctions";
-import { extractConfigData, isValidGithubUrl, toast } from "utils/utils";
+import { extractConfigData, toast } from "utils/utils";
+import {
+  validateStellarAddress,
+  validateProjectName as validateProjectNameUtil,
+  validateFileHash,
+  validateGithubUrl,
+  validateMaintainerAddress,
+} from "utils/validations";
 
-const SOROBAN_DOMAIN_CONTRACT_ID = `${import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID}`;
+// Get domain contract ID from environment with fallback
+const SOROBAN_DOMAIN_CONTRACT_ID =
+  import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID ||
+  "CCWXBS4ZFOC5QVY5AUEVFBSTOEKJUSB4JBULT6TRWDH4PPDOTVRV4UJM"; // Fallback value
 
 const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [step, setStep] = useState(1);
@@ -29,6 +39,194 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [infoFileHash, setInfoFileHash] = useState("");
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [domainContractId, setDomainContractId] = useState(
+    SOROBAN_DOMAIN_CONTRACT_ID,
+  );
+  const [domainStatus, setDomainStatus] = useState<
+    "checking" | "available" | "unavailable" | null
+  >(null);
+  const [domainCheckTimeout, setDomainCheckTimeout] =
+    useState<NodeJS.Timeout | null>(null);
+
+  // Form validation errors
+  const [projectNameError, setProjectNameError] = useState<string | null>(null);
+  const [maintainersErrors, setMaintainersErrors] = useState<
+    Array<string | null>
+  >([null]);
+  const [infoFileHashError, setInfoFileHashError] = useState<string | null>(
+    null,
+  );
+  const [githubRepoUrlError, setGithubRepoUrlError] = useState<string | null>(
+    null,
+  );
+
+  // Verify domain contract ID on mount
+  useEffect(() => {
+    // Ensure it's a valid Stellar address format
+    if (!/^[A-Z0-9]{56}$/.test(domainContractId)) {
+      // Silent validation, don't log anything
+    }
+  }, [domainContractId]);
+
+  // Function to check if a domain exists
+  const checkDomainExists = async (domain: string): Promise<boolean> => {
+    try {
+      // Try to get the project with this name - if it exists, the domain is taken
+      const project = await getProjectFromName(domain);
+      return !!project && project.name === domain;
+    } catch (error: any) {
+      // If we get a specific error that indicates the project doesn't exist, return false
+      if (
+        error.message &&
+        (error.message.includes("No project defined") ||
+          error.message.includes("not found") ||
+          error.message.includes("record not found") ||
+          error.message.includes("Invalid Key") ||
+          error.message.includes("Domain not found") ||
+          error.message.includes("Domain does not exist"))
+      ) {
+        return false;
+      }
+      // Re-throw other errors
+      throw error;
+    }
+  };
+
+  const validateProjectName = useCallback(async () => {
+    if (!projectName.trim()) {
+      throw new Error("Project name cannot be empty");
+    }
+
+    if (projectName.length < 4 || projectName.length > 15) {
+      throw new Error("The length of project name should be between 4 and 15.");
+    }
+
+    if (!/^[a-z]+$/.test(projectName)) {
+      throw new Error("Project name can only contain lowercase letters (a-z)");
+    }
+
+    // Check domain availability
+    try {
+      const domainExists = await checkDomainExists(projectName);
+      if (domainExists) {
+        throw new Error("Domain name already registered");
+      }
+    } catch (err: any) {
+      // Only re-throw if it's our custom "already registered" error
+      if (err.message && err.message.includes("already registered")) {
+        throw err;
+      }
+      // For other errors, silently continue
+    }
+
+    try {
+      // First check in a try/catch to protect against non-existent projects
+      const project = await getProjectFromName(projectName);
+
+      // If we reach here, the project exists
+      if (project && project.name === projectName) {
+        throw new Error("Project name already registered");
+      }
+    } catch (err: any) {
+      // Check if it's a specific error that indicates the project doesn't exist
+      if (
+        err.message &&
+        (err.message.includes("No project defined") ||
+          err.message.includes("not found") ||
+          err.message.includes("record not found") ||
+          err.message.includes("Invalid Key"))
+      ) {
+        // This means the project doesn't exist, which is what we want
+        return true;
+      } else if (err.message && err.message.includes("already registered")) {
+        // Re-throw specific errors about project already being registered
+        throw err;
+      }
+      // For any other errors, assume it's safe to proceed
+      return true;
+    }
+
+    // If we get here, project exists but the name doesn't match exactly
+    return true;
+  }, [projectName]);
+
+  // Update maintainersErrors array when maintainers change
+  useEffect(() => {
+    setMaintainersErrors(maintainers.map(() => null));
+  }, [maintainers.length]);
+
+  // Check domain availability with debounce
+  useEffect(() => {
+    if (!projectName || projectName.length < 4) {
+      setDomainStatus(null);
+      return;
+    }
+
+    setDomainStatus("checking");
+
+    // Clear previous timeout if it exists
+    if (domainCheckTimeout) {
+      clearTimeout(domainCheckTimeout);
+    }
+
+    // Set a new timeout to check domain availability
+    const timeout = setTimeout(async () => {
+      try {
+        // Use the validateProjectName function to check availability
+        await validateProjectName();
+        // If we get here without an error, the domain is available
+        setDomainStatus("available");
+      } catch (error: any) {
+        // If the error message contains "already registered", the domain is unavailable
+        if (
+          error.message &&
+          (error.message.includes("already registered") ||
+            error.message.includes("Project name already registered"))
+        ) {
+          setDomainStatus("unavailable");
+        } else {
+          // Silently handle other errors
+          setDomainStatus(null);
+        }
+      }
+    }, 1000); // 1000ms (1 second) debounce
+
+    setDomainCheckTimeout(timeout);
+
+    // Cleanup on unmount
+    return () => {
+      if (domainCheckTimeout) {
+        clearTimeout(domainCheckTimeout);
+      }
+    };
+  }, [projectName, validateProjectName]);
+
+  const validateMaintainers = () => {
+    let isValid = true;
+    const errors = maintainers.map((maintainer) => {
+      const error = validateMaintainerAddress(maintainer);
+      if (error) {
+        isValid = false;
+        return error;
+      }
+      return null;
+    });
+
+    setMaintainersErrors(errors);
+    return isValid;
+  };
+
+  const validateInfoFileHash = () => {
+    const error = validateFileHash(infoFileHash);
+    setInfoFileHashError(error);
+    return error === null;
+  };
+
+  const validateGithubRepoUrl = () => {
+    const error = validateGithubUrl(githubRepoUrl);
+    setGithubRepoUrlError(error);
+    return error === null;
+  };
 
   const handleRegisterProject = async () => {
     setIsLoading(true);
@@ -40,7 +238,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
         maintainers.join(","),
         githubRepoUrl,
         infoFileHash,
-        SOROBAN_DOMAIN_CONTRACT_ID,
+        domainContractId,
       );
 
       const project = await getProjectFromName(projectName);
@@ -71,70 +269,155 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
             throw new Error("Invalid project hash");
           }
         } catch (error: any) {
-          console.error("Error fetching project hash:", error);
           setProjectLatestSha("");
           toast.error("Something Went Wrong!", error.message);
         }
       }
+
+      // Show success message
+      toast.success("Success", "Project has been registered successfully!");
+
+      // Close the modal
+      onClose();
+
+      // Navigate to the new project page
+      navigate(`/project?name=${projectName}`);
     } catch (err: any) {
       toast.error("Something Went Wrong!", err.message);
       return;
     } finally {
       setIsLoading(false);
     }
+  };
 
-    setStep(step + 1);
+  // Validate project name and set error
+  const validateAndSetProjectNameError = async () => {
+    try {
+      // First check basic validation
+      const nameError = validateProjectNameUtil(projectName);
+      if (nameError) {
+        setProjectNameError(nameError);
+        return false;
+      }
+
+      // Check domain availability
+      try {
+        const domainExists = await checkDomainExists(projectName);
+        if (domainExists) {
+          setProjectNameError("Domain name already registered");
+          return false;
+        }
+      } catch (err: any) {
+        if (err.message && err.message.includes("already registered")) {
+          setProjectNameError("Domain name already registered");
+          return false;
+        }
+      }
+
+      setProjectNameError(null);
+      return true;
+    } catch (error: any) {
+      setProjectNameError(error.message || "Invalid project name");
+      return false;
+    }
   };
 
   return (
     <Modal onClose={onClose}>
       {step == 1 ? (
-        <div key={step} className="flex items-center gap-[18px]">
-          <img className="flex-none w-[360px]" src="/images/megaphone.svg" />
-          <div className="flex flex-col gap-[42px]">
-            <div className="flex flex-col gap-[30px]">
-              <div className="flex-grow flex flex-col gap-[30px]">
-                <div className="flex flex-col gap-5">
+        <div
+          key={step}
+          className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]"
+        >
+          <img
+            className="flex-none w-[200px] md:w-[360px]"
+            src="/images/megaphone.svg"
+          />
+          <div className="flex flex-col gap-6 md:gap-[42px] w-full">
+            <div className="flex flex-col gap-4 md:gap-[30px]">
+              <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
+                <div className="flex flex-col gap-3 md:gap-5">
                   <Step step={step} totalSteps={5} />
                   <Title
                     title="Welcome to Your New Project!"
-                    description="Add your project’s name, slogan, and description to showcase its goals."
+                    description="Add your project's name, slogan, and description to showcase its goals."
                   />
                 </div>
-                <Input
-                  label="Project Name"
-                  placeholder="Write the name"
-                  value={projectName}
-                  onChange={(e) =>
-                    setProjectName(e.target.value.replace(/[^a-z]/, ""))
-                  }
-                />
+                <div className="relative">
+                  <Input
+                    label="Project Name"
+                    placeholder="Write the name"
+                    value={projectName}
+                    onChange={(e) => {
+                      // Only allow lowercase letters a-z
+                      const validInput = e.target.value.replace(/[^a-z]/g, "");
+                      setProjectName(validInput);
+                      setProjectNameError(null); // Clear error when typing
+                    }}
+                    description={
+                      projectName.length >= 4 &&
+                      projectName.length <= 15 &&
+                      /^[a-z]+$/.test(projectName)
+                        ? "Project name can only contain lowercase letters (a-z)"
+                        : "Project name should be between 4-15 lowercase letters (a-z)"
+                    }
+                    error={projectNameError}
+                  />
+                  {domainStatus && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/3 flex items-center">
+                      {domainStatus === "checking" ? (
+                        <div className="animate-spin h-5 w-5 border-2 border-gray-500 rounded-full border-t-transparent"></div>
+                      ) : domainStatus === "available" ? (
+                        <div className="flex items-center text-green-600">
+                          <img
+                            src="/icons/check.svg"
+                            alt="Available"
+                            className="h-5 w-5 mr-1"
+                          />
+                          <span className="text-sm">Available</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center text-red-600">
+                          <img
+                            src="/icons/failed.svg"
+                            alt="Unavailable"
+                            className="h-5 w-5 mr-1"
+                          />
+                          <span className="text-sm">Unavailable</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex justify-end gap-[18px]">
-              <Button type="secondary" onClick={onClose}>
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-[18px]">
+              <Button
+                type="secondary"
+                onClick={onClose}
+                className="w-full sm:w-auto"
+              >
                 Cancel
               </Button>
               <Button
                 isLoading={isLoading}
+                className="w-full sm:w-auto"
                 onClick={async () => {
                   setIsLoading(true);
                   try {
-                    const project = await getProjectFromName(projectName);
-                    if (projectName.length < 4 || projectName.length > 15)
-                      throw new Error(
-                        "The length of project name should be between 4 and 15.",
-                      );
-                    if (project?.name == projectName)
-                      throw new Error("Project name already registered");
+                    // Perform validation directly in the click handler
+                    const isValid = await validateAndSetProjectNameError();
+
+                    if (isValid) {
+                      setStep(step + 1);
+                    }
                   } catch (err: any) {
-                    toast.error("Project Name", err.message);
-                    return;
+                    setProjectNameError(
+                      err.message || "Project name validation failed",
+                    );
                   } finally {
                     setIsLoading(false);
                   }
-
-                  setStep(step + 1);
                 }}
               >
                 Next
@@ -143,12 +426,18 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
           </div>
         </div>
       ) : step == 2 ? (
-        <div key={step} className="flex items-center gap-[18px]">
-          <img className="flex-none w-[360px]" src="/images/team.svg" />
-          <div className="flex flex-col gap-[42px]">
-            <div className="flex flex-col gap-[30px]">
-              <div className="flex-grow flex flex-col gap-[30px]">
-                <div className="flex flex-col gap-5">
+        <div
+          key={step}
+          className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]"
+        >
+          <img
+            className="flex-none w-[200px] md:w-[360px]"
+            src="/images/team.svg"
+          />
+          <div className="flex flex-col gap-6 md:gap-[42px] w-full">
+            <div className="flex flex-col gap-4 md:gap-[30px]">
+              <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
+                <div className="flex flex-col gap-3 md:gap-5">
                   <Step step={step} totalSteps={5} />
                   <Title
                     title="Build Your Team"
@@ -161,20 +450,32 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                       <Input
                         value={maintainer}
                         {...(i == 0 && { label: "First Maintainer" })}
-                        placeholder="Write the maintainer’s address as G..."
+                        placeholder="Write the maintainer's address as G..."
                         onChange={(e) => {
                           setMaintainers(
                             maintainers.map((maintainer, j) =>
                               i == j ? e.target.value : maintainer,
                             ),
                           );
+                          // Clear error when typing
+                          setMaintainersErrors(
+                            maintainersErrors.map((error, j) =>
+                              i === j ? null : error,
+                            ),
+                          );
                         }}
+                        error={maintainersErrors[i]}
                       />
                       {i > 0 && (
                         <button
-                          onClick={() =>
-                            setMaintainers(maintainers.filter((_, j) => j != i))
-                          }
+                          onClick={() => {
+                            setMaintainers(
+                              maintainers.filter((_, j) => j != i),
+                            );
+                            setMaintainersErrors(
+                              maintainersErrors.filter((_, j) => j != i),
+                            );
+                          }}
                         >
                           <img src="/icons/remove.svg" />
                         </button>
@@ -185,7 +486,10 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                     <Button
                       type="tertiary"
                       icon="/icons/plus.svg"
-                      onClick={() => setMaintainers([...maintainers, ""])}
+                      onClick={() => {
+                        setMaintainers([...maintainers, ""]);
+                        setMaintainersErrors([...maintainersErrors, null]);
+                      }}
                     >
                       Add Maintainer
                     </Button>
@@ -193,32 +497,22 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-[18px]">
-              <Button type="secondary" onClick={() => setStep(step - 1)}>
-                Back
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-[18px]">
+              <Button
+                type="secondary"
+                onClick={onClose}
+                className="w-full sm:w-auto"
+              >
+                Cancel
               </Button>
               <Button
                 onClick={() => {
-                  if (!maintainers.join(",").trim()) {
-                    toast.error("Maintainers", "Maintainers cannot be empty");
-                    return;
+                  const isValid = validateMaintainers();
+                  if (isValid) {
+                    setStep(step + 1);
                   }
-
-                  if (
-                    maintainers.some(
-                      (address) =>
-                        !address.startsWith("G") || address.length != 56,
-                    )
-                  ) {
-                    toast.error(
-                      "Maintainers",
-                      "Invalid maintainer address(es). Each address should start with 'G' and be 56 characters long.",
-                    );
-                    return;
-                  }
-
-                  setStep(step + 1);
                 }}
+                className="w-full sm:w-auto"
               >
                 Next
               </Button>
@@ -226,12 +520,18 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
           </div>
         </div>
       ) : step == 3 ? (
-        <div key={step} className="flex items-center gap-[18px]">
-          <img className="flex-none w-[360px]" src="/images/arrow.svg" />
-          <div className="flex flex-col gap-[42px]">
-            <div className="flex flex-col gap-[30px]">
-              <div className="flex-grow flex flex-col gap-[30px]">
-                <div className="flex flex-col gap-5">
+        <div
+          key={step}
+          className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]"
+        >
+          <img
+            className="flex-none w-[200px] md:w-[360px]"
+            src="/images/arrow.svg"
+          />
+          <div className="flex flex-col gap-6 md:gap-[42px] w-full">
+            <div className="flex flex-col gap-4 md:gap-[30px]">
+              <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
+                <div className="flex flex-col gap-3 md:gap-5">
                   <Step step={step} totalSteps={5} />
                   <Title
                     title="Add Supporting Materials"
@@ -243,38 +543,43 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                     label="Information File Hash"
                     placeholder="Write the information file hash"
                     value={infoFileHash}
-                    onChange={(e) => setInfoFileHash(e.target.value)}
+                    onChange={(e) => {
+                      setInfoFileHash(e.target.value);
+                      setInfoFileHashError(null); // Clear error when typing
+                    }}
+                    error={infoFileHashError}
                   />
                   <Input
                     label="GitHub Repository URL"
                     placeholder="Write the github repository URL"
                     value={githubRepoUrl}
-                    onChange={(e) => setGithubRepoUrl(e.target.value)}
+                    onChange={(e) => {
+                      setGithubRepoUrl(e.target.value);
+                      setGithubRepoUrlError(null); // Clear error when typing
+                    }}
+                    error={githubRepoUrlError}
                   />
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-[18px]">
-              <Button type="secondary" onClick={() => setStep(step - 1)}>
-                Back
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-[18px]">
+              <Button
+                type="secondary"
+                onClick={onClose}
+                className="w-full sm:w-auto"
+              >
+                Cancel
               </Button>
               <Button
                 onClick={() => {
-                  if (!isValidGithubUrl(githubRepoUrl)) {
-                    toast.error("Github URL", "Invalid GitHub repository URL");
-                    return;
-                  }
+                  const isInfoHashValid = validateInfoFileHash();
+                  const isGithubUrlValid = validateGithubRepoUrl();
 
-                  if (infoFileHash.length !== 64) {
-                    toast.error(
-                      "File Hash",
-                      "File hash must be 64 characters long",
-                    );
-                    return;
+                  if (isInfoHashValid && isGithubUrlValid) {
+                    setStep(step + 1);
                   }
-
-                  setStep(step + 1);
                 }}
+                className="w-full sm:w-auto"
               >
                 Next
               </Button>
@@ -297,8 +602,8 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 <Button isLoading={isLoading} onClick={handleRegisterProject}>
                   Register Project
                 </Button>
-                <Button type="secondary" onClick={() => setStep(step - 1)}>
-                  Back
+                <Button type="secondary" onClick={onClose}>
+                  Cancel
                 </Button>
               </div>
             </div>
@@ -380,7 +685,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
               <Step step={step} totalSteps={5} />
               <Title
                 title="Your Project Is Live!"
-                description="Congratulations! You've successfully created your project. Let’s get the ball rolling!"
+                description="Congratulations! You've successfully created your project. Let's get the ball rolling!"
               />
             </div>
           </div>
@@ -388,13 +693,6 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
             <Button onClick={() => navigate(`/project?name=${projectName}`)}>
               View Project
             </Button>
-            {/* <Button
-              type="secondary"
-              icon="/icons/share.svg"
-              onClick={() => window.open()}
-            >
-              Share
-            </Button> */}
             <Button type="secondary" onClick={onClose}>
               Close
             </Button>

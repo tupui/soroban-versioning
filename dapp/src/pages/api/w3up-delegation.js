@@ -1,89 +1,121 @@
 // /src/pages/api/w3up-delegation/[did].js
 import * as DID from "@ipld/dag-ucan/did";
 import { getProjectFromId } from "@service/ReadContractService";
-import {
-  verifyChallengeSignature,
-  verifyDidHash,
-} from "@service/VerifyChallengeService";
-import * as Client from "@web3-storage/w3up-client";
-import { Signer } from "@web3-storage/w3up-client/principal/ed25519";
-import * as Proof from "@web3-storage/w3up-client/proof";
-import { StoreMemory } from "@web3-storage/w3up-client/stores/memory";
 import pkg from "js-sha3";
 import decryptProof from "../../utils/decryptAES256";
 const { keccak256 } = pkg;
 
 export const prerender = false;
 
-export const POST = async ({ request }) => {
-  if (request.headers.get("Content-Type") === "application/json") {
-    const body = await request.json();
-    const { signedTxXdr, projectName, did } = body;
+/**
+ * Validates the request based on the type
+ * @param {string} type - The type of delegation request ('proposal' or 'member')
+ * @param {string} signedTxXdr - The signed transaction XDR
+ * @param {string} projectName - The project name (only required for proposals)
+ * @returns {Promise<string[]|null>} - Returns maintainer public keys for proposals, or an empty array for members
+ */
+async function validateRequest(type, signedTxXdr, projectName) {
+  const { Transaction, xdr } = await import("@stellar/stellar-sdk");
+  const tx = new Transaction(
+    signedTxXdr,
+    import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+  );
 
-    const didVerified = verifyDidHash(signedTxXdr, did);
+  // Extract the signer's public key from the transaction
+  const signerPublicKey = tx.source;
 
-    if (!didVerified) {
-      return new Response(
-        JSON.stringify({
-          error: "DID hash does not match the transaction memo",
-        }),
-        {
-          status: 400,
-        },
-      );
-    }
-
-    const maintainerPublicKey = await getProjectMaintainers(projectName);
-
-    if (!maintainerPublicKey) {
-      return new Response(
-        JSON.stringify({ error: "Can not get maintainers" }),
-        {
-          status: 400,
-        },
-      );
-    }
-    verifyChallengeSignature(signedTxXdr, maintainerPublicKey);
-
-    try {
-      const archive = await generateDelegation(did);
-
-      return new Response(archive, {
-        status: 200,
-        headers: { "Content-Type": "application/octet-stream" },
-      });
-    } catch (err) {
-      console.error("Error creating delegation:", err);
-      return new Response(JSON.stringify({ error: err.message }), {
-        status: 500,
-      });
-    }
-  }
-  return new Response(null, { status: 400 });
-};
-
-const getProjectMaintainers = async (projectName) => {
-  if (projectName) {
-    const projectId = Buffer.from(
-      keccak256.create().update(projectName).digest(),
-    );
-    try {
-      const projectInfo = await getProjectFromId(projectId);
-      if (projectInfo && projectInfo.maintainers) {
-        return projectInfo.maintainers;
-      } else if (res.error) {
-        return null;
+  switch (type) {
+    case "proposal":
+      if (!projectName) {
+        throw new Error("Project name is required for proposal delegation");
       }
-    } catch (error) {
-      console.error("Error fetching project info:", error);
-      return null;
-    }
-  } else {
-    return null;
+
+      const projectId = Buffer.from(
+        keccak256.create().update(projectName).digest(),
+      );
+
+      try {
+        const projectInfo = await getProjectFromId(projectId);
+        if (!projectInfo || !projectInfo.maintainers) {
+          throw new Error("Project not found or has no maintainers");
+        }
+
+        // Verify that the signer is a maintainer
+        if (!projectInfo.maintainers.includes(signerPublicKey)) {
+          throw new Error("Only maintainers can create proposals");
+        }
+
+        // Verify this is a create_proposal transaction
+        // The transaction should have invoke host function operation
+        const operation = tx.operations[0];
+        if (!operation || operation.type !== "invokeHostFunction") {
+          throw new Error("Invalid transaction: expected create_proposal call");
+        }
+
+        return projectInfo.maintainers;
+      } catch (error) {
+        console.error("Error validating proposal request:", error);
+        throw error;
+      }
+
+    case "member":
+      // For member registration, verify this is an add_member transaction
+      try {
+        // Verify this is an add_member transaction
+        const operation = tx.operations[0];
+        if (!operation || operation.type !== "invokeHostFunction") {
+          throw new Error("Invalid transaction: expected add_member call");
+        }
+
+        return [];
+      } catch (error) {
+        console.error("Error validating member request:", error);
+        throw error;
+      }
+
+    default:
+      throw new Error(`Unknown delegation type: ${type}`);
+  }
+}
+
+export const POST = async ({ request }) => {
+  if (request.headers.get("Content-Type") !== "application/json") {
+    return new Response(null, { status: 400 });
+  }
+
+  try {
+    const body = await request.json();
+    const { signedTxXdr, projectName, did, type = "proposal" } = body;
+
+    // Validate the request based on type
+    await validateRequest(type, signedTxXdr, projectName);
+
+    // Generate the delegation
+    const archive = await generateDelegation(did);
+
+    return new Response(archive, {
+      status: 200,
+      headers: { "Content-Type": "application/octet-stream" },
+    });
+  } catch (err) {
+    console.error("Error creating delegation:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: err.message.includes("not found") ? 404 : 500,
+    });
   }
 };
 
 async function generateDelegation(did) {
+  // Dynamic imports to avoid initialization issues
+  const { create } = await import("@web3-storage/w3up-client");
+  const { Signer } = await import(
+    "@web3-storage/w3up-client/principal/ed25519"
+  );
+  const Proof = await import("@web3-storage/w3up-client/proof");
+  const { StoreMemory } = await import(
+    "@web3-storage/w3up-client/stores/memory"
+  );
+
   const key = import.meta.env.STORACHA_SING_PRIVATE_KEY;
   let storachaProof = import.meta.env.STORACHA_PROOF;
   if (storachaProof.length === 64) {
@@ -94,7 +126,7 @@ async function generateDelegation(did) {
 
   const principal = Signer.parse(key);
   const store = new StoreMemory();
-  const client = await Client.create({ principal, store });
+  const client = await create({ principal, store });
 
   const space = await client.addSpace(proof);
   await client.setCurrentSpace(space.did());

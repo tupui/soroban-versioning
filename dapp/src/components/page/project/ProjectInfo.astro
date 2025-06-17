@@ -1,10 +1,10 @@
 ---
 import CommitHistory from "./CommitHistory";
 import DonateModal from "./DonateModal";
-import LastHashModal from "./LastHashModal.astro";
 import LatestCommit from "./LatestCommit";
-import ReadMoreModal from "./ReadMoreModal.astro";
 import Button from "components/utils/Button";
+import { getMember } from "@service/ReadContractService";
+import { toast } from "utils/utils";
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
@@ -42,12 +42,24 @@ import Button from "components/utils/Button";
           </div>
         </div>
       </div>
-      <div class="flex max-lg:flex-col gap-[18px]">
-        <Button id="goto-dao" icon="/icons/gear-white.svg">
-          <p class="leading-5 text-xl text-white">Governance</p>
+      <div
+        class="flex flex-col gap-[18px] sm:flex-row sm:flex-wrap md:flex-nowrap"
+      >
+        <Button
+          id="goto-dao"
+          icon="/icons/gear-white.svg"
+          size="xl"
+          className="w-full sm:w-auto"
+        >
+          <p class="leading-5 text-base sm:text-xl text-white">Governance</p>
         </Button>
         <DonateModal client:only>
-          <Button icon="/icons/heart.svg" size="xl" type="secondary">
+          <Button
+            icon="/icons/heart.svg"
+            size="xl"
+            type="secondary"
+            className="w-full sm:w-auto"
+          >
             Support
           </Button>
         </DonateModal>
@@ -56,6 +68,7 @@ import Button from "components/utils/Button";
           icon="/icons/book.svg"
           size="xl"
           type="secondary"
+          className="w-full sm:w-auto"
         >
           Read More
         </Button>
@@ -64,6 +77,7 @@ import Button from "components/utils/Button";
           icon="/icons/eye.svg"
           size="xl"
           type="secondary"
+          className="w-full sm:w-auto"
         >
           Last Hash
         </Button>
@@ -77,13 +91,19 @@ import Button from "components/utils/Button";
       <ul class="grid grid-cols-3 gap-9"></ul>
       <div class="flex view-all"></div>
     </div>
+    <div
+      id="project-community"
+      class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
+    >
+      <p class="leading-4 text-base text-secondary">Community</p>
+      <div class="community-content flex flex-col gap-4"></div>
+    </div>
     <CommitHistory client:load />
   </div>
 </div>
 
-<ReadMoreModal />
-
-<LastHashModal />
+<div id="last-hash-modal-container"></div>
+<div id="read-more-modal-container"></div>
 
 <script>
   import { getLatestCommitData, getTOMLFileHash } from "@service/GithubService";
@@ -98,8 +118,72 @@ import Button from "components/utils/Button";
   } from "../../../service/StateService";
   import { convertGitHubLink } from "../../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../../utils/store";
+  import { getBadges, getMember } from "@service/ReadContractService";
 
-  document.addEventListener("astro:page-load", () => {
+  document.addEventListener("astro:page-load", async () => {
+    // Dynamically import React components
+    const [
+      { default: React },
+      { createRoot },
+      { default: LastHashModal },
+      { default: ReadMoreModal },
+    ] = await Promise.all([
+      import("react"),
+      import("react-dom/client"),
+      import("./LastHashModal"),
+      import("./ReadMoreModal"),
+    ]);
+
+    // Create React roots for modals
+    const lastHashContainer = document.getElementById(
+      "last-hash-modal-container",
+    );
+    const readMoreContainer = document.getElementById(
+      "read-more-modal-container",
+    );
+
+    if (!lastHashContainer || !readMoreContainer) {
+      console.error("Modal containers not found");
+      return;
+    }
+
+    const lastHashRoot = createRoot(lastHashContainer);
+    const readMoreRoot = createRoot(readMoreContainer);
+
+    // Modal state
+    let isLastHashModalOpen = false;
+    let isReadMoreModalOpen = false;
+    let commitData = null;
+    let projectData = null;
+
+    // Render function for modals
+    const renderModals = () => {
+      lastHashRoot.render(
+        React.createElement(LastHashModal, {
+          isOpen: isLastHashModalOpen,
+          onClose: () => {
+            isLastHashModalOpen = false;
+            renderModals();
+          },
+          commitData,
+        }),
+      );
+
+      readMoreRoot.render(
+        React.createElement(ReadMoreModal, {
+          isOpen: isReadMoreModalOpen,
+          onClose: () => {
+            isReadMoreModalOpen = false;
+            renderModals();
+          },
+          projectData,
+        }),
+      );
+    };
+
+    // Initial render
+    renderModals();
+
     const updateConfigButton = document.querySelector("[data-update-config]");
     const udpateConfigModal = document.getElementById(
       "update-config-modal",
@@ -112,24 +196,18 @@ import Button from "components/utils/Button";
     }
 
     const readMoreButton = document.getElementById("read-more-button");
-    const readMoreModal = document.getElementById(
-      "read-more-modal",
-    ) as HTMLDialogElement;
-
-    if (readMoreButton && readMoreModal) {
+    if (readMoreButton) {
       readMoreButton.addEventListener("click", () => {
-        readMoreModal.showModal();
+        isReadMoreModalOpen = true;
+        renderModals();
       });
     }
 
     const lastHashButton = document.getElementById("last-hash-button");
-    const lastHashModal = document.getElementById(
-      "last-hash-modal",
-    ) as HTMLDialogElement;
-
-    if (lastHashButton && lastHashModal) {
+    if (lastHashButton) {
       lastHashButton.addEventListener("click", () => {
-        lastHashModal.showModal();
+        isLastHashModalOpen = true;
+        renderModals();
       });
     }
 
@@ -155,44 +233,48 @@ import Button from "components/utils/Button";
         const ul = maintainersList.querySelector("ul");
         if (ul) {
           ul.innerHTML = "";
+          // Always use maintainer addresses from contract (projectInfo.maintainers)
+          const contractMaintainers: string[] = projectInfo.maintainers || [];
+
+          // Build address → githubName map from tansu.toml if available
+          let addrMap: Record<string, string> = {};
           if (
             configData &&
-            configData.authorGithubNames &&
-            configData.maintainersAddresses
+            Array.isArray(configData.maintainersAddresses) &&
+            Array.isArray(configData.authorGithubNames)
           ) {
-            configData.authorGithubNames
-              .filter((_: string, index: number) => index <= 5 || viewAll)
-              .forEach((authorName: string, index: number) => {
-                const li = document.createElement("li");
-                li.className = "flex flex-col gap-2";
+            configData.maintainersAddresses.forEach(
+              (addr: string, idx: number) => {
+                const name = configData.authorGithubNames[idx];
+                if (addr && name) addrMap[addr] = name;
+              },
+            );
+          }
 
+          contractMaintainers
+            .filter((_: string, index: number) => index <= 5 || viewAll)
+            .forEach((maintainer: string) => {
+              const li = document.createElement("li");
+              li.className = "flex flex-col gap-2";
+
+              const displayName = addrMap[maintainer];
+
+              if (displayName) {
+                const nameP = document.createElement("p");
+                nameP.className = "leading-6 text-xl text-primary";
+                nameP.textContent = `@${displayName}`;
+                li.appendChild(nameP);
+
+                const addrP = document.createElement("p");
+                addrP.className =
+                  "leading-[14px] text-sm text-secondary cursor-pointer underline";
+                addrP.textContent = `(${maintainer.slice(0, 28)}...)`;
+                li.appendChild(addrP);
+              } else {
+                // no mapping, show address only with tooltip
                 const content = document.createElement("p");
-                content.className = "leading-6 text-xl text-primary";
-                content.textContent = `@${authorName}`;
-                li.appendChild(content);
-
-                const address = document.createElement("p");
-                address.className = "leading-[14px] text-sm text-secondary";
-                address.textContent = `(${configData.maintainersAddresses[index]?.slice(0, 28) || ""}...)`;
-                li.appendChild(address);
-
-                ul.appendChild(li);
-              });
-            if (
-              viewAllButtonContainer &&
-              configData.authorGithubNames.length > 5
-            ) {
-              viewAllButtonContainer.append(viewAllButton);
-            }
-          } else {
-            projectInfo.maintainers
-              .filter((_: string, index: number) => index <= 5 || viewAll)
-              .forEach((maintainer: string) => {
-                const li = document.createElement("li");
-                li.className = "relative";
-
-                const content = document.createElement("p");
-                content.className = "leading-6 text-xl text-primary truncate";
+                content.className =
+                  "leading-6 text-xl text-primary truncate cursor-pointer underline";
                 content.textContent = maintainer;
                 li.appendChild(content);
 
@@ -202,19 +284,25 @@ import Button from "components/utils/Button";
                 popup.textContent = maintainer;
                 li.appendChild(popup);
 
-                li.addEventListener("mouseenter", () => {
-                  popup.classList.remove("hidden");
-                });
+                li.addEventListener("mouseenter", () =>
+                  popup.classList.remove("hidden"),
+                );
+                li.addEventListener("mouseleave", () =>
+                  popup.classList.add("hidden"),
+                );
+              }
 
-                li.addEventListener("mouseleave", () => {
-                  popup.classList.add("hidden");
-                });
+              li.onclick = (e) => {
+                e.stopPropagation();
+                openProfileModal(maintainer);
+              };
 
-                ul.appendChild(li);
-              });
-            if (viewAllButtonContainer && projectInfo.maintainers.length > 5) {
-              viewAllButtonContainer.append(viewAllButton);
-            }
+              ul.appendChild(li);
+            });
+
+          // view-all display logic
+          if (viewAllButtonContainer && contractMaintainers.length > 5) {
+            viewAllButtonContainer.append(viewAllButton);
           }
         }
       }
@@ -318,7 +406,7 @@ import Button from "components/utils/Button";
           // Add configuration badge
           const projectConfigHash = projectInfo.config.hash;
           if (!projectConfigHash || typeof projectConfigHash !== "string") {
-            alert("Error: Invalid project configuration hash");
+            console.error("Error: Invalid project configuration hash");
             return;
           }
 
@@ -425,99 +513,43 @@ import Button from "components/utils/Button";
           }
         }
 
-        // Read more modal content
-        const readMoreModal = document.getElementById("read-more-modal");
-        if (readMoreModal) {
-          const projectOrganizationContainer = readMoreModal.querySelector(
-            ".project-organization",
-          );
-          if (projectOrganizationContainer)
-            projectOrganizationContainer.textContent =
-              configData?.organizationName || "Not available";
-          const projectNameContainer =
-            readMoreModal.querySelector(".project-name");
-          if (projectNameContainer)
-            projectNameContainer.textContent = projectInfo.name;
-          const officialLinksContainer = readMoreModal.querySelector(
-            ".official-links",
-          ) as HTMLElement;
-          if (officialLinksContainer) {
-            if (configData?.officials) {
-              if (configData.officials.githubLink) {
-                addLinkButton(
-                  officialLinksContainer,
-                  configData.officials.githubLink,
-                  "github",
-                );
-              }
-              if (configData.officials.websiteLink) {
-                addLinkButton(
-                  officialLinksContainer,
-                  configData.officials.websiteLink,
-                  "web",
-                );
-              }
-            } else {
-              addLinkButton(
-                officialLinksContainer,
-                "GitHub",
-                projectInfo.config.url,
-              );
-            }
-          }
-          const projectDescContainer = readMoreModal.querySelector(
-            ".project-description",
-          );
-          if (projectDescContainer && configData)
-            projectDescContainer.textContent = configData.description;
+        // Set up project data for ReadMoreModal
+        projectData = {
+          name: projectInfo.name,
+          description: configData?.description || "",
+          organization: configData?.organizationName || "",
+          logoImageLink: configData?.logoImageLink
+            ? convertGitHubLink(configData.logoImageLink)
+            : "",
+          githubUrl:
+            configData?.officials?.githubLink || projectInfo.config.url,
+          websiteUrl: configData?.officials?.websiteLink,
+        };
 
-          const projectThumbnail = readMoreModal.querySelector(
-            ".project-thumbnail",
-          ) as HTMLImageElement | null;
-          if (projectThumbnail) {
-            if (configData && configData.logoImageLink) {
-              projectThumbnail.src =
-                convertGitHubLink(configData.logoImageLink) ||
-                "/fallback-image.jpg";
-            } else projectThumbnail.src = "/fallback-image.jpg";
-          }
-        }
-
-        // Last hash modal content
+        // Set up commit data for LastHashModal
         const latestSha = loadProjectLatestSha();
         if (latestSha) {
-          const latestCommit = await getLatestCommitData(
-            projectInfo.config.url,
-            latestSha,
-          );
-          const lastHashModal = document.getElementById("last-hash-modal");
-          if (lastHashModal) {
-            const copyButton = lastHashModal.querySelector(
-              ".commit-link-copy",
-            ) as HTMLButtonElement;
-            copyButton.addEventListener("click", () => {
-              navigator.clipboard.writeText(latestCommit.html_url);
-            });
-            const commitLink = lastHashModal.querySelector(
-              ".commit-link",
-            ) as HTMLLinkElement;
-            commitLink.href = latestCommit.html_url;
-            const commitHash = lastHashModal.querySelector(
-              ".commit-hash",
-            ) as HTMLParagraphElement;
-            commitHash.textContent = `${latestCommit.sha.slice(0, 24)}...`;
-            const commitDate = lastHashModal.querySelector(
-              ".commit-date",
-            ) as HTMLParagraphElement;
-            commitDate.textContent = formatDateTime(
-              latestCommit?.commit.committer.date,
+          try {
+            const latestCommit = await getLatestCommitData(
+              projectInfo.config.url,
+              latestSha,
             );
-            const commitAuthor = lastHashModal.querySelector(
-              ".commit-author",
-            ) as HTMLParagraphElement;
-            commitAuthor.textContent = `@${latestCommit?.commit.author.name}`;
+
+            if (latestCommit) {
+              commitData = {
+                sha: latestCommit.sha,
+                html_url: latestCommit.html_url,
+                date: formatDateTime(latestCommit.commit.committer.date),
+                author: latestCommit.commit.author.name,
+              };
+            }
+          } catch (error) {
+            console.error("Error loading commit data:", error);
           }
         }
+
+        // Re-render modals with the updated data
+        renderModals();
       }
     }
 
@@ -555,6 +587,133 @@ import Button from "components/utils/Button";
         discord: "/icons/logos/discord.svg",
       };
       return icons[iconName] || "";
+    }
+
+    const updateCommunityList = async () => {
+      try {
+        const badgeData = await getBadges();
+        const communityContainer = document.getElementById("project-community");
+        if (!communityContainer) return;
+        const contentDiv =
+          communityContainer.querySelector(".community-content");
+        if (!contentDiv) return;
+        contentDiv.innerHTML = "";
+
+        const sections = [
+          { key: "developer", label: "Developer", list: badgeData.developer },
+          { key: "triage", label: "Triage", list: badgeData.triage },
+          { key: "community", label: "Community", list: badgeData.community },
+          { key: "verified", label: "Verified", list: badgeData.verified },
+          { key: "default", label: "Default", list: badgeData.default },
+        ];
+
+        sections.forEach((sec) => {
+          if (sec.list && sec.list.length > 0) {
+            const secDiv = document.createElement("div");
+            const title = document.createElement("p");
+            title.className = "leading-4 text-base text-secondary";
+            title.textContent = sec.label;
+            secDiv.appendChild(title);
+
+            const ul = document.createElement("ul");
+            ul.className = "grid grid-cols-3 gap-9";
+            sec.list.forEach((addr) => {
+              const li = document.createElement("li");
+              li.className = "relative cursor-pointer";
+              li.onclick = (e) => {
+                e.stopPropagation();
+                openProfileModal(addr);
+              };
+              const addrP = document.createElement("p");
+              addrP.className =
+                "leading-[14px] text-sm text-primary truncate underline";
+              addrP.textContent = addr;
+              li.appendChild(addrP);
+              ul.appendChild(li);
+            });
+            secDiv.appendChild(ul);
+            contentDiv.appendChild(secDiv);
+          }
+        });
+      } catch (e) {
+        console.error("Error fetching badges", e);
+      }
+    };
+
+    // initial community load
+    updateCommunityList();
+
+    window.addEventListener("badgesUpdated", updateCommunityList);
+
+    // refresh community list when project info finished loading
+    projectInfoLoaded.subscribe((loaded) => {
+      if (loaded) updateCommunityList();
+    });
+
+    // Helper to open member profile modal; attached globally for click handlers
+    async function openProfileModal(address) {
+      try {
+        const memberData = await getMember(address);
+
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: MemberProfileModal } = await import(
+          "components/page/dashboard/MemberProfileModal.tsx"
+        );
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        // Use setTimeout to ensure the modal is opened after the current click event completes
+        setTimeout(() => {
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: memberData,
+              address: address,
+              onClose: handleClose,
+            }),
+          );
+        }, 0);
+      } catch (e) {
+        // Show the member not registered modal instead of an error toast
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: MemberProfileModal } = await import(
+          "components/page/dashboard/MemberProfileModal.tsx"
+        );
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        // Use setTimeout to ensure the modal is opened after the current click event completes
+        setTimeout(() => {
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: null,
+              address: address,
+              onClose: handleClose,
+            }),
+          );
+        }, 0);
+      }
     }
   });
 </script>

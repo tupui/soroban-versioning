@@ -32,8 +32,6 @@ import {
   type CodeBlockEditorDescriptor,
 } from "@mdxeditor/editor";
 import { getProjectFromName } from "@service/ReadContractService";
-import * as Client from "@web3-storage/w3up-client";
-import * as Delegation from "@web3-storage/w3up-client/delegation";
 import Button from "components/utils/Button";
 import { DatePicker } from "components/utils/DatePicker";
 import { ExpandableText } from "components/utils/ExpandableText";
@@ -46,7 +44,13 @@ import { useCallback, useEffect, useState } from "react";
 import type { ProposalOutcome } from "types/proposal";
 import { formatDate } from "utils/formatTimeFunctions";
 import { connectedPublicKey } from "utils/store";
-import { capitalizeFirstLetter, getIpfsBasicLink, toast } from "utils/utils";
+import { capitalizeFirstLetter, toast } from "utils/utils";
+import { getIpfsBasicLink } from "utils/ipfsFunctions";
+import {
+  validateProposalName,
+  validateTextContent,
+  isContentValid,
+} from "utils/validations";
 import OutcomeInput from "./OutcomeInput";
 
 import "@mdxeditor/editor/style.css";
@@ -76,6 +80,14 @@ const CreateProposalModal = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [proposalId, setProposalId] = useState<number | null>(null);
   const [ipfsLink, setIpfsLink] = useState("");
+  const [proposalNameError, setProposalNameError] = useState<string | null>(
+    null,
+  );
+  const [descriptionError, setDescriptionError] = useState<string | null>(null);
+  const [approveDescriptionError, setApproveDescriptionError] = useState<
+    string | null
+  >(null);
+  const [approveXdrError, setApproveXdrError] = useState<string | null>(null);
 
   const checkSubmitAvailability = () => {
     if (!connectedAddress) throw new Error("Please connect your wallet first");
@@ -149,11 +161,7 @@ const CreateProposalModal = () => {
     },
   };
 
-  const isDescriptionValid = (description: string, words: number = 3) => {
-    return description.trim().split(/\s+/).length >= words;
-  };
-
-  function getDeltaDays(selectedDate: string | Date): number {
+  const getDeltaDays = (selectedDate: string | Date): number => {
     const now = new Date();
     const targetDate = new Date(selectedDate);
 
@@ -162,7 +170,7 @@ const CreateProposalModal = () => {
 
     const diffInMs = targetDate.getTime() - now.getTime();
     return diffInMs / (1000 * 60 * 60 * 24);
-  }
+  };
 
   const handleRegisterProposal = async () => {
     try {
@@ -170,47 +178,7 @@ const CreateProposalModal = () => {
 
       checkSubmitAvailability();
 
-      setStep(6);
-
-      const client = await Client.create();
-      const apiUrl = `/api/w3up-delegation`;
-
-      const { generateChallengeTransaction } = await import(
-        "@service/ChallengeService"
-      );
-
-      const did = client.agent.did();
-
-      setStep(7);
-
-      const signedTxXdr = await generateChallengeTransaction(did);
-
-      setStep(8);
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ signedTxXdr, projectName, did }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error);
-      }
-
-      const data = await response.arrayBuffer();
-
-      const delegation = await Delegation.extract(new Uint8Array(data));
-      if (!delegation.ok) {
-        throw new Error("Failed to extract delegation", {
-          cause: delegation.error,
-        });
-      }
-
-      const space = await client.addSpace(delegation.ok);
-
-      await client.setCurrentSpace(space.did());
-
+      // Prepare the proposal files
       const proposalOutcome: ProposalOutcome = {
         approved: {
           description: approveDescription,
@@ -246,29 +214,83 @@ const CreateProposalModal = () => {
       files.push(new File([description], "proposal.md"));
       if (!files) throw new Error("Failed to create proposal files");
 
-      const directoryCid = await client.uploadDirectory(files);
-      if (!directoryCid) throw new Error("Failed to upload proposal");
+      setStep(6);
 
-      setStep(9);
-
-      const { createProposal } = await import("@service/WriteContractService");
-
+      // Calculate voting end timestamp
       const votingDays = getDeltaDays(selectedDate);
-      const res = await createProposal(
-        projectName!,
-        proposalName,
-        directoryCid.toString(),
-        Math.floor(Date.now() / 1000) + 86400 * votingDays,
-      );
+      const votingEndsAt = Math.floor(Date.now() / 1000) + 86400 * votingDays;
 
-      setProposalId(res);
-      setIpfsLink(getIpfsBasicLink(directoryCid.toString()));
+      // Use the new Flow 2
+      const { createProposalFlow } = await import("@service/FlowService");
+
+      const proposalId = await createProposalFlow({
+        projectName: projectName!,
+        proposalName,
+        proposalFiles: files,
+        votingEndsAt,
+        onProgress: setStep,
+      });
+
+      setProposalId(proposalId);
+
+      // Calculate the CID for the IPFS link
+      const { calculateDirectoryCid } = await import("utils/ipfsFunctions");
+      const cid = await calculateDirectoryCid(files);
+      setIpfsLink(getIpfsBasicLink(cid));
 
       setStep(10);
     } catch (err: any) {
       console.error(err.message);
       toast.error("Submit proposal", err.message);
     }
+  };
+
+  const validateProposalNameField = (): boolean => {
+    const error = validateProposalName(proposalName);
+    setProposalNameError(error);
+    return error === null;
+  };
+
+  const validateDescriptionField = (): boolean => {
+    const error = validateTextContent(mdText, 10, "Proposal description");
+    setDescriptionError(error);
+    return error === null;
+  };
+
+  const validateApproveOutcome = (): boolean => {
+    let isValid = true;
+
+    const descError = validateTextContent(
+      approveDescription,
+      3,
+      "Approved outcome description",
+    );
+    setApproveDescriptionError(descError);
+    if (descError) isValid = false;
+
+    if (!approveXdr.trim()) {
+      setApproveXdrError("Approved outcome XDR is required");
+      isValid = false;
+    } else {
+      setApproveXdrError(null);
+    }
+
+    return isValid;
+  };
+
+  // Check if we can proceed with form submission based on validations
+  const canProceed = (): boolean => {
+    if (step === 1) {
+      return proposalName.trim() !== "" && isContentValid(mdText, 10);
+    }
+
+    if (step === 2) {
+      const isValid =
+        isContentValid(approveDescription) && approveXdr.trim() !== "";
+      return isValid;
+    }
+
+    return true;
   };
 
   if (!showModal) return <></>;
@@ -290,13 +312,19 @@ const CreateProposalModal = () => {
                   label="Proposal Name"
                   placeholder="Write the name"
                   value={proposalName}
-                  onChange={(e) => setProposalName(e.target.value)}
+                  onChange={(e) => {
+                    setProposalName(e.target.value);
+                    setProposalNameError(null);
+                  }}
+                  error={proposalNameError}
                 />
               </div>
             </div>
             <div className="flex flex-col gap-[18px]">
               <p className="text-base font-[600] text-primary">Description</p>
-              <div className="rounded-md border border-zinc-700 overflow-hidden">
+              <div
+                className={`rounded-md border ${descriptionError ? "border-red-500" : "border-zinc-700"} overflow-hidden`}
+              >
                 <MDXEditor
                   plugins={[
                     markdownShortcutPlugin(),
@@ -359,10 +387,16 @@ const CreateProposalModal = () => {
                     }),
                   ]}
                   markdown={mdText}
-                  onChange={(value) => setMdText(value || "")}
+                  onChange={(value) => {
+                    setMdText(value || "");
+                    setDescriptionError(null);
+                  }}
                   placeholder="Input your proposal description here..."
                 />
               </div>
+              {descriptionError && (
+                <p className="text-red-500 text-sm">{descriptionError}</p>
+              )}
             </div>
           </div>
           <div className="flex justify-end gap-[18px]">
@@ -372,13 +406,11 @@ const CreateProposalModal = () => {
             <Button
               onClick={() => {
                 try {
-                  if (proposalName.length < 10 || proposalName.length > 256)
-                    throw new Error("Proposal name is required");
-
-                  if (!isDescriptionValid(mdText, 10))
-                    throw new Error(
-                      "Proposal description must contain at least 10 words.",
-                    );
+                  if (
+                    !validateProposalNameField() ||
+                    !validateDescriptionField()
+                  )
+                    throw new Error("Invalid proposal name or description");
 
                   setStep(step + 1);
                 } catch (err: any) {
@@ -410,6 +442,10 @@ const CreateProposalModal = () => {
               setDescription={setApproveDescription}
               xdr={approveXdr}
               setXdr={setApproveXdr}
+              descriptionError={approveDescriptionError}
+              xdrError={approveXdrError}
+              onDescriptionChange={() => setApproveDescriptionError(null)}
+              onXdrChange={() => setApproveXdrError(null)}
             />
             <OutcomeInput
               type="rejected"
@@ -433,20 +469,8 @@ const CreateProposalModal = () => {
             <Button
               onClick={() => {
                 try {
-                  if (!isDescriptionValid(approveDescription))
-                    throw new Error(
-                      "Approved description must contain at least 3 words.",
-                    );
-
-                  if (rejectXdr && !isDescriptionValid(rejectDescription))
-                    throw new Error(
-                      "Rejected description must contain at least 3 words.",
-                    );
-
-                  if (cancelledXdr && !isDescriptionValid(cancelledDescription))
-                    throw new Error(
-                      "Cancelled description must contain at least 3 words.",
-                    );
+                  if (!validateApproveOutcome())
+                    throw new Error("Invalid approved outcome");
 
                   setStep(step + 1);
                 } catch (err: any) {
@@ -631,28 +655,28 @@ const CreateProposalModal = () => {
               <Step step={step - 4} totalSteps={6} />
               {step == 5 ? (
                 <Title
-                  title="Verifying transaction details..."
-                  description="Checking if everything is correctly set"
+                  title="Preparing proposal data..."
+                  description="Calculating content identifier"
                 />
               ) : step == 6 ? (
                 <Title
-                  title="Connecting to the network..."
-                  description="Ensuring a stable connection"
+                  title="Creating transaction..."
+                  description="Preparing smart contract call"
                 />
               ) : step == 7 ? (
                 <Title
-                  title="Waiting for confirmation..."
-                  description="This might take a few seconds"
+                  title="Sign transaction"
+                  description="Please sign the transaction in your wallet"
                 />
               ) : step == 8 ? (
                 <Title
                   title="Uploading to IPFS..."
-                  description="Storing data securely"
+                  description="Storing proposal data securely"
                 />
               ) : (
                 <Title
-                  title="Finalizing transaction..."
-                  description="Completing all necessary steps"
+                  title="Sending transaction..."
+                  description="Broadcasting to the network"
                 />
               )}
               <div className="flex justify-end gap-[18px]">
@@ -669,7 +693,7 @@ const CreateProposalModal = () => {
           <div className="flex-grow flex flex-col gap-[30px]">
             <Title
               title="Your Proposal Is Live!"
-              description="Congratulations! You've successfully submitted your proposal. Let’s move forward and make it a success!"
+              description="Congratulations! You've successfully submitted your proposal. Let's move forward and make it a success!"
             />
             <div className="flex justify-end gap-[18px]">
               <Button type="secondary" onClick={() => setShowModal(false)}>

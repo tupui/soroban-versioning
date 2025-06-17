@@ -7,6 +7,15 @@ interface Props {
 const { text, position = "top" } = Astro.props;
 ---
 
+<!--
+  Astro Tooltip Component
+  
+  This is the Astro implementation of the Tooltip component, used for static tooltips
+  that are part of Astro components. It uses CSS for hover effects rather than JavaScript.
+  
+  NOTE: For dynamic tooltips in React components that require state management,
+  use Tooltip.tsx instead. The two implementations should maintain similar styling for consistency.
+-->
 <div class="tooltip-container">
   <slot />
   <span class={`tooltip tooltip-${position}`}>{text}</span>

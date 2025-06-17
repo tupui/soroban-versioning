@@ -3,6 +3,7 @@ import { getLatestCommitData, getTOMLFileHash } from "@service/GithubService";
 import { getProjectHash } from "@service/ReadContractService";
 import { loadProjectInfo } from "@service/StateService";
 import Tooltip from "components/utils/Tooltip";
+import CopyButton from "components/utils/CopyButton";
 import { useEffect, useState } from "react";
 import { formatDate } from "utils/formatTimeFunctions";
 import { projectInfoLoaded } from "utils/store";
@@ -49,10 +50,6 @@ const LatestCommit = () => {
     loadLatestCommitData();
   }, [isProjectInfoLoaded]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(commitData?.html_url);
-  };
-
   return (
     <div className="flex flex-col gap-3">
       {commitData && (
@@ -70,11 +67,14 @@ const LatestCommit = () => {
               {commitData?.sha.slice(0, 9)}
             </p>
             <div className="flex gap-2">
-              <div onClick={handleCopy}>
-                <img src="/icons/clipboard.svg" />
-              </div>
-              <a href={commitData?.html_url} target="_blank">
-                <img src="/icons/link.svg" />
+              <CopyButton textToCopy={commitData?.html_url || ""} size="sm" />
+              <a
+                href={commitData?.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:bg-gray-100 p-1 rounded transition-colors duration-200"
+              >
+                <img src="/icons/link.svg" alt="Open link" />
               </a>
             </div>
           </div>

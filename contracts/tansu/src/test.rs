@@ -3,7 +3,10 @@
 use super::{Tansu, TansuClient, domain_contract};
 use crate::contract_versioning::{domain_node, domain_register};
 use crate::errors::ContractErrors;
-use crate::types::{AnonymousVote, Dao, ProposalStatus, PublicVote, Vote, VoteChoice};
+use crate::types::{
+    AnonymousVote, Badge, Badges, Dao, Member, ProjectBadges, ProposalStatus, PublicVote, Vote,
+    VoteChoice,
+};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::testutils::Ledger as _;
 use soroban_sdk::testutils::arbitrary::std::println;
@@ -208,6 +211,7 @@ fn test() {
             &env,
             Vote::PublicVote(PublicVote {
                 address: grogu.clone(),
+                weight: Badge::Verified as u32,
                 vote_choice: VoteChoice::Abstain
             })
         ]
@@ -233,6 +237,7 @@ fn test() {
             &proposal_id,
             &Vote::PublicVote(PublicVote {
                 address: grogu.clone(),
+                weight: 1,
                 vote_choice: VoteChoice::Approve,
             }),
         )
@@ -246,6 +251,7 @@ fn test() {
         &proposal_id,
         &Vote::PublicVote(PublicVote {
             address: mando.clone(),
+            weight: 1,
             vote_choice: VoteChoice::Approve,
         }),
     );
@@ -258,6 +264,7 @@ fn test() {
             &proposal_id,
             &Vote::PublicVote(PublicVote {
                 address: mando.clone(),
+                weight: 1,
                 vote_choice: VoteChoice::Approve,
             }),
         )
@@ -274,10 +281,12 @@ fn test() {
             &env,
             Vote::PublicVote(PublicVote {
                 address: grogu.clone(),
+                weight: Badge::Verified as u32,
                 vote_choice: VoteChoice::Abstain,
             }),
             Vote::PublicVote(PublicVote {
                 address: mando.clone(),
+                weight: 1,
                 vote_choice: VoteChoice::Approve,
             }),
         ]
@@ -286,6 +295,12 @@ fn test() {
     // cast another vote and approve
     env.ledger().set_timestamp(1234567890);
     let kuiil = Address::generate(&env);
+
+    let meta = String::from_str(&env, "abcd");
+    contract.add_member(&kuiil, &meta);
+    let badges = vec![&env, Badge::Community];
+    contract.add_badges(&mando, &id, &kuiil, &badges);
+
     let voting_ends_at = 1234567890 + 3600 * 24 * 2;
     let proposal_id_2 =
         contract.create_proposal(&grogu, &id, &title, &ipfs, &voting_ends_at, &true);
@@ -295,6 +310,7 @@ fn test() {
         &proposal_id_2,
         &Vote::PublicVote(PublicVote {
             address: mando.clone(),
+            weight: 1,
             vote_choice: VoteChoice::Approve,
         }),
     );
@@ -307,6 +323,7 @@ fn test() {
             &proposal_id_2,
             &Vote::AnonymousVote(AnonymousVote {
                 address: kuiil.clone(),
+                weight: 1,
                 encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
                 encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
                 commitments: vec![&env, BytesN::from_array(&env, &[0; 96])],
@@ -324,6 +341,7 @@ fn test() {
             &proposal_id_2,
             &Vote::PublicVote(PublicVote {
                 address: mando.clone(),
+                weight: 1,
                 vote_choice: VoteChoice::Approve,
             }),
         )
@@ -337,6 +355,7 @@ fn test() {
         &proposal_id_2,
         &Vote::PublicVote(PublicVote {
             address: kuiil.clone(),
+            weight: Badge::Verified as u32 + 1,
             vote_choice: VoteChoice::Approve,
         }),
     );
@@ -360,14 +379,17 @@ fn test() {
             &env,
             Vote::PublicVote(PublicVote {
                 address: grogu.clone(),
+                weight: Badge::Verified as u32,
                 vote_choice: VoteChoice::Abstain,
             }),
             Vote::PublicVote(PublicVote {
                 address: mando.clone(),
+                weight: 1,
                 vote_choice: VoteChoice::Approve,
             }),
             Vote::PublicVote(PublicVote {
                 address: kuiil.clone(),
+                weight: Badge::Verified as u32 + 1,
                 vote_choice: VoteChoice::Approve,
             }),
         ]
@@ -401,6 +423,7 @@ fn test() {
     // test build_commitments_from_votes and abstain
     let abstain_vote = Vote::AnonymousVote(AnonymousVote {
         address: grogu.clone(),
+        weight: Badge::Verified as u32,
         encrypted_seeds: vec![
             &env,
             String::from_str(&env, "0"),
@@ -430,6 +453,7 @@ fn test() {
             &proposal_id_3,
             &Vote::AnonymousVote(AnonymousVote {
                 address: kuiil.clone(),
+                weight: Badge::Verified as u32,
                 encrypted_seeds: vec![&env, String::from_str(&env, "abcd")],
                 encrypted_votes: vec![&env, String::from_str(&env, "fsfds")],
                 commitments: vec![
@@ -445,6 +469,7 @@ fn test() {
 
     let vote_ = Vote::AnonymousVote(AnonymousVote {
         address: kuiil.clone(),
+        weight: 1,
         encrypted_seeds: vec![
             &env,
             String::from_str(&env, "fafdas"),
@@ -482,6 +507,122 @@ fn test() {
     println!("{:#?}", cost);
 
     assert_eq!(vote_result, ProposalStatus::Cancelled);
+
+    // membership
+    let meta = String::from_str(&env, "abcd");
+    contract.add_member(&grogu, &meta);
+
+    let member = contract.get_member(&grogu);
+    assert_eq!(
+        member,
+        Member {
+            projects: Vec::new(&env),
+            meta,
+        }
+    );
+
+    let badges_for_id = contract.get_badges(&id);
+    assert_eq!(
+        badges_for_id,
+        Badges {
+            developer: Vec::new(&env),
+            triage: Vec::new(&env),
+            community: vec![&env, kuiil.clone()],
+            verified: Vec::new(&env),
+            default: Vec::new(&env),
+        }
+    );
+
+    let weight_grogu_for_id = contract.get_max_weight(&id, &grogu);
+    assert_eq!(weight_grogu_for_id, 1u32);
+
+    let weight_mando_for_id = contract.get_max_weight(&id, &mando);
+    assert_eq!(weight_mando_for_id, 1u32);
+
+    // add some badges to the member and check again the member and project
+    let badges = vec![&env, Badge::Community, Badge::Developer];
+    contract.add_badges(&mando, &id, &grogu, &badges);
+
+    let member = contract.get_member(&grogu);
+    assert_eq!(
+        member.projects,
+        vec![
+            &env,
+            ProjectBadges {
+                project: id.clone(),
+                badges: badges.clone()
+            }
+        ]
+    );
+
+    let weight_grogu_for_id = contract.get_max_weight(&id, &grogu);
+    assert_eq!(weight_grogu_for_id, 11_000_000u32);
+
+    let weight_mando_for_id = contract.get_max_weight(&id, &mando);
+    assert_eq!(weight_mando_for_id, 1u32);
+
+    let badges_for_id = contract.get_badges(&id);
+    assert_eq!(
+        badges_for_id,
+        Badges {
+            developer: vec![&env, grogu.clone()],
+            triage: Vec::new(&env),
+            community: vec![&env, kuiil.clone(), grogu.clone()],
+            verified: Vec::new(&env),
+            default: Vec::new(&env),
+        }
+    );
+
+    // vote and adjust power
+    env.ledger().set_timestamp(1234567890);
+    let voting_ends_at = 1234567890 + 3600 * 24 * 2;
+    let proposal_id_4 =
+        contract.create_proposal(&mando, &id, &title, &ipfs, &voting_ends_at, &true);
+
+    let error = contract
+        .try_vote(
+            &kuiil,
+            &id,
+            &proposal_id_4,
+            &Vote::PublicVote(PublicVote {
+                address: kuiil.clone(),
+                weight: u32::MAX,
+                vote_choice: VoteChoice::Approve,
+            }),
+        )
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::VoterWeight.into());
+
+    // vote with reduced weight and check
+    contract.vote(
+        &grogu,
+        &id,
+        &proposal_id_4,
+        &Vote::PublicVote(PublicVote {
+            address: grogu.clone(),
+            weight: 42, // grogu has up to 11M
+            vote_choice: VoteChoice::Approve,
+        }),
+    );
+
+    let proposal = contract.get_proposal(&id, &proposal_id_4);
+    assert_eq!(
+        proposal.vote_data.votes,
+        vec![
+            &env,
+            Vote::PublicVote(PublicVote {
+                address: mando.clone(),
+                weight: Badge::Verified as u32,
+                vote_choice: VoteChoice::Abstain
+            }),
+            Vote::PublicVote(PublicVote {
+                address: grogu.clone(),
+                weight: 42,
+                vote_choice: VoteChoice::Approve
+            })
+        ]
+    );
 }
 
 #[test]

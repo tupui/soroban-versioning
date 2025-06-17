@@ -1,0 +1,72 @@
+---
+sidebar_position: 4
+---
+
+# Membership & Badges
+
+The smart-contract powering Tansu keeps track of community members **on-chain** and assigns them _badges_. These badges are more than simple labels – they carry a **numerical weight** that is later used for weighted voting inside a project's DAO.
+
+## Registering as a member
+
+Anyone can register themselves on-chain by calling:
+
+```bash
+stellar contract invoke \
+  --source-account G... \
+  --network testnet \
+  --id <TANSU_CONTRACT_ID> \
+  -- \
+  add_member \
+  --member_address G... \
+  --meta <ipfs_cid>
+```
+
+`meta` is optional. When supplied it must be an **IPFS CID** pointing to a folder that contains:
+
+- `profile.json` – free-form JSON metadata (name, description, …)
+- `profile-image.png` – avatar (optional)
+
+The dApp will automatically render this information in the **Member profile** modal.
+
+## Badges
+
+Maintainers can assign one or several badges to a member for a given project. Badges are stored on-chain and influence the maximum weight a member's vote can carry.
+
+| Badge | Weight | Typical use-case |
+| --- | --- | --- |
+| Developer | 10 000 000 | Core code contributors |
+| Triage | 5 000 000 | Issue triage & review |
+| Community | 1 000 000 | Active community member |
+| Verified | 500 000 | Owns a [Soroban Domain](https://sorobandomains.org/) |
+| Default | 1 | Anyone else |
+
+> The weight column reflects the numeric values found in the `Badge` enum of the contract (see source code). When several badges are present their weights are **summed** to obtain the member's total voting power.
+
+### Adding badges
+
+Only maintainers of a project can add badges:
+
+```bash
+stellar contract invoke \
+  --source-account <MAINTAINER_G...> \
+  --network testnet \
+  --id <TANSU_CONTRACT_ID> \
+  -- \
+  add_badges \
+  --maintainer <MAINTAINER_G...> \
+  --key <project_key> \
+  --member <member_G...> \
+  --badges '[Developer,Community]'
+```
+
+The dApp exposes a convenient **"Add badge"** modal that wraps this call.
+
+## Query helpers
+
+Smart-contract helpers make it easy to retrieve information:
+
+- `get_member` → full `Member` structure (projects + badges + meta)
+- `get_badges` → badge holders for a project
+- `get_max_weight` → compute effective voting weight for an address
+
+These endpoints are all used by the dApp and are public – anyone can call them from an RPC or another contract.

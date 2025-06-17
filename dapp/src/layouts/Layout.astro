@@ -17,6 +17,184 @@ const { title, page } = Astro.props;
 <script>
   import { Buffer } from "buffer";
   global.Buffer = Buffer;
+
+  // Add these event listeners to handle the new button events
+  document.addEventListener("astro:page-load", () => {
+    // Handle Add Project button on any page
+    document.addEventListener("show-create-project-modal", async () => {
+      try {
+        // Check if modal is already open
+        if (document.querySelector(".project-modal-container")) {
+          return; // Don't open multiple instances
+        }
+
+        // Create modal container with a distinct class for styling and selection
+        const container = document.createElement("div");
+        container.className = "project-modal-container fixed inset-0 z-[9999]";
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: CreateProjectModal } = await import(
+          "components/page/dashboard/CreateProjectModal.tsx"
+        );
+
+        const root = createRoot(container);
+
+        // Create a clean close function
+        const handleClose = () => {
+          // Remove the container from DOM
+          if (document.body.contains(container)) {
+            document.body.removeChild(container);
+          }
+
+          // Unmount React component immediately
+          try {
+            root.unmount();
+          } catch (e) {
+            console.error("Error unmounting root:", e);
+          }
+        };
+
+        // Handle direct clicks on the backdrop
+        container.addEventListener("click", (e) => {
+          if (e.target === container) {
+            handleClose();
+          }
+        });
+
+        // Render the modal with the close handler
+        root.render(
+          React.createElement(CreateProjectModal, {
+            onClose: handleClose,
+          }),
+        );
+      } catch (e) {
+        console.error("Error opening create project modal:", e);
+        alert(
+          "There was an error opening the project creation dialog. Please try again.",
+        );
+      }
+    });
+
+    // Handle Join Community button click
+    window.addEventListener("openJoinCommunity", async (event) => {
+      try {
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: JoinCommunityModal } = await import(
+          "components/page/dashboard/JoinCommunityModal.tsx"
+        );
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        // Get the address from the event detail if available
+        const prefillAddress = event.detail?.address || "";
+
+        root.render(
+          React.createElement(JoinCommunityModal, {
+            onClose: handleClose,
+            prefillAddress: prefillAddress,
+            onJoined: () => {
+              // Trigger wallet connected to refresh UI
+              const publicKey = localStorage.getItem("publicKey");
+              if (publicKey) {
+                window.dispatchEvent(
+                  new CustomEvent("walletConnected", { detail: publicKey }),
+                );
+              }
+            },
+          }),
+        );
+      } catch (e) {
+        console.error("Error opening join community modal:", e);
+      }
+    });
+
+    // Handle Profile button click
+    window.addEventListener("openProfileModal", async () => {
+      try {
+        const publicKey = localStorage.getItem("publicKey");
+        if (!publicKey) return;
+
+        // Remove any existing profile modals to prevent stacking
+        const existingModals = document.querySelectorAll(
+          ".profile-modal-container",
+        );
+        existingModals.forEach((modal) => {
+          document.body.removeChild(modal);
+        });
+
+        const container = document.createElement("div");
+        container.className = "profile-modal-container";
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const [{ default: MemberProfileModal }, { getMember }] =
+          await Promise.all([
+            import("components/page/dashboard/MemberProfileModal.tsx"),
+            import("@service/ReadContractService"),
+          ]);
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        try {
+          const memberData = await getMember(publicKey);
+
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: memberData,
+              address: publicKey,
+              onClose: handleClose,
+            }),
+          );
+        } catch (e) {
+          // Show the member not registered modal instead of join community
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: null,
+              address: publicKey,
+              onClose: handleClose,
+            }),
+          );
+        }
+      } catch (e) {
+        console.error("Error opening profile modal:", e);
+      }
+    });
+
+    // Check if we need to open create project modal from URL param
+    if (
+      window.location.pathname === "/" &&
+      new URLSearchParams(window.location.search).get(
+        "openCreateProjectModal",
+      ) === "true"
+    ) {
+      // Fire the event to open the modal
+      document.dispatchEvent(new CustomEvent("create-project-global"));
+    }
+  });
 </script>
 
 <html lang="en">

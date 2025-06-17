@@ -4,32 +4,34 @@ sidebar_position: 1
 
 # Welcome to Tansu!
 
-Tansu is a novel way to manage open source projects. Open source development is hard:
+Tansu is a governance and versioning layer for open source projects, built on the Stellar blockchain. It brings transparency, security, and decentralized decision-making to software development by combining on-chain project tracking, a powerful DAO, and a flexible badge-based membership system.
 
-- supply Chain Security concerns,
-- lack of transparency,
-- unfair retribution to participants,
-- non-working governance due to the heavy reliance of mailing lists and forums,
-- centralized platforms (GitHub, GitLab, etc.)
+## What is Tansu?
 
-It all comes down to centralization and obfuscation. Developing your project with Tansu means adopting a decentralized first approach, effectively addressing all these problems.
+Tansu complements platforms like GitHub by providing:
 
-## Difference with GitHub
+- **On-chain project registration**: Projects are registered and tracked on Stellar, with commit hashes and metadata verifiable by anyone.
+- **Decentralized Autonomous Organization (DAO)**: Every project gets its own DAO, enabling maintainers and contributors to propose, vote, and execute decisions transparently.
+- **Badge-based membership**: Roles and voting power are managed through on-chain badges, reflecting real project contributions.
+- **Integration with Soroban Domains**: Project names are protected and mapped to Soroban Domains, preventing squatting and ensuring authenticity.
+- **Open, auditable governance**: All actions—adding maintainers, updating metadata, voting—are recorded on-chain.
 
-Tansu does not replace GitHub, or your preferred hosting solution, rather it complements it. GitHub is great at hosting, sharing code and making change requests. What Tansu brings is a set of tools to manage and govern your project.
+## Distinction with GitHub
 
-## Open Governance
+Tansu does not replace GitHub (or your preferred hosting solution) – it complements it. While GitHub excels at hosting, sharing code, and managing change requests, Tansu brings on-chain governance, versioning, and decentralized decision-making. In other words, Tansu adds a transparent, auditable layer for project governance and commit verification, so you can build with confidence on open source.
 
-Projects on Tansu get their very own Decentralized Autonomous Organization (DAO). The community of a project is able to vote on new features, propose organizational changes or even trigger complex actions such as making a release or adding a new maintainer to a project.
+## Key Features
 
-The project have a wallet and their DAO is used to control the funds' allocation. There are mainly two pools. The first pool is dedicated to developers. Funds are automatically distributed to active maintainers based on specific criteria. The rest of the funds is managed by the DAO for other purposes such as compensating non-developers, infrastructure costs, or even organizing events.
+- **Project versioning**: Track and verify the latest commit hash for any project, with links to the canonical code repository.
+- **DAO proposals**: Submit, discuss, and vote on proposals (public or anonymous voting), with weighted votes based on badges.
+- **Membership & badges**: Register as a member, earn badges for your contributions, and participate in governance.
+- **Automated workflows**: Use Git hooks to sync commit hashes on-chain, and let the dApp handle signatures and wallet integration.
 
-## Security
+## Learn More
 
-Tansu adds an extra layer of security. It proposes a solution to track code changes on-chain and enable anyone to verify that the code hosted on GitHub is indeed the same. Coupled with other best practices, such as, reproducible build, code signing and attestation of provenance, Tansu guarantees that the code history has not been tampered with.
+- [Using the dApp](using_the_dapp.mdx): Step-by-step guide for end-users
+- [Membership & Badges](developers/membership.mdx): How roles and voting power work
+- [Governance & Proposals](developers/governance.mdx): DAO mechanics and proposal lifecycle
+- [On-chain architecture](developers/architecture.mdx): Smart contract and backend details
 
-## Still building
-
-Tansu is still in early development. Things change fast and new features are added as we play with the protocol and get feedback from the community.
-
-Tansu is fully Open-Source, so join us on [GitHub](https://github.com/tupui/soroban-versioning) and let's build together!
+Tansu is fully open source and under active development. Join us on [GitHub](https://github.com/tupui/soroban-versioning) and help shape the future of decentralized open source governance!

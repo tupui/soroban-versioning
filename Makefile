@@ -24,8 +24,7 @@ install:  ## install Rust and Soroban-CLI
 	# install Rust
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && \
 	# install Soroban and config
-	# wasm32v1-none
-	rustup target add wasm32-unknown-unknown && \
+	rustup target add wasm32v1-none && \
 	cargo install --locked soroban-cli --features opt
 
 prepare-network:  ## Setup network
@@ -52,8 +51,8 @@ rust-lint:
 	cargo fmt -- --emit files
 
 clean:
-	rm target/wasm32-unknown-unknown/release/*.wasm
-	rm target/wasm32-unknown-unknown/release/*.d
+	rm target/wasm32v1-none/release/*.wasm
+	rm target/wasm32v1-none/release/*.d
 	cargo clean
 
 # --------- Events --------- #
@@ -70,21 +69,21 @@ local-stack:  ## local stack
 
 contract_build:
 	stellar contract build
-	@ls -l target/wasm32-unknown-unknown/release/*.wasm
+	@ls -l target/wasm32v1-none/release/*.wasm
 
 contract_test:
 	cargo test
 
 contract_build-release: contract_build
-	stellar contract optimize --wasm target/wasm32-unknown-unknown/release/tansu.wasm
-	@ls -l target/wasm32-unknown-unknown/release/*.wasm
+	stellar contract optimize --wasm target/wasm32v1-none/release/tansu.wasm
+	@ls -l target/wasm32v1-none/release/*.wasm
 
 
 # --contract-id $(shell cat .stellar/tansu_id)
 contract_bindings: contract_build-release  ## Create bindings
 	stellar contract bindings typescript \
 		--network $(network) \
-		--wasm target/wasm32-unknown-unknown/release/tansu.wasm \
+		--wasm target/wasm32v1-none/release/tansu.wasm \
 		--output-dir dapp/packages/tansu \
 		--overwrite && \
 	cd dapp/packages/tansu && \
@@ -95,11 +94,11 @@ contract_bindings: contract_build-release  ## Create bindings
 
 contract_deploy:  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
-  		--wasm target/wasm32-unknown-unknown/release/tansu.optimized.wasm \
+  		--wasm target/wasm32v1-none/release/tansu.optimized.wasm \
   		--source-account mando-$(network) \
   		--network $(network) \
   		-- \
-  		--admin $(shell soroban keys address mando-$(network)) \
+  		--admin $(shell stellar keys address mando-$(network)) \
   		> .stellar/tansu_id && \
   	cat .stellar/tansu_id
 
@@ -110,7 +109,7 @@ contract_upgrade:  ## After manually pulling the wasm from the pipeline, update 
     	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	upgrade \
-		--new_wasm_hash $(shell stellar contract install --source-account mando-$(network) --network $(network) --wasm $(wasm))
+		--new_wasm_hash $(shell stellar contract upload --source-account mando-$(network) --network $(network) --wasm $(wasm))
 
 # --------- Soroban Domains --------- #
 
@@ -129,7 +128,7 @@ contract_domain_init:
 		--id $(shell cat .stellar/soroban_domain_id) \
 		-- \
 		init \
-		--adm $(shell soroban keys address mando-$(network)) \
+		--adm $(shell stellar keys address mando-$(network)) \
 		--node_rate 100 \
 		--col_asset $(shell stellar contract id asset --asset native --network $(network)) \
 		--min_duration 31536000 \
@@ -160,10 +159,10 @@ contract_register:
     	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	register \
-    	--maintainer $(shell soroban keys address mando-$(network)) \
-    	--name tansu \
-    	--maintainers '["$(shell soroban keys address mando-$(network))", "$(shell soroban keys address grogu-$(network))"]' \
-    	--url https://github.com/tupui/soroban-versioning \
+    	--maintainer $(shell stellar keys address mando-$(network)) \
+    	--name salib \
+    	--maintainers '["$(shell stellar keys address mando-$(network))", "$(shell stellar keys address grogu-$(network))"]' \
+    	--url https://github.com/salib/salib \
     	--hash 920b7ffed638360e7259c4b6a4691ef947cfb9bc4ab1b3d6b7f0628c71e86b25 \
     	--domain_contract_id $(domain_contract_id)
 
@@ -174,7 +173,7 @@ contract_commit:
     	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	commit \
-    	--maintainer $(shell soroban keys address mando-$(network)) \
+    	--maintainer $(shell stellar keys address mando-$(network)) \
     	--project_key 37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156 \
     	--hash af6361514d37bbf162f161716279676c35bb5760
 
