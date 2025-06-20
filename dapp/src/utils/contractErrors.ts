@@ -1,4 +1,4 @@
-import { Errors as ContractErrors } from "../../packages/tansu";
+import { ContractErrors } from "../../packages/tansu";
 
 /**
  * Parse contract error from simulation result or error message
