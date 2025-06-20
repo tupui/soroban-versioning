@@ -83,7 +83,7 @@ contract_build-release: contract_build
 contract_bindings: contract_build-release  ## Create bindings
 	stellar contract bindings typescript \
 		--network $(network) \
-		--wasm target/wasm32v1-none/release/tansu.wasm \
+		--wasm target/wasm32v1-none/release/tansu.optimized.wasm \
 		--output-dir dapp/packages/tansu \
 		--overwrite && \
 	cd dapp/packages/tansu && \
@@ -160,9 +160,9 @@ contract_register:
     	-- \
     	register \
     	--maintainer $(shell stellar keys address mando-$(network)) \
-    	--name salib \
+    	--name tansu \
     	--maintainers '["$(shell stellar keys address mando-$(network))", "$(shell stellar keys address grogu-$(network))"]' \
-    	--url https://github.com/salib/salib \
+    	--url https://github.com/tupui/soroban-versioning \
     	--hash 920b7ffed638360e7259c4b6a4691ef947cfb9bc4ab1b3d6b7f0628c71e86b25 \
     	--domain_contract_id $(domain_contract_id)
 
@@ -175,7 +175,7 @@ contract_commit:
     	commit \
     	--maintainer $(shell stellar keys address mando-$(network)) \
     	--project_key 37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156 \
-    	--hash af6361514d37bbf162f161716279676c35bb5760
+    	--hash bc4d84f2b00501ce6c176d797371f65799838720
 
 contract_get_commit:
 	stellar contract invoke \

@@ -30,47 +30,30 @@ if (typeof window !== "undefined") {
   window.Buffer = window.Buffer || Buffer;
 }
 
-export const Errors = {
+export const ContractErrors = {
   0: { message: "UnexpectedError" },
-
   1: { message: "InvalidKey" },
-
   2: { message: "ProjectAlreadyExist" },
-
   3: { message: "UnregisteredMaintainer" },
-
   4: { message: "NoHashFound" },
-
   5: { message: "InvalidDomainError" },
-
   6: { message: "MaintainerNotDomainOwner" },
-
   7: { message: "ProposalInputValidation" },
-
   8: { message: "NoProposalorPageFound" },
-
   9: { message: "AlreadyVoted" },
-
   10: { message: "ProposalVotingTime" },
-
   11: { message: "ProposalActive" },
-
   12: { message: "WrongVoteType" },
-
   13: { message: "WrongVoter" },
-
   14: { message: "TallySeedError" },
-
   15: { message: "InvalidProof" },
-
   16: { message: "NoAnonymousVotingConfig" },
-
   17: { message: "BadCommitment" },
-
   18: { message: "UnknownMember" },
-
   19: { message: "MemberAlreadyExist" },
+  20: { message: "VoterWeight" },
 };
+
 export type DataKey =
   | { tag: "Admin"; values: void }
   | { tag: "Member"; values: readonly [string] };
@@ -119,6 +102,7 @@ export type VoteChoice =
 export interface PublicVote {
   address: string;
   vote_choice: VoteChoice;
+  weight: u32;
 }
 
 export interface AnonymousVote {
@@ -126,6 +110,7 @@ export interface AnonymousVote {
   commitments: Array<Buffer>;
   encrypted_seeds: Array<string>;
   encrypted_votes: Array<string>;
+  weight: u32;
 }
 
 export interface VoteData {
@@ -617,6 +602,32 @@ export interface Client {
   ) => Promise<AssembledTransaction<Badges>>;
 
   /**
+   * Construct and simulate a get_max_weight transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  get_max_weight: (
+    {
+      project_key,
+      member_address,
+    }: { project_key: Buffer; member_address: string },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<u32>>;
+
+  /**
    * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   upgrade: (
@@ -812,7 +823,7 @@ export class Client extends ContractClient {
   static async deploy<T = Client>(
     /** Constructor/Initialization Args for the contract's `__constructor` method */
     { admin }: { admin: string },
-    /** Options for initalizing a Client as well as for calling a method, with extras specific to deploying. */
+    /** Options for initializing a Client as well as for calling a method, with extras specific to deploying. */
     options: MethodOptions &
       Omit<ContractClientOptions, "contractId"> & {
         /** The hash of the Wasm blob, which must already be installed on-chain. */
@@ -841,6 +852,7 @@ export class Client extends ContractClient {
         "AAAAAAAAAAAAAAAKZ2V0X21lbWJlcgAAAAAAAQAAAAAAAAAObWVtYmVyX2FkZHJlc3MAAAAAABMAAAABAAAH0AAAAAZNZW1iZXIAAA==",
         "AAAAAAAAAAAAAAAKYWRkX2JhZGdlcwAAAAAABAAAAAAAAAAKbWFpbnRhaW5lcgAAAAAAEwAAAAAAAAADa2V5AAAAAA4AAAAAAAAABm1lbWJlcgAAAAAAEwAAAAAAAAAGYmFkZ2VzAAAAAAPqAAAH0AAAAAVCYWRnZQAAAAAAAAA=",
         "AAAAAAAAAAAAAAAKZ2V0X2JhZGdlcwAAAAAAAQAAAAAAAAADa2V5AAAAAA4AAAABAAAH0AAAAAZCYWRnZXMAAA==",
+        "AAAAAAAAAAAAAAAOZ2V0X21heF93ZWlnaHQAAAAAAAIAAAAAAAAAC3Byb2plY3Rfa2V5AAAAAA4AAAAAAAAADm1lbWJlcl9hZGRyZXNzAAAAAAATAAAAAQAAAAQ=",
         "AAAAAAAAAAAAAAANX19jb25zdHJ1Y3RvcgAAAAAAAAEAAAAAAAAABWFkbWluAAAAAAAAEwAAAAA=",
         "AAAAAAAAAAAAAAAHdXBncmFkZQAAAAABAAAAAAAAAA1uZXdfd2FzbV9oYXNoAAAAAAAD7gAAACAAAAAA",
         "AAAAAAAAAAAAAAAHdmVyc2lvbgAAAAAAAAAAAQAAAAQ=",
@@ -849,7 +861,7 @@ export class Client extends ContractClient {
         "AAAAAAAAABhTZXQgdGhlIGxhc3QgY29tbWl0IGhhc2gAAAAGY29tbWl0AAAAAAADAAAAAAAAAAptYWludGFpbmVyAAAAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAARoYXNoAAAAEAAAAAA=",
         "AAAAAAAAABhHZXQgdGhlIGxhc3QgY29tbWl0IGhhc2gAAAAKZ2V0X2NvbW1pdAAAAAAAAQAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAEAAAAQ",
         "AAAAAAAAAAAAAAALZ2V0X3Byb2plY3QAAAAAAQAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAEAAAfQAAAAB1Byb2plY3QA",
-        "AAAABAAAAAAAAAAAAAAADkNvbnRyYWN0RXJyb3JzAAAAAAAUAAAAAAAAAA9VbmV4cGVjdGVkRXJyb3IAAAAAAAAAAAAAAAAKSW52YWxpZEtleQAAAAAAAQAAAAAAAAATUHJvamVjdEFscmVhZHlFeGlzdAAAAAACAAAAAAAAABZVbnJlZ2lzdGVyZWRNYWludGFpbmVyAAAAAAADAAAAAAAAAAtOb0hhc2hGb3VuZAAAAAAEAAAAAAAAABJJbnZhbGlkRG9tYWluRXJyb3IAAAAAAAUAAAAAAAAAGE1haW50YWluZXJOb3REb21haW5Pd25lcgAAAAYAAAAAAAAAF1Byb3Bvc2FsSW5wdXRWYWxpZGF0aW9uAAAAAAcAAAAAAAAAFU5vUHJvcG9zYWxvclBhZ2VGb3VuZAAAAAAAAAgAAAAAAAAADEFscmVhZHlWb3RlZAAAAAkAAAAAAAAAElByb3Bvc2FsVm90aW5nVGltZQAAAAAACgAAAAAAAAAOUHJvcG9zYWxBY3RpdmUAAAAAAAsAAAAAAAAADVdyb25nVm90ZVR5cGUAAAAAAAAMAAAAAAAAAApXcm9uZ1ZvdGVyAAAAAAANAAAAAAAAAA5UYWxseVNlZWRFcnJvcgAAAAAADgAAAAAAAAAMSW52YWxpZFByb29mAAAADwAAAAAAAAAXTm9Bbm9ueW1vdXNWb3RpbmdDb25maWcAAAAAEAAAAAAAAAANQmFkQ29tbWl0bWVudAAAAAAAABEAAAAAAAAADVVua25vd25NZW1iZXIAAAAAAAASAAAAAAAAABJNZW1iZXJBbHJlYWR5RXhpc3QAAAAAABM=",
+        "AAAABAAAAAAAAAAAAAAADkNvbnRyYWN0RXJyb3JzAAAAAAAVAAAAAAAAAA9VbmV4cGVjdGVkRXJyb3IAAAAAAAAAAAAAAAAKSW52YWxpZEtleQAAAAAAAQAAAAAAAAATUHJvamVjdEFscmVhZHlFeGlzdAAAAAACAAAAAAAAABZVbnJlZ2lzdGVyZWRNYWludGFpbmVyAAAAAAADAAAAAAAAAAtOb0hhc2hGb3VuZAAAAAAEAAAAAAAAABJJbnZhbGlkRG9tYWluRXJyb3IAAAAAAAUAAAAAAAAAGE1haW50YWluZXJOb3REb21haW5Pd25lcgAAAAYAAAAAAAAAF1Byb3Bvc2FsSW5wdXRWYWxpZGF0aW9uAAAAAAcAAAAAAAAAFU5vUHJvcG9zYWxvclBhZ2VGb3VuZAAAAAAAAAgAAAAAAAAADEFscmVhZHlWb3RlZAAAAAkAAAAAAAAAElByb3Bvc2FsVm90aW5nVGltZQAAAAAACgAAAAAAAAAOUHJvcG9zYWxBY3RpdmUAAAAAAAsAAAAAAAAADVdyb25nVm90ZVR5cGUAAAAAAAAMAAAAAAAAAApXcm9uZ1ZvdGVyAAAAAAANAAAAAAAAAA5UYWxseVNlZWRFcnJvcgAAAAAADgAAAAAAAAAMSW52YWxpZFByb29mAAAADwAAAAAAAAAXTm9Bbm9ueW1vdXNWb3RpbmdDb25maWcAAAAAEAAAAAAAAAANQmFkQ29tbWl0bWVudAAAAAAAABEAAAAAAAAADVVua25vd25NZW1iZXIAAAAAAAASAAAAAAAAABJNZW1iZXJBbHJlYWR5RXhpc3QAAAAAABMAAAAAAAAAC1ZvdGVyV2VpZ2h0AAAAABQ=",
         "AAAAAgAAAAAAAAAAAAAAB0RhdGFLZXkAAAAAAgAAAAAAAAAAAAAABUFkbWluAAAAAAAAAQAAAAAAAAAGTWVtYmVyAAAAAAABAAAAEw==",
         "AAAAAQAAAAAAAAAAAAAABkJhZGdlcwAAAAAABQAAAAAAAAAJY29tbXVuaXR5AAAAAAAD6gAAABMAAAAAAAAAB2RlZmF1bHQAAAAD6gAAABMAAAAAAAAACWRldmVsb3BlcgAAAAAAA+oAAAATAAAAAAAAAAZ0cmlhZ2UAAAAAA+oAAAATAAAAAAAAAAh2ZXJpZmllZAAAA+oAAAAT",
         "AAAAAwAAAAAAAAAAAAAABUJhZGdlAAAAAAAABQAAAAAAAAAJRGV2ZWxvcGVyAAAAAJiWgAAAAAAAAAAGVHJpYWdlAAAATEtAAAAAAAAAAAlDb21tdW5pdHkAAAAAD0JAAAAAAAAAAAhWZXJpZmllZAAHoSAAAAAAAAAAB0RlZmF1bHQAAAAAAQ==",
@@ -858,8 +870,8 @@ export class Client extends ContractClient {
         "AAAAAgAAAAAAAAAAAAAADlByb3Bvc2FsU3RhdHVzAAAAAAAEAAAAAAAAAAAAAAAGQWN0aXZlAAAAAAAAAAAAAAAAAAhBcHByb3ZlZAAAAAAAAAAAAAAACFJlamVjdGVkAAAAAAAAAAAAAAAJQ2FuY2VsbGVkAAAA",
         "AAAAAgAAAAAAAAAAAAAABFZvdGUAAAACAAAAAQAAAAAAAAAKUHVibGljVm90ZQAAAAAAAQAAB9AAAAAKUHVibGljVm90ZQAAAAAAAQAAAAAAAAANQW5vbnltb3VzVm90ZQAAAAAAAAEAAAfQAAAADUFub255bW91c1ZvdGUAAAA=",
         "AAAAAgAAAAAAAAAAAAAAClZvdGVDaG9pY2UAAAAAAAMAAAAAAAAAAAAAAAdBcHByb3ZlAAAAAAAAAAAAAAAABlJlamVjdAAAAAAAAAAAAAAAAAAHQWJzdGFpbgA=",
-        "AAAAAQAAAAAAAAAAAAAAClB1YmxpY1ZvdGUAAAAAAAIAAAAAAAAAB2FkZHJlc3MAAAAAEwAAAAAAAAALdm90ZV9jaG9pY2UAAAAH0AAAAApWb3RlQ2hvaWNlAAA=",
-        "AAAAAQAAAAAAAAAAAAAADUFub255bW91c1ZvdGUAAAAAAAAEAAAAAAAAAAdhZGRyZXNzAAAAABMAAAAAAAAAC2NvbW1pdG1lbnRzAAAAA+oAAAPuAAAAYAAAAAAAAAAPZW5jcnlwdGVkX3NlZWRzAAAAA+oAAAAQAAAAAAAAAA9lbmNyeXB0ZWRfdm90ZXMAAAAD6gAAABA=",
+        "AAAAAQAAAAAAAAAAAAAAClB1YmxpY1ZvdGUAAAAAAAMAAAAAAAAAB2FkZHJlc3MAAAAAEwAAAAAAAAALdm90ZV9jaG9pY2UAAAAH0AAAAApWb3RlQ2hvaWNlAAAAAAAAAAAABndlaWdodAAAAAAABA==",
+        "AAAAAQAAAAAAAAAAAAAADUFub255bW91c1ZvdGUAAAAAAAAFAAAAAAAAAAdhZGRyZXNzAAAAABMAAAAAAAAAC2NvbW1pdG1lbnRzAAAAA+oAAAPuAAAAYAAAAAAAAAAPZW5jcnlwdGVkX3NlZWRzAAAAA+oAAAAQAAAAAAAAAA9lbmNyeXB0ZWRfdm90ZXMAAAAD6gAAABAAAAAAAAAABndlaWdodAAAAAAABA==",
         "AAAAAQAAAAAAAAAAAAAACFZvdGVEYXRhAAAAAwAAAAAAAAANcHVibGljX3ZvdGluZwAAAAAAAAEAAAAAAAAABXZvdGVzAAAAAAAD6gAAB9AAAAAEVm90ZQAAAAAAAAAOdm90aW5nX2VuZHNfYXQAAAAAAAY=",
         "AAAAAQAAAAAAAAAAAAAAE0Fub255bW91c1ZvdGVDb25maWcAAAAAAwAAAAAAAAAKcHVibGljX2tleQAAAAAAEAAAAAAAAAAUc2VlZF9nZW5lcmF0b3JfcG9pbnQAAAPuAAAAYAAAAAAAAAAUdm90ZV9nZW5lcmF0b3JfcG9pbnQAAAPuAAAAYA==",
         "AAAAAQAAAAAAAAAAAAAACFByb3Bvc2FsAAAABQAAAAAAAAACaWQAAAAAAAQAAAAAAAAABGlwZnMAAAAQAAAAAAAAAAZzdGF0dXMAAAAAB9AAAAAOUHJvcG9zYWxTdGF0dXMAAAAAAAAAAAAFdGl0bGUAAAAAAAAQAAAAAAAAAAl2b3RlX2RhdGEAAAAAAAfQAAAACFZvdGVEYXRh",
@@ -885,6 +897,7 @@ export class Client extends ContractClient {
     get_member: this.txFromJSON<Member>,
     add_badges: this.txFromJSON<null>,
     get_badges: this.txFromJSON<Badges>,
+    get_max_weight: this.txFromJSON<u32>,
     upgrade: this.txFromJSON<null>,
     version: this.txFromJSON<u32>,
     register: this.txFromJSON<Buffer>,

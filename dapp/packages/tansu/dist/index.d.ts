@@ -9,7 +9,7 @@ import type { u32, u64, Option } from "@stellar/stellar-sdk/contract";
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
-export declare const Errors: {
+export declare const ContractErrors: {
   0: {
     message: string;
   };
@@ -68,6 +68,9 @@ export declare const Errors: {
     message: string;
   };
   19: {
+    message: string;
+  };
+  20: {
     message: string;
   };
 };
@@ -144,12 +147,14 @@ export type VoteChoice =
 export interface PublicVote {
   address: string;
   vote_choice: VoteChoice;
+  weight: u32;
 }
 export interface AnonymousVote {
   address: string;
   commitments: Array<Buffer>;
   encrypted_seeds: Array<string>;
   encrypted_votes: Array<string>;
+  weight: u32;
 }
 export interface VoteData {
   public_voting: boolean;
@@ -657,6 +662,32 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<Badges>>;
   /**
+   * Construct and simulate a get_max_weight transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   */
+  get_max_weight: (
+    {
+      project_key,
+      member_address,
+    }: {
+      project_key: Buffer;
+      member_address: string;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<u32>>;
+  /**
    * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   upgrade: (
@@ -853,7 +884,7 @@ export declare class Client extends ContractClient {
     }: {
       admin: string;
     },
-    /** Options for initalizing a Client as well as for calling a method, with extras specific to deploying. */
+    /** Options for initializing a Client as well as for calling a method, with extras specific to deploying. */
     options: MethodOptions &
       Omit<ContractClientOptions, "contractId"> & {
         /** The hash of the Wasm blob, which must already be installed on-chain. */
@@ -883,6 +914,7 @@ export declare class Client extends ContractClient {
     get_member: (json: string) => AssembledTransaction<Member>;
     add_badges: (json: string) => AssembledTransaction<null>;
     get_badges: (json: string) => AssembledTransaction<Badges>;
+    get_max_weight: (json: string) => AssembledTransaction<number>;
     upgrade: (json: string) => AssembledTransaction<null>;
     version: (json: string) => AssembledTransaction<number>;
     register: (json: string) => AssembledTransaction<Buffer<ArrayBufferLike>>;
