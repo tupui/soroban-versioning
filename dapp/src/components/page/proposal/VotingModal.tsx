@@ -4,7 +4,6 @@ import Title from "components/utils/Title";
 import { voteTypeDescriptionMap, voteTypeLabelMap } from "constants/constants";
 import React, { useState } from "react";
 import { VoteType } from "types/proposal";
-import { toast } from "utils/utils";
 import VoteTypeCheckbox from "./VoteTypeCheckbox";
 
 interface VotersModalProps extends ModalProps {
@@ -65,10 +64,6 @@ const VotingModal: React.FC<VotersModalProps> = ({
         selectedOption as VoteType,
       );
       setIsLoading(false);
-      toast.success(
-        "Congratulation!",
-        `You have successfully voted "${selectedOption}"`,
-      );
       setIsVoted?.(true);
     } catch (error: any) {
       setIsLoading(false);
