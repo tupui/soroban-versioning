@@ -32,7 +32,7 @@ const OutcomeInput = ({
       </div>
       {xdr == null ? (
         <Button type="secondary" onClick={() => setXdr("")}>
-          Add Canceled Outcome
+          Add XDR
         </Button>
       ) : (
         <div className="w-full flex flex-col gap-[18px]">
@@ -57,7 +57,7 @@ const OutcomeInput = ({
           </div>
           <div className="flex flex-col gap-[18px]">
             <p className="leading-[16px] text-base font-[600] text-primary">
-              XDR {type === "approved" ? "(Required)" : "(Optional)"}
+              XDR (Optional)
             </p>
             <div>
               <Textarea

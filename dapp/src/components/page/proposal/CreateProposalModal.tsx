@@ -258,24 +258,16 @@ const CreateProposalModal = () => {
   };
 
   const validateApproveOutcome = (): boolean => {
-    let isValid = true;
-
     const descError = validateTextContent(
       approveDescription,
       3,
       "Approved outcome description",
     );
+
     setApproveDescriptionError(descError);
-    if (descError) isValid = false;
+    setApproveXdrError(null);
 
-    if (!approveXdr.trim()) {
-      setApproveXdrError("Approved outcome XDR is required");
-      isValid = false;
-    } else {
-      setApproveXdrError(null);
-    }
-
-    return isValid;
+    return descError === null;
   };
 
   // Check if we can proceed with form submission based on validations
@@ -285,9 +277,7 @@ const CreateProposalModal = () => {
     }
 
     if (step === 2) {
-      const isValid =
-        isContentValid(approveDescription) && approveXdr.trim() !== "";
-      return isValid;
+      return isContentValid(approveDescription);
     }
 
     return true;
@@ -521,10 +511,13 @@ const CreateProposalModal = () => {
             <Button
               onClick={() => {
                 try {
-                  const votingDays = getDeltaDays(selectedDate);
+                  const diffMs = new Date(selectedDate).getTime() - Date.now();
+                  const diffHours = diffMs / (1000 * 60 * 60);
 
-                  if (votingDays < 1 || votingDays > 30)
-                    throw new Error("Voting days must be between 5 and 30");
+                  if (diffHours < 24 || diffHours > 30 * 24)
+                    throw new Error(
+                      "Voting duration must be at least 24 hours and no more than 30 days",
+                    );
 
                   setStep(step + 1);
                 } catch (err: any) {
