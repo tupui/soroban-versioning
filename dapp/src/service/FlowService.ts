@@ -188,16 +188,32 @@ async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
     if (getResponse.status === "SUCCESS") {
       // Extract the result from the transaction meta
       if (getResponse.returnValue) {
-        // For create_proposal, decode the return value to get the proposal ID
         try {
-          // If it's a number, return it directly
-          if (typeof getResponse.returnValue === "number") {
-            return getResponse.returnValue;
+          // Lazy-load decoder utilities from stellar-sdk
+          const { xdr, scValToNative } = await import("@stellar/stellar-sdk");
+
+          let decoded: any;
+          if (typeof getResponse.returnValue === "string") {
+            // Base64-encoded XDR string
+            const scVal = xdr.ScVal.fromXDR(getResponse.returnValue, "base64");
+            decoded = scValToNative(scVal);
+          } else {
+            // Already a ScVal object
+            decoded = scValToNative(getResponse.returnValue);
           }
-          // Otherwise try to parse it
-          return parseInt(getResponse.returnValue.toString());
-        } catch (e) {
-          // If decoding fails, just return true for success
+
+          // For the create_proposal call we expect an integer ID
+          if (typeof decoded === "bigint") return Number(decoded);
+          if (typeof decoded === "number") return decoded;
+
+          // If the contract returns a boolean (other flows) just pass it through
+          if (typeof decoded === "boolean") return decoded;
+
+          // Fallback: attempt numeric coercion
+          const coerced = Number(decoded);
+          return isNaN(coerced) ? decoded : coerced;
+        } catch (_) {
+          // On any failure, indicate generic success so the outer flow can continue
           return true;
         }
       }

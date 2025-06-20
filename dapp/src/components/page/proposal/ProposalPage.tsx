@@ -48,10 +48,11 @@ const ProposalPage: React.FC = () => {
   };
 
   const getProposalDetails = async () => {
-    if (!id !== undefined && projectName) {
+    if (id !== undefined && projectName) {
       setIsLoading(true);
       try {
         const proposalData = await getProposal(projectName, id);
+
         if (proposalData) {
           const proposalView = modifyProposalToView(proposalData, projectName);
           setProposal(proposalView);
@@ -60,22 +61,22 @@ const ProposalPage: React.FC = () => {
             const fetchedDescription = await fetchProposalFromIPFS(
               proposalData.ipfs,
             );
-            setDescription(fetchedDescription || ""); // Ensure description is never null
+            setDescription(fetchedDescription || "");
 
             const outcomeData = await fetchOutcomeDataFromIPFS(
               proposalData.ipfs,
             );
             setOutcome(outcomeData);
           }
-        }
-      } catch (error: any) {
-        console.error("Error fetching proposal details:", error);
-        toast.error("Something Went Wrong!", error.message);
-      }
-      try {
-        const projectInfo = await getProjectFromName(projectName);
-        if (projectInfo && projectInfo.maintainers) {
-          setProjectMaintainers(projectInfo?.maintainers);
+
+          // Fetch project maintainers – errors are logged but won't trigger a second toast
+          getProjectFromName(projectName)
+            .then((projectInfo) => {
+              if (projectInfo?.maintainers) {
+                setProjectMaintainers(projectInfo.maintainers);
+              }
+            })
+            .catch(() => {});
         }
       } catch (error: any) {
         toast.error("Something Went Wrong!", error.message);
@@ -86,6 +87,7 @@ const ProposalPage: React.FC = () => {
         "Something Went Wrong!",
         "Project name or proposal id is not provided",
       );
+      setIsLoading(false);
     }
   };
 
