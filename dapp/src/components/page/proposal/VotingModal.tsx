@@ -67,7 +67,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
       setIsLoading(false);
       toast.success(
         "Congratulation!",
-        `You have successfully voted to "${selectedOption}" option.`,
+        `You have successfully voted "${selectedOption}"`,
       );
       setIsVoted?.(true);
     } catch (error: any) {

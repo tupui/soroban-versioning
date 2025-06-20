@@ -32,11 +32,11 @@ const contractId = import.meta.env.PUBLIC_SOROBAN_CONTRACT_ID;
 function mapVoteTypeToVote(voteType: VoteType): VoteChoice {
   switch (voteType) {
     case "approve":
-      return { tag: "Approve", values: undefined };
+      return { tag: "Approve" } as VoteChoice;
     case "reject":
-      return { tag: "Reject", values: undefined };
+      return { tag: "Reject" } as VoteChoice;
     case "abstain":
-      return { tag: "Abstain", values: undefined };
+      return { tag: "Abstain" } as VoteChoice;
     default:
       throw new Error("Invalid vote type");
   }
@@ -237,6 +237,19 @@ async function voteToProposal(
     keccak256.create().update(project_name).digest(),
   );
 
+  // Retrieve voting weight for the member
+  let weight = 1;
+  try {
+    const res = await Tansu.get_max_weight({
+      project_key,
+      member_address: publicKey,
+    });
+    weight = Number(res.result) || 1;
+  } catch (_) {
+    // Default to weight 1 if contract query fails
+    weight = 1;
+  }
+
   const mappedVote = mapVoteTypeToVote(vote);
   const publicVote: Vote = {
     tag: "PublicVote",
@@ -244,6 +257,7 @@ async function voteToProposal(
       {
         address: publicKey,
         vote_choice: mappedVote,
+        weight,
       },
     ],
   };
