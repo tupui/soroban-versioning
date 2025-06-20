@@ -22,7 +22,7 @@ const ProposalList: React.FC = () => {
     try {
       if (projectName) {
         const page = await getProposalPages(projectName);
-        setTotalPage(page);
+        setTotalPage(page ?? 0);
       }
     } catch (err: any) {
       toast.error("Proposal list", err.message);
@@ -33,7 +33,7 @@ const ProposalList: React.FC = () => {
     if (projectName) {
       setIsLoading(true);
       try {
-        const proposals = await getProposals(projectName, _page);
+        const proposals = (await getProposals(projectName, _page)) || [];
         const updatedProposalData = proposals
           .map((proposal) => {
             return modifyProposalToView(proposal, projectName);
@@ -64,6 +64,7 @@ const ProposalList: React.FC = () => {
           <div className="flex flex-col gap-[18px]">
             {proposalData.map((proposal) => (
               <ProposalCard
+                key={proposal.id}
                 proposal={proposal}
                 onVoteClick={() => {
                   setProposalId(proposal.id);

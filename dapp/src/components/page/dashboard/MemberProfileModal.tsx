@@ -30,6 +30,7 @@ interface ProfileData {
   name: string;
   description: string;
   social: string;
+  image?: string; // optional path to profile image inside the IPFS directory
 }
 
 interface ProjectWithName {
@@ -107,13 +108,35 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
             if (profileData) {
               setProfileData(profileData);
               setHasValidMetadata(true);
+
+              // Determine profile image path
+              if (profileData.image && typeof profileData.image === "string") {
+                setProfileImageUrl(`${ipfsUrl}/${profileData.image}`);
+              }
             }
           } catch (error) {
             // Silent failure - this is an expected case for missing profile data
           }
 
-          // Set profile image URL - use standard path format
-          setProfileImageUrl(`${ipfsUrl}/profile-image.png`);
+          // If not already set from profile.json, try the standard file name pattern
+          if (!profileImageUrl) {
+            const exts = ["png", "jpg", "jpeg"];
+            let found = false;
+            exts.forEach((ext, idx) => {
+              const candidate = `${ipfsUrl}/profile-image.${ext}`;
+              // First extension becomes optimistic default so the UI loads quickly
+              if (idx === 0) setProfileImageUrl(candidate);
+
+              const img = new Image();
+              img.src = candidate;
+              img.onload = () => {
+                if (!found) {
+                  found = true;
+                  setProfileImageUrl(candidate);
+                }
+              };
+            });
+          }
         } catch (error) {
           // Silent error handling
         } finally {
