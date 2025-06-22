@@ -9,7 +9,7 @@ export const voteTypeLabelMap: AnyObject = {
 export const voteTypeDescriptionMap: AnyObject = {
   approve: "You believe this proposal should move forward.",
   reject: "You believe this proposal should not move forward.",
-  abstain: "You choose not to abstain.",
+  abstain: "You choose to abstain.",
 };
 
 export const votedTypeLabelMap: AnyObject = {

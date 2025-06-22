@@ -52,6 +52,9 @@ import {
   isContentValid,
 } from "utils/validations";
 import OutcomeInput from "./OutcomeInput";
+import { generateRSAKeyPair } from "utils/crypto";
+import { setupAnonymousVoting } from "@service/WriteContractService";
+import { Buffer } from "buffer";
 
 import "@mdxeditor/editor/style.css";
 import { navigate } from "astro:transitions/client";
@@ -80,6 +83,14 @@ const CreateProposalModal = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [proposalId, setProposalId] = useState<number | null>(null);
   const [ipfsLink, setIpfsLink] = useState("");
+  const [isAnonymousVoting, setIsAnonymousVoting] = useState(false);
+  const [generatedKeys, setGeneratedKeys] = useState<{
+    publicKey: string;
+    privateKey: string;
+  } | null>(null);
+  const [existingAnonConfig, setExistingAnonConfig] = useState<boolean>(false);
+  const [resetAnonKeys, setResetAnonKeys] = useState<boolean>(false);
+  const [keysDownloaded, setKeysDownloaded] = useState<boolean>(false);
   const [proposalNameError, setProposalNameError] = useState<string | null>(
     null,
   );
@@ -110,12 +121,20 @@ const CreateProposalModal = () => {
     const name = new URLSearchParams(window.location.search).get("name");
     setProjectName(name);
     const showModalButton = document.querySelector("#create-proposal-button");
+
+    // pre-existing flag check
+    if ((window as any).__nextFunc === "create_proposal") {
+      setShowModal(true);
+      setStep(1);
+    }
+
     if (showModalButton) {
       setStep(1);
       showModalButton.addEventListener("click", handleSubmmitProposal);
       return () =>
         showModalButton.removeEventListener("click", handleSubmmitProposal);
     }
+
     return;
   }, [handleSubmmitProposal]);
 
@@ -216,11 +235,22 @@ const CreateProposalModal = () => {
 
       setStep(6);
 
-      // Calculate voting end timestamp
+      // 1️⃣ Anonymous voting setup if needed
+      if (isAnonymousVoting) {
+        if (!existingAnonConfig || resetAnonKeys) {
+          if (!generatedKeys) throw new Error("Anonymous keys missing");
+          await setupAnonymousVoting(
+            projectName!,
+            generatedKeys.publicKey,
+            resetAnonKeys,
+          );
+        }
+      }
+
+      // 2️⃣  Calculate voting end timestamp & build proposal transaction
       const votingDays = getDeltaDays(selectedDate);
       const votingEndsAt = Math.floor(Date.now() / 1000) + 86400 * votingDays;
 
-      // Use the new Flow 2
       const { createProposalFlow } = await import("@service/FlowService");
 
       const proposalId = await createProposalFlow({
@@ -228,12 +258,13 @@ const CreateProposalModal = () => {
         proposalName,
         proposalFiles: files,
         votingEndsAt,
+        publicVoting: !isAnonymousVoting,
         onProgress: setStep,
       });
 
       setProposalId(proposalId);
 
-      // Calculate the CID for the IPFS link
+      // 3️⃣  Compute IPFS link for UI reference
       const { calculateDirectoryCid } = await import("utils/ipfsFunctions");
       const cid = await calculateDirectoryCid(files);
       setIpfsLink(getIpfsBasicLink(cid));
@@ -283,6 +314,53 @@ const CreateProposalModal = () => {
     return true;
   };
 
+  const handleToggleAnonymous = async (checked: boolean) => {
+    setIsAnonymousVoting(checked);
+    if (!checked) return;
+
+    if (!projectName) {
+      toast.error(
+        "Anonymous voting",
+        "Project name is required to check configuration",
+      );
+      return;
+    }
+
+    // compute project key & check config
+    const { default: Tansu } = await import("../../../contracts/soroban_tansu");
+    const pkg = await import("js-sha3");
+    const { keccak256 } = pkg;
+    const project_key = Buffer.from(
+      keccak256.create().update(projectName).digest(),
+    );
+    try {
+      await Tansu.get_anonymous_voting_config({ project_key });
+      // config exists
+      setExistingAnonConfig(true);
+      setResetAnonKeys(false);
+      setGeneratedKeys(null);
+    } catch (_) {
+      // no config → generate keys immediately
+      setExistingAnonConfig(false);
+      const keys = await generateRSAKeyPair();
+      setGeneratedKeys(keys);
+    }
+  };
+
+  const downloadKeys = () => {
+    if (!generatedKeys) return;
+    const blob = new Blob([JSON.stringify(generatedKeys)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "tansu-anonymous-keys.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    setKeysDownloaded(true);
+  };
+
   if (!showModal) return <></>;
 
   return (
@@ -298,6 +376,52 @@ const CreateProposalModal = () => {
                   title="Basic Information"
                   description="Enter the title and description for your proposal to begin."
                 />
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="anonymousCheckbox"
+                    checked={isAnonymousVoting}
+                    onChange={(e) => handleToggleAnonymous(e.target.checked)}
+                  />
+                  <label
+                    htmlFor="anonymousCheckbox"
+                    className="text-sm text-secondary"
+                  >
+                    Enable anonymous voting
+                  </label>
+                  {isAnonymousVoting &&
+                    existingAnonConfig &&
+                    !resetAnonKeys && (
+                      <span className="text-sm text-green-600">
+                        Existing anonymous voting keys are already configured.
+                      </span>
+                    )}
+                  {isAnonymousVoting &&
+                    existingAnonConfig &&
+                    !resetAnonKeys && (
+                      <button
+                        type="button"
+                        className="text-blue-500 underline text-sm"
+                        onClick={async () => {
+                          const keys = await generateRSAKeyPair();
+                          setGeneratedKeys(keys);
+                          setResetAnonKeys(true);
+                          setKeysDownloaded(false);
+                        }}
+                      >
+                        Reset keys
+                      </button>
+                    )}
+                  {isAnonymousVoting && generatedKeys && (
+                    <button
+                      type="button"
+                      className="text-blue-500 underline text-sm"
+                      onClick={downloadKeys}
+                    >
+                      Download keys
+                    </button>
+                  )}
+                </div>
                 <Input
                   label="Proposal Name"
                   placeholder="Write the name"
@@ -401,6 +525,17 @@ const CreateProposalModal = () => {
                     !validateDescriptionField()
                   )
                     throw new Error("Invalid proposal name or description");
+
+                  // additional anonymous voting validation
+                  if (isAnonymousVoting) {
+                    if (!existingAnonConfig || resetAnonKeys) {
+                      if (!generatedKeys || !keysDownloaded) {
+                        throw new Error(
+                          "You must generate and download anonymous voting keys before proceeding.",
+                        );
+                      }
+                    }
+                  }
 
                   setStep(step + 1);
                 } catch (err: any) {

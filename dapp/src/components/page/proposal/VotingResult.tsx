@@ -6,9 +6,14 @@ import VoteTypeCheckbox from "./VoteTypeCheckbox";
 interface Props {
   voteStatus: VoteStatus | undefined;
   withDetail?: boolean;
+  totalVotesOverride?: number;
 }
 
-const VotingResult: FC<Props> = ({ voteStatus, withDetail }) => {
+const VotingResult: FC<Props> = ({
+  voteStatus,
+  withDetail,
+  totalVotesOverride,
+}) => {
   const voteResult = useMemo(() => {
     if (voteStatus) {
       let voteResult: VoteType | undefined = undefined;
@@ -45,10 +50,12 @@ const VotingResult: FC<Props> = ({ voteStatus, withDetail }) => {
               Total Votes Cast
             </p>
             <p className="leading-6 text-xl text-primary">
-              {voteStatus &&
-                voteStatus?.abstain.score +
-                  voteStatus?.approve.score +
-                  voteStatus?.reject.score}
+              {totalVotesOverride !== undefined
+                ? totalVotesOverride
+                : voteStatus &&
+                  voteStatus.abstain.score +
+                    voteStatus.approve.score +
+                    voteStatus.reject.score}
             </p>
           </div>
         )}

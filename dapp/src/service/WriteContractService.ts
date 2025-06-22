@@ -1,4 +1,3 @@
-import { kit } from "../components/stellar-wallets-kit";
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
@@ -27,6 +26,15 @@ const { keccak256 } = pkg;
 
 const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
 const contractId = import.meta.env.PUBLIC_SOROBAN_CONTRACT_ID;
+
+let kitPromise: Promise<any> | null = null;
+
+async function getKit() {
+  if (!kitPromise) {
+    kitPromise = import("../components/stellar-wallets-kit").then((m) => m.kit);
+  }
+  return kitPromise;
+}
 
 // Function to map VoteType to Vote
 function mapVoteTypeToVote(voteType: VoteType): VoteChoice {
@@ -79,6 +87,7 @@ async function commitHash(commit_hash: string): Promise<boolean> {
 
     await tx.signAndSend({
       signTransaction: async (xdr: string) => {
+        const kit = await getKit();
         return await kit.signTransaction(xdr);
       },
     });
@@ -134,6 +143,7 @@ async function registerProject(
 
     await tx.signAndSend({
       signTransaction: async (xdr: string) => {
+        const kit = await getKit();
         return await kit.signTransaction(xdr);
       },
     });
@@ -174,6 +184,7 @@ async function updateConfig(
   try {
     await tx.signAndSend({
       signTransaction: async (xdr: string) => {
+        const kit = await getKit();
         return await kit.signTransaction(xdr);
       },
     });
@@ -212,6 +223,7 @@ async function createProposal(
   try {
     const result = await tx.signAndSend({
       signTransaction: async (xdr: string) => {
+        const kit = await getKit();
         return await kit.signTransaction(xdr);
       },
     });
@@ -251,27 +263,92 @@ async function voteToProposal(
   }
 
   const mappedVote = mapVoteTypeToVote(vote);
-  const publicVote: Vote = {
-    tag: "PublicVote",
-    values: [
-      {
-        address: publicKey,
-        vote_choice: mappedVote,
-        weight,
-      },
-    ],
-  };
+
+  // Determine if the proposal expects public or anonymous voting
+  let isPublicVoting = true;
+  try {
+    const propRes = await Tansu.get_proposal({
+      project_key,
+      proposal_id: Number(proposal_id),
+    });
+    isPublicVoting = propRes.result.vote_data.public_voting;
+  } catch (_) {
+    // fallback to public voting if we cannot fetch proposal
+  }
+
+  let votePayload: Vote;
+
+  if (isPublicVoting) {
+    votePayload = {
+      tag: "PublicVote",
+      values: [
+        {
+          address: publicKey,
+          vote_choice: mappedVote,
+          weight,
+        },
+      ],
+    } as Vote;
+  } else {
+    // Anonymous vote flow
+    // Build votes & seeds arrays in order [approve, reject, abstain]
+    const voteIndex = vote === "approve" ? 0 : vote === "reject" ? 1 : 2;
+    const votesArr: number[] = [0, 0, 0];
+    votesArr[voteIndex] = 1;
+    const seedsArr: number[] = [
+      Math.floor(Math.random() * 1000000),
+      Math.floor(Math.random() * 1000000),
+      Math.floor(Math.random() * 1000000),
+    ];
+
+    // Fetch anonymous voting config to get public key
+    const configRes = await Tansu.get_anonymous_voting_config({
+      project_key,
+    });
+    const publicKeyStr = configRes.result.public_key;
+
+    // Encrypt seeds and votes
+    const { encryptWithPublicKey } = await import("../utils/crypto");
+
+    const encryptedSeeds: string[] = await Promise.all(
+      seedsArr.map((s) => encryptWithPublicKey(s.toString(), publicKeyStr)),
+    );
+    const encryptedVotes: string[] = await Promise.all(
+      votesArr.map((v) => encryptWithPublicKey(v.toString(), publicKeyStr)),
+    );
+
+    // Compute commitments via contract simulation (privacy trade-off acceptable for now)
+    const commitmentsRes = await Tansu.build_commitments_from_votes({
+      project_key,
+      votes: votesArr as unknown as number[],
+      seeds: seedsArr as unknown as number[],
+    });
+
+    votePayload = {
+      tag: "AnonymousVote",
+      values: [
+        {
+          address: publicKey,
+          weight,
+          encrypted_seeds: encryptedSeeds,
+          encrypted_votes: encryptedVotes,
+          commitments: commitmentsRes.result,
+        },
+      ],
+    } as Vote;
+  }
 
   const tx = await Tansu.vote({
     voter: publicKey,
     project_key: project_key,
     proposal_id: Number(proposal_id),
-    vote: publicVote,
+    vote: votePayload,
   });
 
   try {
     await tx.signAndSend({
       signTransaction: async (xdr: string) => {
+        const kit = await getKit();
         return await kit.signTransaction(xdr);
       },
     });
@@ -282,9 +359,20 @@ async function voteToProposal(
   }
 }
 
+// ──────────────────────────────────────────────────────────────
+// Execute a proposal (public OR anonymous)
+//
+// When the proposal uses anonymous voting the caller **must** pass the
+// decoded `tallies` and `seeds` arrays (length 3 each – approve/reject/abstain)
+// so that the contract can verify the commitment proof.
+//
+// For public voting flows those parameters are ignored.
+// ──────────────────────────────────────────────────────────────
 async function execute(
   project_name: string,
   proposal_id: number,
+  tallies?: number[],
+  seeds?: number[],
 ): Promise<any> {
   const publicKey = loadedPublicKey();
 
@@ -302,12 +390,13 @@ async function execute(
       maintainer: publicKey,
       project_key: project_key,
       proposal_id: Number(proposal_id),
-      tallies: undefined,
-      seeds: undefined,
+      tallies: tallies as unknown as number[] | undefined,
+      seeds: seeds as unknown as number[] | undefined,
     });
 
     const result = await tx.signAndSend({
       signTransaction: async (xdr: string) => {
+        const kit = await getKit();
         return await kit.signTransaction(xdr);
       },
     });
@@ -318,10 +407,15 @@ async function execute(
   }
 }
 
+// High-level helper used by the UI. It delegates to the `execute` helper above
+// and keeps the previous signature backward-compatible while allowing
+// additional optional arguments for anonymous proposals.
 async function executeProposal(
   project_name: string,
   proposal_id: number,
   executeXdr: string | null,
+  tallies?: number[],
+  seeds?: number[],
 ): Promise<any> {
   const publicKey = loadedPublicKey();
 
@@ -331,7 +425,7 @@ async function executeProposal(
 
   try {
     // Execute the proposal in the smart contract first
-    const result = await execute(project_name, proposal_id);
+    const result = await execute(project_name, proposal_id, tallies, seeds);
 
     // Only proceed with the outcome transaction if we have an XDR to execute
     if (executeXdr) {
@@ -353,6 +447,7 @@ async function executeProposal(
 
       const compositeTransaction = transactionBuilder.setTimeout(180).build();
 
+      const kit = await getKit();
       const { signedTxXdr } = await kit.signTransaction(
         compositeTransaction.toXDR(),
       );
@@ -399,6 +494,7 @@ async function addMember(
   try {
     await tx.signAndSend({
       signTransaction: async (xdr: string) => {
+        const kit = await getKit();
         return await kit.signTransaction(xdr);
       },
     });
@@ -429,13 +525,64 @@ async function addBadges(
 
   try {
     await tx.signAndSend({
-      signTransaction: async (xdr: string) => await kit.signTransaction(xdr),
+      signTransaction: async (xdr: string) => {
+        const kit = await getKit();
+        return await kit.signTransaction(xdr);
+      },
     });
     return true;
   } catch (e: any) {
     const { errorMessage } = extractContractError(e);
     throw new Error(errorMessage);
   }
+}
+
+async function setupAnonymousVoting(
+  project_name: string,
+  public_key: string,
+  force = false,
+): Promise<boolean> {
+  const publicKey = loadedPublicKey();
+  if (!publicKey) throw new Error("Please connect your wallet first");
+
+  const project_key = Buffer.from(
+    keccak256.create().update(project_name).digest(),
+  );
+
+  Tansu.options.publicKey = publicKey;
+
+  // first check if already configured unless we force an override
+  if (!force) {
+    try {
+      const cfg = await Tansu.get_anonymous_voting_config({ project_key });
+      if (cfg.result) return true; // already set, nothing to do
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  const tx = await Tansu.anonymous_voting_setup({
+    project_key,
+    public_key,
+  });
+
+  try {
+    await tx.signAndSend({
+      signTransaction: async (xdr: string) => {
+        const kit = await getKit();
+        return await kit.signTransaction(xdr);
+      },
+    });
+    return true;
+  } catch (e) {
+    const { errorMessage } = extractContractError(e);
+    throw new Error(errorMessage);
+  }
+}
+
+async function signTx(xdr: string) {
+  const kit = await getKit();
+  return kit.signTransaction(xdr);
 }
 
 export {
@@ -447,4 +594,5 @@ export {
   executeProposal,
   addMember,
   addBadges,
+  setupAnonymousVoting,
 };

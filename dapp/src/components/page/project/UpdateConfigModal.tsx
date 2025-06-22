@@ -65,6 +65,7 @@ const UpdateConfigModal = () => {
     <>
       {showButton && (
         <button
+          id="update-config-button"
           className="p-[12px_16px] sm:p-[18px_30px] flex gap-2 sm:gap-3 bg-white cursor-pointer w-full sm:w-auto text-left"
           onClick={() => setIsOpen(true)}
         >

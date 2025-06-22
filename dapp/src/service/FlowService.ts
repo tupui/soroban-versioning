@@ -21,6 +21,7 @@ interface CreateProposalFlowParams {
   proposalName: string;
   proposalFiles: File[];
   votingEndsAt: number;
+  publicVoting?: boolean;
   onProgress?: (step: number) => void;
 }
 
@@ -78,6 +79,7 @@ async function createSignedProposalTransaction(
   title: string,
   ipfs: string,
   votingEndsAt: number,
+  publicVoting: boolean,
 ): Promise<string> {
   const publicKey = loadedPublicKey();
   if (!publicKey) throw new Error("Please connect your wallet first");
@@ -93,18 +95,20 @@ async function createSignedProposalTransaction(
     title: title,
     ipfs: ipfs,
     voting_ends_at: BigInt(votingEndsAt),
-    public_voting: true,
+    public_voting: publicVoting,
   });
 
-  // Simulate the transaction to prepare it with Soroban data
+  let sim;
   try {
-    await tx.simulate();
+    sim = await tx.simulate();
   } catch (error: any) {
-    // If simulation fails, parse and throw a user-friendly error
     throw new Error(parseContractError(error));
   }
 
-  // Get the transaction XDR after simulation
+  if ((tx as any).prepare) {
+    await (tx as any).prepare(sim);
+  }
+
   const preparedXdr = tx.toXDR();
 
   // Sign the transaction
@@ -152,13 +156,26 @@ async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
   const { Transaction, rpc } = await import("@stellar/stellar-sdk");
   const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
 
-  const transaction = new Transaction(
-    signedTxXdr,
-    import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-  );
+  // The JS SDK Transaction class can only parse classic envelopes; Soroban
+  // contract transactions include additional SorobanTransactionData and may
+  // therefore be rejected as MALFORMED when re-encoded. The Soroban RPC
+  // server happily accepts a base64-encoded envelope string though, so we
+  // short-circuit and post the raw XDR if we already have it signed.
 
-  // Send the transaction
-  const sendResponse = await server.sendTransaction(transaction);
+  let sendResponse;
+  try {
+    // Cast to any because typings accept only Transaction, but Soroban RPC
+    // supports base64 envelope; the runtime call is valid.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sendResponse = await (server as any).sendTransaction(signedTxXdr);
+  } catch (_) {
+    // Fallback to legacy path for classic txs
+    const transaction = new Transaction(
+      signedTxXdr,
+      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+    );
+    sendResponse = await server.sendTransaction(transaction);
+  }
 
   if (sendResponse.status === "ERROR") {
     // Try to parse contract error from the response
@@ -253,6 +270,7 @@ export async function createProposalFlow({
   proposalName,
   proposalFiles,
   votingEndsAt,
+  publicVoting = true,
   onProgress,
 }: CreateProposalFlowParams): Promise<number> {
   // Step 1: Calculate the CID
@@ -269,6 +287,7 @@ export async function createProposalFlow({
     proposalName,
     expectedCid,
     votingEndsAt,
+    publicVoting,
   );
 
   // Step 3: Upload to IPFS using the signed transaction as authentication

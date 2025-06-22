@@ -1,4 +1,11 @@
-import { useRef, useState, type FC, type ReactNode } from "react";
+import {
+  useRef,
+  useState,
+  type FC,
+  type ReactNode,
+  isValidElement,
+  cloneElement,
+} from "react";
 
 import Modal from "components/utils/Modal";
 import Tooltip from "components/utils/Tooltip";
@@ -85,7 +92,16 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
 
   return (
     <>
-      <div onClick={handleOpen}>{children}</div>
+      {/*
+        Playwright tests expect a `#support-button` selector. When the consumer
+        passes any JSX as children (currently a <Button/>), we clone it and
+        inject the required id so the tests can click it deterministically.
+      */}
+      <div onClick={handleOpen}>
+        {isValidElement(children)
+          ? cloneElement(children as any, { id: "support-button" } as any)
+          : children}
+      </div>
       {isOpen && (
         <Modal onClose={onClose}>
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
