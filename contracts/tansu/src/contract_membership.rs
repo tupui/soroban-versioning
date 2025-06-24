@@ -85,13 +85,32 @@ impl MembershipTrait for Tansu {
         let badges_key_ = types::ProjectKey::Badges(key.clone());
         let mut badges_ = <Tansu as MembershipTrait>::get_badges(env.clone(), key);
 
-        for badge in badges.iter() {
-            match badge {
-                types::Badge::Developer => badges_.developer.push_back(member.clone()),
-                types::Badge::Triage => badges_.triage.push_back(member.clone()),
-                types::Badge::Community => badges_.community.push_back(member.clone()),
-                _ => (),
+        for badge_kind in [
+            types::Badge::Developer,
+            types::Badge::Triage,
+            types::Badge::Community,
+        ] {
+            // Pick the right vector for this badge kind
+            let vec_ref: &mut Vec<Address> = match badge_kind {
+                types::Badge::Developer => &mut badges_.developer,
+                types::Badge::Triage => &mut badges_.triage,
+                types::Badge::Community => &mut badges_.community,
+                _ => continue,
             };
+
+            // Build a cleaned-up copy removing all badges from member
+            let mut new_vec: Vec<Address> = Vec::new(&env);
+            for addr in vec_ref.iter() {
+                if addr != member.clone() {
+                    new_vec.push_back(addr);
+                }
+            }
+            // Add the member back if they should hold this badge now
+            if badges.contains(badge_kind.clone()) {
+                new_vec.push_back(member.clone());
+            }
+            // Replace the old vector
+            *vec_ref = new_vec;
         }
 
         env.storage().persistent().set(&project_key_, &project);
