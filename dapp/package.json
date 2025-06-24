@@ -45,9 +45,7 @@
     "start": "astro dev",
     "test:e2e": "playwright install --with-deps && playwright test",
     "formatter": "prettier --write .",
-    "linter": "prettier -c .",
-    "install": "bun install",
-    "test": "bun run test:e2e"
+    "linter": "prettier -c ."
   },
   "type": "module",
   "version": "0.0.1",
