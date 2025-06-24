@@ -195,7 +195,23 @@ export const modifyProposalFromContract = (
       },
     };
   }
-  throw new Error("this is anonymous vote. current not working.");
+  // Anonymous voting – individual vote choices are hidden until execution.
+  // We cannot compute precise tallies client-side before the proposal is executed,
+  // therefore expose zeroed scores and empty voter arrays so the UI can still
+  // render the proposal card and details without breaking.
+
+  return {
+    id: proposal.id,
+    title: proposal.title,
+    ipfs: proposal.ipfs,
+    status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
+    voting_ends_at: Number(proposal.vote_data.voting_ends_at),
+    voteStatus: {
+      approve: { voteType: VoteType.APPROVE, score: 0, voters: [] },
+      reject: { voteType: VoteType.REJECT, score: 0, voters: [] },
+      abstain: { voteType: VoteType.CANCEL, score: 0, voters: [] },
+    },
+  } as Proposal;
 };
 
 /**

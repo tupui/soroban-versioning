@@ -7,6 +7,7 @@ import { toast } from "utils/utils";
 import ProposalStatusSection from "./ProposalStatusSection";
 import VoteStatusBar from "./VoteStatusBar";
 import VotingResultModal from "./VotingResultModal";
+import VerifyAnonymousVotesModal from "./VerifyAnonymousVotesModal";
 
 interface Props {
   proposal: ProposalView | null;
@@ -25,6 +26,7 @@ const ProposalTitle: React.FC<Props> = ({
   const [isMaintainer, setIsMaintainer] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [showVotingResultModal, setShowVotingResultModal] = useState(false);
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
 
   const checkIsConnected = () => {
     if (connectedAddress) {
@@ -48,7 +50,7 @@ const ProposalTitle: React.FC<Props> = ({
   useEffect(() => {
     checkIsMaintainer();
     checkIsConnected();
-  }, [connectedAddress]);
+  }, [connectedAddress, maintainers]);
 
   const openVotingResultModal = () => {
     if (proposal?.status == "active") {
@@ -104,12 +106,28 @@ const ProposalTitle: React.FC<Props> = ({
                   reject={proposal?.voteStatus?.reject?.score || 0}
                   abstain={proposal?.voteStatus?.abstain?.score || 0}
                 />
-                <Button
-                  type="secondary"
-                  size="2xs"
-                  icon="/icons/eye.svg"
-                  onClick={openVotingResultModal}
-                />
+                {(proposal?.voteStatus?.approve?.score || 0) +
+                  (proposal?.voteStatus?.reject?.score || 0) +
+                  (proposal?.voteStatus?.abstain?.score || 0) >
+                0 ? (
+                  <Button
+                    type="secondary"
+                    size="2xs"
+                    icon="/icons/eye.svg"
+                    onClick={openVotingResultModal}
+                  />
+                ) : isMaintainer ? (
+                  <Button
+                    type="secondary"
+                    size="2xs"
+                    icon="/icons/eye.svg"
+                    onClick={() => setShowVerifyModal(true)}
+                  />
+                ) : (
+                  <span className="text-sm text-secondary">
+                    Anonymous voting
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -146,6 +164,13 @@ const ProposalTitle: React.FC<Props> = ({
           voteStatus={proposal?.voteStatus}
           projectMaintainers={maintainers}
           onClose={() => setShowVotingResultModal(false)}
+        />
+      )}
+      {showVerifyModal && proposal && (
+        <VerifyAnonymousVotesModal
+          projectName={proposal.projectName}
+          proposalId={proposal.id}
+          onClose={() => setShowVerifyModal(false)}
         />
       )}
     </>

@@ -599,7 +599,11 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 />
               </div>
               <div className="flex gap-[18px]">
-                <Button isLoading={isLoading} onClick={handleRegisterProject}>
+                <Button
+                  id="register-project-button"
+                  isLoading={isLoading}
+                  onClick={handleRegisterProject}
+                >
                   Register Project
                 </Button>
                 <Button type="secondary" onClick={onClose}>
