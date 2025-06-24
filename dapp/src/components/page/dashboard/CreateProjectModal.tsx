@@ -1,12 +1,7 @@
-import { fetchTOMLFromConfigUrl } from "@service/GithubService";
-import {
-  getProjectFromName,
-  getProjectHash,
-} from "@service/ReadContractService";
+import { getProjectFromName } from "@service/ReadContractService";
 import {
   setConfigData,
   setProject,
-  setProjectLatestSha,
   setProjectRepoInfo,
 } from "@service/StateService";
 import { navigate } from "astro:transitions/client";
@@ -22,10 +17,10 @@ import { extractConfigData, toast } from "utils/utils";
 import {
   validateStellarAddress,
   validateProjectName as validateProjectNameUtil,
-  validateFileHash,
   validateGithubUrl,
   validateMaintainerAddress,
 } from "utils/validations";
+import Textarea from "components/utils/Textarea";
 
 // Get domain contract ID from environment with fallback
 const SOROBAN_DOMAIN_CONTRACT_ID =
@@ -35,8 +30,10 @@ const SOROBAN_DOMAIN_CONTRACT_ID =
 const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [projectName, setProjectName] = useState("");
-  const [maintainers, setMaintainers] = useState<string[]>([""]);
-  const [infoFileHash, setInfoFileHash] = useState("");
+  const [maintainerAddresses, setMaintainerAddresses] = useState<string[]>([
+    "",
+  ]);
+  const [maintainerGithubs, setMaintainerGithubs] = useState<string[]>([""]);
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [domainContractId, setDomainContractId] = useState(
@@ -53,10 +50,21 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [maintainersErrors, setMaintainersErrors] = useState<
     Array<string | null>
   >([null]);
-  const [infoFileHashError, setInfoFileHashError] = useState<string | null>(
+  const [githubRepoUrlError, setGithubRepoUrlError] = useState<string | null>(
     null,
   );
-  const [githubRepoUrlError, setGithubRepoUrlError] = useState<string | null>(
+
+  // Project documentation data (will be written to tansu.toml and uploaded to IPFS)
+  const [orgName, setOrgName] = useState("");
+  const [orgUrl, setOrgUrl] = useState("");
+  const [orgLogo, setOrgLogo] = useState("");
+  const [orgDescription, setOrgDescription] = useState("");
+
+  // Org field validation errors
+  const [orgNameError, setOrgNameError] = useState<string | null>(null);
+  const [orgUrlError, setOrgUrlError] = useState<string | null>(null);
+  const [orgLogoError, setOrgLogoError] = useState<string | null>(null);
+  const [orgDescriptionError, setOrgDescriptionError] = useState<string | null>(
     null,
   );
 
@@ -152,8 +160,9 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
 
   // Update maintainersErrors array when maintainers change
   useEffect(() => {
-    setMaintainersErrors(maintainers.map(() => null));
-  }, [maintainers.length]);
+    setMaintainersErrors(maintainerAddresses.map(() => null));
+    setGithubHandleErrors(maintainerGithubs.map(() => null));
+  }, [maintainerAddresses.length]);
 
   // Check domain availability with debounce
   useEffect(() => {
@@ -203,8 +212,9 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
 
   const validateMaintainers = () => {
     let isValid = true;
-    const errors = maintainers.map((maintainer) => {
-      const error = validateMaintainerAddress(maintainer);
+
+    const addrErrors = maintainerAddresses.map((addr) => {
+      const error = validateMaintainerAddress(addr);
       if (error) {
         isValid = false;
         return error;
@@ -212,14 +222,22 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
       return null;
     });
 
-    setMaintainersErrors(errors);
-    return isValid;
-  };
+    const ghRegex = /^[A-Za-z0-9_-]{1,30}$/;
+    const ghErrors = maintainerGithubs.map((gh) => {
+      if (!gh || gh.trim() === "") {
+        isValid = false;
+        return "GitHub handle is required";
+      }
+      if (!ghRegex.test(gh)) {
+        isValid = false;
+        return "Handle must be ASCII (letters, digits, _ or -) and ≤30 chars";
+      }
+      return null;
+    });
 
-  const validateInfoFileHash = () => {
-    const error = validateFileHash(infoFileHash);
-    setInfoFileHashError(error);
-    return error === null;
+    setMaintainersErrors(addrErrors);
+    setGithubHandleErrors(ghErrors);
+    return isValid;
   };
 
   const validateGithubRepoUrl = () => {
@@ -228,19 +246,87 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
     return error === null;
   };
 
+  // Simple validators for the new organisation fields
+  const validateOrgFields = (): boolean => {
+    let valid = true;
+
+    if (!orgName.trim()) {
+      setOrgNameError("Organization name is required");
+      valid = false;
+    }
+
+    if (orgUrl && !orgUrl.startsWith("https://")) {
+      setOrgUrlError("URL must start with https://");
+      valid = false;
+    }
+
+    if (orgLogo && !orgLogo.startsWith("https://")) {
+      setOrgLogoError("Logo URL must start with https://");
+      valid = false;
+    }
+
+    if (!orgDescription.trim() || orgDescription.split(/\s+/).length < 3) {
+      setOrgDescriptionError("Description must contain at least 3 words");
+      valid = false;
+    }
+
+    return valid;
+  };
+
   const handleRegisterProject = async () => {
     setIsLoading(true);
-    const { registerProject } = await import("@service/WriteContractService");
+    // Dynamic imports for heavy libs
+    const [{ calculateDirectoryCid, fetchTomlFromCid }] = await Promise.all([
+      import("utils/ipfsFunctions"),
+    ]);
+    const { kit } = await import("../../stellar-wallets-kit");
+    const { default: Tansu } = await import("../../../contracts/soroban_tansu");
+    const { loadedPublicKey } = await import("@service/walletService");
+    const { create } = await import("@web3-storage/w3up-client");
+    const { extract } = await import("@web3-storage/w3up-client/delegation");
 
     try {
-      await registerProject(
-        projectName,
-        maintainers.join(","),
-        githubRepoUrl,
-        infoFileHash,
-        domainContractId,
-      );
+      const publicKey = loadedPublicKey();
+      if (!publicKey) {
+        throw new Error("Please connect your wallet first");
+      }
 
+      // ── Build TOML content ───────────────────────────────────────────────
+      const tomlContent = `VERSION="2.0.0"
+
+ACCOUNTS=[
+${maintainerAddresses.map((a) => `    "${a}"`).join(",\n")}
+]
+
+[DOCUMENTATION]
+ORG_NAME="${orgName}"
+ORG_URL="${orgUrl}"
+ORG_LOGO="${orgLogo}"
+ORG_DESCRIPTION="${orgDescription}"
+ORG_GITHUB="${githubRepoUrl.split("https://github.com/")[1] || ""}"
+
+${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
+`;
+
+      const tomlFile = new File([tomlContent], "tansu.toml", {
+        type: "text/plain",
+      });
+
+      // show progress
+      setStep(6);
+
+      const { createProjectFlow } = await import("@service/FlowService");
+
+      await createProjectFlow({
+        projectName,
+        tomlFile,
+        githubRepoUrl,
+        maintainers: maintainerAddresses,
+        domainContractId,
+        onProgress: setStep,
+      });
+
+      // ── Continue with existing UI/state updates ───────────────────────
       const project = await getProjectFromName(projectName);
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
@@ -250,37 +336,21 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
           setProjectRepoInfo(username, repoName);
         }
 
-        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+        const tomlData = await fetchTomlFromCid(project.config.hash);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigData(configData);
         } else {
           setConfigData({});
         }
-        try {
-          const latestSha = await getProjectHash();
-          if (
-            typeof latestSha === "string" &&
-            latestSha.match(/^[a-f0-9]{40}$/)
-          ) {
-            setProjectLatestSha(latestSha);
-          } else {
-            setProjectLatestSha("");
-            throw new Error("Invalid project hash");
-          }
-        } catch (error: any) {
-          setProjectLatestSha("");
-          toast.error("Something Went Wrong!", error.message);
-        }
       }
 
-      // Show success message
+      setStep(10);
+
       toast.success("Success", "Project has been registered successfully!");
 
-      // Close the modal
       onClose();
 
-      // Navigate to the new project page
       navigate(`/project?name=${projectName}`);
     } catch (err: any) {
       toast.error("Something Went Wrong!", err.message);
@@ -321,6 +391,10 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
       return false;
     }
   };
+
+  const [githubHandleErrors, setGithubHandleErrors] = useState<
+    Array<string | null>
+  >([null]);
 
   return (
     <Modal onClose={onClose}>
@@ -445,41 +519,69 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                   />
                 </div>
                 <div className="flex flex-col gap-[18px]">
-                  {maintainers.map((maintainer, i) => (
-                    <div key={i} className="flex gap-[18px]">
-                      <Input
-                        value={maintainer}
-                        {...(i == 0 && { label: "First Maintainer" })}
-                        placeholder="Write the maintainer's address as G..."
-                        onChange={(e) => {
-                          setMaintainers(
-                            maintainers.map((maintainer, j) =>
-                              i == j ? e.target.value : maintainer,
-                            ),
-                          );
-                          // Clear error when typing
-                          setMaintainersErrors(
-                            maintainersErrors.map((error, j) =>
-                              i === j ? null : error,
-                            ),
-                          );
-                        }}
-                        error={maintainersErrors[i]}
-                      />
-                      {i > 0 && (
-                        <button
-                          onClick={() => {
-                            setMaintainers(
-                              maintainers.filter((_, j) => j != i),
+                  {maintainerAddresses.map((address, i) => (
+                    <div key={i} className="flex flex-col gap-2 w-full">
+                      <div className="flex gap-[18px]">
+                        <Input
+                          className="flex-1"
+                          value={address}
+                          {...(i == 0 && { label: "Maintainer Address" })}
+                          placeholder="G..."
+                          onChange={(e) => {
+                            setMaintainerAddresses(
+                              maintainerAddresses.map((addr, j) =>
+                                i == j ? e.target.value : addr,
+                              ),
                             );
                             setMaintainersErrors(
-                              maintainersErrors.filter((_, j) => j != i),
+                              maintainersErrors.map((err, j) =>
+                                i === j ? null : err,
+                              ),
                             );
                           }}
-                        >
-                          <img src="/icons/remove.svg" />
-                        </button>
-                      )}
+                          error={maintainersErrors[i]}
+                        />
+                        <Input
+                          className="flex-1"
+                          value={maintainerGithubs[i] ?? ""}
+                          {...(i == 0 && { label: "GitHub Handle" })}
+                          placeholder="username"
+                          onChange={(e) => {
+                            setMaintainerGithubs(
+                              maintainerGithubs.map((gh, j) =>
+                                i == j ? e.target.value : gh,
+                              ),
+                            );
+                            setGithubHandleErrors(
+                              githubHandleErrors.map(
+                                (err: string | null, j: number) =>
+                                  i === j ? null : err,
+                              ),
+                            );
+                          }}
+                          error={githubHandleErrors[i]}
+                        />
+                        {i > 0 && (
+                          <button
+                            onClick={() => {
+                              setMaintainerAddresses(
+                                maintainerAddresses.filter((_, j) => j !== i),
+                              );
+                              setMaintainerGithubs(
+                                maintainerGithubs.filter((_, j) => j !== i),
+                              );
+                              setMaintainersErrors(
+                                maintainersErrors.filter((_, j) => j !== i),
+                              );
+                              setGithubHandleErrors(
+                                githubHandleErrors.filter((_, j) => j !== i),
+                              );
+                            }}
+                          >
+                            <img src="/icons/remove.svg" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                   <div className="flex justify-end">
@@ -487,8 +589,10 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                       type="tertiary"
                       icon="/icons/plus.svg"
                       onClick={() => {
-                        setMaintainers([...maintainers, ""]);
+                        setMaintainerAddresses([...maintainerAddresses, ""]);
+                        setMaintainerGithubs([...maintainerGithubs, ""]);
                         setMaintainersErrors([...maintainersErrors, null]);
+                        setGithubHandleErrors([...githubHandleErrors, null]);
                       }}
                     >
                       Add Maintainer
@@ -540,15 +644,49 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 </div>
                 <div className="flex flex-col gap-[30px]">
                   <Input
-                    label="Information File Hash"
-                    placeholder="Write the information file hash"
-                    value={infoFileHash}
+                    label="Organization Name"
+                    placeholder="Your organisation / project owner name"
+                    value={orgName}
                     onChange={(e) => {
-                      setInfoFileHash(e.target.value);
-                      setInfoFileHashError(null); // Clear error when typing
+                      setOrgName(e.target.value);
+                      setOrgNameError(null);
                     }}
-                    error={infoFileHashError}
+                    error={orgNameError}
                   />
+
+                  <Input
+                    label="Organization Website URL"
+                    placeholder="https://example.com"
+                    value={orgUrl}
+                    onChange={(e) => {
+                      setOrgUrl(e.target.value);
+                      setOrgUrlError(null);
+                    }}
+                    error={orgUrlError}
+                  />
+
+                  <Input
+                    label="Organization Logo URL"
+                    placeholder="https://.../logo.png"
+                    value={orgLogo}
+                    onChange={(e) => {
+                      setOrgLogo(e.target.value);
+                      setOrgLogoError(null);
+                    }}
+                    error={orgLogoError}
+                  />
+
+                  <Textarea
+                    label="Project Description"
+                    placeholder="Describe your project (min 3 words)"
+                    value={orgDescription}
+                    onChange={(e) => {
+                      setOrgDescription(e.target.value);
+                      setOrgDescriptionError(null);
+                    }}
+                    error={orgDescriptionError}
+                  />
+
                   <Input
                     label="GitHub Repository URL"
                     placeholder="Write the github repository URL"
@@ -572,10 +710,10 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
               </Button>
               <Button
                 onClick={() => {
-                  const isInfoHashValid = validateInfoFileHash();
                   const isGithubUrlValid = validateGithubRepoUrl();
+                  const areOrgFieldsValid = validateOrgFields();
 
-                  if (isInfoHashValid && isGithubUrlValid) {
+                  if (isGithubUrlValid && areOrgFieldsValid) {
                     setStep(step + 1);
                   }
                 }}
@@ -647,12 +785,12 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
             </div>
             <Label label="Maintainers">
               <div className="grid grid-cols-3 gap-x-9 gap-y-[18px]">
-                {maintainers.map((maintainer, index) => (
+                {maintainerAddresses.map((address, index) => (
                   <p
                     key={index}
                     className="leading-[14px] text-sm text-secondary"
                   >
-                    {`(${maintainer.slice(0, 24) + "..."})`}
+                    {`(${address.slice(0, 24) + "..."})`}
                   </p>
                 ))}
               </div>
@@ -673,12 +811,49 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
                 Back to the Third Step
               </Button>
             </div>
-            <Label label="Information File Hash">
-              <p className="leading-6 text-xl text-primary">{infoFileHash}</p>
-            </Label>
             <Label label="GitHub Repository URL">
               <p className="leading-6 text-xl text-primary">{githubRepoUrl}</p>
             </Label>
+          </div>
+        </div>
+      ) : step >= 5 && step <= 9 ? (
+        <div className="flex flex-col gap-[30px]">
+          <div className="flex gap-[18px]">
+            <img className="rotate_image" src="/images/loading.svg" />
+            <div className="flex-grow flex flex-col justify-center gap-[30px]">
+              <Step step={step - 4} totalSteps={6} />
+              {step == 5 ? (
+                <Title
+                  title="Preparing project data..."
+                  description="Calculating content identifier"
+                />
+              ) : step == 6 ? (
+                <Title
+                  title="Creating transaction..."
+                  description="Preparing smart contract call"
+                />
+              ) : step == 7 ? (
+                <Title
+                  title="Sign transaction"
+                  description="Please sign the transaction in your wallet"
+                />
+              ) : step == 8 ? (
+                <Title
+                  title="Uploading to IPFS..."
+                  description="Storing project data securely"
+                />
+              ) : (
+                <Title
+                  title="Sending transaction..."
+                  description="Broadcasting to the network"
+                />
+              )}
+              <div className="flex justify-end gap-[18px]">
+                <Button type="secondary" onClick={() => setStep(4)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       ) : (

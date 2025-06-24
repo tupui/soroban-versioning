@@ -106,7 +106,8 @@ import { toast } from "utils/utils";
 <div id="read-more-modal-container"></div>
 
 <script>
-  import { getLatestCommitData, getTOMLFileHash } from "@service/GithubService";
+  import { getLatestCommitData } from "@service/GithubService";
+  import { getIpfsBasicLink } from "utils/ipfsFunctions";
   import { navigate } from "astro:transitions/client";
   import type { ConfigData } from "types/projectConfig";
   import { formatDateTime } from "utils/formatTimeFunctions";
@@ -233,75 +234,71 @@ import { toast } from "utils/utils";
         const ul = maintainersList.querySelector("ul");
         if (ul) {
           ul.innerHTML = "";
-          // Always use maintainer addresses from contract (projectInfo.maintainers)
-          const contractMaintainers: string[] = projectInfo.maintainers || [];
-
-          // Build address → githubName map from tansu.toml if available
-          let addrMap: Record<string, string> = {};
-          if (
+          // Prefer the order straight from tansu.toml (guaranteed 1-1)
+          const useToml =
             configData &&
             Array.isArray(configData.maintainersAddresses) &&
-            Array.isArray(configData.authorGithubNames)
-          ) {
-            configData.maintainersAddresses.forEach(
-              (addr: string, idx: number) => {
-                const name = configData.authorGithubNames[idx];
-                if (addr && name) addrMap[addr] = name;
-              },
-            );
+            Array.isArray(configData.authorGithubNames) &&
+            configData.maintainersAddresses.length ===
+              configData.authorGithubNames.length;
+
+          const addrArr = useToml
+            ? configData.maintainersAddresses
+            : projectInfo.maintainers;
+          const handleArr = useToml ? configData.authorGithubNames : [];
+
+          for (let idx = 0; idx < addrArr.length; idx++) {
+            if (!viewAll && idx > 5) continue;
+            const maintainer = addrArr[idx];
+
+            const li = document.createElement("li");
+            li.className = "flex flex-col gap-2";
+
+            const displayName = handleArr[idx] || "";
+
+            if (displayName) {
+              const nameP = document.createElement("p");
+              nameP.className = "leading-6 text-xl text-primary";
+              nameP.textContent = `@${displayName}`;
+              li.appendChild(nameP);
+            }
+
+            // always show address (with tooltip if no displayName)
+            const addrP = document.createElement("p");
+            addrP.className = displayName
+              ? "leading-[14px] text-sm text-secondary cursor-pointer underline"
+              : "leading-6 text-xl text-primary truncate cursor-pointer underline";
+            addrP.textContent = displayName
+              ? `(${maintainer.slice(0, 28)}...)`
+              : maintainer;
+            li.appendChild(addrP);
+
+            if (!displayName) {
+              // no mapping, show address only with tooltip
+              const popup = document.createElement("p");
+              popup.className =
+                "absolute left-0 bottom-full mb-1 p-1 bg-black text-center text-xs text-white rounded hidden max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
+              popup.textContent = maintainer;
+              li.appendChild(popup);
+
+              li.addEventListener("mouseenter", () =>
+                popup.classList.remove("hidden"),
+              );
+              li.addEventListener("mouseleave", () =>
+                popup.classList.add("hidden"),
+              );
+            }
+
+            li.onclick = (e) => {
+              e.stopPropagation();
+              openProfileModal(maintainer);
+            };
+
+            ul.appendChild(li);
           }
 
-          contractMaintainers
-            .filter((_: string, index: number) => index <= 5 || viewAll)
-            .forEach((maintainer: string) => {
-              const li = document.createElement("li");
-              li.className = "flex flex-col gap-2";
-
-              const displayName = addrMap[maintainer];
-
-              if (displayName) {
-                const nameP = document.createElement("p");
-                nameP.className = "leading-6 text-xl text-primary";
-                nameP.textContent = `@${displayName}`;
-                li.appendChild(nameP);
-
-                const addrP = document.createElement("p");
-                addrP.className =
-                  "leading-[14px] text-sm text-secondary cursor-pointer underline";
-                addrP.textContent = `(${maintainer.slice(0, 28)}...)`;
-                li.appendChild(addrP);
-              } else {
-                // no mapping, show address only with tooltip
-                const content = document.createElement("p");
-                content.className =
-                  "leading-6 text-xl text-primary truncate cursor-pointer underline";
-                content.textContent = maintainer;
-                li.appendChild(content);
-
-                const popup = document.createElement("p");
-                popup.className =
-                  "absolute left-0 bottom-full mb-1 p-1 bg-black text-center text-xs text-white rounded hidden max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
-                popup.textContent = maintainer;
-                li.appendChild(popup);
-
-                li.addEventListener("mouseenter", () =>
-                  popup.classList.remove("hidden"),
-                );
-                li.addEventListener("mouseleave", () =>
-                  popup.classList.add("hidden"),
-                );
-              }
-
-              li.onclick = (e) => {
-                e.stopPropagation();
-                openProfileModal(maintainer);
-              };
-
-              ul.appendChild(li);
-            });
-
           // view-all display logic
-          if (viewAllButtonContainer && contractMaintainers.length > 5) {
+          if (viewAllButtonContainer && addrArr.length > 5) {
             viewAllButtonContainer.append(viewAllButton);
           }
         }
@@ -403,58 +400,27 @@ import { toast } from "utils/utils";
         if (syncStatusContainer) {
           syncStatusContainer.innerHTML = "";
 
-          // Add configuration badge
-          const projectConfigHash = projectInfo.config.hash;
-          if (!projectConfigHash || typeof projectConfigHash !== "string") {
-            console.error("Error: Invalid project configuration hash");
-            return;
-          }
+          // Replace configuration badge with direct link to tansu.toml on IPFS
+          const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.hash)}/tansu.toml`;
 
-          let tomlFileHash = await getTOMLFileHash(projectInfo.config.url);
-
-          const configComponent = document.createElement("div");
-          configComponent.className =
-            "flex items-center space-x-2 rounded-full relative group";
+          const link = document.createElement("a");
+          link.href = ipfsUrl;
+          link.target = "_blank";
+          link.className = "flex items-center space-x-2 hover:underline";
 
           const icon = document.createElement("img");
           icon.className = "w-5 h-5";
+          icon.src = "/icons/ipfs.svg";
+          icon.alt = "IPFS";
 
           const text = document.createElement("span");
           text.className = "text-sm sm:text-base";
-          text.textContent = "Configuration";
+          text.textContent = "tansu.toml";
 
-          if (tomlFileHash && projectConfigHash === tomlFileHash) {
-            icon.src = "/icons/check.svg";
-            icon.alt = "Check";
-          } else {
-            icon.src = "/icons/failed.svg";
-            icon.alt = "Failed";
-          }
+          link.appendChild(icon);
+          link.appendChild(text);
 
-          const popup = document.createElement("div");
-          popup.className =
-            "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
-          if (tomlFileHash && projectConfigHash === tomlFileHash) {
-            popup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> on-chain hash matches the hash of the file on GitHub</p>';
-          } else if (tomlFileHash) {
-            popup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> on-chain hash does not match the hash of the file on GitHub</p>';
-          } else {
-            popup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max"><a href="https://tansu.dev/docs/project_information_file" target="_blank" class="underline text-blue-400">tansu.toml</a> not found on GitHub</p>';
-          }
-
-          const triangle = document.createElement("div");
-          triangle.className =
-            "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
-          popup.appendChild(triangle);
-
-          configComponent.appendChild(icon);
-          configComponent.appendChild(text);
-          configComponent.appendChild(popup);
-
-          syncStatusContainer.appendChild(configComponent);
+          syncStatusContainer.appendChild(link);
 
           // Add commit badge
           const latestSha = loadProjectLatestSha();
@@ -592,6 +558,7 @@ import { toast } from "utils/utils";
     const updateCommunityList = async () => {
       try {
         const badgeData = await getBadges();
+        if (!badgeData) return;
         const communityContainer = document.getElementById("project-community");
         if (!communityContainer) return;
         const contentDiv =

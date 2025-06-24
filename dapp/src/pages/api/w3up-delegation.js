@@ -73,6 +73,23 @@ async function validateRequest(type, signedTxXdr, projectName) {
         throw error;
       }
 
+    case "project":
+      // For project registration we currently perform the same lightweight validation
+      // as the member flow – ensure the transaction contains an InvokeHostFunction op.
+      try {
+        const operation = tx.operations[0];
+        if (!operation || operation.type !== "invokeHostFunction") {
+          throw new Error(
+            "Invalid transaction: expected register project call",
+          );
+        }
+
+        return [];
+      } catch (error) {
+        console.error("Error validating project request:", error);
+        throw error;
+      }
+
     default:
       throw new Error(`Unknown delegation type: ${type}`);
   }

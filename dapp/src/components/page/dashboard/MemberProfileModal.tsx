@@ -345,6 +345,24 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                   {profileData.social.replace(/^https?:\/\//, "")}
                 </a>
               )}
+
+              {/* IPFS metadata link */}
+              {member?.meta && hasValidMetadata && (
+                <a
+                  href={getIpfsBasicLink(member.meta)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1 text-sm sm:text-base text-blue-500 hover:underline mt-2"
+                >
+                  <img
+                    src="/icons/ipfs.svg"
+                    alt="IPFS"
+                    width={16}
+                    height={16}
+                  />
+                  <span>View on IPFS</span>
+                </a>
+              )}
             </div>
 
             {/* Action Buttons */}

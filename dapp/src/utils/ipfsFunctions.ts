@@ -4,6 +4,8 @@
  * This file contains all utility functions for working with IPFS links and data.
  */
 
+import toml from "toml";
+
 // Cache for IPFS content to avoid repeated network requests
 const ipfsCache: Record<string, any> = {};
 
@@ -207,12 +209,28 @@ export const fetchJSONFromIPFS = async (
   }
 };
 
-// Export all IPFS functionality
-export default {
-  getIpfsBasicLink,
-  getProposalLinkFromIpfs,
-  getOutcomeLinkFromIpfs,
-  calculateDirectoryCid,
-  fetchFromIPFS,
-  fetchJSONFromIPFS,
+/**
+ * Fetches and parses a TOML file (e.g. `tansu.toml`) from a directory CID on IPFS.
+ * The TOML file must live at the root of the directory.
+ *
+ * @param cid - The directory CID that contains the `tansu.toml` file
+ * @returns The parsed TOML data or `undefined` if not found / parse error
+ */
+export const fetchTomlFromCid = async (
+  cid: string,
+): Promise<any | undefined> => {
+  if (!cid) return undefined;
+
+  try {
+    const url = `${getIpfsBasicLink(cid)}/tansu.toml`;
+    const response = await fetchFromIPFS(url);
+
+    if (!response.ok) return undefined;
+
+    const text = await response.text();
+    return toml.parse(text);
+  } catch (_) {
+    // Parsing or network errors are considered expected – return undefined so callers can fallback.
+    return undefined;
+  }
 };

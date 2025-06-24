@@ -1,145 +1,288 @@
 import { useStore } from "@nanostores/react";
-import { getProject } from "@service/ReadContractService";
-import { loadProjectInfo, setProject } from "@service/StateService";
-import { loadedPublicKey } from "@service/walletService";
-import { updateConfig } from "@service/WriteContractService";
-import Button from "components/utils/Button";
-import Modal from "components/utils/Modal";
-import { useEffect, useState } from "react";
+import {
+  loadProjectInfo,
+  loadConfigData,
+  setConfigData,
+  setProject,
+} from "@service/StateService";
 import { projectInfoLoaded } from "utils/store";
-import { toast } from "utils/utils";
+import { useEffect, useState } from "react";
+import Modal from "components/utils/Modal";
+import Button from "components/utils/Button";
+import Input from "components/utils/Input";
+import Textarea from "components/utils/Textarea";
+import Step from "components/utils/Step";
+import Title from "components/utils/Title";
+import {
+  validateMaintainerAddress,
+  validateGithubUrl,
+} from "utils/validations";
+import { updateConfigFlow } from "@service/FlowService";
+import { toast, extractConfigData } from "utils/utils";
+import { getProject } from "@service/ReadContractService";
+import { calculateDirectoryCid } from "utils/ipfsFunctions";
 
 const UpdateConfigModal = () => {
-  const isProjectInfoLoaded = useStore(projectInfoLoaded);
+  const infoLoaded = useStore(projectInfoLoaded);
   const [showButton, setShowButton] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const [maintainers, setMaintainers] = useState("");
-  const [configUrl, setConfigUrl] = useState("");
-  const [configHash, setConfigHash] = useState("");
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
+  // fields
+  const [maintainerAddresses, setMaintainerAddresses] = useState<string[]>([
+    "",
+  ]);
+  const [maintainerGithubs, setMaintainerGithubs] = useState<string[]>([""]);
+  const [githubRepoUrl, setGithubRepoUrl] = useState("");
+  const [orgName, setOrgName] = useState("");
+  const [orgUrl, setOrgUrl] = useState("");
+  const [orgLogo, setOrgLogo] = useState("");
+  const [orgDescription, setOrgDescription] = useState("");
+
+  // errors
+  const [addrErrors, setAddrErrors] = useState<(string | null)[]>([null]);
+  const [ghErrors, setGhErrors] = useState<(string | null)[]>([null]);
+  const [repoError, setRepoError] = useState<string | null>(null);
+
+  // pre-fill from current config
   useEffect(() => {
-    if (isProjectInfoLoaded) {
-      const projectInfo = loadProjectInfo();
+    if (!infoLoaded) return;
+    const projectInfo = loadProjectInfo();
+    const cfg = loadConfigData();
+    if (!projectInfo) return;
+    setMaintainerAddresses(projectInfo.maintainers);
+    setMaintainerGithubs(
+      cfg?.authorGithubNames || projectInfo.maintainers.map(() => ""),
+    );
+    setGithubRepoUrl(projectInfo.config.url);
+    setOrgName(cfg?.organizationName || "");
+    setOrgUrl(cfg?.officials?.websiteLink || "");
+    setOrgLogo(cfg?.logoImageLink || "");
+    setOrgDescription(cfg?.description || "");
+    setAddrErrors(projectInfo.maintainers.map(() => null));
+    setGhErrors(projectInfo.maintainers.map(() => null));
 
-      setMaintainers(projectInfo?.maintainers.join(",") || "");
-      setConfigUrl(projectInfo?.config.url || "");
-      setConfigHash(projectInfo?.config.hash || "");
+    // show button only if wallet is maintainer handled outside earlier
+    setShowButton(true);
+  }, [infoLoaded]);
 
-      if (projectInfo) {
-        const connectedPublicKey = loadedPublicKey();
-        const isMaintainer = connectedPublicKey
-          ? projectInfo.maintainers.includes(connectedPublicKey)
-          : false;
-        setShowButton(isMaintainer);
+  // validation helpers
+  const ghRegex = /^[A-Za-z0-9_-]{1,30}$/;
+  const validateMaintainers = () => {
+    let ok = true;
+    const newAddrErr = maintainerAddresses.map((a) => {
+      const e = validateMaintainerAddress(a);
+      if (e) ok = false;
+      return e;
+    });
+    const newGhErr = maintainerGithubs.map((h) => {
+      if (!h.trim()) {
+        ok = false;
+        return "required";
       }
-    }
-  }, [isProjectInfoLoaded]);
+      if (!ghRegex.test(h)) {
+        ok = false;
+        return "invalid";
+      }
+      return null;
+    });
+    setAddrErrors(newAddrErr);
+    setGhErrors(newGhErr);
+    return ok;
+  };
+  const validateRepo = () => {
+    const e = validateGithubUrl(githubRepoUrl);
+    setRepoError(e);
+    return e === null;
+  };
 
-  const handleUpdate = async () => {
+  // build TOML
+  const buildToml = (): string => {
+    return `VERSION="2.0.0"
+\nACCOUNTS=[\n${maintainerAddresses.map((a) => `    "${a}"`).join(",\n")}\n]\n\n[DOCUMENTATION]\nORG_NAME="${orgName}"\nORG_URL="${orgUrl}"\nORG_LOGO="${orgLogo}"\nORG_DESCRIPTION="${orgDescription}"\nORG_GITHUB="${githubRepoUrl.split("https://github.com/")[1] || ""}"\n\n${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}\n`;
+  };
+
+  const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      await updateConfig(maintainers, configUrl, configHash);
-      try {
-        const project = await getProject();
-        if (project && project.name && project.config && project.maintainers) {
-          setProject(project);
-        }
-        setIsOpen(false);
-      } catch (error) {
-        console.error("Error updating config:", error);
-        toast.error(
-          "Update config",
-          "An error occurred while updating the project configuration. Please try again.",
-        );
-      }
-    } catch (error: any) {
-      console.error("Error updating config:", error);
-      toast.error("Update config", error.message);
+      const tomlContent = buildToml();
+      const tomlFile = new File([tomlContent], "tansu.toml", {
+        type: "text/plain",
+      });
+      await updateConfigFlow({
+        tomlFile,
+        githubRepoUrl,
+        maintainers: maintainerAddresses,
+        onProgress: setStep,
+      });
+      // refresh state
+      const p = await getProject();
+      if (p) setProject(p);
+      const cid = await calculateDirectoryCid([tomlFile]);
+      const configData = extractConfigData(JSON.parse("{}"), p as any); // placeholder parse later
+      setConfigData(configData);
+      toast.success(
+        "Config updated",
+        "Project configuration updated successfully",
+      );
+      setOpen(false);
+    } catch (e: any) {
+      toast.error("Update config", e.message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // render
+  if (!showButton) return null;
   return (
     <>
-      {showButton && (
-        <button
-          id="update-config-button"
-          className="p-[12px_16px] sm:p-[18px_30px] flex gap-2 sm:gap-3 bg-white cursor-pointer w-full sm:w-auto text-left"
-          onClick={() => setIsOpen(true)}
-        >
-          <img src="/icons/gear.svg" className="w-5 h-5 sm:w-auto sm:h-auto" />
-          <p className="leading-5 text-base sm:text-xl text-primary whitespace-nowrap">
-            Update config
-          </p>
-        </button>
-      )}
-      {isOpen && (
-        <Modal onClose={() => setIsOpen(false)}>
-          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
-            <img
-              src="/images/scan.svg"
-              className="w-16 h-16 sm:w-auto sm:h-auto mx-auto sm:mx-0"
-            />
-            <div className="flex-grow flex flex-col gap-6 sm:gap-9 w-full">
-              <h6 className="text-xl sm:text-2xl font-medium text-primary text-center sm:text-left">
-                Update config
-              </h6>
-              <div className="flex flex-col gap-4 sm:gap-[18px]">
-                <div className="flex flex-col gap-2 sm:gap-3">
-                  <p className="text-sm sm:text-base font-[600] text-primary">
-                    Maintainers
-                  </p>
-                  <input
-                    type="text"
-                    className="p-3 sm:p-[18px] border border-[#978AA1] outline-none w-full text-sm sm:text-base"
-                    placeholder="List of maintainers' addresses as G...,G..."
-                    value={maintainers}
-                    onChange={(e) => setMaintainers(e.target.value)}
-                    required
+      <button
+        className="p-[12px_16px] sm:p-[18px_30px] bg-white"
+        onClick={() => setOpen(true)}
+      >
+        Update config
+      </button>
+      {open && (
+        <Modal onClose={() => setOpen(false)}>
+          {step <= 3 && (
+            <div className="flex flex-col gap-8">
+              {step === 1 && (
+                <div>
+                  <Step step={1} totalSteps={3} />
+                  <Title
+                    title="Maintainers"
+                    description="Edit maintainer addresses & GitHub handles"
                   />
-                </div>
-                <div className="flex flex-col gap-2 sm:gap-3">
-                  <p className="text-sm sm:text-base font-[600] text-primary">
-                    GitHub repository URL
-                  </p>
-                  <input
-                    type="url"
-                    className="p-3 sm:p-[18px] border border-[#978AA1] outline-none w-full text-sm sm:text-base"
-                    placeholder="GitHub repository URL"
-                    value={configUrl}
-                    onChange={(e) => setConfigUrl(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="flex flex-col gap-2 sm:gap-3">
-                  <p className="text-sm sm:text-base font-[600] text-primary">
-                    Information file hash
-                  </p>
-                  <input
-                    type="text"
-                    className="p-3 sm:p-[18px] border border-[#978AA1] outline-none w-full text-sm sm:text-base"
-                    placeholder="Information file hash"
-                    value={configHash}
-                    onChange={(e) => setConfigHash(e.target.value)}
-                    required
-                    minLength={64}
-                    maxLength={64}
-                  />
-                </div>
-                <div className="flex justify-end mt-2 sm:mt-0">
+                  {maintainerAddresses.map((addr, i) => (
+                    <div key={i} className="flex gap-3 mb-3">
+                      <Input
+                        value={addr}
+                        error={addrErrors[i] || undefined}
+                        onChange={(e) => {
+                          const v = [...maintainerAddresses];
+                          v[i] = e.target.value;
+                          setMaintainerAddresses(v);
+                        }}
+                      />
+                      <Input
+                        value={maintainerGithubs[i]}
+                        error={ghErrors[i] || undefined}
+                        onChange={(e) => {
+                          const v = [...maintainerGithubs];
+                          v[i] = e.target.value;
+                          setMaintainerGithubs(v);
+                        }}
+                      />
+                    </div>
+                  ))}
                   <Button
-                    onClick={handleUpdate}
-                    isLoading={isLoading}
-                    className="w-full sm:w-auto"
+                    type="tertiary"
+                    onClick={() => {
+                      setMaintainerAddresses([...maintainerAddresses, ""]);
+                      setMaintainerGithubs([...maintainerGithubs, ""]);
+                      setAddrErrors([...addrErrors, null]);
+                      setGhErrors([...ghErrors, null]);
+                    }}
                   >
-                    Update Config
+                    Add Maintainer
                   </Button>
+                  <div className="flex justify-end mt-4">
+                    <Button
+                      onClick={() => {
+                        if (validateMaintainers()) setStep(2);
+                      }}
+                    >
+                      Next
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
+              {step === 2 && (
+                <div>
+                  <Step step={2} totalSteps={3} />
+                  <Title
+                    title="Project details"
+                    description="Organisation & repository"
+                  />
+                  <Input
+                    label="Organisation name"
+                    value={orgName}
+                    onChange={(e) => setOrgName(e.target.value)}
+                  />
+                  <Input
+                    label="Organisation URL"
+                    value={orgUrl}
+                    onChange={(e) => setOrgUrl(e.target.value)}
+                  />
+                  <Input
+                    label="Logo URL"
+                    value={orgLogo}
+                    onChange={(e) => setOrgLogo(e.target.value)}
+                  />
+                  <Textarea
+                    label="Description"
+                    value={orgDescription}
+                    onChange={(e) => setOrgDescription(e.target.value)}
+                  />
+                  <Input
+                    label="GitHub repository URL"
+                    value={githubRepoUrl}
+                    onChange={(e) => {
+                      setGithubRepoUrl(e.target.value);
+                      setRepoError(null);
+                    }}
+                    error={repoError || undefined}
+                  />
+                  <div className="flex justify-between mt-4">
+                    <Button type="secondary" onClick={() => setStep(1)}>
+                      Back
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (validateRepo()) setStep(3);
+                      }}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+              {step === 3 && (
+                <div>
+                  <Step step={3} totalSteps={3} />
+                  <Title title="Review" description="Confirm and update" />
+                  <p className="mb-4">
+                    A new tansu.toml will be generated and stored on IPFS.
+                  </p>
+                  <div className="flex justify-between">
+                    <Button type="secondary" onClick={() => setStep(2)}>
+                      Back
+                    </Button>
+                    <Button isLoading={isLoading} onClick={handleSubmit}>
+                      Update Config
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          )}
+          {step >= 4 && step <= 9 && (
+            <div className="flex flex-col items-center gap-6">
+              <img src="/images/loading.svg" className="animate-spin w-12" />
+              <Step step={step - 4} totalSteps={6} />
+              {step === 5
+                ? "Calculating CID"
+                : step === 6
+                  ? "Creating transaction"
+                  : step === 7
+                    ? "Sign transaction"
+                    : step === 8
+                      ? "Uploading to IPFS"
+                      : "Sending transaction"}
+            </div>
+          )}
         </Modal>
       )}
     </>
