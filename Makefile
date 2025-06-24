@@ -11,7 +11,7 @@ ifndef domain_contract_id
 endif
 
 ifndef wasm
-override wasm = tansu_v1.0.0.wasm
+override wasm = target/wasm32v1-none/release/tansu.optimized.wasm
 endif
 
 # Add help text after each target name starting with '\#\#'
