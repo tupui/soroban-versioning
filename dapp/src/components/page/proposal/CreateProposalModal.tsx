@@ -55,6 +55,7 @@ import OutcomeInput from "./OutcomeInput";
 import { generateRSAKeyPair } from "utils/crypto";
 import { setupAnonymousVoting } from "@service/WriteContractService";
 import { Buffer } from "buffer";
+import ProgressStep from "components/utils/ProgressStep";
 
 import "@mdxeditor/editor/style.css";
 import { navigate } from "astro:transitions/client";
@@ -776,45 +777,7 @@ const CreateProposalModal = () => {
           </div>
         </div>
       ) : step >= 5 && step <= 9 ? (
-        <div className="flex flex-col gap-[30px]">
-          <div className="flex gap-[18px]">
-            <img className="rotate_image" src="/images/loading.svg" />
-            <div className="flex-grow flex flex-col justify-center gap-[30px]">
-              <Step step={step - 4} totalSteps={6} />
-              {step == 5 ? (
-                <Title
-                  title="Preparing proposal data..."
-                  description="Calculating content identifier"
-                />
-              ) : step == 6 ? (
-                <Title
-                  title="Creating transaction..."
-                  description="Preparing smart contract call"
-                />
-              ) : step == 7 ? (
-                <Title
-                  title="Sign transaction"
-                  description="Please sign the transaction in your wallet"
-                />
-              ) : step == 8 ? (
-                <Title
-                  title="Uploading to IPFS..."
-                  description="Storing proposal data securely"
-                />
-              ) : (
-                <Title
-                  title="Sending transaction..."
-                  description="Broadcasting to the network"
-                />
-              )}
-              <div className="flex justify-end gap-[18px]">
-                <Button type="secondary" onClick={() => setStep(step - 1)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProgressStep step={step - 4} />
       ) : (
         <div className="flex items-center gap-[18px]">
           <img src="/images/flower.svg" />

@@ -21,6 +21,7 @@ import { updateConfigFlow } from "@service/FlowService";
 import { toast, extractConfigData } from "utils/utils";
 import { getProject } from "@service/ReadContractService";
 import { calculateDirectoryCid } from "utils/ipfsFunctions";
+import ProgressStep from "components/utils/ProgressStep";
 
 const UpdateConfigModal = () => {
   const infoLoaded = useStore(projectInfoLoaded);
@@ -149,103 +150,115 @@ const UpdateConfigModal = () => {
           {step <= 3 && (
             <div className="flex flex-col gap-8">
               {step === 1 && (
-                <div>
-                  <Step step={1} totalSteps={3} />
-                  <Title
-                    title="Maintainers"
-                    description="Edit maintainer addresses & GitHub handles"
+                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]">
+                  <img
+                    className="flex-none md:w-1/3 w-[180px]"
+                    src="/images/team.svg"
                   />
-                  {maintainerAddresses.map((addr, i) => (
-                    <div key={i} className="flex gap-3 mb-3">
-                      <Input
-                        value={addr}
-                        error={addrErrors[i] || undefined}
-                        onChange={(e) => {
-                          const v = [...maintainerAddresses];
-                          v[i] = e.target.value;
-                          setMaintainerAddresses(v);
-                        }}
-                      />
-                      <Input
-                        value={maintainerGithubs[i]}
-                        error={ghErrors[i] || undefined}
-                        onChange={(e) => {
-                          const v = [...maintainerGithubs];
-                          v[i] = e.target.value;
-                          setMaintainerGithubs(v);
-                        }}
-                      />
-                    </div>
-                  ))}
-                  <Button
-                    type="tertiary"
-                    onClick={() => {
-                      setMaintainerAddresses([...maintainerAddresses, ""]);
-                      setMaintainerGithubs([...maintainerGithubs, ""]);
-                      setAddrErrors([...addrErrors, null]);
-                      setGhErrors([...ghErrors, null]);
-                    }}
-                  >
-                    Add Maintainer
-                  </Button>
-                  <div className="flex justify-end mt-4">
+                  <div className="flex flex-col gap-4 w-full md:w-2/3">
+                    <Step step={1} totalSteps={3} />
+                    <Title
+                      title="Maintainers"
+                      description="Edit maintainer addresses & GitHub handles"
+                    />
+                    {maintainerAddresses.map((addr, i) => (
+                      <div key={i} className="flex gap-3 mb-3">
+                        <Input
+                          value={addr ?? ""}
+                          error={addrErrors[i] || undefined}
+                          onChange={(e) => {
+                            const v = [...maintainerAddresses];
+                            v[i] = e.target.value;
+                            setMaintainerAddresses(v);
+                          }}
+                        />
+                        <Input
+                          value={maintainerGithubs[i] ?? ""}
+                          error={ghErrors[i] || undefined}
+                          onChange={(e) => {
+                            const v = [...maintainerGithubs];
+                            v[i] = e.target.value;
+                            setMaintainerGithubs(v);
+                          }}
+                        />
+                      </div>
+                    ))}
                     <Button
+                      type="tertiary"
                       onClick={() => {
-                        if (validateMaintainers()) setStep(2);
+                        setMaintainerAddresses([...maintainerAddresses, ""]);
+                        setMaintainerGithubs([...maintainerGithubs, ""]);
+                        setAddrErrors([...addrErrors, null]);
+                        setGhErrors([...ghErrors, null]);
                       }}
                     >
-                      Next
+                      Add Maintainer
                     </Button>
+                    <div className="flex justify-end mt-4">
+                      <Button
+                        onClick={() => {
+                          if (validateMaintainers()) setStep(2);
+                        }}
+                      >
+                        Next
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
               {step === 2 && (
-                <div>
-                  <Step step={2} totalSteps={3} />
-                  <Title
-                    title="Project details"
-                    description="Organisation & repository"
+                <div className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]">
+                  <img
+                    className="flex-none md:w-1/3 w-[180px]"
+                    src="/images/arrow.svg"
                   />
-                  <Input
-                    label="Organisation name"
-                    value={orgName}
-                    onChange={(e) => setOrgName(e.target.value)}
-                  />
-                  <Input
-                    label="Organisation URL"
-                    value={orgUrl}
-                    onChange={(e) => setOrgUrl(e.target.value)}
-                  />
-                  <Input
-                    label="Logo URL"
-                    value={orgLogo}
-                    onChange={(e) => setOrgLogo(e.target.value)}
-                  />
-                  <Textarea
-                    label="Description"
-                    value={orgDescription}
-                    onChange={(e) => setOrgDescription(e.target.value)}
-                  />
-                  <Input
-                    label="GitHub repository URL"
-                    value={githubRepoUrl}
-                    onChange={(e) => {
-                      setGithubRepoUrl(e.target.value);
-                      setRepoError(null);
-                    }}
-                    error={repoError || undefined}
-                  />
-                  <div className="flex justify-between mt-4">
-                    <Button type="secondary" onClick={() => setStep(1)}>
-                      Back
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        if (validateRepo()) setStep(3);
+                  <div className="flex flex-col gap-4 w-full md:w-2/3">
+                    <Step step={2} totalSteps={3} />
+                    <Title
+                      title="Project details"
+                      description="Organisation & repository"
+                    />
+                    <Input
+                      label="Organisation name"
+                      value={orgName}
+                      onChange={(e) => setOrgName(e.target.value)}
+                    />
+                    <Input
+                      label="Organisation URL"
+                      value={orgUrl}
+                      onChange={(e) => setOrgUrl(e.target.value)}
+                    />
+                    <Input
+                      label="Logo URL"
+                      value={orgLogo}
+                      onChange={(e) => setOrgLogo(e.target.value)}
+                    />
+                    <Textarea
+                      label="Description"
+                      value={orgDescription}
+                      onChange={(e) => setOrgDescription(e.target.value)}
+                    />
+                    <Input
+                      label="GitHub repository URL"
+                      value={githubRepoUrl}
+                      onChange={(e) => {
+                        setGithubRepoUrl(e.target.value);
+                        setRepoError(null);
                       }}
-                    >
-                      Next
-                    </Button>
+                      error={repoError || undefined}
+                    />
+                    <div className="flex justify-between mt-4">
+                      <Button type="secondary" onClick={() => setStep(1)}>
+                        Back
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (validateRepo()) setStep(3);
+                        }}
+                      >
+                        Next
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -268,21 +281,7 @@ const UpdateConfigModal = () => {
               )}
             </div>
           )}
-          {step >= 4 && step <= 9 && (
-            <div className="flex flex-col items-center gap-6">
-              <img src="/images/loading.svg" className="animate-spin w-12" />
-              <Step step={step - 4} totalSteps={6} />
-              {step === 5
-                ? "Calculating CID"
-                : step === 6
-                  ? "Creating transaction"
-                  : step === 7
-                    ? "Sign transaction"
-                    : step === 8
-                      ? "Uploading to IPFS"
-                      : "Sending transaction"}
-            </div>
-          )}
+          {step >= 4 && step <= 9 && <ProgressStep step={step - 4} />}
         </Modal>
       )}
     </>

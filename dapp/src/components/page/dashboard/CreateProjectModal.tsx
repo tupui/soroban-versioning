@@ -21,6 +21,7 @@ import {
   validateMaintainerAddress,
 } from "utils/validations";
 import Textarea from "components/utils/Textarea";
+import ProgressStep from "components/utils/ProgressStep";
 
 // Get domain contract ID from environment with fallback
 const SOROBAN_DOMAIN_CONTRACT_ID =
@@ -404,7 +405,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
           className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]"
         >
           <img
-            className="flex-none w-[200px] md:w-[360px]"
+            className="flex-none w-[140px] md:w-[260px]"
             src="/images/megaphone.svg"
           />
           <div className="flex flex-col gap-6 md:gap-[42px] w-full">
@@ -505,12 +506,12 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
           className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]"
         >
           <img
-            className="flex-none w-[200px] md:w-[360px]"
+            className="flex-none w-[140px] md:w-[260px]"
             src="/images/team.svg"
           />
           <div className="flex flex-col gap-6 md:gap-[42px] w-full">
             <div className="flex flex-col gap-4 md:gap-[30px]">
-              <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
+              <div className="flex-grow md:flex-1 flex flex-col gap-4 md:gap-[30px]">
                 <div className="flex flex-col gap-3 md:gap-5">
                   <Step step={step} totalSteps={5} />
                   <Title
@@ -629,12 +630,12 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
           className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]"
         >
           <img
-            className="flex-none w-[200px] md:w-[360px]"
+            className="flex-none w-[140px] md:w-[260px]"
             src="/images/arrow.svg"
           />
           <div className="flex flex-col gap-6 md:gap-[42px] w-full">
             <div className="flex flex-col gap-4 md:gap-[30px]">
-              <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
+              <div className="flex-grow md:flex-1 flex flex-col gap-4 md:gap-[30px]">
                 <div className="flex flex-col gap-3 md:gap-5">
                   <Step step={step} totalSteps={5} />
                   <Title
@@ -817,45 +818,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
           </div>
         </div>
       ) : step >= 5 && step <= 9 ? (
-        <div className="flex flex-col gap-[30px]">
-          <div className="flex gap-[18px]">
-            <img className="rotate_image" src="/images/loading.svg" />
-            <div className="flex-grow flex flex-col justify-center gap-[30px]">
-              <Step step={step - 4} totalSteps={6} />
-              {step == 5 ? (
-                <Title
-                  title="Preparing project data..."
-                  description="Calculating content identifier"
-                />
-              ) : step == 6 ? (
-                <Title
-                  title="Creating transaction..."
-                  description="Preparing smart contract call"
-                />
-              ) : step == 7 ? (
-                <Title
-                  title="Sign transaction"
-                  description="Please sign the transaction in your wallet"
-                />
-              ) : step == 8 ? (
-                <Title
-                  title="Uploading to IPFS..."
-                  description="Storing project data securely"
-                />
-              ) : (
-                <Title
-                  title="Sending transaction..."
-                  description="Broadcasting to the network"
-                />
-              )}
-              <div className="flex justify-end gap-[18px]">
-                <Button type="secondary" onClick={() => setStep(4)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProgressStep step={step - 4} />
       ) : (
         <div className="flex flex-col gap-[42px]">
           <div className="flex items-start gap-[18px]">

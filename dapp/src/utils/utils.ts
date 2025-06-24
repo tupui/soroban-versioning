@@ -127,27 +127,22 @@ export const modifyProposalFromContract = (
   proposal: ContractProposal,
 ): Proposal => {
   if (proposal.vote_data.public_voting) {
-    const voters_approve = proposal.vote_data.votes
-      .filter(
-        (vote: Vote) =>
-          vote.tag === "PublicVote" &&
-          vote.values[0].vote_choice.tag === "Approve",
-      )
-      .map((vote: Vote) => vote.values[0].address);
-    const voters_reject = proposal.vote_data.votes
-      .filter(
-        (vote: Vote) =>
-          vote.tag === "PublicVote" &&
-          vote.values[0].vote_choice.tag === "Reject",
-      )
-      .map((vote: Vote) => vote.values[0].address);
-    const voters_abstain = proposal.vote_data.votes
-      .filter(
-        (vote: Vote) =>
-          vote.tag === "PublicVote" &&
-          vote.values[0].vote_choice.tag === "Abstain",
-      )
-      .map((vote: Vote) => vote.values[0].address);
+    const publicVotes = proposal.vote_data.votes.filter(
+      (v: Vote) => v.tag === "PublicVote",
+    );
+
+    const voters_approve = publicVotes.filter(
+      (v: Vote) => (v as any).values[0].vote_choice.tag === "Approve",
+    );
+    const voters_reject = publicVotes.filter(
+      (v: Vote) => (v as any).values[0].vote_choice.tag === "Reject",
+    );
+    const voters_abstain = publicVotes.filter(
+      (v: Vote) => (v as any).values[0].vote_choice.tag === "Abstain",
+    );
+
+    const sumWeight = (arr: Vote[]) =>
+      arr.reduce((acc, v) => acc + (v.values[0].weight ?? 1), 0);
 
     return {
       id: proposal.id,
@@ -158,10 +153,10 @@ export const modifyProposalFromContract = (
       voteStatus: {
         approve: {
           voteType: VoteType.APPROVE,
-          score: voters_approve.length,
-          voters: voters_approve.map((voter: string) => {
+          score: sumWeight(voters_approve),
+          voters: voters_approve.map((voter: Vote) => {
             return {
-              address: voter,
+              address: voter.values[0].address,
               image: null,
               name: "",
               github: "",
@@ -170,10 +165,10 @@ export const modifyProposalFromContract = (
         },
         reject: {
           voteType: VoteType.REJECT,
-          score: voters_reject.length,
-          voters: voters_reject.map((voter: string) => {
+          score: sumWeight(voters_reject),
+          voters: voters_reject.map((voter: Vote) => {
             return {
-              address: voter,
+              address: voter.values[0].address,
               image: null,
               name: "",
               github: "",
@@ -182,10 +177,10 @@ export const modifyProposalFromContract = (
         },
         abstain: {
           voteType: VoteType.CANCEL,
-          score: voters_abstain.length,
-          voters: voters_abstain.map((voter: string) => {
+          score: sumWeight(voters_abstain),
+          voters: voters_abstain.map((voter: Vote) => {
             return {
-              address: voter,
+              address: voter.values[0].address,
               image: null,
               name: "",
               github: "",
