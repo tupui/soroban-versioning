@@ -42,13 +42,12 @@ impl MembershipTrait for Tansu {
         badges: Vec<types::Badge>,
     ) {
         let project_key_ = types::ProjectKey::Key(key.clone());
-        let project = if let Some(project) = env
+        if let Some(project) = env
             .storage()
             .persistent()
             .get::<types::ProjectKey, types::Project>(&project_key_)
         {
             crate::auth_maintainers(&env, &maintainer, &project.maintainers);
-            project
         } else {
             panic_with_error!(&env, &errors::ContractErrors::InvalidKey)
         };
@@ -113,7 +112,6 @@ impl MembershipTrait for Tansu {
             *vec_ref = new_vec;
         }
 
-        env.storage().persistent().set(&project_key_, &project);
         env.storage().persistent().set(&badges_key_, &badges_);
         env.storage().persistent().set(&member_key_, &member_);
     }
