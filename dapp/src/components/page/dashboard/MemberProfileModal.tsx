@@ -435,11 +435,11 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
             {/* Engagement Section (previously Badges) */}
             <div className="w-full">
               <h4 className="text-base sm:text-lg font-semibold text-primary mb-1 sm:mb-2">
-                Engagement
+                Community Engagements
               </h4>
               {noBadges ? (
                 <p className="text-sm sm:text-base text-secondary">
-                  No engagement with any projects yet
+                  No community engagement with any projects yet
                 </p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-y-auto">
