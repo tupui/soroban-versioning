@@ -5,7 +5,7 @@ permissions:
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
 
   workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
       - run: rustup update
 
       # soroban target
-      - run: rustup target add wasm32-unknown-unknown
+      - run: rustup target add wasm32v1-none
 
       - run: cargo build
 

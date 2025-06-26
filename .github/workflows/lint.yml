@@ -39,7 +39,16 @@ jobs:
 
   website-dapp:
     runs-on: ubuntu-latest
-
+    env:
+      # Default Soroban network configuration for static build & linting
+      PUBLIC_SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org:443"
+      PUBLIC_SOROBAN_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+      PUBLIC_TANSU_CONTRACT_ID: "CTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+      PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CDVEWMU4UFI7MXKYZAATXROJRZZKQHZWRCR443STHMPE3MOTM6HAB7R7"
+      PUBLIC_TANSU_OWNER_ID: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+      PUBLIC_DEFAULT_FEE: "100"
+      PUBLIC_DEFAULT_TIMEOUT: "30"
+      SOROBAN_NETWORK: "testnet"
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
