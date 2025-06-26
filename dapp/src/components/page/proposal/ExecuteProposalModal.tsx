@@ -14,6 +14,8 @@ import {
 import { toast } from "utils/utils";
 import VotingResult from "./VotingResult";
 import { computeAnonymousVotingData } from "utils/anonymousVoting";
+import { loadProjectInfo } from "@service/StateService";
+import { loadedPublicKey } from "@service/walletService";
 
 interface ExecuteProposalModalProps extends ModalProps {
   projectName: string;
@@ -35,6 +37,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   const [tallies, setTallies] = useState<number[] | null>(null);
   const [seeds, setSeeds] = useState<number[] | null>(null);
   const [processingError, setProcessingError] = useState<string | null>(null);
+  const [isMaintainer, setIsMaintainer] = useState(false);
 
   const voteResultAndXdr: {
     voteResult: VoteResultType | null;
@@ -92,6 +95,24 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
     else setComputedResult(VoteResultType.CANCEL);
   }, [displayVoteStatus]);
 
+  useEffect(() => {
+    const checkMaintainer = async () => {
+      try {
+        const { getProjectFromName } = await import(
+          "@service/ReadContractService"
+        );
+        const project = await getProjectFromName(projectName);
+        const addr = loadedPublicKey();
+        if (project && addr) {
+          setIsMaintainer(project.maintainers.includes(addr));
+        }
+      } catch (_) {
+        setIsMaintainer(false);
+      }
+    };
+    checkMaintainer();
+  }, [projectName]);
+
   const handleKeyFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -148,7 +169,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 
     try {
       const { executeProposal } = await import("@service/WriteContractService");
-      const res = await executeProposal(
+      await executeProposal(
         projectName,
         proposalId,
         voteResultAndXdr.xdr,
@@ -156,7 +177,6 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
         seeds ?? undefined,
       );
       setStep(step + 1);
-      console.log("execute result:", res.data);
       toast.success("Congratulation!", "Proposal executed successfully");
     } catch (error: any) {
       toast.error("Execute Proposal", error.message);
@@ -202,15 +222,36 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
           </div>
         </div>
       ) : step == 1 ? (
-        <div className="flex items-start gap-6">
-          <img src="/images/lock-in-box.svg" />
-          <div className="flex-grow flex flex-col gap-[30px]">
-            <Step step={step} totalSteps={3} />
-            <Title
-              title="Finalizing the Vote"
-              description="The voting period has ended. Now, we need to count the votes and determine the final outcome."
-            />
-            <VotingResult voteStatus={displayVoteStatus} withDetail />
+        <div className="flex flex-col gap-[42px]">
+          <div className="flex items-start gap-6">
+            <img src="/images/lock-in-box.svg" />
+            <div className="flex-grow flex flex-col gap-[30px]">
+              <Step step={step} totalSteps={3} />
+              <Title
+                title="Finalizing the Vote"
+                description="The voting period has ended. Now, we need to count the votes and determine the final outcome."
+              />
+              <VotingResult voteStatus={displayVoteStatus} withDetail />
+            </div>
+          </div>
+          <div className="flex justify-end gap-[18px]">
+            <Button type="secondary" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (!isMaintainer) {
+                  toast.error(
+                    "Execute Proposal",
+                    "Only maintainers can finalize votes",
+                  );
+                  return;
+                }
+                setStep(2);
+              }}
+            >
+              Next
+            </Button>
           </div>
         </div>
       ) : step == 2 ? (
@@ -244,6 +285,13 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
             </Button>
             <Button
               onClick={async () => {
+                if (!isMaintainer) {
+                  toast.error(
+                    "Execute Proposal",
+                    "Only maintainers can execute proposals",
+                  );
+                  return;
+                }
                 await signAndExecute();
               }}
             >

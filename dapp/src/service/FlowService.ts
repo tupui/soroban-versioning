@@ -4,13 +4,14 @@ import { extract } from "@web3-storage/w3up-client/delegation";
 import { kit } from "../components/stellar-wallets-kit";
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
+import { loadedProjectId } from "./StateService";
 import * as pkg from "js-sha3";
 import { parseContractError } from "utils/contractErrors";
 const { keccak256 } = pkg;
 
 interface UploadWithDelegationParams {
   files: File[];
-  type: "proposal" | "member";
+  type: "proposal" | "member" | "project";
   projectName?: string;
   signedTxXdr: string; // The signed contract transaction
   did: string;
@@ -28,6 +29,15 @@ interface CreateProposalFlowParams {
 interface JoinCommunityFlowParams {
   memberAddress: string;
   profileFiles: File[];
+  onProgress?: (step: number) => void;
+}
+
+interface CreateProjectFlowParams {
+  projectName: string;
+  tomlFile: File;
+  githubRepoUrl: string;
+  maintainers: string[];
+  domainContractId: string;
   onProgress?: (step: number) => void;
 }
 
@@ -366,6 +376,164 @@ export async function joinCommunityFlow({
   }
 
   // Step 5: Send the signed transaction
+  await sendSignedTransaction(signedTxXdr);
+  return true;
+}
+
+/**
+ * Execute Flow 2 for creating a project – mirrors proposal flow steps:
+ * 1. Calculate CID locally
+ * 2. Create & sign register transaction embedding CID
+ * 3. Upload to IPFS using the signed tx for delegation
+ * 4. Verify CID matches
+ * 5. Send signed transaction
+ */
+export async function createProjectFlow({
+  projectName,
+  tomlFile,
+  githubRepoUrl,
+  maintainers,
+  domainContractId,
+  onProgress,
+}: CreateProjectFlowParams): Promise<boolean> {
+  // Step 1 – Calculate CID
+  const expectedCid = await calculateDirectoryCid([tomlFile]);
+
+  // Create W3UP client for DID retrieval
+  const client = await create();
+  const did = client.agent.did();
+
+  // Step 2 – Create & sign register transaction
+  onProgress?.(7); // signing step indicator
+
+  const publicKey = loadedPublicKey();
+  if (!publicKey) throw new Error("Please connect your wallet first");
+
+  Tansu.options.publicKey = publicKey;
+
+  const tx = await Tansu.register({
+    name: projectName,
+    maintainer: publicKey,
+    maintainers,
+    url: githubRepoUrl,
+    hash: expectedCid,
+    domain_contract_id: domainContractId,
+  });
+
+  let sim;
+  try {
+    sim = await tx.simulate();
+  } catch (error: any) {
+    throw new Error(parseContractError(error));
+  }
+
+  // Prepare transaction with simulation data when supported
+  if ((tx as any).prepare) {
+    await (tx as any).prepare(sim);
+  }
+
+  const preparedXdr = tx.toXDR();
+  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
+
+  // Step 3 – Upload to IPFS with delegation
+  onProgress?.(8); // uploading step indicator
+
+  const cidUploaded = await uploadWithDelegation({
+    files: [tomlFile],
+    type: "project",
+    signedTxXdr,
+    did,
+  });
+
+  // Step 4 – Verify CID matches
+  if (cidUploaded !== expectedCid) {
+    throw new Error(
+      `CID mismatch: expected ${expectedCid}, got ${cidUploaded}`,
+    );
+  }
+
+  // Step 5 – Send signed transaction
+  onProgress?.(9); // sending step indicator
+  await sendSignedTransaction(signedTxXdr);
+
+  return true;
+}
+
+/** Create and sign an update_config transaction */
+async function createSignedUpdateConfigTransaction(
+  maintainers: string[],
+  configUrl: string,
+  cid: string,
+): Promise<string> {
+  const publicKey = loadedPublicKey();
+  if (!publicKey) throw new Error("Please connect your wallet first");
+
+  Tansu.options.publicKey = publicKey;
+
+  const tx = await Tansu.update_config({
+    maintainer: publicKey,
+    key: loadedProjectId()!, // assume project already selected
+    maintainers: maintainers,
+    url: configUrl,
+    hash: cid,
+  });
+
+  // Simulate & prepare
+  let sim;
+  try {
+    sim = await tx.simulate();
+  } catch (e: any) {
+    throw new Error(parseContractError(e));
+  }
+  if ((tx as any).prepare) {
+    await (tx as any).prepare(sim);
+  }
+
+  const preparedXdr = tx.toXDR();
+  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
+  return signedTxXdr;
+}
+
+export async function updateConfigFlow({
+  tomlFile,
+  githubRepoUrl,
+  maintainers,
+  onProgress,
+}: {
+  tomlFile: File;
+  githubRepoUrl: string;
+  maintainers: string[];
+  onProgress?: (step: number) => void;
+}): Promise<boolean> {
+  const expectedCid = await calculateDirectoryCid([tomlFile]);
+
+  const client = await create();
+  const did = client.agent.did();
+
+  // sign tx
+  onProgress?.(7);
+  const signedTxXdr = await createSignedUpdateConfigTransaction(
+    maintainers,
+    githubRepoUrl,
+    expectedCid,
+  );
+
+  // upload
+  onProgress?.(8);
+  const cidUploaded = await uploadWithDelegation({
+    files: [tomlFile],
+    type: "project",
+    signedTxXdr,
+    did,
+  });
+
+  if (cidUploaded !== expectedCid) {
+    throw new Error(
+      `CID mismatch: expected ${expectedCid}, got ${cidUploaded}`,
+    );
+  }
+
+  onProgress?.(9);
   await sendSignedTransaction(signedTxXdr);
   return true;
 }

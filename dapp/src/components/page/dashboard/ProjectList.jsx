@@ -1,7 +1,7 @@
 import { useStore } from "@nanostores/react";
 import { useEffect, useState, useCallback } from "react";
 import { getDemoConfigData } from "../../../constants/demoConfigData";
-import { fetchTOMLFromConfigUrl } from "../../../service/GithubService.ts";
+import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
   getMember,
@@ -201,7 +201,7 @@ const ProjectList = () => {
     try {
       const project = await getProjectFromName(projectName);
       if (project && project.name && project.config && project.maintainers) {
-        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+        const tomlData = await fetchTomlFromCid(project.config.hash);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigInfo(configData);

@@ -1,4 +1,4 @@
-import { fetchTOMLFromConfigUrl } from "../../../service/GithubService";
+import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
   getProjectHash,
@@ -30,7 +30,7 @@ const ProjectCard = ({ config }) => {
         if (username && repoName) {
           setProjectRepoInfo(username, repoName);
         }
-        const tomlData = await fetchTOMLFromConfigUrl(project.config.url);
+        const tomlData = await fetchTomlFromCid(project.config.hash);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigData(configData);

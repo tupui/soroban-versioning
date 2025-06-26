@@ -543,6 +543,9 @@ fn test() {
     let badges = vec![&env, Badge::Community, Badge::Developer];
     contract.add_badges(&mando, &id, &grogu, &badges);
 
+    // check double adds
+    contract.add_badges(&mando, &id, &grogu, &badges);
+
     let member = contract.get_member(&grogu);
     assert_eq!(
         member.projects,
@@ -568,6 +571,21 @@ fn test() {
             developer: vec![&env, grogu.clone()],
             triage: Vec::new(&env),
             community: vec![&env, kuiil.clone(), grogu.clone()],
+            verified: Vec::new(&env),
+            default: Vec::new(&env),
+        }
+    );
+
+    // remove one badge
+    let badges = vec![&env, Badge::Developer];
+    contract.add_badges(&mando, &id, &grogu, &badges);
+    let badges_for_id = contract.get_badges(&id);
+    assert_eq!(
+        badges_for_id,
+        Badges {
+            developer: vec![&env, grogu.clone()],
+            triage: Vec::new(&env),
+            community: vec![&env, kuiil.clone()],
             verified: Vec::new(&env),
             default: Vec::new(&env),
         }

@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react";
-import { getLatestCommitData, getTOMLFileHash } from "@service/GithubService";
+import { getLatestCommitData } from "@service/GithubService";
 import { getProjectHash } from "@service/ReadContractService";
 import { loadProjectInfo } from "@service/StateService";
 import Tooltip from "components/utils/Tooltip";
@@ -7,6 +7,7 @@ import CopyButton from "components/utils/CopyButton";
 import { useEffect, useState } from "react";
 import { formatDate } from "utils/formatTimeFunctions";
 import { projectInfoLoaded } from "utils/store";
+import { getIpfsBasicLink } from "utils/ipfsFunctions";
 
 enum Status {
   Match,
@@ -17,7 +18,6 @@ enum Status {
 const LatestCommit = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
   const [commitData, setCommitData] = useState<any>();
-  const [tomlStatus, setTomlStatus] = useState<Status>(Status.NotFound);
   const [latestCommitStatus, setLatestCommitStatus] = useState<Status>(
     Status.NotFound,
   );
@@ -35,13 +35,6 @@ const LatestCommit = () => {
         setLatestCommitStatus(Status.Match);
       } else {
         setLatestCommitStatus(Status.NotMatch);
-      }
-    }
-
-    if (projectInfo) {
-      const tomlFileHash = await getTOMLFileHash(projectInfo.config.url);
-      if (projectInfo.config.hash == tomlFileHash) {
-        setTomlStatus(Status.Match);
       }
     }
   };
@@ -82,29 +75,6 @@ const LatestCommit = () => {
         <div className="flex gap-[18px]">
           <div className="flex items-center gap-2">
             <div className="flex gap-[6px]">
-              {tomlStatus == Status.Match ? (
-                <img src="/icons/check.svg" />
-              ) : (
-                <img src="/icons/failed.svg" />
-              )}
-              <p className="text-base text-medium text-[#07711E]">
-                Configuration
-              </p>
-            </div>
-            <Tooltip
-              text={
-                tomlStatus == Status.Match
-                  ? "tansu.toml on-chain hash matches the hash of the file on GitHub"
-                  : tomlStatus == Status.NotMatch
-                    ? "tansu.toml on-chain hash does not match the hash of the file on GitHub"
-                    : "tansu.toml not found on GitHub"
-              }
-            >
-              <img src="/icons/info.svg" />
-            </Tooltip>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex gap-[6px]">
               {latestCommitStatus == Status.Match ? (
                 <img src="/icons/check.svg" />
               ) : (
@@ -136,6 +106,17 @@ const LatestCommit = () => {
             {formatDate(commitData?.commit.committer.date)}
           </p>
         </div>
+      )}
+      {/* Configuration link */}
+      {isProjectInfoLoaded && (
+        <a
+          href={`${getIpfsBasicLink(loadProjectInfo()?.config.hash || "")}/tansu.toml`}
+          target="_blank"
+          className="flex items-center gap-1 text-[#07711E] hover:underline"
+        >
+          <img src="/icons/ipfs.svg" className="w-4 h-4" />
+          <span className="text-base">tansu.toml</span>
+        </a>
       )}
     </div>
   );

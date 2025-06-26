@@ -33,7 +33,8 @@
     "postcss": "^8.5.4",
     "prettier": "^3.5.3",
     "prettier-plugin-astro": "^0.14.1",
-    "tailwindcss": "^4.1.8"
+    "tailwindcss": "^4.1.8",
+    "@playwright/test": "^1.53.1"
   },
   "name": "dapp",
   "scripts": {
@@ -42,6 +43,7 @@
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "astro dev",
+    "test:e2e": "playwright install --with-deps && playwright test",
     "formatter": "prettier --write .",
     "linter": "prettier -c ."
   },
