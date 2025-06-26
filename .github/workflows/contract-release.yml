@@ -1,12 +1,14 @@
 name: Publish Tansu contract
 
 on:
-  workflow_dispatch:
-    inputs:
-      release_name:
-        description: "Unique release name"
-        required: true
-        type: string
+  push:
+    tags:
+      - 'v*'
+
+permissions: # required permissions for the workflow
+  id-token: write
+  contents: write  # in order to create releases
+  attestations: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,33 +17,14 @@ concurrency:
 jobs:
   release-contract:
     name: Compile Stellar smart contract for production and create release
-    permissions:
-      contents: write # in order to create releases
     uses: stellar-expert/soroban-build-workflow/.github/workflows/release.yml@2ff8e0a5a122981b534bfc76851d26d74905c1cc
     with:
-      release_name: ${{ github.event.inputs.release_name }}
+      release_name: ${{ github.ref_name }}
       release_description: "Tansu contract release"
+      home_domain: 'tansu.dev'
       relative_path: '["contracts/tansu"]'
       package: 'tansu'
     environment:
       name: publish-contract
     secrets:
       release_token: ${{ secrets.GITHUB_TOKEN }}
-#  attestation-contract:
-#    needs: release-contract
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Generate artifact attestation for build
-#        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c
-#        with:
-#          subject-path: "target/wasm32-unknown-unknown/release/tansu.wasm"
-#
-#      - name: Verify artifact attestation
-#        env:
-#          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        shell: bash
-#        run: |
-#          for artifact in target/wasm32-unknown-unknown/release/*; do
-#              echo "# ${artifact}"
-#              gh attestation verify "${artifact}" --repo ${{ github.repository }}
-#          done
