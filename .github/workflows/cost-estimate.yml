@@ -1,0 +1,80 @@
+name: Cost Estimate Test
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+on:
+  pull_request:
+    paths:
+      - 'soroban-sdk/**'
+      - '.github/workflows/cost-estimate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'soroban-sdk/**'
+      - '.github/workflows/cost-estimate.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  RUSTFLAGS: -C debuginfo=0
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+jobs:
+  cost-estimate:
+    name: Cost Estimate Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+          target: wasm32-unknown-unknown
+
+      - name: Run and parse cost estimate tests
+        id: cost-test
+        run: |
+          echo "## Running Cost Estimate Tests" >> $GITHUB_STEP_SUMMARY
+
+          set +e
+          OUTPUT=$(cargo test -- --show-output 2>&1)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | python3 .github/workflows/parse_costs.py >> $GITHUB_STEP_SUMMARY
+          TEST_EXIT_CODE=$?
+          set -e
+
+          echo "test_exit_code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
+
+          if git diff --quiet; then
+            echo "snapshot_drift=false" >> $GITHUB_OUTPUT
+            echo "✅ No snapshot drift detected" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "snapshot_drift=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Snapshot drift detected!" >> $GITHUB_STEP_SUMMARY
+            echo "### Changed Files:" >> $GITHUB_STEP_SUMMARY
+            git diff --name-only >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Final check
+        if: always()
+        run: |
+          if [ "${{ steps.cost-test.outputs.test_exit_code }}" != "0" ]; then
+            echo "❌ Tests failed"
+            exit 1
+          fi
+          if [ "${{ steps.cost-test.outputs.snapshot_drift }}" == "true" ]; then
+            echo "⚠️ Snapshot drift detected – please review"
+            exit 1
+          fi
+          echo "✅ All tests passed"
