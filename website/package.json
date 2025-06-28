@@ -22,21 +22,22 @@
     "@docusaurus/preset-classic": "3.8.1",
     "@docusaurus/theme-mermaid": "3.8.1",
     "@mdx-js/react": "^3.1.0",
+    "caniuse-lite": "^1.0.30001726",
     "clsx": "^2.1.1",
     "mermaid": "^11.7.0",
     "prism-react-renderer": "^2.4.1",
     "raw-loader": "^4.0.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "rehype-katex": "7",
-    "remark-math": "6"
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "3.8.1",
     "@docusaurus/tsconfig": "3.8.1",
     "@docusaurus/types": "3.8.1",
     "@stellar/prettier-config": "^1.2.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "typescript": "~5.8.3"
   },
   "browserslist": {

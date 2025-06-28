@@ -1,8 +1,8 @@
 ---
-sidebar_position: 4
+sidebar_position: 2
 ---
 
-# Using the dApp
+# Quick-Start
 
 The web interface at [https://testnet.tansu.dev](https://testnet.tansu.dev) is the easiest way to interact with Tansu. It wraps all contract calls behind a familiar UI and never asks for your secret key – signature and account management are delegated to the [Stellar Wallets Kit](https://github.com/stellar/js-wallets-kit).
 
@@ -13,15 +13,17 @@ The web interface at [https://testnet.tansu.dev](https://testnet.tansu.dev) is t
 1. Click **Connect** at the top-right corner.
 2. Select your preferred wallet (Freighter, Albedo, …).
 3. Authorise the connection – your public key now appears in the header.
+4. Join the community – fill out details about yourself.
 
 ## 2. Register a project
 
 1. Go to **Projects ▶ Register**.
 2. Fill in:
-   - **Name** – 15 characters max (must be available as a Soroban Domain)
-   - **Maintainers** – comma-separated list of Stellar addresses
-   - **Config URL** – URL of your `tansu.toml`
-   - **Config Hash** – SHA-256 of the file above
+
+- **Name** – 15 characters max (must be available as a Soroban Domain)
+- **Maintainers** – comma-separated list of Stellar addresses
+- **Metadata** – The rest is metadata such as the link to the code repository.
+
 3. Press **Register** and sign the transaction.
 
 The dApp shows a **pending** status until the transaction is confirmed. Once done the new project appears on the dashboard.
@@ -44,10 +46,12 @@ See the [Membership](developers/membership.mdx) page for details.
 1. Go to the **Governance** tab inside a project.
 2. Press **New proposal**.
 3. Fill in:
-   - **Title**
-   - **Description** – rich-text editor (stored on IPFS)
-   - **Voting end** – calendar picker (1-30 days)
-   - **Outcome** – JSON describing XDR to execute on approval (optional)
+
+- **Title**
+- **Description** – rich-text editor (stored on IPFS)
+- **Voting end** – calendar picker (1-30 days)
+- **Outcome** – JSON describing XDR to execute on approval (optional)
+
 4. Submit and sign.
 
 The proposal immediately appears with status **Active**.

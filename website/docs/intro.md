@@ -29,7 +29,7 @@ Tansu does not replace GitHub (or your preferred hosting solution) – it comple
 
 ## Learn More
 
-- [Using the dApp](using_the_dapp.mdx): Step-by-step guide for end-users
+- [Quick-Start on using the dApp](using_the_dapp.mdx): Step-by-step guide for end-users
 - [Membership & Badges](developers/membership.mdx): How roles and voting power work
 - [Governance & Proposals](developers/governance.mdx): DAO mechanics and proposal lifecycle
 - [On-chain architecture](developers/architecture.mdx): Smart contract and backend details
