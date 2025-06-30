@@ -89,17 +89,29 @@ export async function computeAnonymousVotingData(
       if (!vCipher || !sCipher) continue;
 
       // Decrypt (or parse plain numbers for default votes)
-      const vDec = isPlainNumber(vCipher)
-        ? parseInt(vCipher)
-        : parseInt(await decryptWithPrivateKey(vCipher!, privateKey));
-      const sDec = isPlainNumber(sCipher)
-        ? parseInt(sCipher)
-        : parseInt(await decryptWithPrivateKey(sCipher!, privateKey));
+      let vDec: number;
+      if (isPlainNumber(vCipher)) {
+        vDec = parseInt(vCipher);
+      } else {
+        const decStr = await decryptWithPrivateKey(vCipher!, privateKey);
+        const numStr = decStr.includes(":") ? decStr.split(":").pop()! : decStr;
+        vDec = parseInt(numStr);
+      }
+      let sDec: number;
+      if (isPlainNumber(sCipher)) {
+        sDec = parseInt(sCipher);
+      } else {
+        const decStr = await decryptWithPrivateKey(sCipher!, privateKey);
+        const numStr = decStr.includes(":") ? decStr.split(":").pop()! : decStr;
+        sDec = parseInt(numStr);
+      }
 
-      if (vDec === 1) voteChoiceIdx = i;
-      talliesArr[i] += vDec * weight;
+      if (vDec > 0) voteChoiceIdx = i;
+      talliesArr[i] += vDec;
       seedsArr[i] += sDec;
-      voteCounts[i] += vDec;
+      if (vDec > 0) {
+        voteCounts[i] += 1;
+      }
     }
 
     // Retrieve max weight for voter

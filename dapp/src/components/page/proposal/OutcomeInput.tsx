@@ -32,7 +32,7 @@ const OutcomeInput = ({
       </div>
       {xdr == null ? (
         <Button type="secondary" onClick={() => setXdr("")}>
-          Add XDR
+          Add Outcome
         </Button>
       ) : (
         <div className="w-full flex flex-col gap-[18px]">

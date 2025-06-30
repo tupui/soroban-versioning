@@ -249,8 +249,20 @@ const CreateProposalModal = () => {
       }
 
       // 2️⃣  Calculate voting end timestamp & build proposal transaction
-      const votingDays = getDeltaDays(selectedDate);
-      const votingEndsAt = Math.floor(Date.now() / 1000) + 86400 * votingDays;
+      // Ensure at least 25h window between now and voting end
+      let targetTs = new Date(selectedDate).getTime();
+      const min25hMs = Date.now() + 25 * 60 * 60 * 1000;
+      if (targetTs < min25hMs) {
+        targetTs = min25hMs;
+      }
+
+      // Cap to 30 days max by using existing validation but double-check here as well
+      const max30dMs = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      if (targetTs > max30dMs) {
+        targetTs = max30dMs;
+      }
+
+      const votingEndsAt = Math.floor(targetTs / 1000);
 
       const { createProposalFlow } = await import("@service/FlowService");
 
@@ -258,7 +270,7 @@ const CreateProposalModal = () => {
         projectName: projectName!,
         proposalName,
         proposalFiles: files,
-        votingEndsAt,
+        votingEndsAt: votingEndsAt,
         publicVoting: !isAnonymousVoting,
         onProgress: setStep,
       });
@@ -647,13 +659,23 @@ const CreateProposalModal = () => {
             <Button
               onClick={() => {
                 try {
-                  const diffMs = new Date(selectedDate).getTime() - Date.now();
-                  const diffHours = diffMs / (1000 * 60 * 60);
+                  // Compute hour difference between now and the picked calendar date
+                  let diffMs = new Date(selectedDate).getTime() - Date.now();
+                  let diffHours = diffMs / (1000 * 60 * 60);
 
-                  if (diffHours < 24 || diffHours > 30 * 24)
-                    throw new Error(
-                      "Voting duration must be at least 24 hours and no more than 30 days",
+                  // If the user picked the next day (or any day) but the time
+                  // component would make the window < 25h, bump it to 25h.
+                  if (diffHours < 25) {
+                    const corrected = new Date(
+                      Date.now() + 25 * 60 * 60 * 1000,
                     );
+                    setSelectedDate(corrected);
+                    diffMs = corrected.getTime() - Date.now();
+                    diffHours = diffMs / (1000 * 60 * 60);
+                  }
+
+                  if (diffHours > 30 * 24)
+                    throw new Error("Voting duration cannot exceed 30 days");
 
                   setStep(step + 1);
                 } catch (err: any) {

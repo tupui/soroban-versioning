@@ -8,7 +8,7 @@ import {
 import { formatDate } from "../../../utils/formatTimeFunctions.ts";
 import { latestCommit, projectInfoLoaded } from "../../../utils/store.ts";
 import CommitPeriod from "./CommitPeriod.jsx";
-import CommitRecord from "./CommitRecord.jsx";
+import CommitRecord from "../../CommitRecord";
 
 const CommitHistory = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);

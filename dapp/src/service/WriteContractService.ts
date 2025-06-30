@@ -294,7 +294,9 @@ async function voteToProposal(
     // Build votes & seeds arrays in order [approve, reject, abstain]
     const voteIndex = vote === "approve" ? 0 : vote === "reject" ? 1 : 2;
     const votesArr: number[] = [0, 0, 0];
-    votesArr[voteIndex] = 1;
+    // The contract expects the *weighted* vote value (vote * weight) rather than a simple flag.
+    // Therefore store `weight` (>=1) for the chosen option, 0 otherwise.
+    votesArr[voteIndex] = weight;
     const seedsArr: number[] = [
       Math.floor(Math.random() * 1000000),
       Math.floor(Math.random() * 1000000),
@@ -307,14 +309,21 @@ async function voteToProposal(
     });
     const publicKeyStr = configRes.result.public_key;
 
-    // Encrypt seeds and votes
+    // Build a salt prefix to bind encrypted values to this member & proposal
+    const saltPrefix = `${publicKey}:${project_name}:${proposal_id}`;
+
+    // Encrypt seeds and votes with the salted plaintext
     const { encryptWithPublicKey } = await import("../utils/crypto");
 
     const encryptedSeeds: string[] = await Promise.all(
-      seedsArr.map((s) => encryptWithPublicKey(s.toString(), publicKeyStr)),
+      seedsArr.map((s) =>
+        encryptWithPublicKey(`${saltPrefix}:${s.toString()}`, publicKeyStr),
+      ),
     );
     const encryptedVotes: string[] = await Promise.all(
-      votesArr.map((v) => encryptWithPublicKey(v.toString(), publicKeyStr)),
+      votesArr.map((v) =>
+        encryptWithPublicKey(`${saltPrefix}:${v.toString()}`, publicKeyStr),
+      ),
     );
 
     // Compute commitments via contract simulation (privacy trade-off acceptable for now)
