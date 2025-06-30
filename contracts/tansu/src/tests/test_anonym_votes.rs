@@ -1,9 +1,9 @@
-#![cfg(test)]
-
 use core::ops::Add;
-use soroban_sdk::crypto::bls12_381::{Fr, G1Affine};
 
-use soroban_sdk::{Bytes, Env, U256, bytesn};
+use soroban_sdk::crypto::bls12_381::{Fr, G1Affine};
+use soroban_sdk::{bytesn, vec, Bytes, Env, U256};
+
+use super::test_utils::{create_test_data, init_contract};
 
 fn commitment(
     env: &Env,
@@ -73,17 +73,17 @@ fn test_vote() {
     // generators
     let bls12_381 = env.crypto().bls12_381();
 
-    let vote_generator = Bytes::from_slice(&env, "VOTE_GENERATOR".as_bytes());
-    let vote_dst = Bytes::from_slice(&env, "VOTE_COMMITMENT".as_bytes());
-    let seed_generator = Bytes::from_slice(&env, "SEED_GENERATOR".as_bytes());
-    let seed_dst = Bytes::from_slice(&env, "VOTE_SEED".as_bytes());
+    let vote_generator = Bytes::from_slice(&env, b"VOTE_GENERATOR");
+    let vote_dst = Bytes::from_slice(&env, b"VOTE_COMMITMENT");
+    let seed_generator = Bytes::from_slice(&env, b"SEED_GENERATOR");
+    let seed_dst = Bytes::from_slice(&env, b"VOTE_SEED");
 
     let vote_generator_point = bls12_381.hash_to_g1(&vote_generator, &vote_dst);
     let seed_generator_point = bls12_381.hash_to_g1(&seed_generator, &seed_dst);
 
     // init tallies
-    let mut tally_votes = Fr::from_u256(U256::from_u32(&env, 0).clone());
-    let mut tally_seed = Fr::from_u256(U256::from_u32(&env, 0).clone());
+    let mut tally_votes = Fr::from_u256(U256::from_u32(&env, 0));
+    let mut tally_seed = Fr::from_u256(U256::from_u32(&env, 0));
 
     // casting votes, on-chain store tally_votes, encrypted version of seed_fr and commitment
     let vote_a = 1_u32;
@@ -173,4 +173,61 @@ fn test_vote() {
     // not leak the individual seed, just the tally of the seed
     let tally_commitment_votes_ = bls12_381.g1_mul(&vote_generator_point, &Fr::from_u256(tally));
     assert_eq!(tally_commitment_votes, tally_commitment_votes_);
+}
+
+#[test]
+fn anonymous_vote_commitments_roundtrip() {
+    let setup = create_test_data();
+    let project_key = init_contract(&setup); // Bytes
+    let pub_key = soroban_sdk::String::from_str(&setup.env, "pk_test");
+
+    // admin config
+    setup
+        .contract
+        .anonymous_voting_setup(&project_key, &pub_key);
+
+    // test data
+    let votes = vec![&setup.env, 0u32, 1u32, 2u32];
+    let seeds = vec![&setup.env, 42u32, 43u32, 44u32];
+
+    // expected commitments (re-using same math off-chain)
+    let bls12_381 = setup.env.crypto().bls12_381();
+    let vote_gen = bls12_381.hash_to_g1(
+        &Bytes::from_slice(&setup.env, b"VOTE_GENERATOR"),
+        &Bytes::from_slice(&setup.env, b"VOTE_COMMITMENT"),
+    );
+    let seed_gen = bls12_381.hash_to_g1(
+        &Bytes::from_slice(&setup.env, b"SEED_GENERATOR"),
+        &Bytes::from_slice(&setup.env, b"VOTE_SEED"),
+    );
+
+    let mut expected = vec![&setup.env];
+    for (v, s) in votes.iter().zip(seeds.iter()) {
+        expected.push_back(commitment(&setup.env, &v, &s, &vote_gen, &seed_gen).to_bytes());
+    }
+
+    // on-chain calculation
+    let actual = setup
+        .contract
+        .build_commitments_from_votes(&project_key, &votes, &seeds);
+
+    assert_eq!(expected, actual);
+}
+
+#[test]
+fn anonymous_voting_setup_is_reachable() {
+    let setup = create_test_data();
+    let project_key = init_contract(&setup); // valid Bytes key
+    let pub_key = soroban_sdk::String::from_str(&setup.env, "pk_test");
+
+    // In the mocked environment any caller is accepted, so the call
+    // should succeed (i.e. return Ok(())).
+    let res = setup
+        .contract
+        .try_anonymous_voting_setup(&project_key, &pub_key);
+
+    assert!(
+        res.is_ok(),
+        "anonymous_voting_setup should succeed in the mock env"
+    );
 }

@@ -14,9 +14,9 @@ mod contract_membership;
 mod contract_tansu;
 mod contract_versioning;
 mod errors;
-mod test;
-mod test_anonym_votes;
 mod types;
+#[cfg(test)]
+mod tests;
 
 contractmeta!(key = "Description", val = "Tansu - Soroban Versioning");
 
