@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Button from "components/utils/Button";
 import type { Member, Badge, Project } from "../../../../packages/tansu";
-import { Buffer } from "buffer";
 import {
   getIpfsBasicLink,
   fetchFromIPFS,
@@ -17,8 +16,9 @@ import { getProjectFromId } from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
 import { getStellarExplorerURL } from "../../../utils/urls";
 import CopyButton from "components/utils/CopyButton";
-
-const network = import.meta.env.SOROBAN_NETWORK || "testnet";
+import { Buffer } from "buffer";
+import OnChainActions from "./OnChainActions";
+import { badgeName } from "../../../utils/badges";
 
 interface Props extends ModalProps {
   member: Member | null;
@@ -38,23 +38,6 @@ interface ProjectWithName {
   badges: Array<Badge>;
   projectId: Buffer;
 }
-
-const badgeName = (b: Badge) => {
-  switch (b) {
-    case 10000000:
-      return "Developer";
-    case 5000000:
-      return "Triage";
-    case 1000000:
-      return "Community";
-    case 500000:
-      return "Verified";
-    case 1:
-      return "Default";
-    default:
-      return b.toString();
-  }
-};
 
 const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -467,6 +450,24 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 </div>
               )}
             </div>
+
+            {/* On-chain Actions List */}
+            {address && (
+              <div className="mt-6">
+                <h4 className="text-base sm:text-lg font-semibold text-primary mb-1 sm:mb-2">
+                  On-chain Activity
+                </h4>
+                <OnChainActions
+                  address={address}
+                  projectCache={Object.fromEntries(
+                    projectsWithNames.map((p) => [
+                      Buffer.from(p.projectId).toString("hex"),
+                      p.name,
+                    ]),
+                  )}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
