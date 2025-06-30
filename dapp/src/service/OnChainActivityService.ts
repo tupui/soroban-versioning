@@ -228,51 +228,6 @@ export async function fetchOnChainActions(
         case "create_proposal": {
           projectKey = paramBytesToHex(args[1]);
           details.title = paramToString(args[2]);
-          if (!rec.result_xdr) {
-            try {
-              const txUrl = `${base}/transactions/${rec.transaction_hash}`;
-              const txResp = await fetch(txUrl);
-              if (txResp.ok) {
-                const txJson = await txResp.json();
-                if (txJson?.result_xdr) rec.result_xdr = txJson.result_xdr;
-              }
-            } catch {}
-          }
-          // Attempt to decode proposalId from result_xdr (return value)
-          let id: number | null = null;
-          // 0. Fast-path: Horizon may expose the raw retval in `result_retval` for Soroban ops
-          if (typeof (rec as any).result_retval === "string") {
-            const fast = decodeScVal((rec as any).result_retval);
-            id =
-              typeof fast === "number"
-                ? fast
-                : (fast?.u32 ?? fast?.i32 ?? fast?.u64 ?? fast?.i64 ?? null);
-          }
-
-          // 1. Operation-level / transaction-level XDR fallbacks
-          if (id === null && rec.result_xdr) {
-            // 1a) maybe result_xdr IS the ScVal
-            const simple = decodeScVal(rec.result_xdr);
-            id =
-              typeof simple === "number"
-                ? simple
-                : (simple?.u32 ??
-                  simple?.i32 ??
-                  simple?.u64 ??
-                  simple?.i64 ??
-                  null);
-
-            // 1b) operation-level wrapper
-            if (id === null) id = extractProposalIdFromOpResult(rec.result_xdr);
-
-            // 1c) transaction-level wrapper
-            if (id === null) id = extractProposalIdFromTxResult(rec.result_xdr);
-          }
-
-          // Store the proposalId even when it is 0.
-          if (id !== null && !Number.isNaN(id)) {
-            details.proposalId = Number(id);
-          }
           break;
         }
         case "vote":
@@ -388,51 +343,4 @@ function lookupProjectName(hexKey: string | null): string | null {
     PROJECT_CACHE.get(trimmed) ??
     null
   );
-}
-
-// Attempt to decode proposalId from entire transaction result XDR
-function extractProposalIdFromTxResult(b64: string): number | null {
-  try {
-    const txRes = xdr.TransactionResult.fromXDR(b64, "base64");
-    const inner = txRes.result().results();
-    if (!inner || inner.length === 0) return null;
-    const opRes = inner[0]!;
-    const hfRes = opRes.tr().invokeHostFunctionResult();
-    let scVal: any;
-    try {
-      scVal = hfRes.success();
-    } catch {
-      return null;
-    }
-    const native = scValToNative(scVal);
-    const id =
-      typeof native === "number"
-        ? native
-        : (native?.u32 ?? native?.i32 ?? native?.u64 ?? native?.i64 ?? null);
-    return id !== null ? Number(id) : null;
-  } catch {
-    return null;
-  }
-}
-
-function extractProposalIdFromOpResult(b64: string): number | null {
-  try {
-    const opRes = xdr.OperationResult.fromXDR(b64, "base64");
-    const hfRes = opRes.tr().invokeHostFunctionResult();
-    if (!hfRes) return null;
-    let scVal: any;
-    try {
-      scVal = hfRes.success();
-    } catch {
-      return null;
-    }
-    const native = scValToNative(scVal);
-    const id =
-      typeof native === "number"
-        ? native
-        : (native?.u32 ?? native?.i32 ?? native?.u64 ?? native?.i64 ?? null);
-    return id !== null ? Number(id) : null;
-  } catch {
-    return null;
-  }
 }

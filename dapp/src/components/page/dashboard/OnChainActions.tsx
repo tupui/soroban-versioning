@@ -145,8 +145,8 @@ function summaryFor(a: OnChainAction): string {
     return `${label}: ${pretty(p)}`;
   });
 
-  // Add proposal link for any proposal-related method
-  if (["create_proposal", "vote", "execute"].includes(a.method)) {
+  // Add proposal link only for vote / execute (create_proposal intentionally skipped for now)
+  if (["vote", "execute"].includes(a.method)) {
     const link = proposalLink(a);
     if (link) paramLines.push(`proposal_link: ${link}`);
   }
@@ -156,9 +156,7 @@ function summaryFor(a: OnChainAction): string {
 
 function proposalLink(a: OnChainAction): string | undefined {
   if (
-    (a.method === "create_proposal" ||
-      a.method === "vote" ||
-      a.method === "execute") &&
+    (a.method === "vote" || a.method === "execute") &&
     a.details.proposalId !== undefined &&
     a.details.proposalId !== null
   ) {
