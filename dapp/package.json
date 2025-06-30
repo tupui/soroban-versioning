@@ -28,7 +28,7 @@
     "@tailwindcss/postcss": "^4.1.8",
     "@web3-storage/w3cli": "^7.12.0",
     "autoprefixer": "^10.4.21",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.0.0",
     "glob": "^11.0.2",
     "postcss": "^8.5.4",
     "prettier": "^3.5.3",
