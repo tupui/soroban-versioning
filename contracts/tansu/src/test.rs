@@ -469,7 +469,7 @@ fn test() {
 
     let vote_ = Vote::AnonymousVote(AnonymousVote {
         address: kuiil.clone(),
-        weight: 1,
+        weight: 3,
         encrypted_seeds: vec![
             &env,
             String::from_str(&env, "fafdas"),
@@ -499,8 +499,8 @@ fn test() {
         &grogu,
         &id,
         &proposal_id_3,
-        &Some(vec![&env, 3u32, 1u32, 2u32]),
-        &Some(vec![&env, 5u32, 4u32, 6u32]),
+        &Some(vec![&env, 9u32, 3u32, 500003u32]),
+        &Some(vec![&env, 15u32, 12u32, 18u32]),
     );
 
     let cost = env.cost_estimate().budget();

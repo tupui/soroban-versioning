@@ -181,7 +181,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
         projectName,
         proposalId,
         voteResultAndXdr.xdr,
-        voteCounts ?? undefined,
+        tallies ?? undefined,
         seeds ?? undefined,
       );
       setStep(step + 1);
