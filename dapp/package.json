@@ -9,7 +9,7 @@
     "@nanostores/react": "^1.0.0",
     "@noble/curves": "^1.9.1",
     "@stellar/stellar-sdk": "^13.3.0",
-    "@stellar/stellar-xdr-json": "^22.0.0-rc.1.1",
+    "@stellar/stellar-xdr-json": "^23.0.0-rc.1",
     "@web3-storage/access": "^20.3.0",
     "@web3-storage/w3up-client": "^17.3.0",
     "astro": "^5.8.1",
