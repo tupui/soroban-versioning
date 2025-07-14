@@ -2,9 +2,11 @@ import { useState, type FC, useEffect } from "react";
 import Input from "components/utils/Input";
 import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
+import GitVerification from "components/utils/GitVerification";
 import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
 import { validateStellarAddress, validateUrl } from "utils/validations";
+import type { GitVerificationData } from "../../utils/gitVerification";
 import {
   MDXEditor,
   headingsPlugin,
@@ -45,6 +47,7 @@ const JoinCommunityModal: FC<
   const [profileImage, setProfileImage] = useState<ProfileImageFile | null>(
     null,
   );
+  const [gitVerificationData, setGitVerificationData] = useState<GitVerificationData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -127,6 +130,7 @@ const JoinCommunityModal: FC<
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: [],
+          gitVerificationData,
         });
 
         toast.success("Success", "You have successfully joined the community!");
@@ -168,6 +172,7 @@ const JoinCommunityModal: FC<
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: files,
+          gitVerificationData,
         });
 
         toast.success("Success", "You have successfully joined the community!");
@@ -328,6 +333,13 @@ const JoinCommunityModal: FC<
               </div>
             </div>
           </div>
+
+          <GitVerification
+            onVerificationComplete={setGitVerificationData}
+            networkPassphrase={import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE}
+            signingAccount={address}
+            contractId={import.meta.env.PUBLIC_SOROBAN_CONTRACT_ID}
+          />
 
           <div className="flex justify-end gap-[18px]">
             <Button type="secondary" onClick={onClose}>
