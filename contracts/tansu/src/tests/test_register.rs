@@ -1,7 +1,7 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::{contract_versioning::domain_register, errors::ContractErrors};
-use soroban_sdk::testutils::{arbitrary::std::println, Events};
-use soroban_sdk::{symbol_short, IntoVal, String, vec, Bytes};
+use soroban_sdk::testutils::{Events, arbitrary::std::println};
+use soroban_sdk::{Bytes, IntoVal, String, symbol_short, vec};
 
 #[test]
 fn register_project() {
@@ -11,7 +11,7 @@ fn register_project() {
     assert_eq!(project.name, String::from_str(&setup.env, "tansu"));
 
     let cost = setup.env.cost_estimate().budget();
-    println!("{:#?}", cost);
+    println!("{cost:#?}");
 }
 
 #[test]
@@ -21,11 +21,7 @@ fn register_events() {
     let name = String::from_str(&setup.env, "tansu");
     let url = String::from_str(&setup.env, "github.com/file.toml");
     let hash = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
-    let maintainers = vec![
-        &setup.env,
-        setup.grogu.clone(),
-        setup.mando.clone(),
-    ];
+    let maintainers = vec![&setup.env, setup.grogu.clone(), setup.mando.clone()];
 
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
     setup.token_stellar.mint(&setup.grogu, &genesis_amount);
@@ -74,7 +70,14 @@ fn register_double_registration_error() {
     // double registration
     let err = setup
         .contract
-        .try_register(&setup.grogu, &name, &maintainers, &url, &hash, &setup.domain_id)
+        .try_register(
+            &setup.grogu,
+            &name,
+            &maintainers,
+            &url,
+            &hash,
+            &setup.domain_id,
+        )
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::ProjectAlreadyExist.into());
@@ -85,7 +88,10 @@ fn register_name_too_long_error() {
     let setup = create_test_data();
     let _id = init_contract(&setup);
 
-    let name_long = String::from_str(&setup.env, "soroban-versioningsoroban-versioningsoroban-versioningsoroban-versioning");
+    let name_long = String::from_str(
+        &setup.env,
+        "soroban-versioningsoroban-versioningsoroban-versioningsoroban-versioning",
+    );
     let url = String::from_str(&setup.env, "github.com/file.toml");
     let hash = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
     let maintainers = vec![&setup.env, setup.grogu.clone(), setup.mando.clone()];
@@ -93,7 +99,14 @@ fn register_name_too_long_error() {
     // name too long
     let err = setup
         .contract
-        .try_register(&setup.grogu, &name_long, &maintainers, &url, &hash, &setup.domain_id)
+        .try_register(
+            &setup.grogu,
+            &name_long,
+            &maintainers,
+            &url,
+            &hash,
+            &setup.domain_id,
+        )
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::InvalidDomainError.into());
@@ -117,7 +130,14 @@ fn register_maintainer_not_domain_owner_error() {
     let name_b_str = String::from_str(&setup.env, "bob");
     let err = setup
         .contract
-        .try_register(&setup.grogu, &name_b_str, &maintainers, &url, &hash, &setup.domain_id)
+        .try_register(
+            &setup.grogu,
+            &name_b_str,
+            &maintainers,
+            &url,
+            &hash,
+            &setup.domain_id,
+        )
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::MaintainerNotDomainOwner.into());

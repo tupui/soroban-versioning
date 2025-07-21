@@ -1,7 +1,7 @@
 use core::ops::Add;
 
 use soroban_sdk::crypto::bls12_381::{Fr, G1Affine};
-use soroban_sdk::{bytesn, vec, Bytes, Env, U256};
+use soroban_sdk::{Bytes, Env, U256, bytesn, vec};
 
 use super::test_utils::{create_test_data, init_contract};
 

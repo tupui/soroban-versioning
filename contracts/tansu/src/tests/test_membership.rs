@@ -13,12 +13,20 @@ fn membership_badges() {
     setup.contract.add_member(&member, &meta);
 
     let badges = vec![&setup.env, Badge::Community];
-    setup.contract.add_badges(&setup.mando, &id, &member, &badges);
+    setup
+        .contract
+        .add_badges(&setup.mando, &id, &member, &badges);
 
     let info = setup.contract.get_member(&member);
     assert_eq!(
         info.projects,
-        vec![&setup.env, ProjectBadges { project: id.clone(), badges: badges.clone() }]
+        vec![
+            &setup.env,
+            ProjectBadges {
+                project: id.clone(),
+                badges: badges.clone()
+            }
+        ]
     );
 
     let project_badges = setup.contract.get_badges(&id);
@@ -29,7 +37,9 @@ fn membership_badges() {
 
     // remove badge by giving empty vector
     let empty = vec![&setup.env];
-    setup.contract.add_badges(&setup.mando, &id, &member, &empty);
+    setup
+        .contract
+        .add_badges(&setup.mando, &id, &member, &empty);
     let project_badges = setup.contract.get_badges(&id);
     assert!(project_badges.community.is_empty());
 }
@@ -44,10 +54,14 @@ fn membership_double_add_badges() {
     setup.contract.add_member(&member, &meta);
 
     let badges = vec![&setup.env, Badge::Community];
-    setup.contract.add_badges(&setup.mando, &id, &member, &badges);
+    setup
+        .contract
+        .add_badges(&setup.mando, &id, &member, &badges);
 
     // Try to add the same badge again
-    setup.contract.add_badges(&setup.mando, &id, &member, &badges);
+    setup
+        .contract
+        .add_badges(&setup.mando, &id, &member, &badges);
 
     // Verify that the badge was not added multiple times
     let project_badges = setup.contract.get_badges(&id);
@@ -57,6 +71,12 @@ fn membership_double_add_badges() {
     let info = setup.contract.get_member(&member);
     assert_eq!(
         info.projects,
-        vec![&setup.env, ProjectBadges { project: id.clone(), badges: badges.clone() }]
+        vec![
+            &setup.env,
+            ProjectBadges {
+                project: id.clone(),
+                badges: badges.clone()
+            }
+        ]
     );
 }

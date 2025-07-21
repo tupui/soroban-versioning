@@ -48,9 +48,10 @@ jobs:
           echo "## Running Cost Estimate Tests" >> $GITHUB_STEP_SUMMARY
 
           set +e
-          OUTPUT=$(cargo test -- --show-output 2>&1)
+          cd contracts/tansu
+          OUTPUT=$(cargo test test_cost_ -- --show-output 2>&1)
           echo "$OUTPUT"
-          echo "$OUTPUT" | python3 .github/workflows/parse_costs.py >> $GITHUB_STEP_SUMMARY
+          echo "$OUTPUT" | python3 ../../.github/workflows/parse_costs.py >> $GITHUB_STEP_SUMMARY
           TEST_EXIT_CODE=$?
           set -e
 
