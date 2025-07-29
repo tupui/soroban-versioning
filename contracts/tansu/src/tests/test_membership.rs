@@ -1,4 +1,5 @@
 use super::test_utils::{create_test_data, init_contract};
+use crate::errors::ContractErrors;
 use crate::types::{Badge, ProjectBadges};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{Address, String, vec};
@@ -79,4 +80,30 @@ fn membership_double_add_badges() {
             }
         ]
     );
+}
+
+#[test]
+fn membership_errors() {
+    let setup = create_test_data();
+
+    let member = Address::generate(&setup.env);
+    let meta = String::from_str(&setup.env, "abcd");
+    setup.contract.add_member(&member, &meta);
+
+    // Adding the same twice
+    let error = setup
+        .contract
+        .try_add_member(&member, &meta)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::MemberAlreadyExist.into());
+
+    // Unknown
+    let not_member = Address::generate(&setup.env);
+    let error = setup
+        .contract
+        .try_get_member(&not_member)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(error, ContractErrors::UnknownMember.into());
 }
