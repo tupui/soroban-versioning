@@ -128,20 +128,3 @@ fn auth_maintainers(env: &Env, maintainer: &Address, maintainers: &Vec<Address>)
         panic_with_error!(&env, &errors::ContractErrors::UnregisteredMaintainer);
     }
 }
-
-// fn get_role(
-//     principal: &Address,
-//     maintainers: &Vec<Address>,
-//     triage: &Vec<Address>,
-//     community: &Vec<Address>,
-// ) -> types::Badge {
-//     if maintainers.contains(principal) {
-//         types::Badge::Maintainer
-//     } else if triage.contains(principal) {
-//         types::Badge::Triage
-//     } else if community.contains(principal) {
-//         types::Badge::Community
-//     } else {
-//         types::Badge::Default
-//     }
-// }

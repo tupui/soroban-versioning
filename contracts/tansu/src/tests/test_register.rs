@@ -1,6 +1,6 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::{contract_versioning::domain_register, errors::ContractErrors};
-use soroban_sdk::testutils::{Events, arbitrary::std::println};
+use soroban_sdk::testutils::Events;
 use soroban_sdk::{Bytes, IntoVal, String, symbol_short, vec};
 
 #[test]
@@ -9,9 +9,6 @@ fn register_project() {
     let id = init_contract(&setup);
     let project = setup.contract.get_project(&id);
     assert_eq!(project.name, String::from_str(&setup.env, "tansu"));
-
-    let cost = setup.env.cost_estimate().budget();
-    println!("{cost:#?}");
 }
 
 #[test]

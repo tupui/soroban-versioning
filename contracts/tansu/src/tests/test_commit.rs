@@ -1,6 +1,6 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::errors::ContractErrors;
-use soroban_sdk::testutils::{Address as _, Events, arbitrary::std::println};
+use soroban_sdk::testutils::{Address as _, Events};
 use soroban_sdk::{Address, IntoVal, String, symbol_short, vec};
 
 #[test]
@@ -13,9 +13,6 @@ fn commit_flow() {
 
     let stored = setup.contract.get_commit(&id);
     assert_eq!(stored, hash);
-
-    let cost = setup.env.cost_estimate().budget();
-    println!("{cost:#?}");
 }
 
 #[test]

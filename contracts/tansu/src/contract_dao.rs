@@ -62,6 +62,9 @@ impl DaoTrait for Tansu {
 
     /// Build all three commitments from the votes and seeds.
     ///
+    /// Does not take into account weights as this will be considered only
+    /// during the tallying phase.
+    ///
     /// Calling that on the smart contract itself would reveal the votes and seeds.
     /// This can be run in simulation in your RPC or used as a basis for
     /// implementation client-side.
@@ -318,8 +321,8 @@ impl DaoTrait for Tansu {
     /// * `maintainer` - Address of the maintainer
     /// * `project_key` - Unique identifier for the project
     /// * `proposal_id` - ID of the proposal
-    /// * [`Option<tallies>`] - decoded tally values, respectively Approve, reject and abstain
-    /// * [`Option<seeds>`] - decoded seed values, respectively Approve, reject and abstain
+    /// * [`Option<tallies>`] - decoded tally values (scaled by weights), respectively Approve, reject and abstain
+    /// * [`Option<seeds>`] - decoded seed values (scaled by weights), respectively Approve, reject and abstain
     fn execute(
         env: Env,
         maintainer: Address,
@@ -393,13 +396,14 @@ impl DaoTrait for Tansu {
     /// C = g^v * h^r (in additive notation: g*v + h*r),
     ///
     /// where g, h point generator and v is the vote choice, r is the seed.
+    /// Voting weight is introduced during the tallying phase.
     ///
     /// # Arguments
     /// * `env` - The environment object
     /// * `project_key` - Unique identifier for the project
     /// * `commitment` - Vote commitment
-    /// * `tally` - decoded tally value
-    /// * `seed` - decoded seed value
+    /// * `tally` - decoded tally value (scaled by weights)
+    /// * `seed` - decoded seed value (scaled by weights)
     /// # Returns
     /// * `bool` - True if the commitment match
     fn proof(
@@ -455,13 +459,17 @@ impl DaoTrait for Tansu {
 
         for vote_ in proposal.vote_data.votes.iter() {
             if let types::Vote::AnonymousVote(anonymous_vote) = &vote_ {
+                let weight_: U256 = U256::from_u32(&env, anonymous_vote.weight);
                 for (commitment, tally_commitment) in anonymous_vote
                     .commitments
                     .iter()
                     .zip(tally_commitments.iter_mut())
                 {
                     let commitment_ = G1Affine::from_bytes(commitment);
-                    *tally_commitment = bls12_381.g1_add(tally_commitment, &commitment_);
+                    // scale the commitment by the voter weight: g*v*weight + h*r*weight.
+                    let weighted_commitment =
+                        bls12_381.g1_mul(&commitment_, &weight_.clone().into());
+                    *tally_commitment = bls12_381.g1_add(tally_commitment, &weighted_commitment);
                 }
             };
         }

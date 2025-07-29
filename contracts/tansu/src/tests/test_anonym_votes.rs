@@ -1,5 +1,4 @@
 use core::ops::Add;
-
 use soroban_sdk::crypto::bls12_381::{Fr, G1Affine};
 use soroban_sdk::{Bytes, Env, U256, bytesn, vec};
 
@@ -67,7 +66,7 @@ fn add_vote(env: &Env, vote: &u32, seed: &u32, tally_vote: &Fr) -> (Fr, Fr) {
 }
 
 #[test]
-fn test_vote() {
+fn test_vote_maths() {
     let env = Env::default();
 
     // generators

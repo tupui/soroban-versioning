@@ -107,8 +107,9 @@ export async function computeAnonymousVotingData(
       }
 
       if (vDec > 0) voteChoiceIdx = i;
-      talliesArr[i] += vDec;
-      seedsArr[i] += sDec;
+      // Apply voting weight to both vote value and seed
+      talliesArr[i] += vDec * weight;
+      seedsArr[i] += sDec * weight;
       if (vDec > 0) {
         voteCounts[i] += 1;
       }
@@ -170,7 +171,7 @@ export async function computeAnonymousVotingData(
       const proofRes = await Tansu.proof({
         project_key,
         proposal: rawProposal,
-        tallies: voteCounts as unknown as number[],
+        tallies: talliesArr as unknown as number[],
         seeds: seedsArr as unknown as number[],
       });
       proofOk = !!proofRes.result;
