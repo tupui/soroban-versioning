@@ -32,6 +32,10 @@ ifeq ($(network),testnet)
 	stellar network add --global testnet \
 		--rpc-url https://soroban-testnet.stellar.org:443 \
 		--network-passphrase "Test SDF Network ; September 2015"
+else ifeq ($(network),mainnet)
+	stellar network add --global mainnet \
+		--rpc-url ... \
+		--network-passphrase "Public Global Stellar Network ; September 2015"
 else
 	stellar network add --global testnet-local \
 		--rpc-url http://localhost:8000/soroban/rpc \
