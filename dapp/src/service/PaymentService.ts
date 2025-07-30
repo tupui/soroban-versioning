@@ -2,6 +2,7 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 import { toast } from "utils/utils";
 import { kit } from "../components/stellar-wallets-kit";
 import { loadedPublicKey } from "./walletService";
+import { retryAsync } from "../utils/retry";
 
 /**
  * Checks if an error is expected (user rejected transaction, insufficient balance, etc.)
@@ -83,12 +84,13 @@ async function sendXLM(
     const { signedTxXdr } = await kit.signTransaction(transaction.toXDR());
 
     try {
-      const result = await server.submitTransaction(
-        StellarSdk.TransactionBuilder.fromXDR(
-          signedTxXdr,
-          StellarSdk.Networks.TESTNET,
-        ),
+      const signedTransaction = new StellarSdk.Transaction(
+        signedTxXdr,
+        StellarSdk.Networks.TESTNET,
       );
+
+      await retryAsync(() => server.submitTransaction(signedTransaction));
+
       return true;
     } catch (error) {
       // Only show error toast for unexpected errors

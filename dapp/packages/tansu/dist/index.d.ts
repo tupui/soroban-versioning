@@ -80,6 +80,10 @@ export type DataKey =
       values: void;
     }
   | {
+      tag: "DomainContractId";
+      values: void;
+    }
+  | {
       tag: "Member";
       values: readonly [string];
     };
@@ -271,6 +275,9 @@ export interface Client {
    * Construct and simulate a build_commitments_from_votes transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Build all three commitments from the votes and seeds.
    *
+   * Does not take into account weights as this will be considered only
+   * during the tallying phase.
+   *
    * Calling that on the smart contract itself would reveal the votes and seeds.
    * This can be run in simulation in your RPC or used as a basis for
    * implementation client-side.
@@ -409,8 +416,8 @@ export interface Client {
    * * `maintainer` - Address of the maintainer
    * * `project_key` - Unique identifier for the project
    * * `proposal_id` - ID of the proposal
-   * * [`Option<tallies>`] - decoded tally values, respectively Approve, reject and abstain
-   * * [`Option<seeds>`] - decoded seed values, respectively Approve, reject and abstain
+   * * [`Option<tallies>`] - decoded tally values (scaled by weights), respectively Approve, reject and abstain
+   * * [`Option<seeds>`] - decoded seed values (scaled by weights), respectively Approve, reject and abstain
    */
   execute: (
     {
@@ -453,13 +460,14 @@ export interface Client {
    * C = g^v * h^r (in additive notation: g*v + h*r),
    *
    * where g, h point generator and v is the vote choice, r is the seed.
+   * Voting weight is introduced during the tallying phase.
    *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - Unique identifier for the project
    * * `commitment` - Vote commitment
-   * * `tally` - decoded tally value
-   * * `seed` - decoded seed value
+   * * `tally` - decoded tally value (scaled by weights)
+   * * `seed` - decoded seed value (scaled by weights)
    * # Returns
    * * `bool` - True if the commitment match
    */
@@ -739,14 +747,12 @@ export interface Client {
       maintainers,
       url,
       hash,
-      domain_contract_id,
     }: {
       maintainer: string;
       name: string;
       maintainers: Array<string>;
       url: string;
       hash: string;
-      domain_contract_id: string;
     },
     options?: {
       /**
@@ -881,8 +887,10 @@ export declare class Client extends ContractClient {
     /** Constructor/Initialization Args for the contract's `__constructor` method */
     {
       admin,
+      domain_contract_id,
     }: {
       admin: string;
+      domain_contract_id: string;
     },
     /** Options for initializing a Client as well as for calling a method, with extras specific to deploying. */
     options: MethodOptions &

@@ -89,13 +89,13 @@ const ReadMoreModal: FC<ReadMoreModalProps> = ({
     };
   }, [isOpen, projectData?.githubUrl]);
 
-  if (!isOpen) return null;
-
   const handleGoToReleases = useCallback(() => {
     if (projectData?.githubUrl) {
       window.open(`${projectData.githubUrl}/releases`, "_blank");
     }
   }, [projectData?.githubUrl]);
+
+  if (!isOpen) return null;
 
   return (
     <Modal onClose={onClose}>

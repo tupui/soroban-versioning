@@ -3,21 +3,40 @@
  * Centralizes validation logic to avoid duplication
  */
 
+import DOMPurify from "dompurify";
+
+/**
+ * Sanitizes user input to prevent XSS attacks
+ */
+export function sanitizeInput(input: string): string {
+  if (typeof input !== "string") {
+    return "";
+  }
+
+  // Basic sanitization - remove script tags and dangerous patterns
+  return DOMPurify.sanitize(input, {
+    ALLOWED_TAGS: [], // No HTML tags allowed in form inputs
+    ALLOWED_ATTR: [],
+  });
+}
+
 /**
  * Validate a project name
  * @param name The project name to validate
  * @returns An error message if invalid, or null if valid
  */
 export function validateProjectName(name: string): string | null {
-  if (!name || name.trim() === "") {
+  const sanitized = sanitizeInput(name);
+
+  if (!sanitized || sanitized.trim() === "") {
     return "Project name is required";
   }
 
-  if (name.length < 4 || name.length > 15) {
+  if (sanitized.length < 4 || sanitized.length > 15) {
     return "Project name must be between 4 and 15 characters";
   }
 
-  if (!/^[a-z]+$/.test(name)) {
+  if (!/^[a-z]+$/.test(sanitized)) {
     return "Project name can only contain lowercase letters (a-z)";
   }
 
@@ -30,16 +49,27 @@ export function validateProjectName(name: string): string | null {
  * @returns An error message if invalid, or null if valid
  */
 export function validateGithubUrl(url: string): string | null {
-  if (!url || url.trim() === "") {
+  const sanitized = sanitizeInput(url);
+
+  if (!sanitized || sanitized.trim() === "") {
     return "GitHub URL is required";
   }
 
-  const validGithubUrl = /^https:\/\/github\.com\/[^\/]+\/[^\/]+\/?$/;
-  if (!validGithubUrl.test(url)) {
-    return "Invalid GitHub repository URL. Format should be: https://github.com/owner/repo";
-  }
+  try {
+    const parsedUrl = new URL(sanitized);
+    if (parsedUrl.hostname !== "github.com") {
+      return "URL must be from github.com";
+    }
 
-  return null;
+    const pathParts = parsedUrl.pathname.split("/").filter(Boolean);
+    if (pathParts.length !== 2) {
+      return "URL must be in format: https://github.com/username/repository";
+    }
+
+    return null;
+  } catch {
+    return "Invalid URL format";
+  }
 }
 
 /**
@@ -69,14 +99,16 @@ export function validateFileHash(hash: string): string | null {
  * @returns An error message if invalid, or null if valid
  */
 export function validateMaintainers(maintainers: string): string | null {
-  if (!maintainers || maintainers.trim() === "") {
+  const sanitized = sanitizeInput(maintainers);
+
+  if (!sanitized || sanitized.trim() === "") {
     return "Maintainers cannot be empty";
   }
 
   // Basic validation - could be extended with more specific Stellar address validation
-  const addresses = maintainers.split(",").map((addr) => addr.trim());
+  const addresses = sanitized.split(",").map((addr: string) => addr.trim());
 
-  if (addresses.some((addr) => addr === "")) {
+  if (addresses.some((addr: string) => addr === "")) {
     return "Invalid maintainer address format";
   }
 

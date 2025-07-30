@@ -12,14 +12,7 @@ function shortAddr(a: string, head: number = 4, tail: number = 4): string {
 
 export const ONCHAIN_METHODS: Record<string, MethodMeta> = {
   register: {
-    paramNames: [
-      "maintainer",
-      "name",
-      "maintainers",
-      "url",
-      "hash",
-      "domain_contract_id",
-    ],
+    paramNames: ["maintainer", "name", "maintainers", "url", "hash"],
     summary: () => "created project",
   },
   commit: {

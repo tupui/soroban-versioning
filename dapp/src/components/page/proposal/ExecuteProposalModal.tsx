@@ -132,7 +132,9 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       setPrivateKey(parsed.privateKey);
       await computeTallies(parsed.privateKey);
     } catch (err: any) {
-      console.error(err);
+      if (import.meta.env.DEV) {
+        console.error(err);
+      }
       setProcessingError(err.message || "Failed to process key-file");
     }
   };

@@ -45,8 +45,18 @@
 
     async function setLoggedIn(publicKey: string) {
       const truncatedKey = truncateMiddle(publicKey, 13);
-      button.innerHTML = `<p class="text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-white truncate">Profile</p>
-      <img src="/icons/profile.svg" alt="" class="w-4 md:w-5 h-4 md:h-5 flex-shrink-0" />`;
+      // Safe DOM manipulation instead of innerHTML
+      button.textContent = "";
+      const textElement = document.createElement("p");
+      textElement.className =
+        "text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-white truncate";
+      textElement.textContent = "Profile";
+      const imgElement = document.createElement("img");
+      imgElement.src = "/icons/profile.svg";
+      imgElement.alt = "";
+      imgElement.className = "w-4 md:w-5 h-4 md:h-5 flex-shrink-0";
+      button.appendChild(textElement);
+      button.appendChild(imgElement);
       button.title = publicKey;
       button.classList.toggle("bg-white", false);
       button.classList.toggle("bg-primary", true);
@@ -86,12 +96,14 @@
                 new CustomEvent("walletConnected", { detail: address }),
               );
             } catch (e) {
-              console.error(e);
+              // Wallet connection failed - user might have rejected or wallet unavailable
+              // This is expected behavior, no need to log
             }
           },
         });
       } catch (e) {
-        console.error(e);
+        // Wallet modal opening failed - this is expected behavior for some cases
+        // No need to log as it's handled gracefully by the UI
       }
     }
 
@@ -109,9 +121,18 @@
     // Handle disconnect event from the profile modal
     window.addEventListener("walletDisconnected", () => {
       disconnect();
-      // Reset button to Connect state
-      button.innerHTML = `<p class="text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-pink truncate">Connect</p>
-      <img src="/icons/connect.png" alt="" class="w-4 md:w-5 h-4 md:h-5 flex-shrink-0" />`;
+      // Reset button to Connect state using safe DOM manipulation
+      button.textContent = "";
+      const textElement = document.createElement("p");
+      textElement.className =
+        "text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-pink truncate";
+      textElement.textContent = "Connect";
+      const imgElement = document.createElement("img");
+      imgElement.src = "/icons/connect.png";
+      imgElement.alt = "";
+      imgElement.className = "w-4 md:w-5 h-4 md:h-5 flex-shrink-0";
+      button.appendChild(textElement);
+      button.appendChild(imgElement);
       button.title = "";
       button.classList.toggle("bg-white", true);
       button.classList.toggle("bg-primary", false);

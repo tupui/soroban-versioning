@@ -51,7 +51,7 @@ const UpdateConfigModal = () => {
     if (!infoLoaded) return;
     const projectInfo = loadProjectInfo();
     const cfg = loadConfigData();
-    if (!projectInfo) return;
+    if (!projectInfo || !projectInfo.maintainers || !projectInfo.config) return;
     setMaintainerAddresses(projectInfo.maintainers);
     setMaintainerGithubs(
       cfg?.authorGithubNames || projectInfo.maintainers.map(() => ""),

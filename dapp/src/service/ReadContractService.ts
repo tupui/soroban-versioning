@@ -6,10 +6,6 @@ import { loadedProjectId } from "./StateService";
 import { modifyProposalFromContract, toast } from "utils/utils";
 import type { Project, Proposal, Member, Badges } from "../../packages/tansu";
 import type { Proposal as ModifiedProposal } from "types/proposal";
-import {
-  contractErrorMessages,
-  type ContractErrorMessageKey,
-} from "constants/contractErrorMessages";
 import { checkSimulationError } from "utils/contractErrors";
 import { extractContractError } from "../utils/errorHandler";
 
@@ -46,18 +42,6 @@ function isExpectedError(error: any): boolean {
     return EXPECTED_ERROR_CODES.includes(errorCode);
   }
   return false;
-}
-
-function fetchErrorCode(error: any): {
-  errorCode: ContractErrorMessageKey;
-  errorMessage: string;
-} {
-  const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
-  let errorCode: ContractErrorMessageKey = 0;
-  if (errorCodeMatch && errorCodeMatch[1]) {
-    errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
-  }
-  return { errorCode, errorMessage: contractErrorMessages[errorCode] };
 }
 
 async function getProjectHash(): Promise<string | null> {

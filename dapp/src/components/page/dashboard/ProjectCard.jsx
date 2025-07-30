@@ -58,7 +58,9 @@ const ProjectCard = ({ config }) => {
         );
       }
     } catch (e) {
-      console.error(e);
+      if (import.meta.env.DEV) {
+        console.error(e);
+      }
       toast.error("Something Went Wrong!", e.message);
     }
   };

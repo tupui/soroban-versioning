@@ -165,6 +165,15 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
     setGithubHandleErrors(maintainerGithubs.map(() => null));
   }, [maintainerAddresses.length]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (domainCheckTimeout) {
+        clearTimeout(domainCheckTimeout);
+      }
+    };
+  }, [domainCheckTimeout]);
+
   // Check domain availability with debounce
   useEffect(() => {
     if (!projectName || projectName.length < 4) {
