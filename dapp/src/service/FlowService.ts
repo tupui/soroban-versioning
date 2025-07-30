@@ -7,6 +7,7 @@ import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
 import * as pkg from "js-sha3";
 import { parseContractError } from "utils/contractErrors";
+import type { GitVerificationData } from "../utils/gitVerification";
 const { keccak256 } = pkg;
 
 interface UploadWithDelegationParams {
@@ -29,6 +30,7 @@ interface CreateProposalFlowParams {
 interface JoinCommunityFlowParams {
   memberAddress: string;
   profileFiles: File[];
+  gitVerificationData?: GitVerificationData | null;
   onProgress?: (step: number) => void;
 }
 
@@ -341,6 +343,7 @@ export async function createProposalFlow({
 export async function joinCommunityFlow({
   memberAddress,
   profileFiles,
+  gitVerificationData,
   onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
   let cid = " "; // Default for no profile
