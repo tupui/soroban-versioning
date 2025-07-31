@@ -1,0 +1,41 @@
+name: Monitor Stellar Contract
+
+on:
+  schedule:
+    - cron: '0 8 * * 1' #every Monday at 8:00 AM
+
+jobs:
+  monitor-contract:
+    runs-on: ubuntu-latest
+    container:
+      image: node:20
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y curl unzip gnupg libdbus-1-3
+
+      - name: Install Stellar CLI
+        run: |
+          mkdir -p /tmp/stellar-cli
+          curl -L https://github.com/stellar/stellar-cli/releases/download/v22.5.0/stellar-cli-22.5.0-x86_64-unknown-linux-gnu.tar.gz \
+            | tar -xz -C /tmp/stellar-cli
+          mv /tmp/stellar-cli/stellar /usr/local/bin/stellar
+          chmod +x /usr/local/bin/stellar
+        shell: bash
+
+      - name: Fetch contract and compute hash
+        shell: bash
+        run: |
+          export PATH="/usr/local/bin:$PATH"
+          which stellar
+          stellar network add --rpc-url https://soroban-rpc.mainnet.stellar.gateway.fm --network-passphrase "Public Global Stellar Network ; September 2015" mainnet
+          stellar contract fetch --id CATRNPHYKNXAPNLHEYH55REB6YSAJLGCPA4YM6L3WUKSZOPI77M2UMKI --network mainnet | openssl sha512 > current_hash.txt
+          echo "Computed hash: $(cat current_hash.txt)"
