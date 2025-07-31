@@ -13,10 +13,6 @@ import {
 } from "types/proposal";
 // Import the extracted IPFS functions have been moved to ipfsFunctions.ts
 
-export function isValidGithubUrl(url: string) {
-  return /^https:\/\/github\.com\/[^\/]+\/[^\/]+$/.test(url);
-}
-
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
   const ellipsis = "...";

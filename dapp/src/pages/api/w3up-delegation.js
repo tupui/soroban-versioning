@@ -54,8 +54,16 @@ async function validateRequest(type, signedTxXdr, projectName) {
 
         return projectInfo.maintainers;
       } catch (error) {
-        console.error("Error validating proposal request:", error);
-        throw error;
+        if (import.meta.env.DEV) {
+          console.error("Error validating proposal request:", error);
+        }
+        return new Response(
+          JSON.stringify({ error: "Invalid request format" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       }
 
     case "member":
@@ -69,7 +77,9 @@ async function validateRequest(type, signedTxXdr, projectName) {
 
         return [];
       } catch (error) {
-        console.error("Error validating member request:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error validating member request:", error);
+        }
         throw error;
       }
 
@@ -86,7 +96,9 @@ async function validateRequest(type, signedTxXdr, projectName) {
 
         return [];
       } catch (error) {
-        console.error("Error validating project request:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error validating project request:", error);
+        }
         throw error;
       }
 
@@ -157,7 +169,10 @@ async function generateDelegation(did) {
   ];
   const expiration = Math.floor(Date.now() / 1000) + 60;
   const expirationDate = new Date(expiration * 1000);
-  console.log("expiration time:", expirationDate.toUTCString());
+  if (import.meta.env.DEV) {
+    // Log expiration only in development
+    console.log("expiration time:", expirationDate.toUTCString());
+  }
 
   const delegation = await client.createDelegation(audience, abilities, {
     expiration,

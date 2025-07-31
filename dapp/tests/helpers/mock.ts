@@ -57,69 +57,64 @@ import { rpcMock } from "./rpcMock";
 import { WALLET_PK, MOCK_PROJECT } from "./data";
 
 export async function applyAllMocks(page) {
-  // inject wallet and localStorage before any script executes
-  await page.addInitScript(
-    ({ pk }) => {
-      // Pre-populate so most flows start in a connected state; tests that
-      // want to exercise the connection UI can still click the button – the
-      // ConnectWallet component will detect it's already connected and show
-      // the "Profile" state.
-      localStorage.setItem("publicKey", pk);
+  // Allow everything by default, we only override selected external calls
+  await page.route("**", (route) => route.continue());
 
-      // Helper flags consumed by rpcMock
-      window.__lastRpcValidated = false;
-      window.__nextFunc = "noop";
+  // ──────────────────────────────────────────────
+  // Wallet signing
+  // ──────────────────────────────────────────────
+  await page.addInitScript(() => {
+    // Provide a minimal stub for kit used in dapp
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    window.kit = {
+      signTransaction: async (xdr) => ({ signedTxXdr: xdr }),
+    };
+  });
 
-      // Generic stub implementation for the wallets-kit API used by the app
-      const kitStub = {
-        getAddress: async () => ({ address: pk }),
-        // The UI passes a callback expecting wallet info – we synchronously invoke it
-        openModal: async ({ onWalletSelected } = {}) => {
-          if (onWalletSelected) await onWalletSelected({ id: "freighter" });
-          return Promise.resolve();
-        },
-        setWallet: () => {},
-        signTransaction: async () => ({
-          signedTxXdr: JSON.stringify({ func: window.__nextFunc, args: {} }),
-        }),
-      };
+  // ──────────────────────────────────────────────
+  // GitHub raw content (README / TOML)
+  // ──────────────────────────────────────────────
+  await page.route("https://raw.githubusercontent.com/**", (route) => {
+    route.fulfill({ status: 200, body: "# Mock README\nTest" });
+  });
 
-      // Expose under window so legacy code can access it
-      window.kit = kitStub;
-
-      // Try to patch any instance created from the real library once it's evaluated
-      // We can't guarantee load order, so use a micro-task + timeout
-      const patchRealKit = () => {
-        if (window.__kitPatched) return;
-        if (window.StellarWalletsKit && window.StellarWalletsKit.prototype) {
-          const proto = window.StellarWalletsKit.prototype;
-          proto.getAddress = kitStub.getAddress;
-          proto.openModal = kitStub.openModal;
-          proto.setWallet = kitStub.setWallet;
-          proto.signTransaction = kitStub.signTransaction;
-          window.__kitPatched = true;
-        }
-      };
-
-      // Retry a few times because load order is uncertain
-      for (let i = 0; i < 5; i++) {
-        setTimeout(patchRealKit, i * 50);
-      }
-    },
-    { pk: WALLET_PK },
-  );
-
-  // RPC validation
-  await page.route(/.*\/rpc$/, rpcMock);
-
-  // stubRpc provides generic response but conflicts with rpcMock; omit to let rpcMock validate
-  await stubDelegation(page);
-  await stubTransactionSend(page);
-  await stubIpfs(page);
-  await stubGithub(page);
-
-  // Horizon submission stub
+  // ──────────────────────────────────────────────
+  // Stellar Horizon API
+  // ──────────────────────────────────────────────
   await page.route("https://horizon-testnet.stellar.org/**", (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
+  });
+
+  // ──────────────────────────────────────────────
+  // Soroban RPC (contract + tansu client)
+  // ──────────────────────────────────────────────
+  const sorobanPattern = "**/soroban/**";
+  await page.route(sorobanPattern, (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
+  });
+}
+
+export async function mockCreateProposalFlow(page) {
+  await page.route("**/tansu/create_proposal", (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ result: "ok" }) });
+  });
+}
+
+export async function mockVoteToProposal(page) {
+  await page.route("**/tansu/vote", (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ result: "ok" }) });
+  });
+}
+
+export async function mockExecuteProposal(page) {
+  await page.route("**/tansu/execute", (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ result: "ok" }) });
+  });
+}
+
+export async function mockDonation(page) {
+  await page.route("**/operations/payment", (route) => {
     route.fulfill({ status: 200, body: JSON.stringify({ result: "ok" }) });
   });
 }

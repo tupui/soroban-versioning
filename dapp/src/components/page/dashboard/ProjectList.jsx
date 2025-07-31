@@ -83,7 +83,9 @@ const ProjectList = () => {
         setShowMemberProfileModal(true);
         sessionStorage.removeItem("pendingMemberProfile");
       } catch (e) {
-        console.error("Error loading pending member profile", e);
+        if (import.meta.env.DEV) {
+          console.error("Error loading pending member profile", e);
+        }
       }
     }
 

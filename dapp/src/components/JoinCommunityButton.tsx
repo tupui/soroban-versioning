@@ -22,7 +22,7 @@ const JoinCommunityButton = () => {
       setMemberData(member);
     } catch (e: any) {
       // If getMember fails for any reason, treat as not a member
-      console.log("getMember error:", e);
+      // This is expected behavior for non-members
       setIsMember(false);
       setMemberData(null);
     }

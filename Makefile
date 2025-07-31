@@ -25,7 +25,7 @@ install:  ## install Rust and Soroban-CLI
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && \
 	# install Soroban and config
 	rustup target add wasm32v1-none && \
-	cargo install --locked soroban-cli --features opt
+	cargo install --locked stellar-cli
 
 prepare-network:  ## Setup network
 ifeq ($(network),testnet)

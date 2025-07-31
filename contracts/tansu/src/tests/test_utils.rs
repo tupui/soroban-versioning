@@ -51,7 +51,7 @@ pub fn create_test_data() -> TestSetup {
     );
 
     let contract_admin = Address::generate(&env);
-    let contract_id = env.register(Tansu, (&contract_admin,));
+    let contract_id = env.register(Tansu, (&contract_admin, &domain_id));
     let contract = TansuClient::new(&env, &contract_id);
 
     let grogu = Address::generate(&env);
@@ -77,12 +77,7 @@ pub fn init_contract(setup: &TestSetup) -> Bytes {
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
     setup.token_stellar.mint(&setup.grogu, &genesis_amount);
 
-    setup.contract.register(
-        &setup.grogu,
-        &name,
-        &maintainers,
-        &url,
-        &hash,
-        &setup.domain_id,
-    )
+    setup
+        .contract
+        .register(&setup.grogu, &name, &maintainers, &url, &hash)
 }

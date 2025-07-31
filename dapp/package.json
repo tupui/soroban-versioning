@@ -22,9 +22,11 @@
     "markdown-to-jsx": "^7.7.6",
     "nanostores": "^1.0.1",
     "react18-json-view": "^0.2.9",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "dompurify": "^3.0.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.1",
     "@tailwindcss/postcss": "^4.1.8",
     "@web3-storage/w3cli": "^7.12.0",
     "autoprefixer": "^10.4.21",
@@ -33,8 +35,7 @@
     "postcss": "^8.5.4",
     "prettier": "^3.5.3",
     "prettier-plugin-astro": "^0.14.1",
-    "tailwindcss": "^4.1.8",
-    "@playwright/test": "^1.53.1"
+    "tailwindcss": "^4.1.8"
   },
   "name": "dapp",
   "scripts": {
@@ -43,7 +44,11 @@
     "dev": "astro dev",
     "preview": "astro preview",
     "start": "astro dev",
-    "test:e2e": "playwright install --with-deps && playwright test",
+    "test:essential": "playwright test essential-flows.spec.ts --reporter=dot",
+    "test:comprehensive": "playwright test comprehensive-flows.spec.ts --reporter=line",
+    "test:all": "playwright test --reporter=line",
+    "test": "./scripts/quick-test.sh",
+    "test:quick": "./scripts/quick-test.sh",
     "formatter": "prettier --write .",
     "linter": "prettier -c ."
   },

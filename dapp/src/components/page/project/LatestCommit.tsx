@@ -17,7 +17,7 @@ enum Status {
 
 const LatestCommit = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
-  const [commitData, setCommitData] = useState<any>();
+  const [commitData, setCommitData] = useState<any>(null);
   const [latestCommitStatus, setLatestCommitStatus] = useState<Status>(
     Status.NotFound,
   );
@@ -25,16 +25,28 @@ const LatestCommit = () => {
   const loadLatestCommitData = async () => {
     const projectInfo = loadProjectInfo();
     const latestSha = await getProjectHash();
-    if (projectInfo && latestSha) {
-      const latestCommit = await getLatestCommitData(
-        projectInfo.config.url,
-        latestSha,
-      );
-      setCommitData(latestCommit);
-      if (latestCommit.sha === latestSha) {
-        setLatestCommitStatus(Status.Match);
-      } else {
-        setLatestCommitStatus(Status.NotMatch);
+    if (
+      projectInfo &&
+      projectInfo.config &&
+      projectInfo.config.url &&
+      latestSha
+    ) {
+      try {
+        const latestCommit = await getLatestCommitData(
+          projectInfo.config.url,
+          latestSha,
+        );
+        if (latestCommit) {
+          setCommitData(latestCommit);
+          if (latestCommit.sha === latestSha) {
+            setLatestCommitStatus(Status.Match);
+          } else {
+            setLatestCommitStatus(Status.NotMatch);
+          }
+        }
+      } catch (error) {
+        // Failed to load commit data - keep status as NotFound
+        setLatestCommitStatus(Status.NotFound);
       }
     }
   };

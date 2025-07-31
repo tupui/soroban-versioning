@@ -23,14 +23,9 @@ fn register_events() {
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
     setup.token_stellar.mint(&setup.grogu, &genesis_amount);
 
-    let id = setup.contract.register(
-        &setup.grogu,
-        &name,
-        &maintainers,
-        &url,
-        &hash,
-        &setup.domain_id,
-    );
+    let id = setup
+        .contract
+        .register(&setup.grogu, &name, &maintainers, &url, &hash);
 
     let mut all_events = setup.env.events().all();
     all_events.pop_front(); // transfer event from the domain contract
@@ -67,14 +62,7 @@ fn register_double_registration_error() {
     // double registration
     let err = setup
         .contract
-        .try_register(
-            &setup.grogu,
-            &name,
-            &maintainers,
-            &url,
-            &hash,
-            &setup.domain_id,
-        )
+        .try_register(&setup.grogu, &name, &maintainers, &url, &hash)
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::ProjectAlreadyExist.into());
@@ -96,14 +84,7 @@ fn register_name_too_long_error() {
     // name too long
     let err = setup
         .contract
-        .try_register(
-            &setup.grogu,
-            &name_long,
-            &maintainers,
-            &url,
-            &hash,
-            &setup.domain_id,
-        )
+        .try_register(&setup.grogu, &name_long, &maintainers, &url, &hash)
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::InvalidDomainError.into());
@@ -127,14 +108,7 @@ fn register_maintainer_not_domain_owner_error() {
     let name_b_str = String::from_str(&setup.env, "bob");
     let err = setup
         .contract
-        .try_register(
-            &setup.grogu,
-            &name_b_str,
-            &maintainers,
-            &url,
-            &hash,
-            &setup.domain_id,
-        )
+        .try_register(&setup.grogu, &name_b_str, &maintainers, &url, &hash)
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::MaintainerNotDomainOwner.into());

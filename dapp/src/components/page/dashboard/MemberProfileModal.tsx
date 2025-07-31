@@ -62,6 +62,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
       if (
         member &&
         member.meta &&
+        typeof member.meta === "string" &&
         member.meta.trim() &&
         member.meta.trim() !== " "
       ) {

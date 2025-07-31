@@ -2,8 +2,9 @@ use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
 
 #[contracttype]
 pub enum DataKey {
-    Admin,           // Contract administrator
-    Member(Address), // Member of the DAO, address
+    Admin,            // Contract administrator
+    DomainContractId, // Address of the SorobanDomain contract
+    Member(Address),  // Member of the DAO, address
 }
 
 #[contracttype]
