@@ -701,8 +701,12 @@ export interface Client {
   upgrade: (
     {
       new_wasm_hash,
+      admin,
+      domain_contract_id,
     }: {
       new_wasm_hash: Buffer;
+      admin: string;
+      domain_contract_id: string;
     },
     options?: {
       /**

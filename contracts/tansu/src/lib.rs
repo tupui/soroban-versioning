@@ -26,7 +26,7 @@ pub struct Tansu;
 pub trait TansuTrait {
     fn __constructor(env: Env, admin: Address, domain_contract_id: Address);
 
-    fn upgrade(env: Env, hash: BytesN<32>);
+    fn upgrade(env: Env, new_wasm_hash: BytesN<32>, admin: Address, domain_contract_id: Address);
 
     fn version() -> u32;
 }

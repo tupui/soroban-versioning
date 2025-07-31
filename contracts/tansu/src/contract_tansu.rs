@@ -11,13 +11,18 @@ impl TansuTrait for Tansu {
             .set(&types::DataKey::DomainContractId, &domain_contract_id);
     }
 
-    fn upgrade(env: Env, new_wasm_hash: BytesN<32>) {
-        let admin: Address = env
+    fn upgrade(env: Env, new_wasm_hash: BytesN<32>, admin: Address, domain_contract_id: Address) {
+        let old_admin: Address = env
             .storage()
             .instance()
             .get(&types::DataKey::Admin)
             .unwrap();
-        admin.require_auth();
+        old_admin.require_auth();
+
+        env.storage().instance().set(&types::DataKey::Admin, &admin);
+        env.storage()
+            .instance()
+            .set(&types::DataKey::DomainContractId, &domain_contract_id);
 
         env.deployer().update_current_contract_wasm(new_wasm_hash);
     }

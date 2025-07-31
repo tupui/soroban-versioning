@@ -636,7 +636,11 @@ export interface Client {
    * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    */
   upgrade: (
-    { new_wasm_hash }: { new_wasm_hash: Buffer },
+    {
+      new_wasm_hash,
+      admin,
+      domain_contract_id,
+    }: { new_wasm_hash: Buffer; admin: string; domain_contract_id: string },
     options?: {
       /**
        * The fee to pay for the transaction. Default: BASE_FEE
@@ -860,7 +864,7 @@ export class Client extends ContractClient {
         "AAAAAAAAAAAAAAAKZ2V0X2JhZGdlcwAAAAAAAQAAAAAAAAADa2V5AAAAAA4AAAABAAAH0AAAAAZCYWRnZXMAAA==",
         "AAAAAAAAAAAAAAAOZ2V0X21heF93ZWlnaHQAAAAAAAIAAAAAAAAAC3Byb2plY3Rfa2V5AAAAAA4AAAAAAAAADm1lbWJlcl9hZGRyZXNzAAAAAAATAAAAAQAAAAQ=",
         "AAAAAAAAAAAAAAANX19jb25zdHJ1Y3RvcgAAAAAAAAIAAAAAAAAABWFkbWluAAAAAAAAEwAAAAAAAAASZG9tYWluX2NvbnRyYWN0X2lkAAAAAAATAAAAAA==",
-        "AAAAAAAAAAAAAAAHdXBncmFkZQAAAAABAAAAAAAAAA1uZXdfd2FzbV9oYXNoAAAAAAAD7gAAACAAAAAA",
+        "AAAAAAAAAAAAAAAHdXBncmFkZQAAAAADAAAAAAAAAA1uZXdfd2FzbV9oYXNoAAAAAAAD7gAAACAAAAAAAAAABWFkbWluAAAAAAAAEwAAAAAAAAASZG9tYWluX2NvbnRyYWN0X2lkAAAAAAATAAAAAA==",
         "AAAAAAAAAAAAAAAHdmVyc2lvbgAAAAAAAAAAAQAAAAQ=",
         "AAAAAAAAADRSZWdpc3RlciBhIG5ldyBHaXQgcHJvamVjdHMgYW5kIGFzc29jaWF0ZWQgbWV0YWRhdGEuAAAACHJlZ2lzdGVyAAAABQAAAAAAAAAKbWFpbnRhaW5lcgAAAAAAEwAAAAAAAAAEbmFtZQAAABAAAAAAAAAAC21haW50YWluZXJzAAAAA+oAAAATAAAAAAAAAAN1cmwAAAAAEAAAAAAAAAAEaGFzaAAAABAAAAABAAAADg==",
         "AAAAAAAAAChDaGFuZ2UgdGhlIGNvbmZpZ3VyYXRpb24gb2YgdGhlIHByb2plY3QuAAAADXVwZGF0ZV9jb25maWcAAAAAAAAFAAAAAAAAAAptYWludGFpbmVyAAAAAAATAAAAAAAAAANrZXkAAAAADgAAAAAAAAALbWFpbnRhaW5lcnMAAAAD6gAAABMAAAAAAAAAA3VybAAAAAAQAAAAAAAAAARoYXNoAAAAEAAAAAA=",
