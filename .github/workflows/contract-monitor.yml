@@ -39,3 +39,18 @@ jobs:
           stellar network add --rpc-url https://soroban-rpc.mainnet.stellar.gateway.fm --network-passphrase "Public Global Stellar Network ; September 2015" mainnet
           stellar contract fetch --id CATRNPHYKNXAPNLHEYH55REB6YSAJLGCPA4YM6L3WUKSZOPI77M2UMKI --network mainnet | openssl sha512 > current_hash.txt
           echo "Computed hash: $(cat current_hash.txt)"
+
+      - name: Compare hashes
+        run: |
+          stored_hash=$(cat contracts/domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm | openssl sha512)
+          current_hash=$(cat current_hash.txt)
+          if [ "$stored_hash" != "$current_hash" ]; then
+            echo "Error: Contract hash has changed!"
+            echo "Stored hash: $stored_hash"
+            echo "Current hash: $current_hash"
+            echo "Please update contract/domain_[...].wasm file after verifying the contract change."
+            rm current_hash.txt
+            exit 1
+          else
+            echo "Contract hash matches stored hash at $(date -u)."
+          fi
