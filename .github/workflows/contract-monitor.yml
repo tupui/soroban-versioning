@@ -36,9 +36,9 @@ jobs:
           # toolchain: stable
 
       # - name: Install Stellar CLI
-        run: |
+        # run: |
           # cargo install stellar-cli --version 22.5.0
-          stellar --version
+          # stellar --version
 
       - name: Fetch contract and compute hash
         shell: bash
