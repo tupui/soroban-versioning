@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Button from "components/utils/Button";
 import JoinCommunityModal from "components/page/dashboard/JoinCommunityModal";
-import MemberProfileModal from "./page/dashboard/MemberProfileModal";
+
 import { getMember } from "@service/ReadContractService";
 import type { Member } from "../../packages/tansu";
 import { useStore } from "@nanostores/react";
@@ -10,9 +10,9 @@ import { connectedPublicKey } from "utils/store";
 const JoinCommunityButton = () => {
   const publicKey = useStore(connectedPublicKey);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [isMember, setIsMember] = useState(false);
-  const [memberData, setMemberData] = useState<Member | null>(null);
+  const [_showProfileModal, _setShowProfileModal] = useState(false);
+  const [_isMember, setIsMember] = useState(false);
+  const [_memberData, setMemberData] = useState<Member | null>(null);
 
   const fetchMember = async (address: string) => {
     try {
@@ -20,7 +20,7 @@ const JoinCommunityButton = () => {
       // If getMember succeeds, they are a member regardless of metadata content
       setIsMember(true);
       setMemberData(member);
-    } catch (e: any) {
+    } catch {
       // If getMember fails for any reason, treat as not a member
       // This is expected behavior for non-members
       setIsMember(false);
@@ -32,14 +32,14 @@ const JoinCommunityButton = () => {
     // Reset state first to avoid showing stale profile
     setIsMember(false);
     setMemberData(null);
-    setShowProfileModal(false);
+    _setShowProfileModal(false);
 
     if (publicKey) {
       fetchMember(publicKey);
     }
   }, [publicKey]);
 
-  const handleJoined = () => {
+  const _handleJoined = () => {
     if (publicKey) fetchMember(publicKey);
   };
 

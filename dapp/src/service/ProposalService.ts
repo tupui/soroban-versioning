@@ -40,7 +40,7 @@ async function fetchProposalFromIPFS(url: string) {
     );
 
     return updatedContent;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -65,7 +65,7 @@ async function fetchOutcomeDataFromIPFS(url: string) {
     }
 
     return await fetchJSONFromIPFS(outcomeUrl);
-  } catch (error) {
+  } catch {
     return null;
   }
 }

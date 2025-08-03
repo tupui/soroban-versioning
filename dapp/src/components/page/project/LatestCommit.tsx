@@ -44,7 +44,7 @@ const LatestCommit = () => {
             setLatestCommitStatus(Status.NotMatch);
           }
         }
-      } catch (error) {
+      } catch {
         // Failed to load commit data - keep status as NotFound
         setLatestCommitStatus(Status.NotFound);
       }

@@ -3,7 +3,7 @@ import { getLatestCommitHash } from "@service/GithubService";
 import { getProject } from "@service/ReadContractService";
 import { loadProjectInfo, setProject } from "@service/StateService";
 import { loadedPublicKey } from "@service/walletService";
-import { commitHash } from "@service/WriteContractService";
+import { commitHash } from "@service/ContractService";
 import Button from "components/utils/Button";
 import Modal from "components/utils/Modal";
 import { useEffect, useState } from "react";
@@ -16,7 +16,7 @@ const UpdateHashModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [lastestHash, setLatestHash] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [updateSuccessful, setUpdateSuccessful] = useState(false);
   useEffect(() => {
     if (isProjectInfoLoaded) {
       const projectInfo = loadProjectInfo();
@@ -40,26 +40,47 @@ const UpdateHashModal = () => {
     }
   }, [isProjectInfoLoaded]);
 
+  const handleClose = () => {
+    setIsOpen(false);
+    setUpdateSuccessful(false);
+    // Reload page if update was successful to show fresh data
+    if (updateSuccessful) {
+      window.location.reload();
+    }
+  };
+
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
       await commitHash(lastestHash);
+
+      // Successfully updated - refresh project data and reload the page
       try {
         const project = await getProject();
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
         }
-        setIsOpen(false);
-      } catch (error) {
-        console.error("Error updating Commit Hash:", error);
-        toast.error(
-          "Update Commit Hash",
-          "An error occurred while updating the project Commit Hash. Please try again.",
-        );
+      } catch {
+        if (import.meta.env.DEV) {
+          console.error("Error refreshing project data:", error);
+        }
+        // Don't show error to user as the update was successful
       }
+
+      toast.success(
+        "Commit Hash Updated",
+        "Project commit hash has been successfully updated.",
+      );
+      setUpdateSuccessful(true);
+      // Don't close modal immediately - let user close it manually
     } catch (error: any) {
-      console.error("Error updating Commit Hash:", error);
-      toast.error("Update Commit Hash", error.message);
+      if (import.meta.env.DEV) {
+        console.error("Error updating Commit Hash:", error);
+      }
+      toast.error(
+        "Update Commit Hash",
+        error.message || "Failed to update commit hash. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +101,7 @@ const UpdateHashModal = () => {
         </button>
       )}
       {isOpen && (
-        <Modal onClose={() => setIsOpen(false)}>
+        <Modal onClose={handleClose}>
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
             <img
               src="/images/scan.svg"

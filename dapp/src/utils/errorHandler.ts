@@ -52,19 +52,19 @@ export function handleError(
   context: string,
   options: ErrorHandlerOptions = {},
 ): string {
-  const { showUser = true, rethrow = false } = options;
+  const { showUser: _showUser = true, rethrow = false } = options;
 
   // For debugging in development only - remove in production
   if (import.meta.env.DEV) {
     // Use more specific error type check
     if (error?.message?.includes("Error(Contract")) {
       const { errorMessage } = extractContractError(error);
-      const logMessage = `${context}: ${errorMessage}`;
+      const _logMessage = `${context}: ${errorMessage}`;
       // No console.error in production
     } else {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      const logMessage = `${context}: ${errorMessage}`;
+      const _logMessage = `${context}: ${errorMessage}`;
       // No console.error in production
     }
   }
@@ -100,7 +100,7 @@ export function withErrorHandling<T, Args extends any[]>(
   return async (...args: Args): Promise<T> => {
     try {
       return await fn(...args);
-    } catch (error) {
+    } catch {
       handleError(error, context, { rethrow: true });
       throw error; // TypeScript needs this even though rethrow: true already throws
     }

@@ -35,7 +35,7 @@ const CopyButton = ({
       await navigator.clipboard.writeText(textToCopy);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-    } catch (error) {
+    } catch {
       // Most modern browsers support the Clipboard API,
       // so we'll just log the error if it doesn't work
       // instead of using the deprecated execCommand

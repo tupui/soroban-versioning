@@ -2,7 +2,26 @@ import { test, expect } from "@playwright/test";
 import { applyAllMocks } from "./helpers/mock";
 
 test.describe("Tansu dApp - Comprehensive User Flows", () => {
+  // Track errors across all tests
+  let allErrors: string[] = [];
+  let pageErrors: string[] = [];
+
   test.beforeEach(async ({ page }) => {
+    // Reset error tracking
+    allErrors = [];
+    pageErrors = [];
+
+    // Capture all types of errors
+    page.on("pageerror", (error) => {
+      pageErrors.push(`PageError: ${error.message}`);
+    });
+
+    page.on("console", (msg) => {
+      if (msg.type() === "error") {
+        allErrors.push(msg.text());
+      }
+    });
+
     await applyAllMocks(page);
     page.setDefaultTimeout(5000);
   });
@@ -118,20 +137,26 @@ test.describe("Tansu dApp - Comprehensive User Flows", () => {
         await page.goto(pagePath);
         await expect(page.locator("body")).toBeVisible();
 
-        // Check for critical JavaScript errors
-        const errors: string[] = [];
-        page.on("pageerror", (error) => {
-          if (
-            !error.message.includes("mock") &&
-            !error.message.includes("test")
-          ) {
-            errors.push(error.message);
-          }
-        });
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(500);
 
-        // Allow some non-critical errors but not too many
-        expect(errors.length).toBeLessThan(3);
+        // Check for critical JavaScript errors that should NEVER happen
+        const criticalErrors = allErrors.filter(
+          (error) =>
+            (error.includes("is not defined") ||
+              error.includes("Cannot read properties of undefined") ||
+              error.includes("TypeError:") ||
+              error.includes("ReferenceError:")) &&
+            !error.includes("Astro") && // Ignore Astro dev toolbar issues
+            !error.includes("dev-toolbar") &&
+            !error.includes("Failed to fetch"), // Network errors in dev toolbar
+        );
+
+        // ZERO tolerance for critical JavaScript errors
+        if (criticalErrors.length > 0) {
+          console.error(`Critical errors on ${pagePath}:`, criticalErrors);
+        }
+        expect(criticalErrors).toHaveLength(0);
+        expect(pageErrors).toHaveLength(0);
       }
     });
   });

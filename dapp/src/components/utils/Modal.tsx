@@ -20,7 +20,7 @@ export interface ModalProps {
 }
 
 const Modal: FC<ModalProps> = ({
-  id,
+  id: _id,
   children,
   onClose,
   fullWidth = false,

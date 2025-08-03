@@ -7,7 +7,7 @@ import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
 import * as pkg from "js-sha3";
 import { parseContractError } from "utils/contractErrors";
-import { extractContractError } from "../utils/errorHandler";
+
 import { retryAsync } from "../utils/retry";
 
 const { keccak256 } = pkg;
@@ -178,7 +178,7 @@ async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
   try {
     // Cast to any because typings accept only Transaction, but Soroban RPC
     // supports base64 envelope; the runtime call is valid.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     sendResponse = await retryAsync(() =>
       (server as any).sendTransaction(signedTxXdr),
     );
@@ -345,7 +345,7 @@ export async function createProposalFlow({
 export async function joinCommunityFlow({
   memberAddress,
   profileFiles,
-  onProgress,
+  onProgress: _onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
   let cid = " "; // Default for no profile
 

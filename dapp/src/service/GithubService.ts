@@ -1,11 +1,8 @@
 import axios from "axios";
-import toml from "toml";
-import { toast } from "utils/utils";
 
 import type { FormattedCommit } from "../types/github";
 import {
   getAuthorRepo,
-  getGithubContentUrlFromConfigUrl,
   getGithubContentUrlFromReadmeUrl,
 } from "../utils/editLinkFunctions";
 
@@ -56,7 +53,7 @@ async function getCommitHistory(
       date,
       commits: commits as FormattedCommit[],
     }));
-  } catch (error) {
+  } catch {
     // Don't show error toast as this may be an expected condition
     // (e.g., repository is private or doesn't exist)
     return null;
@@ -78,7 +75,7 @@ async function getCommitDataFromSha(
     }
 
     return await response.json();
-  } catch (error) {
+  } catch {
     // Don't show error toast as this may be an expected condition
     return undefined;
   }
@@ -129,7 +126,7 @@ async function getLatestCommitHash(
     const latestCommit = await commitRes.json();
     const latestSha = latestCommit.sha;
     return latestSha;
-  } catch (error: any) {
+  } catch {
     // Don't show error toast as these are often expected conditions
     return undefined;
   }
@@ -152,7 +149,7 @@ async function fetchReadmeContentFromConfigUrl(configUrl: string) {
     }
 
     return undefined;
-  } catch (error) {
+  } catch {
     // Don't show error toast as this may be an expected condition
     return undefined;
   }

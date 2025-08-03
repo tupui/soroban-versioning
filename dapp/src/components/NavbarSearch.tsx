@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import Button from "./utils/Button.tsx";
-import { getMember } from "../service/ReadContractService.ts";
+
 import { loadedPublicKey } from "../service/walletService.ts";
 import { toast } from "../utils/utils.ts";
 
 interface NavbarSearchProps {
-  onAddProject: () => void;
+  _onAddProject: () => void;
 }
 
 // Constants for URL handling
 const HOME_PATH = "/";
 
-const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
+const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [originalUrl, setOriginalUrl] = useState("");
@@ -54,7 +54,7 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
       try {
         const referrerUrl = new URL(referrer);
         setOriginalUrl(referrerUrl.pathname + referrerUrl.search);
-      } catch (e) {
+      } catch {
         // Silent error handling
       }
     }
@@ -75,7 +75,7 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
       if (urlSearchTerm) {
         setSearchTerm(urlSearchTerm);
       }
-    } catch (error) {
+    } catch {
       // Silent error handling
     }
   };

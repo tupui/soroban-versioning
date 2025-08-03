@@ -6,7 +6,7 @@
 // their human-readable names provided by the calling component.
 
 import { Buffer } from "buffer";
-import { xdr, StrKey } from "@stellar/stellar-sdk";
+import * as StellarSdk from "@stellar/stellar-sdk";
 import pkgSha3 from "js-sha3";
 import { MEMBER_METHODS } from "../constants/onchain";
 
@@ -62,7 +62,7 @@ function horizonBase(net: string): string {
 /** Decode base64 ScVal using stellar-sdk xdr utilities and convert to JS */
 function decodeScVal(b64: string): any {
   try {
-    const scVal = xdr.ScVal.fromXDR(b64, "base64");
+    const scVal = StellarSdk.xdr.ScVal.fromXDR(b64, "base64");
     return scValToNative(scVal);
   } catch {
     return null;
@@ -92,7 +92,7 @@ function scValToNative(val: any): any {
         const addr = val.address();
         if (addr.switch().name === "scAddressTypeAccount") {
           const raw = Buffer.from(addr.accountId().ed25519());
-          return { address: StrKey.encodeEd25519PublicKey(raw) };
+          return { address: StellarSdk.StrKey.encodeEd25519PublicKey(raw) };
         }
       } catch {}
       return {};
@@ -291,7 +291,7 @@ export async function fetchOnChainActions(
       }
 
       return actions;
-    } catch (error) {
+    } catch {
       clearTimeout(timeoutId);
       throw error;
     }

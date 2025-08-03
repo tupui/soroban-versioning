@@ -1,19 +1,22 @@
-# Tansu - Soroban Versioning
+# 🏛️ Tansu - Decentralized project governance on Stellar
 
-_- or SVN if you want to make some people angry_
+[![SCF Awards](https://img.shields.io/badge/SCF-28,30-blue)](https://github.com/your-org/tansu)
+[![Stellar Network](https://img.shields.io/badge/network-testnet-purple)](https://stellar.org)
 
-https://tansu.dev
+Tansu provides cryptographic proof of code integrity and transparent governance for open-source projects. Built on
+Stellar's Soroban platform, it offers immutable commit tracking, community-driven proposals, and privacy-preserving
+voting mechanisms.
 
-## Rational
+🌐 **Website**: [tansu.dev](https://tansu.dev)
 
-Version control systems like Git are by design decentralized. The reality is
-that we heavily rely on tools like GitHub. While GitHub is great for
-collaborating, it's a strongly centralized system, bearing all its caveats.
+---
 
-One of the biggest issues being that maintainers can force push code,
-effectively rewriting the commit history.
+## ✨ At a Glance
 
-The core idea of this project is to offer an on-chain hash traceability. The
-code itself is still versioned using Git, and it is still hosted on any
-platform, but you keep on-chain a hash history. What it provides is an
-independent and distributed way to prove the integrity of a repository.
+- **🔗 On-chain Version Control**: Immutable commit hash tracking
+- **🗳️ Decentralized Governance**: Community proposals with public and anonymous voting
+- **👥 Membership System**: Role-based access control with achievement badges
+- **🌍 Domain Integration**: Soroban Domains prevent name squatting and ensure authenticity
+- **📁 IPFS Storage**: Decentralized content storage for proposals and project metadata
+- **🔒 Privacy-First**: Optional anonymous voting with cryptographic commitment schemes
+- **⚡ Real-time Events**: Instant updates through blockchain event streaming

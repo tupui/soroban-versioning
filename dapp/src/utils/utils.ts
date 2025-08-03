@@ -1,4 +1,4 @@
-import { TransactionBuilder } from "@stellar/stellar-sdk";
+import * as StellarSdk from "@stellar/stellar-sdk";
 import type {
   Proposal as ContractProposal,
   Project,
@@ -61,11 +61,11 @@ export function capitalizeFirstLetter(str: string): string {
 
 export const processDecodedData = (xdrData: string): any => {
   try {
-    return TransactionBuilder.fromXDR(
+    return StellarSdk.TransactionBuilder.fromXDR(
       xdrData,
       import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
     );
-  } catch (error) {
+  } catch {
     // Don't log to console, just return null to indicate failure
     return null;
   }

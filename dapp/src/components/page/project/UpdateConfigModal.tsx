@@ -29,6 +29,7 @@ const UpdateConfigModal = () => {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [updateSuccessful, setUpdateSuccessful] = useState(false);
 
   // fields
   const [maintainerAddresses, setMaintainerAddresses] = useState<string[]>([
@@ -67,6 +68,15 @@ const UpdateConfigModal = () => {
     // show button only if wallet is maintainer handled outside earlier
     setShowButton(true);
   }, [infoLoaded]);
+
+  const handleClose = () => {
+    setOpen(false);
+    setUpdateSuccessful(false);
+    // Reload page if update was successful to show fresh data
+    if (updateSuccessful) {
+      window.location.reload();
+    }
+  };
 
   // validation helpers
   const ghRegex = /^[A-Za-z0-9_-]{1,30}$/;
@@ -120,14 +130,15 @@ const UpdateConfigModal = () => {
       // refresh state
       const p = await getProject();
       if (p) setProject(p);
-      const cid = await calculateDirectoryCid([tomlFile]);
+      await calculateDirectoryCid([tomlFile]); // Ensure IPFS upload completed
       const configData = extractConfigData(JSON.parse("{}"), p as any); // placeholder parse later
       setConfigData(configData);
       toast.success(
         "Config updated",
-        "Project configuration updated successfully",
+        "Project configuration updated successfully.",
       );
-      setOpen(false);
+      setUpdateSuccessful(true);
+      // Don't close modal immediately - let user close it manually
     } catch (e: any) {
       toast.error("Update config", e.message);
     } finally {
@@ -146,7 +157,7 @@ const UpdateConfigModal = () => {
         Update config
       </button>
       {open && (
-        <Modal onClose={() => setOpen(false)}>
+        <Modal onClose={handleClose}>
           {step <= 3 && (
             <div className="flex flex-col gap-8">
               {step === 1 && (

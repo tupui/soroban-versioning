@@ -55,7 +55,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
     }
 
     setIsLoading(true);
-    const { voteToProposal } = await import("@service/WriteContractService");
+    const { voteToProposal } = await import("@service/ContractService");
 
     try {
       await voteToProposal(

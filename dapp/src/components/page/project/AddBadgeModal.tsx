@@ -1,7 +1,7 @@
 import { useStore } from "@nanostores/react";
 import { loadProjectInfo } from "@service/StateService";
 import { loadedPublicKey } from "@service/walletService";
-import { addBadges } from "@service/WriteContractService";
+import { addBadges } from "@service/ContractService";
 import Button from "components/utils/Button";
 import Modal from "components/utils/Modal";
 import type { Badge } from "../../../../packages/tansu";
@@ -24,6 +24,7 @@ const AddBadgeModal = () => {
   const [memberAddress, setMemberAddress] = useState("");
   const [selectedBadges, setSelectedBadges] = useState<Badge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [updateSuccessful, setUpdateSuccessful] = useState(false);
 
   useEffect(() => {
     if (isProjectInfoLoaded) {
@@ -37,6 +38,15 @@ const AddBadgeModal = () => {
       }
     }
   }, [isProjectInfoLoaded]);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setUpdateSuccessful(false);
+    // Reload page if update was successful to show fresh data
+    if (updateSuccessful) {
+      window.location.reload();
+    }
+  };
 
   const handleToggleBadge = (badge: Badge) => {
     setSelectedBadges((prev) =>
@@ -54,7 +64,8 @@ const AddBadgeModal = () => {
       await addBadges(memberAddress, selectedBadges);
       toast.success("Add badge", "Badges added successfully");
       window.dispatchEvent(new CustomEvent("badgesUpdated"));
-      setIsOpen(false);
+      setUpdateSuccessful(true);
+      // Don't close modal immediately - let user close it manually
     } catch (err: any) {
       toast.error("Add badge", err.message);
     } finally {
@@ -80,7 +91,7 @@ const AddBadgeModal = () => {
         </button>
       )}
       {isOpen && (
-        <Modal onClose={() => setIsOpen(false)}>
+        <Modal onClose={handleClose}>
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
             <img
               src="/images/scan.svg"

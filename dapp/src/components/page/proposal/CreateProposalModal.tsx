@@ -46,14 +46,10 @@ import { formatDate } from "utils/formatTimeFunctions";
 import { connectedPublicKey } from "utils/store";
 import { capitalizeFirstLetter, toast } from "utils/utils";
 import { getIpfsBasicLink } from "utils/ipfsFunctions";
-import {
-  validateProposalName,
-  validateTextContent,
-  isContentValid,
-} from "utils/validations";
+import { validateProposalName, validateTextContent } from "utils/validations";
 import OutcomeInput from "./OutcomeInput";
 import { generateRSAKeyPair } from "utils/crypto";
-import { setupAnonymousVoting } from "@service/WriteContractService";
+import { setupAnonymousVoting } from "@service/ContractService";
 import { Buffer } from "buffer";
 import ProgressStep from "components/utils/ProgressStep";
 
@@ -147,7 +143,7 @@ const CreateProposalModal = () => {
           if (projectInfo?.maintainers) {
             setMaintainers(projectInfo.maintainers);
           }
-        } catch (error) {
+        } catch {
           console.error("Error fetching project info:", error);
         }
       })();
@@ -179,17 +175,6 @@ const CreateProposalModal = () => {
         </div>
       );
     },
-  };
-
-  const getDeltaDays = (selectedDate: string | Date): number => {
-    const now = new Date();
-    const targetDate = new Date(selectedDate);
-
-    now.setHours(0, 0, 0, 0);
-    targetDate.setHours(0, 0, 0, 0);
-
-    const diffInMs = targetDate.getTime() - now.getTime();
-    return diffInMs / (1000 * 60 * 60 * 24);
   };
 
   const handleRegisterProposal = async () => {
@@ -312,19 +297,6 @@ const CreateProposalModal = () => {
     setApproveXdrError(null);
 
     return descError === null;
-  };
-
-  // Check if we can proceed with form submission based on validations
-  const canProceed = (): boolean => {
-    if (step === 1) {
-      return proposalName.trim() !== "" && isContentValid(mdText, 10);
-    }
-
-    if (step === 2) {
-      return isContentValid(approveDescription);
-    }
-
-    return true;
   };
 
   const handleToggleAnonymous = async (checked: boolean) => {

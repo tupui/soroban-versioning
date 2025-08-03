@@ -3,7 +3,11 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["**/essential-flows.spec.ts", "**/comprehensive-flows.spec.ts"],
+  testMatch: [
+    "**/essential-flows.spec.ts",
+    "**/comprehensive-flows.spec.ts",
+    "**/regression-prevention.spec.ts",
+  ],
 
   // Performance optimizations
   timeout: 30000,
