@@ -9,8 +9,8 @@ on:
   pull_request:
 
   workflow_dispatch:
- schedule:
-   - cron: '0 8 * * 1'
+  schedule:
+    - cron: '0 8 * * 1'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -50,11 +50,11 @@ jobs:
           current_hash=$(cat current_hash.txt)
           
           if [ "$stored_hash" != "$current_hash" ]; then
-            echo "Error: Contract hash has changed!"
-            echo "Stored hash: $stored_hash"
-            echo "Current hash: $current_hash"
-            echo "Please update contract/domain_[...].wasm file after verifying the contract change."
-            rm current_hash.txt
+            echo "Error: Contract hash has changed!" >> "$GITHUB_STEP_SUMMARY"
+            echo "Stored hash: $stored_hash" >> "$GITHUB_STEP_SUMMARY"
+            echo "Current hash: $current_hash" >> "$GITHUB_STEP_SUMMARY"
+            echo "Please update contract/domain_[...].wasm file after verifying the contract change." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           else
             echo "Contract hash matches stored hash at $(date -u)."
           fi
