@@ -2,16 +2,12 @@ import type { FC } from "react";
 import { useState, useEffect } from "react";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Button from "components/utils/Button";
-import type { Member, Badge, Project } from "../../../../packages/tansu";
-import {
-  getIpfsBasicLink,
-  fetchFromIPFS,
-  fetchJSONFromIPFS,
-} from "utils/ipfsFunctions";
+import type { Member, Badge } from "../../../../packages/tansu";
+import { getIpfsBasicLink, fetchJSONFromIPFS } from "utils/ipfsFunctions";
 import Markdown from "markdown-to-jsx";
 import { truncateMiddle } from "../../../utils/utils";
 import { connectedPublicKey } from "../../../utils/store";
-import { toast } from "../../../utils/utils";
+
 import { getProjectFromId } from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
 import { getStellarExplorerURL } from "../../../utils/urls";
@@ -62,6 +58,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
       if (
         member &&
         member.meta &&
+        typeof member.meta === "string" &&
         member.meta.trim() &&
         member.meta.trim() !== " "
       ) {
@@ -97,7 +94,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 setProfileImageUrl(`${ipfsUrl}/${profileData.image}`);
               }
             }
-          } catch (error) {
+          } catch {
             // Silent failure - this is an expected case for missing profile data
           }
 
@@ -120,7 +117,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
               };
             });
           }
-        } catch (error) {
+        } catch {
           // Silent error handling
         } finally {
           setIsLoading(false);
@@ -143,7 +140,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
             badges: proj.badges,
             projectId: proj.project,
           };
-        } catch (error) {
+        } catch {
           return {
             name: "Unknown Project",
             badges: proj.badges,

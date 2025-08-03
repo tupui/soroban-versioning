@@ -38,7 +38,6 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
     const urlParams = new URLSearchParams(window.location.search);
     const projectName = urlParams.get("name") || "";
     if (projectName) {
-      console.log("project info loading...");
       setProjectId(projectName);
       try {
         const project = await getProjectFromName(projectName);
@@ -75,7 +74,9 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
           window.location.href = "/";
         }
       } catch (error: any) {
-        console.error("Error fetching project info:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error fetching project info:", error);
+        }
         toast.error("Something Went Wrong!", error.message);
         refreshLocalStorage();
         window.location.href = "/";

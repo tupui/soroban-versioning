@@ -9,7 +9,6 @@ import {
   VoteResultType,
   type ProposalOutcome,
   type VoteStatus,
-  VoteType,
 } from "types/proposal";
 import { toast } from "utils/utils";
 import VotingResult from "./VotingResult";
@@ -34,13 +33,13 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 }) => {
   const [step, setStep] = useState(1);
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [privateKey, setPrivateKey] = useState<string | null>(null);
+
   const [tallies, setTallies] = useState<number[] | null>(null);
   const [seeds, setSeeds] = useState<number[] | null>(null);
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isMaintainer, setIsMaintainer] = useState(false);
   const [decodedVotes, setDecodedVotes] = useState<any[]>([]);
-  const [voteCounts, setVoteCounts] = useState<number[] | null>(null);
+
   const [proofOk, setProofOk] = useState<boolean | null>(null);
 
   const voteResultAndXdr: {
@@ -72,11 +71,6 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   const [displayVoteStatus, setDisplayVoteStatus] = useState<
     VoteStatus | undefined
   >(voteStatus);
-
-  // recompute vote result once displayVoteStatus changes (used later)
-  const [computedResult, setComputedResult] = useState<VoteResultType | null>(
-    null,
-  );
 
   useEffect(() => {
     if (
@@ -132,7 +126,9 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       setPrivateKey(parsed.privateKey);
       await computeTallies(parsed.privateKey);
     } catch (err: any) {
-      console.error(err);
+      if (import.meta.env.DEV) {
+        console.error(err);
+      }
       setProcessingError(err.message || "Failed to process key-file");
     }
   };
@@ -176,7 +172,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
     }
 
     try {
-      const { executeProposal } = await import("@service/WriteContractService");
+      const { executeProposal } = await import("@service/ContractService");
       await executeProposal(
         projectName,
         proposalId,

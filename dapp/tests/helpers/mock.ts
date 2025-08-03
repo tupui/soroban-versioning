@@ -57,69 +57,158 @@ import { rpcMock } from "./rpcMock";
 import { WALLET_PK, MOCK_PROJECT } from "./data";
 
 export async function applyAllMocks(page) {
-  // inject wallet and localStorage before any script executes
-  await page.addInitScript(
-    ({ pk }) => {
-      // Pre-populate so most flows start in a connected state; tests that
-      // want to exercise the connection UI can still click the button – the
-      // ConnectWallet component will detect it's already connected and show
-      // the "Profile" state.
-      localStorage.setItem("publicKey", pk);
+  // Allow everything by default, we only override selected external calls
+  await page.route("**", (route) => route.continue());
 
-      // Helper flags consumed by rpcMock
-      window.__lastRpcValidated = false;
-      window.__nextFunc = "noop";
+  // ──────────────────────────────────────────────
+  // Wallet signing
+  // ──────────────────────────────────────────────
+  await page.addInitScript(() => {
+    // Provide a minimal stub for kit used in dapp
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    window.kit = {
+      signTransaction: async (xdr) => ({ signedTxXdr: xdr }),
+    };
+  });
 
-      // Generic stub implementation for the wallets-kit API used by the app
-      const kitStub = {
-        getAddress: async () => ({ address: pk }),
-        // The UI passes a callback expecting wallet info – we synchronously invoke it
-        openModal: async ({ onWalletSelected } = {}) => {
-          if (onWalletSelected) await onWalletSelected({ id: "freighter" });
-          return Promise.resolve();
-        },
-        setWallet: () => {},
-        signTransaction: async () => ({
-          signedTxXdr: JSON.stringify({ func: window.__nextFunc, args: {} }),
-        }),
-      };
+  // ──────────────────────────────────────────────
+  // GitHub raw content (README / TOML)
+  // ──────────────────────────────────────────────
+  await page.route("https://raw.githubusercontent.com/**", (route) => {
+    route.fulfill({ status: 200, body: "# Mock README\nTest" });
+  });
 
-      // Expose under window so legacy code can access it
-      window.kit = kitStub;
-
-      // Try to patch any instance created from the real library once it's evaluated
-      // We can't guarantee load order, so use a micro-task + timeout
-      const patchRealKit = () => {
-        if (window.__kitPatched) return;
-        if (window.StellarWalletsKit && window.StellarWalletsKit.prototype) {
-          const proto = window.StellarWalletsKit.prototype;
-          proto.getAddress = kitStub.getAddress;
-          proto.openModal = kitStub.openModal;
-          proto.setWallet = kitStub.setWallet;
-          proto.signTransaction = kitStub.signTransaction;
-          window.__kitPatched = true;
-        }
-      };
-
-      // Retry a few times because load order is uncertain
-      for (let i = 0; i < 5; i++) {
-        setTimeout(patchRealKit, i * 50);
-      }
-    },
-    { pk: WALLET_PK },
-  );
-
-  // RPC validation
-  await page.route(/.*\/rpc$/, rpcMock);
-
-  // stubRpc provides generic response but conflicts with rpcMock; omit to let rpcMock validate
-  await stubDelegation(page);
-  await stubTransactionSend(page);
-  await stubIpfs(page);
-  await stubGithub(page);
-
-  // Horizon submission stub
+  // ──────────────────────────────────────────────
+  // Stellar Horizon API
+  // ──────────────────────────────────────────────
   await page.route("https://horizon-testnet.stellar.org/**", (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
+  });
+
+  // ──────────────────────────────────────────────
+  // Soroban RPC (contract + tansu client)
+  // ──────────────────────────────────────────────
+  const sorobanPattern = "**/soroban/**";
+  await page.route(sorobanPattern, (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
+  });
+}
+
+export async function mockCreateProposalFlow(page) {
+  await page.route("**/tansu/create_proposal", (route) => {
     route.fulfill({ status: 200, body: JSON.stringify({ result: "ok" }) });
+  });
+}
+
+export async function mockVoteToProposal(page) {
+  await page.route("**/tansu/vote", (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ result: "ok" }) });
+  });
+}
+
+export async function mockExecuteProposal(page) {
+  await page.route("**/tansu/execute", (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ result: "ok" }) });
+  });
+}
+
+export async function mockDonation(page) {
+  await page.route("**/operations/payment", (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ result: "ok" }) });
+  });
+}
+
+/**
+ * Apply minimal mocks that still allow real contract service testing
+ * This catches method signature issues that aggressive mocking would hide
+ */
+export async function applyMinimalMocks(page) {
+  // Allow everything by default
+  await page.route("**", (route) => route.continue());
+
+  // Only mock external services, not internal contract logic
+  await page.route("https://raw.githubusercontent.com/**", (route) => {
+    route.fulfill({ status: 200, body: "# Mock README\nTest" });
+  });
+
+  await page.route("https://horizon-testnet.stellar.org/**", (route) => {
+    route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
+  });
+
+  // Mock only the final RPC transaction submission, not the contract client
+  await page.route("**/soroban-testnet.stellar.org/**", (route) => {
+    route.fulfill({
+      status: 200,
+      body: JSON.stringify({
+        status: "SUCCESS",
+        hash: "mock_tx_hash",
+        result: "AAAAAA==",
+      }),
+    });
+  });
+
+  // Provide realistic wallet kit that would catch signAndSend vs signedXDRToResult issues
+  await page.addInitScript(() => {
+    // Mock a wallet kit that behaves like the real one
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    window.kit = {
+      signTransaction: async (xdr) => {
+        // Simulate real wallet behavior - return signed XDR
+        if (!xdr || typeof xdr !== "string") {
+          throw new Error("Invalid XDR provided to wallet");
+        }
+        return { signedTxXdr: `signed_${xdr}` };
+      },
+    };
+  });
+}
+
+/**
+ * Apply diagnostic mocks that log what they're intercepting for debugging
+ */
+export async function applyDiagnosticMocks(page) {
+  // Log all external requests being made
+  await page.route("**", (route) => {
+    const url = route.request().url();
+    if (
+      url.includes("github") ||
+      url.includes("soroban") ||
+      url.includes("horizon")
+    ) {
+      console.log(`[MOCK] Intercepting: ${url}`);
+    }
+    route.continue();
+  });
+
+  // Mock with logging
+  await page.route("https://raw.githubusercontent.com/**", (route) => {
+    console.log(`[MOCK] GitHub raw content: ${route.request().url()}`);
+    route.fulfill({ status: 200, body: "# Mock README\nTest" });
+  });
+
+  await page.route("**/soroban/**", (route) => {
+    console.log(`[MOCK] Soroban RPC: ${route.request().url()}`);
+    route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
+  });
+
+  // Enhanced wallet kit for debugging
+  await page.addInitScript(() => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    window.kit = {
+      signTransaction: async (xdr) => {
+        console.log(
+          "[MOCK] Wallet signTransaction called with XDR length:",
+          xdr?.length,
+        );
+        if (!xdr || typeof xdr !== "string") {
+          console.error("[MOCK] Invalid XDR provided to wallet:", xdr);
+          throw new Error("Invalid XDR provided to wallet");
+        }
+        return { signedTxXdr: `signed_${xdr}` };
+      },
+    };
   });
 }

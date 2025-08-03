@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Utility helpers to handle Soroban Tansu anonymous voting flows
 // Centralizes and deduplicates logic that was previously embedded in several UI components.
 //

@@ -22,9 +22,18 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
   const [amount, setAmount] = useState<number>(10);
   const [tipAmount, setTipAmount] = useState<string>("");
   const [donateMessage, setDonateMessage] = useState<string>("");
+  const [updateSuccessful, setUpdateSuccessful] = useState(false);
   const amountInputRef = useRef<HTMLInputElement>(null);
   const tipAmountInputRef = useRef<HTMLInputElement>(null);
-  const onClose = () => setIsOpen(false);
+
+  const onClose = () => {
+    setIsOpen(false);
+    setUpdateSuccessful(false);
+    // Reload page if donation was successful to show fresh data
+    if (updateSuccessful) {
+      window.location.reload();
+    }
+  };
 
   const amountOptions = [10, 100, 1000];
 
@@ -66,14 +75,15 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
 
         if (payment) {
           toast.success("Congratulation!", "You successfully donated.");
-          onClose(); // Close modal after success
+          setUpdateSuccessful(true);
+          // Don't close modal immediately - let user close it manually
         } else {
           toast.error("Support", "Donation failed.");
         }
       } else {
         toast.error("Support", "Cannot read domain information.");
       }
-    } catch (error) {
+    } catch {
       toast.error(
         "Support",
         "An error occurred during the contribution process.",

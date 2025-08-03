@@ -122,6 +122,15 @@ import { toast } from "utils/utils";
   import { getBadges, getMember } from "@service/ReadContractService";
 
   document.addEventListener("astro:page-load", async () => {
+    // Wait for DOM to be fully ready
+    await new Promise((resolve) => {
+      if (document.readyState === "complete") {
+        resolve(null);
+      } else {
+        window.addEventListener("load", () => resolve(null));
+      }
+    });
+
     // Dynamically import React components
     const [
       { default: React },
@@ -135,16 +144,29 @@ import { toast } from "utils/utils";
       import("./ReadMoreModal"),
     ]);
 
-    // Create React roots for modals
-    const lastHashContainer = document.getElementById(
+    // Create React roots for modals with retry logic
+    let lastHashContainer = document.getElementById(
       "last-hash-modal-container",
     );
-    const readMoreContainer = document.getElementById(
+    let readMoreContainer = document.getElementById(
       "read-more-modal-container",
     );
 
+    // Retry finding containers if not immediately available
     if (!lastHashContainer || !readMoreContainer) {
-      console.error("Modal containers not found");
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      lastHashContainer = document.getElementById("last-hash-modal-container");
+      readMoreContainer = document.getElementById("read-more-modal-container");
+    }
+
+    if (!lastHashContainer || !readMoreContainer) {
+      if (import.meta.env.DEV) {
+        console.error("Modal containers not found", {
+          lastHashContainer: !!lastHashContainer,
+          readMoreContainer: !!readMoreContainer,
+          documentReady: document.readyState,
+        });
+      }
       return;
     }
 
@@ -384,7 +406,16 @@ import { toast } from "utils/utils";
         if (loadedName) {
           const projectNameSpan = document.getElementById("contribute-text");
           if (projectNameSpan) {
-            projectNameSpan.innerHTML = `Contribute to <span id="project-name">${loadedName}</span>.xlm`;
+            // Safe DOM manipulation instead of innerHTML
+            projectNameSpan.textContent = "";
+            projectNameSpan.appendChild(
+              document.createTextNode("Contribute to "),
+            );
+            const nameSpan = document.createElement("span");
+            nameSpan.id = "project-name";
+            nameSpan.textContent = loadedName;
+            projectNameSpan.appendChild(nameSpan);
+            projectNameSpan.appendChild(document.createTextNode(".xlm"));
           }
 
           const donateTipPopup = document.getElementById("donate-tip-popup");
@@ -510,7 +541,9 @@ import { toast } from "utils/utils";
               };
             }
           } catch (error) {
-            console.error("Error loading commit data:", error);
+            if (import.meta.env.DEV) {
+              console.error("Error loading commit data:", error);
+            }
           }
         }
 
@@ -603,7 +636,9 @@ import { toast } from "utils/utils";
           }
         });
       } catch (e) {
-        console.error("Error fetching badges", e);
+        if (import.meta.env.DEV) {
+          console.error("Error fetching badges", e);
+        }
       }
     };
 

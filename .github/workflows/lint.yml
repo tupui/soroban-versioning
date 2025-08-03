@@ -65,8 +65,8 @@ jobs:
       - name: Install App dependencies
         run: cd dapp && bun install
 
-      - name: Linter
-        run: cd dapp && bun linter
+      - name: Lint dApp
+        run: cd dapp && bun run lint
 
       - name: Build app
         run: cd dapp && bun run build

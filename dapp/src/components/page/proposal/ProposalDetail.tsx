@@ -7,7 +7,7 @@ import type { ProposalOutcome } from "types/proposal";
 import { parseToLosslessJson } from "utils/passToLosslessJson";
 import * as StellarXdr from "utils/stellarXdr";
 import { capitalizeFirstLetter } from "utils/utils";
-import { getIpfsBasicLink, getOutcomeLinkFromIpfs } from "utils/ipfsFunctions";
+import { getIpfsBasicLink } from "utils/ipfsFunctions";
 
 import "github-markdown-css";
 import "react18-json-view/src/style.css";
@@ -106,7 +106,7 @@ export const OutcomeDetail: React.FC<{
         const decoded = StellarXdr.decode("TransactionEnvelope", _xdr);
         setContent(parseToLosslessJson(decoded));
       }
-    } catch (error) {
+    } catch {
       console.error("Error decoding XDR:", error);
     }
   };

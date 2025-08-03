@@ -47,6 +47,7 @@ const JoinCommunityModal: FC<
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [updateSuccessful, setUpdateSuccessful] = useState(false);
 
   // Validation errors
   const [addressError, setAddressError] = useState<string | null>(null);
@@ -58,6 +59,15 @@ const JoinCommunityModal: FC<
       setAddress(prefillAddress);
     }
   }, [prefillAddress]);
+
+  const handleClose = () => {
+    setUpdateSuccessful(false);
+    // Reload page if joining was successful to show fresh data
+    if (updateSuccessful) {
+      window.location.reload();
+    }
+    onClose?.();
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageError(null);
@@ -131,7 +141,8 @@ const JoinCommunityModal: FC<
 
         toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
-        onClose?.();
+        setUpdateSuccessful(true);
+        // Don't close modal immediately - let user close it manually
         return;
       }
 
@@ -172,7 +183,8 @@ const JoinCommunityModal: FC<
 
         toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
-        onClose?.();
+        setUpdateSuccessful(true);
+        // Don't close modal immediately - let user close it manually
       } catch (ipfsError: any) {
         console.error("IPFS upload error:", ipfsError);
         setIsUploading(false);
@@ -187,7 +199,7 @@ const JoinCommunityModal: FC<
   };
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={handleClose}>
       <div className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]">
         <img
           className="flex-none w-[200px] md:w-[360px]"

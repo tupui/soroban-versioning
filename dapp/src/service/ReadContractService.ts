@@ -3,62 +3,10 @@ import * as pkg from "js-sha3";
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import { loadedProjectId } from "./StateService";
-import { modifyProposalFromContract, toast } from "utils/utils";
+import { modifyProposalFromContract } from "utils/utils";
 import type { Project, Proposal, Member, Badges } from "../../packages/tansu";
 import type { Proposal as ModifiedProposal } from "types/proposal";
-import {
-  contractErrorMessages,
-  type ContractErrorMessageKey,
-} from "constants/contractErrorMessages";
 import { checkSimulationError } from "utils/contractErrors";
-import { extractContractError } from "../utils/errorHandler";
-
-// Expected error codes that shouldn't show toast errors
-const EXPECTED_ERROR_CODES = [
-  18, // Unknown member
-  4, // Unknown project
-  14, // Unknown proposal
-  0, // Generic errors, often for not found conditions
-];
-
-// Expected error messages that shouldn't show toast errors
-const EXPECTED_ERROR_MESSAGES = [
-  "No project defined",
-  "Unknown member",
-  "Unknown project",
-  "Project not found",
-  "Member not found",
-  "Proposal not found",
-];
-
-function isExpectedError(error: any): boolean {
-  if (!error || !error.message) return false;
-
-  // Check for expected error messages
-  if (EXPECTED_ERROR_MESSAGES.some((msg) => error.message.includes(msg))) {
-    return true;
-  }
-
-  // Check for expected error codes
-  const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
-  if (errorCodeMatch && errorCodeMatch[1]) {
-    const errorCode = parseInt(errorCodeMatch[1], 10);
-    return EXPECTED_ERROR_CODES.includes(errorCode);
-  }
-  return false;
-}
-
-function fetchErrorCode(error: any): {
-  errorCode: ContractErrorMessageKey;
-  errorMessage: string;
-} {
-  const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
-  let errorCode: ContractErrorMessageKey = 0;
-  if (errorCodeMatch && errorCodeMatch[1]) {
-    errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
-  }
-  return { errorCode, errorMessage: contractErrorMessages[errorCode] };
-}
 
 async function getProjectHash(): Promise<string | null> {
   const projectId = loadedProjectId();
@@ -76,7 +24,7 @@ async function getProjectHash(): Promise<string | null> {
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for project hash not found
     return null;
   }
@@ -98,7 +46,7 @@ async function getProject(): Promise<Project | null> {
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for project not found
     return null;
   }
@@ -125,7 +73,7 @@ async function getProjectFromName(
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for project not found - this is always an expected condition
     // when searching for projects
     return null;
@@ -142,7 +90,7 @@ async function getProjectFromId(projectId: Buffer): Promise<Project | null> {
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for project not found
     return null;
   }
@@ -165,7 +113,7 @@ async function getProposalPages(project_name: string): Promise<number | null> {
         checkSimulationError(res);
 
         return res.result.proposals.length > 0;
-      } catch (e) {
+      } catch {
         // Silently handle errors for this internal function
         return false;
       }
@@ -185,7 +133,7 @@ async function getProposalPages(project_name: string): Promise<number | null> {
       }
       return f;
     }
-  } catch (e: any) {
+  } catch {
     // Never show toast error for proposal pages not found
     return null;
   }
@@ -213,7 +161,7 @@ async function getProposals(
       },
     );
     return proposals;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for proposals not found
     return null;
   }
@@ -237,7 +185,7 @@ async function getProposal(
 
     const proposal: Proposal = res.result;
     return modifyProposalFromContract(proposal);
-  } catch (e: any) {
+  } catch {
     // Never show toast error for proposal not found
     return null;
   }
@@ -258,7 +206,7 @@ async function getMember(memberAddress: string): Promise<Member | null> {
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for member not found - this is always an expected condition
     // when searching for members
     return null;
@@ -281,7 +229,7 @@ async function getBadges(): Promise<Badges | null> {
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for badges not found
     return null;
   }

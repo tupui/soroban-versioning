@@ -34,7 +34,9 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
         const data = await fetchOnChainActions(address);
         setActions(data);
       } catch (err) {
-        console.error("Failed to load on-chain actions", err);
+        if (import.meta.env.DEV) {
+          console.error("Failed to load on-chain actions", err);
+        }
       } finally {
         setIsLoading(false);
       }

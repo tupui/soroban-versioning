@@ -22,14 +22,32 @@ repos:
         language: rust
         pass_filenames: false
         entry: cargo fmt --all
-      - id: dapp
-        name: dApp prettier
+      - id: dapp-format
+        name: dApp format
         additional_dependencies:
           - prettier
           - prettier-plugin-astro
         language: node
         pass_filenames: false
         entry: prettier --write dapp
+      - id: dapp-prettier-check
+        name: dApp prettier check
+        additional_dependencies:
+          - prettier
+          - prettier-plugin-astro
+        language: node
+        pass_filenames: false
+        entry: prettier --check dapp
+      - id: dapp-eslint
+        name: dApp eslint
+        additional_dependencies:
+          - eslint
+          - "@typescript-eslint/eslint-plugin"
+          - "@typescript-eslint/parser"
+          - "eslint-plugin-react"
+        language: node
+        pass_filenames: false
+        entry: bash -c "cd dapp && eslint src/ --ext .ts,.tsx"
       - id: website
         name: website prettier
         additional_dependencies:

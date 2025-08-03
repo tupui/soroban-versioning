@@ -15,7 +15,6 @@ import { useState, type FC, useCallback, useEffect } from "react";
 import { getAuthorRepo } from "utils/editLinkFunctions";
 import { extractConfigData, toast } from "utils/utils";
 import {
-  validateStellarAddress,
   validateProjectName as validateProjectNameUtil,
   validateGithubUrl,
   validateMaintainerAddress,
@@ -37,9 +36,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [maintainerGithubs, setMaintainerGithubs] = useState<string[]>([""]);
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [domainContractId, setDomainContractId] = useState(
-    SOROBAN_DOMAIN_CONTRACT_ID,
-  );
+  const [domainContractId] = useState(SOROBAN_DOMAIN_CONTRACT_ID);
   const [domainStatus, setDomainStatus] = useState<
     "checking" | "available" | "unavailable" | null
   >(null);
@@ -165,6 +162,15 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
     setGithubHandleErrors(maintainerGithubs.map(() => null));
   }, [maintainerAddresses.length]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (domainCheckTimeout) {
+        clearTimeout(domainCheckTimeout);
+      }
+    };
+  }, [domainCheckTimeout]);
+
   // Check domain availability with debounce
   useEffect(() => {
     if (!projectName || projectName.length < 4) {
@@ -277,14 +283,10 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const handleRegisterProject = async () => {
     setIsLoading(true);
     // Dynamic imports for heavy libs
-    const [{ calculateDirectoryCid, fetchTomlFromCid }] = await Promise.all([
+    const [{ fetchTomlFromCid }] = await Promise.all([
       import("utils/ipfsFunctions"),
     ]);
-    const { kit } = await import("../../stellar-wallets-kit");
-    const { default: Tansu } = await import("../../../contracts/soroban_tansu");
     const { loadedPublicKey } = await import("@service/walletService");
-    const { create } = await import("@web3-storage/w3up-client");
-    const { extract } = await import("@web3-storage/w3up-client/delegation");
 
     try {
       const publicKey = loadedPublicKey();

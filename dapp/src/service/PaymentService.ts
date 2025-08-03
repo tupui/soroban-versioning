@@ -2,27 +2,25 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 import { toast } from "utils/utils";
 import { kit } from "../components/stellar-wallets-kit";
 import { loadedPublicKey } from "./walletService";
+import { retryAsync } from "../utils/retry";
 
 /**
- * Checks if an error is expected (user rejected transaction, insufficient balance, etc.)
+ * Checks if an error is a Stellar network/transaction error (not a wallet error)
  */
-function isExpectedTransactionError(error: any): boolean {
+function isStellarNetworkError(error: any): boolean {
   if (!error) return false;
 
-  // Common expected errors in Stellar transactions
-  const expectedErrorPatterns = [
+  // These are Stellar network/transaction specific errors that should be shown to users
+  const stellarErrorPatterns = [
     "op_underfunded", // Insufficient balance
-    "tx_bad_auth", // Signature issues (often from user rejecting)
-    "user rejected", // User explicitly rejected
-    "declined to sign", // User declined to sign
-    "canceled", // User canceled
-    "Request was rejected", // Generic rejection
+    "tx_insufficient_fee", // Fee too low
+    "tx_bad_seq", // Sequence number issues
   ];
 
   const errorString =
     typeof error === "string" ? error : error.message || error.toString();
 
-  return expectedErrorPatterns.some((pattern) =>
+  return stellarErrorPatterns.some((pattern) =>
     errorString.toLowerCase().includes(pattern.toLowerCase()),
   );
 }
@@ -45,9 +43,7 @@ async function sendXLM(
 
   try {
     // Fetch the sender's account details from the Stellar network
-    const server = new StellarSdk.Horizon.Server(
-      "https://horizon-testnet.stellar.org",
-    );
+    const server = new StellarSdk.Server("https://horizon-testnet.stellar.org");
     const account = await server.loadAccount(senderPublicKey);
 
     // Create the transaction
@@ -79,32 +75,25 @@ async function sendXLM(
       .setTimeout(StellarSdk.TimeoutInfinite)
       .build();
 
-    // Sign and send the transaction
+    // Sign and send the transaction - trust the Stellar Wallets Kit for signing errors
     const { signedTxXdr } = await kit.signTransaction(transaction.toXDR());
 
-    try {
-      const result = await server.submitTransaction(
-        StellarSdk.TransactionBuilder.fromXDR(
-          signedTxXdr,
-          StellarSdk.Networks.TESTNET,
-        ),
-      );
-      return true;
-    } catch (error) {
-      // Only show error toast for unexpected errors
-      if (!isExpectedTransactionError(error)) {
-        toast.error(
-          "Transaction Failed",
-          "Error submitting transaction to Stellar network",
-        );
-      }
-      return false;
+    const signedTransaction = new StellarSdk.Transaction(
+      signedTxXdr,
+      StellarSdk.Networks.TESTNET,
+    );
+
+    await retryAsync(() => server.submitTransaction(signedTransaction));
+    return true;
+  } catch {
+    // Show network-specific errors to help users understand what went wrong
+    if (isStellarNetworkError(error)) {
+      const errorString =
+        typeof error === "string" ? error : error.message || error.toString();
+      toast.error("Transaction Failed", errorString);
     }
-  } catch (error) {
-    // Only show error toast for unexpected errors
-    if (!isExpectedTransactionError(error)) {
-      toast.error("Transaction Failed", "Error preparing transaction");
-    }
+    // Wallet errors (rejections, etc.) are handled by the Stellar Wallets Kit
+    // and don't need additional toast notifications
     return false;
   }
 }

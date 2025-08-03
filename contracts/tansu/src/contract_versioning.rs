@@ -15,7 +15,6 @@ impl VersioningTrait for Tansu {
         maintainers: Vec<Address>,
         url: String,
         hash: String,
-        domain_contract_id: Address,
     ) -> Bytes {
         let project = types::Project {
             name: name.clone(),
@@ -43,6 +42,12 @@ impl VersioningTrait for Tansu {
             panic_with_error!(&env, &errors::ContractErrors::ProjectAlreadyExist);
         } else {
             crate::auth_maintainers(&env, &maintainer, &project.maintainers);
+
+            let domain_contract_id: Address = env
+                .storage()
+                .instance()
+                .get(&types::DataKey::DomainContractId)
+                .unwrap();
 
             let node = domain_node(&env, &key);
             let record_keys = domain_contract::RecordKeys::Record(node);

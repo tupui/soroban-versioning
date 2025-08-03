@@ -7,6 +7,9 @@ import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
 import * as pkg from "js-sha3";
 import { parseContractError } from "utils/contractErrors";
+
+import { retryAsync } from "../utils/retry";
+
 const { keccak256 } = pkg;
 
 interface UploadWithDelegationParams {
@@ -37,7 +40,6 @@ interface CreateProjectFlowParams {
   tomlFile: File;
   githubRepoUrl: string;
   maintainers: string[];
-  domainContractId: string;
   onProgress?: (step: number) => void;
 }
 
@@ -176,15 +178,17 @@ async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
   try {
     // Cast to any because typings accept only Transaction, but Soroban RPC
     // supports base64 envelope; the runtime call is valid.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendResponse = await (server as any).sendTransaction(signedTxXdr);
+
+    sendResponse = await retryAsync(() =>
+      (server as any).sendTransaction(signedTxXdr),
+    );
   } catch (_) {
     // Fallback to legacy path for classic txs
     const transaction = new Transaction(
       signedTxXdr,
       import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
     );
-    sendResponse = await server.sendTransaction(transaction);
+    sendResponse = await retryAsync(() => server.sendTransaction(transaction));
   }
 
   if (sendResponse.status === "ERROR") {
@@ -341,7 +345,7 @@ export async function createProposalFlow({
 export async function joinCommunityFlow({
   memberAddress,
   profileFiles,
-  onProgress,
+  onProgress: _onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
   let cid = " "; // Default for no profile
 
@@ -393,7 +397,6 @@ export async function createProjectFlow({
   tomlFile,
   githubRepoUrl,
   maintainers,
-  domainContractId,
   onProgress,
 }: CreateProjectFlowParams): Promise<boolean> {
   // Step 1 – Calculate CID
@@ -417,7 +420,6 @@ export async function createProjectFlow({
     maintainers,
     url: githubRepoUrl,
     hash: expectedCid,
-    domain_contract_id: domainContractId,
   });
 
   let sim;

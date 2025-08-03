@@ -20,13 +20,13 @@ const LastHashModal: FC<LastHashModalProps> = ({
   onClose,
   commitData,
 }) => {
-  if (!isOpen) return null;
-
   const handleViewHash = useCallback(() => {
     if (commitData?.html_url) {
       window.open(commitData.html_url, "_blank");
     }
   }, [commitData?.html_url]);
+
+  if (!isOpen) return null;
 
   return (
     <Modal onClose={onClose}>

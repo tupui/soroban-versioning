@@ -1,4 +1,4 @@
-import { TransactionBuilder } from "@stellar/stellar-sdk";
+import * as StellarSdk from "@stellar/stellar-sdk";
 import type {
   Proposal as ContractProposal,
   Project,
@@ -12,10 +12,6 @@ import {
   type ProposalViewStatus,
 } from "types/proposal";
 // Import the extracted IPFS functions have been moved to ipfsFunctions.ts
-
-export function isValidGithubUrl(url: string) {
-  return /^https:\/\/github\.com\/[^\/]+\/[^\/]+$/.test(url);
-}
 
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
@@ -65,11 +61,11 @@ export function capitalizeFirstLetter(str: string): string {
 
 export const processDecodedData = (xdrData: string): any => {
   try {
-    return TransactionBuilder.fromXDR(
+    return StellarSdk.TransactionBuilder.fromXDR(
       xdrData,
       import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
     );
-  } catch (error) {
+  } catch {
     // Don't log to console, just return null to indicate failure
     return null;
   }

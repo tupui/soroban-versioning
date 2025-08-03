@@ -20,11 +20,11 @@ const OnChainActionRecord = ({
   date,
   txHash,
   explorerLink,
-  raw,
+  raw: _raw,
 }: Props) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [_isExpanded, _setIsExpanded] = useState(false);
   const descriptionRef = useRef<HTMLAnchorElement>(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [_isOverflowing, _setIsOverflowing] = useState(false);
 
   useEffect(() => {
     const checkOverflow = () => {
