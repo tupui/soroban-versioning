@@ -51,7 +51,7 @@ jobs:
           if [ "$stored_hash" != "${{ env.CURRENT_HASH }}" ]; then
             echo "Error: Contract hash has changed!" >> "$GITHUB_STEP_SUMMARY"
             echo "Stored hash: $stored_hash" >> "$GITHUB_STEP_SUMMARY"
-            echo "Current hash: $current_hash" >> "$GITHUB_STEP_SUMMARY"
+            echo "Current hash: ${{ env.CURRENT_HASH }}" >> "$GITHUB_STEP_SUMMARY"
             echo "Please update contract/domain_[...].wasm file after verifying the contract change." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           else
