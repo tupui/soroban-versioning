@@ -8,26 +8,25 @@ on:
     branches: [ main ]
   pull_request:
 
-  workflow_dispatch:
- schedule:
-   - cron: '0 8 * * 1'
+  schedule:
+    - cron: '0 8 * * 1'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 env:
-  RUSTFLAGS: -C debuginfo=0 # Do not produce debug symbols to keep memory usage down
+  RUSTFLAGS: -C debuginfo=0
   RUST_BACKTRACE: 1
+  CONTRACT_ID: CATRNPHYKNXAPNLHEYH55REB6YSAJLGCPA4YM6L3WUKSZOPI77M2UMKI
 
 jobs:
   monitor-contract:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
       - name: Install system dependencies
         run:  sudo apt-get update && sudo apt-get install -y libudev-dev libdbus-1-dev libusb-1.0-0-dev pkg-config
+
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - uses: stellar/actions/rust-cache@main
@@ -40,21 +39,21 @@ jobs:
         run: |
           which stellar
           stellar network add --rpc-url https://mainnet.sorobanrpc.com --network-passphrase "Public Global Stellar Network ; September 2015" mainnet
-          stellar contract fetch --id CATRNPHYKNXAPNLHEYH55REB6YSAJLGCPA4YM6L3WUKSZOPI77M2UMKI --network mainnet | openssl sha512 > current_hash.txt
-          echo "Computed hash: $(cat current_hash.txt)"
+          CURRENT_HASH=$(stellar contract fetch --id ${{ env.CONTRACT_ID }} --network mainnet | openssl sha512)
+          echo "Computed hash: $CURRENT_HASH"
+          echo "CURRENT_HASH=$CURRENT_HASH" >> $GITHUB_ENV
           
 
       - name: Compare hashes
         run: |
           stored_hash=$(cat contracts/domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm | openssl sha512)
-          current_hash=$(cat current_hash.txt)
           
-          if [ "$stored_hash" != "$current_hash" ]; then
-            echo "Error: Contract hash has changed!"
-            echo "Stored hash: $stored_hash"
-            echo "Current hash: $current_hash"
-            echo "Please update contract/domain_[...].wasm file after verifying the contract change."
-            rm current_hash.txt
+          if [ "$stored_hash" != "${{ env.CURRENT_HASH }}" ]; then
+            echo "Error: Contract hash has changed!" >> "$GITHUB_STEP_SUMMARY"
+            echo "Stored hash: $stored_hash" >> "$GITHUB_STEP_SUMMARY"
+            echo "Current hash: $current_hash" >> "$GITHUB_STEP_SUMMARY"
+            echo "Please update contract/domain_[...].wasm file after verifying the contract change." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
           else
             echo "Contract hash matches stored hash at $(date -u)."
           fi
