@@ -24,8 +24,7 @@ jobs:
   monitor-contract:
     runs-on: ubuntu-latest
     steps:
-      - name: Install system dependencies
-        run:  sudo apt-get update && sudo apt-get install -y libudev-dev libdbus-1-dev libusb-1.0-0-dev pkg-config
+      - uses: actions/checkout@v4
 
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
