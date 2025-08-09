@@ -5,6 +5,36 @@ export async function stubRpc(page) {
   await page.route("**/rpc**", (route) => {
     route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
   });
+
+  // Intercept dynamic imports to mock getMember function
+  await page.route("**/service/ReadContractService*", async (route) => {
+    const response = await route.fetch();
+    let body = await response.text();
+
+    // Replace the getMember function with our mock
+    body = body.replace(
+      /async function getMember\([^}]+\}/gs,
+      `async function getMember(memberAddress) {
+        if (!memberAddress) return null;
+        return window.mockGetMemberResponse || {
+          member_address: memberAddress,
+          meta: "QmTestCID123mockipfs456789abcdef",
+          projects: [
+            {
+              project: new Uint8Array([116, 101, 115, 116]),
+              badges: ["contributor", "maintainer"]
+            }
+          ]
+        };
+      }`,
+    );
+
+    route.fulfill({
+      status: response.status(),
+      headers: response.headers(),
+      body: body,
+    });
+  });
 }
 
 export async function stubDelegation(page) {
@@ -61,6 +91,45 @@ export async function applyAllMocks(page) {
   await page.route("**", (route) => route.continue());
 
   // ──────────────────────────────────────────────
+  // Mock ReadContractService functions
+  // ──────────────────────────────────────────────
+  await page.addInitScript(() => {
+    // Mock getProjectFromName globally
+    (window as any).getProjectFromName = async (name) => {
+      console.log("Mock getProjectFromName called with:", name);
+      return {
+        name: name || "demo",
+        maintainers: ["G".padEnd(56, "A"), "G".padEnd(56, "C")],
+        config: { url: "https://github.com/test/demo", hash: "abc123" },
+      };
+    };
+  });
+
+  // Route interception to inject our mock into imports
+  await page.route("**/@service/ReadContractService*", async (route) => {
+    const response = await route.fetch();
+    let body = await response.text();
+
+    // Append export that overrides the original
+    body += `
+      // Test mock override
+      const originalGetProjectFromName = getProjectFromName;
+      export function getProjectFromName(name) {
+        if ((window as any).getProjectFromName) {
+          return (window as any).getProjectFromName(name);
+        }
+        return originalGetProjectFromName(name);
+      }
+    `;
+
+    route.fulfill({
+      status: response.status(),
+      headers: response.headers(),
+      body: body,
+    });
+  });
+
+  // ──────────────────────────────────────────────
   // Wallet signing
   // ──────────────────────────────────────────────
   await page.addInitScript(() => {
@@ -91,7 +160,21 @@ export async function applyAllMocks(page) {
   // ──────────────────────────────────────────────
   const sorobanPattern = "**/soroban/**";
   await page.route(sorobanPattern, (route) => {
-    route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
+    // Mock successful badge update
+    if (route.request().url().includes("set_badges")) {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({
+          status: "SUCCESS",
+          result: null,
+        }),
+      });
+    } else {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({ status: "SUCCESS" }),
+      });
+    }
   });
 }
 

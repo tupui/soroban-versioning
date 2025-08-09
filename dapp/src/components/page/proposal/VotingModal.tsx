@@ -158,8 +158,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
                   <span className={`text-${selectedOption}`}>
                     {voteTypeLabelMap[selectedOption!]}!
                   </span>{" "}
-                  Your positive feedback helps this proposal move closer to
-                  realization.
+                  Your feedback helps this proposal move closer to execution.
                 </>
               }
             />

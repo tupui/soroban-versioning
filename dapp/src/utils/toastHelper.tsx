@@ -61,6 +61,7 @@ export const renderToastModal = (
   imgSrc: string,
   title: string,
   description: string,
+  shouldRefreshOnClose: boolean = false,
 ) => {
   const container = document.createElement("div");
   document.body.appendChild(container);
@@ -71,6 +72,22 @@ export const renderToastModal = (
     root.unmount();
     if (document.body.contains(container)) {
       document.body.removeChild(container);
+    }
+
+    // For success toasts, close all other modals and refresh the page
+    if (shouldRefreshOnClose) {
+      // Close all other modals by removing modal containers
+      const modalContainers = document.querySelectorAll(
+        "[data-modal-container]",
+      );
+      modalContainers.forEach((modal) => {
+        if (modal.parentNode) {
+          modal.parentNode.removeChild(modal);
+        }
+      });
+
+      // Refresh the page to show updated data
+      window.location.reload();
     }
   };
 

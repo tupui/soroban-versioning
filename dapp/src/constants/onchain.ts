@@ -30,7 +30,7 @@ export const ONCHAIN_METHODS: Record<string, MethodMeta> = {
       return `added member ${shortAddr(m)}`.trim();
     },
   },
-  add_badges: {
+  set_badges: {
     paramNames: ["maintainer", "project_key", "member", "badges"],
     summary: (d) => {
       const m = (d.member as string | undefined) ?? "";

@@ -73,6 +73,7 @@ const Modal: FC<ModalProps> = ({
     <div
       className="fixed inset-0 bg-white/35 backdrop-blur-md flex justify-center items-center z-[2] p-2 sm:p-4"
       onClick={handleBackdropClick}
+      data-modal-container="true"
     >
       <div
         className={`modal relative bg-white shadow-modal rounded-lg max-w-[95vw] ${

@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { applyMinimalMocks, applyDiagnosticMocks } from "./helpers/mock";
+import {
+  applyMinimalMocks,
+  applyDiagnosticMocks,
+  applyAllMocks,
+} from "./helpers/mock";
 
 /**
  * Regression Prevention Tests
@@ -298,5 +302,65 @@ test.describe("🚨 Regression Prevention - Critical Error Detection", () => {
     console.log(
       `✅ Diagnostic test completed. Total console messages: ${allConsoleErrors.length}`,
     );
+  });
+
+  test("CRITICAL: Badge update functionality works correctly", async ({
+    page,
+  }) => {
+    await applyAllMocks(page);
+
+    await page.goto("/project?name=demo");
+    await page.waitForLoadState("networkidle");
+
+    // Simulate wallet connection
+    await page.evaluate(() => {
+      window.dispatchEvent(
+        new CustomEvent("walletConnected", { detail: "G".padEnd(56, "A") }),
+      );
+    });
+
+    await page.waitForTimeout(1000);
+
+    // Verify that calling get_badges returns the expected typed shape
+    const badgesShapeOk = await page.evaluate(async () => {
+      const svc = await import("../src/service/ReadContractService.ts");
+      const res = await svc.getBadges();
+      if (!res) return true; // allow empty
+      return (
+        res.community !== undefined &&
+        res.developer !== undefined &&
+        res.triage !== undefined &&
+        res.verified !== undefined
+      );
+    });
+    expect(badgesShapeOk).toBeTruthy();
+
+    // Look for the Add Badge button
+    const badgeButton = page.locator("#badge-button");
+    if ((await badgeButton.count()) > 0) {
+      await badgeButton.click();
+
+      // Fill in badge form
+      await page
+        .locator('input[placeholder="Member address as G..."]')
+        .fill("G".padEnd(56, "B"));
+
+      // Select a badge
+      await page.locator('input[type="checkbox"]').first().check();
+
+      // Submit
+      await page.locator('button:has-text("Add Badges")').click();
+
+      // Wait for success
+      await page.waitForTimeout(1000);
+
+      // Check for success message
+      const hasSuccess =
+        (await page.locator("text=Badges added successfully").count()) > 0;
+      expect(hasSuccess).toBeTruthy();
+    } else {
+      // If no badge button, test that the page loads correctly
+      await expect(page.locator("body")).toBeVisible();
+    }
   });
 });

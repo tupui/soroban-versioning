@@ -15,9 +15,15 @@ async function getProjectHash(): Promise<string | null> {
     // This is an expected condition when no project is selected
     return null;
   }
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   try {
     const res = await Tansu.get_commit({
-      project_key: projectId,
+      project_key: projectKey,
     });
 
     // Check for simulation errors
@@ -37,9 +43,15 @@ async function getProject(): Promise<Project | null> {
     // This is an expected condition when no project is selected
     return null;
   }
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   try {
     const res = await Tansu.get_project({
-      project_key: projectId,
+      project_key: projectKey,
     });
 
     // Check for simulation errors
@@ -98,7 +110,7 @@ async function getProjectFromId(projectId: Buffer): Promise<Project | null> {
 
 async function getProposalPages(project_name: string): Promise<number | null> {
   const project_key = Buffer.from(
-    keccak256.create().update(project_name).digest(),
+    keccak256.create().update(project_name.toLowerCase()).digest(),
   );
 
   try {
@@ -144,7 +156,7 @@ async function getProposals(
   page: number,
 ): Promise<ModifiedProposal[] | null> {
   const project_key = Buffer.from(
-    keccak256.create().update(project_name).digest(),
+    keccak256.create().update(project_name.toLowerCase()).digest(),
   );
   try {
     const res = await Tansu.get_dao({
@@ -172,7 +184,7 @@ async function getProposal(
   proposalId: number,
 ): Promise<ModifiedProposal | null> {
   const project_key = Buffer.from(
-    keccak256.create().update(projectName).digest(),
+    keccak256.create().update(projectName.toLowerCase()).digest(),
   );
   try {
     const res = await Tansu.get_proposal({
@@ -220,10 +232,14 @@ async function getBadges(): Promise<Badges | null> {
     return null;
   }
 
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   try {
-    const res = await Tansu.get_badges({
-      key: projectId,
-    });
+    // Use current bindings spec
+    const res: any = await (Tansu as any).get_badges({ key: projectKey });
 
     // Check for simulation errors
     checkSimulationError(res);

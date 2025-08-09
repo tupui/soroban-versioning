@@ -5,7 +5,7 @@ import pkg from "js-sha3";
 import decryptProof from "../../utils/decryptAES256";
 const { keccak256 } = pkg;
 
-export const prerender = false;
+export const prerender = process.env.LIGHTHOUSE_BUILD !== "true";
 
 /**
  * Validates the request based on the type
@@ -31,7 +31,7 @@ async function validateRequest(type, signedTxXdr, projectName) {
       }
 
       const projectId = Buffer.from(
-        keccak256.create().update(projectName).digest(),
+        keccak256.create().update(projectName.toLowerCase()).digest(),
       );
 
       try {

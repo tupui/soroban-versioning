@@ -592,6 +592,7 @@ import { toast } from "utils/utils";
       try {
         const badgeData = await getBadges();
         if (!badgeData) return;
+
         const communityContainer = document.getElementById("project-community");
         if (!communityContainer) return;
         const contentDiv =
@@ -603,8 +604,6 @@ import { toast } from "utils/utils";
           { key: "developer", label: "Developer", list: badgeData.developer },
           { key: "triage", label: "Triage", list: badgeData.triage },
           { key: "community", label: "Community", list: badgeData.community },
-          { key: "verified", label: "Verified", list: badgeData.verified },
-          { key: "default", label: "Default", list: badgeData.default },
         ];
 
         sections.forEach((sec) => {

@@ -215,19 +215,15 @@ export const toast = {
   success: (title: string, description: string) => {
     import("./toastHelper")
       .then(({ renderToastModal }) => {
-        renderToastModal("/images/flower.svg", title, description);
+        renderToastModal("/images/flower.svg", title, description, true);
       })
-      .catch((err) => {
-        console.error("Failed to show success toast:", err);
-      });
+      .catch((_err) => {});
   },
   error: (title: string, description: string) => {
     import("./toastHelper")
       .then(({ renderToastModal }) => {
-        renderToastModal("/images/wrong.svg", title, description);
+        renderToastModal("/images/wrong.svg", title, description, false);
       })
-      .catch((err) => {
-        console.error("Failed to show error toast:", err);
-      });
+      .catch((_err) => {});
   },
 };

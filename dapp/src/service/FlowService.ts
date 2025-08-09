@@ -98,7 +98,7 @@ async function createSignedProposalTransaction(
 
   Tansu.options.publicKey = publicKey;
   const project_key = Buffer.from(
-    keccak256.create().update(projectName).digest(),
+    keccak256.create().update(projectName.toLowerCase()).digest(),
   );
 
   const tx = await Tansu.create_proposal({
@@ -472,9 +472,17 @@ async function createSignedUpdateConfigTransaction(
 
   Tansu.options.publicKey = publicKey;
 
+  const projectId = loadedProjectId();
+  if (!projectId) throw new Error("No project defined");
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   const tx = await Tansu.update_config({
     maintainer: publicKey,
-    key: loadedProjectId()!, // assume project already selected
+    key: projectKey,
     maintainers: maintainers,
     url: configUrl,
     hash: cid,

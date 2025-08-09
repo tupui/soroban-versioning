@@ -18,7 +18,9 @@ async function getTansu() {
 
 // Helper to derive the project_key (32-byte buffer)
 function deriveProjectKey(projectName: string): Buffer {
-  return Buffer.from(keccak256.create().update(projectName).digest());
+  return Buffer.from(
+    keccak256.create().update(projectName.toLowerCase()).digest(),
+  );
 }
 
 export interface DecodedVote {

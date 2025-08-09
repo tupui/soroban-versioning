@@ -141,7 +141,10 @@ fn membership_multiple_different_badges() {
     // Verify get_badges shows member only in Triage category
     let project_badges_after_removal = setup.contract.get_badges(&id);
     assert_eq!(project_badges_after_removal.community, vec![&setup.env]);
-    assert_eq!(project_badges_after_removal.triage, vec![&setup.env, member.clone()]);
+    assert_eq!(
+        project_badges_after_removal.triage,
+        vec![&setup.env, member.clone()]
+    );
 
     // Verify get_member shows only Triage badge
     let member_info_after_removal = setup.contract.get_member(&member);

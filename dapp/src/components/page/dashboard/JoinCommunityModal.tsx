@@ -5,25 +5,7 @@ import Modal, { type ModalProps } from "components/utils/Modal";
 import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
 import { validateStellarAddress, validateUrl } from "utils/validations";
-import {
-  MDXEditor,
-  headingsPlugin,
-  listsPlugin,
-  quotePlugin,
-  thematicBreakPlugin,
-  linkPlugin,
-  linkDialogPlugin,
-  markdownShortcutPlugin,
-  toolbarPlugin,
-  UndoRedo,
-  BoldItalicUnderlineToggles,
-  BlockTypeSelect,
-  CodeToggle,
-  CreateLink,
-  ListsToggle,
-  Separator,
-} from "@mdxeditor/editor";
-import "@mdxeditor/editor/style.css";
+import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 
 interface ProfileImageFile {
   localUrl: string;
@@ -306,34 +288,9 @@ const JoinCommunityModal: FC<
               <div className="flex flex-col gap-[18px]">
                 <p className="text-base font-[600] text-primary">Description</p>
                 <div className="rounded-md border border-zinc-400 overflow-hidden min-h-[150px]">
-                  <MDXEditor
-                    plugins={[
-                      markdownShortcutPlugin(),
-                      headingsPlugin(),
-                      listsPlugin(),
-                      quotePlugin(),
-                      thematicBreakPlugin(),
-                      linkPlugin(),
-                      linkDialogPlugin(),
-                      toolbarPlugin({
-                        toolbarClassName: "my-classname",
-                        toolbarContents: () => (
-                          <>
-                            <UndoRedo />
-                            <Separator />
-                            <BoldItalicUnderlineToggles />
-                            <CodeToggle />
-                            <BlockTypeSelect />
-                            <Separator />
-                            <ListsToggle />
-                            <Separator />
-                            <CreateLink />
-                          </>
-                        ),
-                      }),
-                    ]}
-                    markdown={description}
-                    onChange={(value) => setDescription(value || "")}
+                  <SimpleMarkdownEditor
+                    value={description}
+                    onChange={(value) => setDescription(value)}
                     placeholder="Tell us about yourself..."
                   />
                 </div>

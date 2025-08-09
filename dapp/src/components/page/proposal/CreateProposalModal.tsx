@@ -1,36 +1,4 @@
-import {
-  BlockTypeSelect,
-  BoldItalicUnderlineToggles,
-  CodeToggle,
-  CreateLink,
-  DiffSourceToggleWrapper,
-  InsertAdmonition,
-  InsertCodeBlock,
-  InsertFrontmatter,
-  InsertImage,
-  InsertTable,
-  InsertThematicBreak,
-  ListsToggle,
-  MDXEditor,
-  Separator,
-  UndoRedo,
-  codeBlockPlugin,
-  codeMirrorPlugin,
-  diffSourcePlugin,
-  frontmatterPlugin,
-  headingsPlugin,
-  imagePlugin,
-  linkDialogPlugin,
-  linkPlugin,
-  listsPlugin,
-  markdownShortcutPlugin,
-  quotePlugin,
-  tablePlugin,
-  thematicBreakPlugin,
-  toolbarPlugin,
-  useCodeBlockEditorContext,
-  type CodeBlockEditorDescriptor,
-} from "@mdxeditor/editor";
+// Removed heavy @mdxeditor/editor imports - using SimpleMarkdownEditor instead
 import { getProjectFromName } from "@service/ReadContractService";
 import Button from "components/utils/Button";
 import { DatePicker } from "components/utils/DatePicker";
@@ -53,14 +21,8 @@ import { setupAnonymousVoting } from "@service/ContractService";
 import { Buffer } from "buffer";
 import ProgressStep from "components/utils/ProgressStep";
 
-import "@mdxeditor/editor/style.css";
+import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
-
-interface IImageFile {
-  localUrl: string;
-  publicUrl: string;
-  source: File;
-}
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -70,7 +32,12 @@ const CreateProposalModal = () => {
   const [step, setStep] = useState(1);
   const [proposalName, setProposalName] = useState("");
   const [mdText, setMdText] = useState("");
-  const [imageFiles, setImageFiles] = useState<IImageFile[]>([]);
+
+  // Local image handling for Markdown content
+  type ProposalImage = { localUrl: string; publicUrl: string; source: File };
+  const [imageFiles, setImageFiles] = useState<ProposalImage[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
+
   const [approveDescription, setApproveDescription] = useState("");
   const [rejectDescription, setRejectDescription] = useState("");
   const [cancelledDescription, setCancelledDescription] = useState("");
@@ -143,39 +110,12 @@ const CreateProposalModal = () => {
           if (projectInfo?.maintainers) {
             setMaintainers(projectInfo.maintainers);
           }
-        } catch {
+        } catch (error) {
           console.error("Error fetching project info:", error);
         }
       })();
     }
   }, [projectName]);
-
-  const imageUploadHandler = async (image: File) => {
-    const url = URL.createObjectURL(image);
-    setImageFiles([
-      ...imageFiles,
-      { localUrl: url, publicUrl: image.name, source: image },
-    ]);
-    return url;
-  };
-
-  const PlainTextCodeEditorDescriptor: CodeBlockEditorDescriptor = {
-    match: (_language, _meta) => true,
-    priority: 0,
-    Editor: (props) => {
-      const cb = useCodeBlockEditorContext();
-      return (
-        <div onKeyDown={(e) => e.nativeEvent.stopImmediatePropagation()}>
-          <textarea
-            rows={5}
-            cols={20}
-            defaultValue={props.code}
-            onChange={(e) => cb.setCode(e.target.value)}
-          />
-        </div>
-      );
-    },
-  };
 
   const handleRegisterProposal = async () => {
     try {
@@ -311,21 +251,30 @@ const CreateProposalModal = () => {
       return;
     }
 
-    // compute project key & check config
+    // compute project key (canonical: lowercase) & check config via simulation status
     const { default: Tansu } = await import("../../../contracts/soroban_tansu");
     const pkg = await import("js-sha3");
     const { keccak256 } = pkg;
     const project_key = Buffer.from(
-      keccak256.create().update(projectName).digest(),
+      keccak256.create().update(projectName.toLowerCase()).digest(),
     );
     try {
-      await Tansu.get_anonymous_voting_config({ project_key });
-      // config exists
-      setExistingAnonConfig(true);
-      setResetAnonKeys(false);
-      setGeneratedKeys(null);
+      const tx = await Tansu.get_anonymous_voting_config({ project_key });
+      try {
+        const { checkSimulationError } = await import("utils/contractErrors");
+        checkSimulationError(tx);
+        // config exists
+        setExistingAnonConfig(true);
+        setResetAnonKeys(false);
+        setGeneratedKeys(null);
+      } catch (_) {
+        // simulation reported contract error (e.g., NoAnonymousVotingConfig)
+        setExistingAnonConfig(false);
+        const keys = await generateRSAKeyPair();
+        setGeneratedKeys(keys);
+      }
     } catch (_) {
-      // no config → generate keys immediately
+      // network or unexpected error – treat as missing config
       setExistingAnonConfig(false);
       const keys = await generateRSAKeyPair();
       setGeneratedKeys(keys);
@@ -424,74 +373,117 @@ const CreateProposalModal = () => {
               <div
                 className={`rounded-md border ${descriptionError ? "border-red-500" : "border-zinc-700"} overflow-hidden`}
               >
-                <MDXEditor
-                  plugins={[
-                    markdownShortcutPlugin(),
-                    headingsPlugin(),
-                    listsPlugin(),
-                    quotePlugin(),
-                    thematicBreakPlugin(),
-                    linkPlugin(),
-                    linkDialogPlugin(),
-                    imagePlugin({
-                      imageUploadHandler,
-                    }),
-                    tablePlugin(),
-                    codeBlockPlugin({
-                      defaultCodeBlockLanguage: "ts",
-                      codeBlockEditorDescriptors: [
-                        PlainTextCodeEditorDescriptor,
-                      ],
-                    }),
-                    codeMirrorPlugin({
-                      codeBlockLanguages: {
-                        js: "JavaScript",
-                        css: "CSS",
-                        rust: "Rust",
-                        html: "HTML",
-                        json: "JSON",
-                        ts: "TypeScript",
-                      },
-                    }),
-                    diffSourcePlugin({
-                      diffMarkdown: "boo",
-                    }),
-                    frontmatterPlugin(),
-                    toolbarPlugin({
-                      toolbarClassName: "my-classname",
-                      toolbarContents: () => (
-                        <>
-                          <UndoRedo />
-                          <Separator />
-                          <BoldItalicUnderlineToggles />
-                          <CodeToggle />
-                          <BlockTypeSelect />
-                          <Separator />
-                          <ListsToggle />
-                          <Separator />
-                          <CreateLink />
-                          <InsertImage />
-                          <InsertTable />
-                          <Separator />
-                          <InsertAdmonition />
-                          <InsertThematicBreak />
-                          <InsertCodeBlock />
-                          <Separator />
-                          <InsertFrontmatter />
-                          <DiffSourceToggleWrapper>
-                            <></>
-                          </DiffSourceToggleWrapper>
-                        </>
-                      ),
-                    }),
-                  ]}
-                  markdown={mdText}
+                <SimpleMarkdownEditor
+                  value={mdText}
                   onChange={(value) => {
-                    setMdText(value || "");
+                    setMdText(value);
                     setDescriptionError(null);
                   }}
                   placeholder="Input your proposal description here..."
                 />
+              </div>
+              {/* Image upload controls */}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-secondary">
+                    Optionally attach images and insert them into your Markdown.
+                  </p>
+                  <label className="cursor-pointer text-primary underline text-sm">
+                    Add image
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/gif"
+                      className="hidden"
+                      data-testid="proposal-image-input"
+                      onChange={(e) => {
+                        setImageError(null);
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const allowedTypes = [
+                          "image/png",
+                          "image/jpeg",
+                          "image/jpg",
+                          "image/svg+xml",
+                          "image/gif",
+                        ];
+                        if (!allowedTypes.includes(file.type)) {
+                          setImageError(
+                            "Unsupported image type. Allowed: png, jpg, jpeg, svg, gif",
+                          );
+                          return;
+                        }
+                        const maxBytes = 5 * 1024 * 1024; // 5MB
+                        if (file.size > maxBytes) {
+                          setImageError(
+                            "Please upload an image smaller than 5MB",
+                          );
+                          return;
+                        }
+                        const localUrl = URL.createObjectURL(file);
+                        const publicUrl = `images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+                        setImageFiles((prev) => [
+                          ...prev,
+                          { localUrl, publicUrl, source: file },
+                        ]);
+                        setMdText(
+                          (prev) =>
+                            `${prev}${prev && !prev.endsWith("\n") ? "\n\n" : ""}![](${localUrl})\n`,
+                        );
+                      }}
+                    />
+                  </label>
+                </div>
+                {imageError && (
+                  <p className="text-red-500 text-sm">{imageError}</p>
+                )}
+                {imageFiles.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-secondary">Attached images</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {imageFiles.map((img, idx) => (
+                        <div
+                          key={idx}
+                          className="border p-2 flex flex-col gap-2"
+                        >
+                          <img
+                            src={img.localUrl}
+                            alt={`attachment-${idx}`}
+                            className="w-full h-24 object-contain"
+                          />
+                          <div className="flex justify-between items-center text-xs">
+                            <button
+                              type="button"
+                              className="text-blue-600 underline"
+                              onClick={() =>
+                                setMdText(
+                                  (prev) =>
+                                    `${prev}${prev && !prev.endsWith("\n") ? "\n\n" : ""}![](${img.localUrl})\n`,
+                                )
+                              }
+                            >
+                              Insert
+                            </button>
+                            <button
+                              type="button"
+                              className="text-red-600 underline"
+                              onClick={() => {
+                                URL.revokeObjectURL(img.localUrl);
+                                setImageFiles((prev) =>
+                                  prev.filter((_, i) => i !== idx),
+                                );
+                                setMdText((prev) =>
+                                  prev.replaceAll(img.localUrl, ""),
+                                );
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               {descriptionError && (
                 <p className="text-red-500 text-sm">{descriptionError}</p>
