@@ -14,7 +14,6 @@ pub struct Badges {
     pub triage: Vec<Address>,
     pub community: Vec<Address>,
     pub verified: Vec<Address>,
-    pub default: Vec<Address>,
 }
 
 #[contracttype]

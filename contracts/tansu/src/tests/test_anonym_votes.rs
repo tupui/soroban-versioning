@@ -183,7 +183,7 @@ fn anonymous_vote_commitments_roundtrip() {
     // admin config
     setup
         .contract
-        .anonymous_voting_setup(&project_key, &pub_key);
+        .anonymous_voting_setup(&setup.mando, &project_key, &pub_key);
 
     // test data
     let votes = vec![&setup.env, 0u32, 1u32, 2u32];
@@ -223,7 +223,7 @@ fn anonymous_voting_setup_is_reachable() {
     // should succeed (i.e. return Ok(())).
     let res = setup
         .contract
-        .try_anonymous_voting_setup(&project_key, &pub_key);
+        .try_anonymous_voting_setup(&setup.mando, &project_key, &pub_key);
 
     assert!(
         res.is_ok(),

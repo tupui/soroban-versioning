@@ -104,7 +104,9 @@ fn dao_anonymous() {
     let voting_ends_at = setup.env.ledger().timestamp() + 3600 * 24 * 2;
 
     let public_key = String::from_str(&setup.env, "public key random");
-    setup.contract.anonymous_voting_setup(&id, &public_key);
+    setup
+        .contract
+        .anonymous_voting_setup(&setup.mando, &id, &public_key);
 
     // Add a member with elevated rights
     let kuiil = Address::generate(&setup.env);
@@ -113,7 +115,7 @@ fn dao_anonymous() {
     let badges = vec![&setup.env, Badge::Community];
     setup
         .contract
-        .add_badges(&setup.mando, &id, &kuiil, &badges);
+        .set_badges(&setup.mando, &id, &kuiil, &badges);
 
     let proposal_id =
         setup
@@ -215,7 +217,9 @@ fn voting_errors() {
     assert_eq!(error, ContractErrors::NoAnonymousVotingConfig.into());
 
     let public_key = String::from_str(&setup.env, "public key random");
-    setup.contract.anonymous_voting_setup(&id, &public_key);
+    setup
+        .contract
+        .anonymous_voting_setup(&setup.mando, &id, &public_key);
 
     let proposal_id_anonymous =
         setup
@@ -423,7 +427,7 @@ fn proposal_execution() {
     let badges = vec![&setup.env, Badge::Community];
     setup
         .contract
-        .add_badges(&setup.mando, &id, &kuiil, &badges);
+        .set_badges(&setup.mando, &id, &kuiil, &badges);
 
     setup.contract.vote(
         &setup.mando,
@@ -502,7 +506,7 @@ fn voter_weight_validation() {
     let badges = vec![&setup.env, Badge::Developer, Badge::Community];
     setup
         .contract
-        .add_badges(&setup.mando, &id, &kuiil, &badges);
+        .set_badges(&setup.mando, &id, &kuiil, &badges);
 
     let max_weight = setup.contract.get_max_weight(&id, &kuiil);
     assert_eq!(max_weight, 11_000_000u32);

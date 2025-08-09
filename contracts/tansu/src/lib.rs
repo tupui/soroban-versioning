@@ -36,7 +36,7 @@ pub trait MembershipTrait {
 
     fn get_member(env: Env, member_address: Address) -> types::Member;
 
-    fn add_badges(
+    fn set_badges(
         env: Env,
         maintainer: Address,
         key: Bytes,
@@ -76,7 +76,12 @@ pub trait VersioningTrait {
 }
 
 pub trait DaoTrait {
-    fn anonymous_voting_setup(env: Env, project_key: Bytes, public_key: String);
+    fn anonymous_voting_setup(
+        env: Env,
+        maintainer: Address,
+        project_key: Bytes,
+        public_key: String,
+    );
 
     fn get_anonymous_voting_config(env: Env, project_key: Bytes) -> types::AnonymousVoteConfig;
 
@@ -121,9 +126,19 @@ pub trait DaoTrait {
     fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal;
 }
 
-fn auth_maintainers(env: &Env, maintainer: &Address, maintainers: &Vec<Address>) {
+fn auth_maintainers(env: &Env, maintainer: &Address, project_key: &Bytes) -> types::Project {
     maintainer.require_auth();
-    if !maintainers.contains(maintainer) {
-        panic_with_error!(&env, &errors::ContractErrors::UnregisteredMaintainer);
+    let project_key_ = types::ProjectKey::Key(project_key.clone());
+    if let Some(project) = env
+        .storage()
+        .persistent()
+        .get::<types::ProjectKey, types::Project>(&project_key_)
+    {
+        if !project.maintainers.contains(maintainer) {
+            panic_with_error!(&env, &errors::ContractErrors::UnregisteredMaintainer);
+        }
+        project
+    } else {
+        panic_with_error!(&env, &errors::ContractErrors::InvalidKey)
     }
 }
