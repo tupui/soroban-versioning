@@ -13,6 +13,8 @@ interface Props {
   isLoading?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement> | undefined;
   title?: string;
+  disabled?: boolean;
+  [key: string]: any; // allow data-*, aria-* passthrough
 }
 
 const sizeMap: AnyObject = {
@@ -34,6 +36,8 @@ const Button: FC<Props> = ({
   isLoading,
   onClick,
   title,
+  disabled,
+  ...rest
 }) => {
   return (
     <button
@@ -41,6 +45,8 @@ const Button: FC<Props> = ({
       className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" : type == "tertiary" ? "border border-primary text-primary" : "bg-white text-primary"} cursor-pointer flex justify-center items-center ${sizeMap[size]} hover:opacity-90 transition-opacity`}
       onClick={onClick}
       title={title}
+      disabled={disabled}
+      {...rest}
     >
       {isLoading && <Spinner />}
       {!isLoading && order === "primary" && (

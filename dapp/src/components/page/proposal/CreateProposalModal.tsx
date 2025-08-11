@@ -18,10 +18,10 @@ import { validateProposalName, validateTextContent } from "utils/validations";
 import OutcomeInput from "./OutcomeInput";
 import { generateRSAKeyPair } from "utils/crypto";
 import { setupAnonymousVoting } from "@service/ContractService";
-import { Buffer } from "buffer";
 import ProgressStep from "components/utils/ProgressStep";
 
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
+import { Buffer } from "buffer";
 import { navigate } from "astro:transitions/client";
 
 const CreateProposalModal = () => {
@@ -44,10 +44,16 @@ const CreateProposalModal = () => {
   const [approveXdr, setApproveXdr] = useState("");
   const [rejectXdr, setRejectXdr] = useState<string | null>(null);
   const [cancelledXdr, setCancelledXdr] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  // Default to 2 days in the future to comfortably exceed the 24h minimum
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return d;
+  });
   const [proposalId, setProposalId] = useState<number | null>(null);
   const [ipfsLink, setIpfsLink] = useState("");
   const [isAnonymousVoting, setIsAnonymousVoting] = useState(false);
+  const [preparedFiles, setPreparedFiles] = useState<File[] | null>(null);
   const [generatedKeys, setGeneratedKeys] = useState<{
     publicKey: string;
     privateKey: string;
@@ -117,61 +123,47 @@ const CreateProposalModal = () => {
     }
   }, [projectName]);
 
-  const handleRegisterProposal = async () => {
-    try {
-      setStep(5);
+  const prepareProposalFiles = (): File[] => {
+    const proposalOutcome: ProposalOutcome = {
+      approved: {
+        description: approveDescription,
+        xdr: approveXdr,
+      },
+      rejected: {
+        description: rejectDescription,
+        xdr: rejectXdr || "",
+      },
+      cancelled: {
+        description: cancelledDescription,
+        xdr: cancelledXdr || "",
+      },
+    };
 
-      checkSubmitAvailability();
+    const outcome = new Blob([JSON.stringify(proposalOutcome)], {
+      type: "application/json",
+    });
 
-      // Prepare the proposal files
-      const proposalOutcome: ProposalOutcome = {
-        approved: {
-          description: approveDescription,
-          xdr: approveXdr,
-        },
-        rejected: {
-          description: rejectDescription,
-          xdr: rejectXdr || "",
-        },
-        cancelled: {
-          description: cancelledDescription,
-          xdr: cancelledXdr || "",
-        },
-      };
+    let files: File[] = [new File([outcome], "outcomes.json")];
+    let description = mdText;
 
-      const outcome = new Blob([JSON.stringify(proposalOutcome)], {
-        type: "application/json",
-      });
-
-      let files = [new File([outcome], "outcomes.json")];
-      let description = mdText;
-
-      imageFiles.forEach((image) => {
-        if (description.includes(image.localUrl)) {
-          description = description.replace(
-            new RegExp(image.localUrl, "g"),
-            image.publicUrl,
-          );
-          files.push(new File([image.source], image.publicUrl));
-        }
-      });
-
-      files.push(new File([description], "proposal.md"));
-      if (!files) throw new Error("Failed to create proposal files");
-
-      setStep(6);
-
-      // 1️⃣ Anonymous voting setup if needed
-      if (isAnonymousVoting) {
-        if (!existingAnonConfig || resetAnonKeys) {
-          if (!generatedKeys) throw new Error("Anonymous keys missing");
-          await setupAnonymousVoting(
-            projectName!,
-            generatedKeys.publicKey,
-            resetAnonKeys,
-          );
-        }
+    imageFiles.forEach((image) => {
+      if (description.includes(image.localUrl)) {
+        description = description.replace(
+          new RegExp(image.localUrl, "g"),
+          image.publicUrl,
+        );
+        files.push(new File([image.source], image.publicUrl));
       }
+    });
+
+    files.push(new File([description], "proposal.md"));
+    return files;
+  };
+
+  const startProposalCreation = async (files: File[]) => {
+    try {
+      // Step progression handled by FlowService onProgress: 6-sign, 7-upload, 8-send
+      setStep(6);
 
       // 2️⃣  Calculate voting end timestamp & build proposal transaction
       // Ensure at least 25h window between now and voting end
@@ -196,7 +188,7 @@ const CreateProposalModal = () => {
         proposalName,
         proposalFiles: files,
         votingEndsAt: votingEndsAt,
-        publicVoting: !isAnonymousVoting,
+        publicVoting: !isAnonymousVoting ? true : false,
         onProgress: setStep,
       });
 
@@ -207,7 +199,29 @@ const CreateProposalModal = () => {
       const cid = await calculateDirectoryCid(files);
       setIpfsLink(getIpfsBasicLink(cid));
 
+      // Done (Step 5 in ProgressStep terms)
       setStep(10);
+    } catch (err: any) {
+      console.error(err.message);
+      toast.error("Submit proposal", err.message);
+    }
+  };
+
+  const handleRegisterProposal = async () => {
+    try {
+      checkSubmitAvailability();
+
+      // Prepare files once and reuse across steps to ensure consistent CID
+      const files = prepareProposalFiles();
+      setPreparedFiles(files);
+
+      if (isAnonymousVoting && (!existingAnonConfig || resetAnonKeys)) {
+        // Show explicit config step
+        setStep(5);
+        return;
+      }
+
+      await startProposalCreation(files);
     } catch (err: any) {
       console.error(err.message);
       toast.error("Submit proposal", err.message);
@@ -242,42 +256,55 @@ const CreateProposalModal = () => {
   const handleToggleAnonymous = async (checked: boolean) => {
     setIsAnonymousVoting(checked);
     if (!checked) return;
-
     if (!projectName) {
-      toast.error(
-        "Anonymous voting",
-        "Project name is required to check configuration",
-      );
       return;
     }
 
-    // compute project key (canonical: lowercase) & check config via simulation status
-    const { default: Tansu } = await import("../../../contracts/soroban_tansu");
-    const pkg = await import("js-sha3");
-    const { keccak256 } = pkg;
-    const project_key = Buffer.from(
-      keccak256.create().update(projectName.toLowerCase()).digest(),
-    );
     try {
+      // Test-only hook: respected only when explicit test mode flag is present
+      if (
+        typeof window !== "undefined" &&
+        (window as any).__TEST_MODE__ &&
+        (window as any).__mockAnonymousConfigMissing === true
+      ) {
+        setExistingAnonConfig(false);
+        const keys = await generateRSAKeyPair();
+        setGeneratedKeys(keys);
+        setResetAnonKeys(false);
+        return;
+      }
+
+      const { default: Tansu } = await import(
+        "../../../contracts/soroban_tansu"
+      );
+      const pkg = await import("js-sha3");
+      const { keccak256 } = pkg;
+      const project_key = Buffer.from(
+        keccak256.create().update(projectName.toLowerCase()).digest(),
+      );
+
+      // Probe existing config; missing config will surface as simulation error (#16)
       const tx = await Tansu.get_anonymous_voting_config({ project_key });
       try {
         const { checkSimulationError } = await import("utils/contractErrors");
         checkSimulationError(tx);
-        // config exists
+        // Config exists
         setExistingAnonConfig(true);
         setResetAnonKeys(false);
         setGeneratedKeys(null);
       } catch (_) {
-        // simulation reported contract error (e.g., NoAnonymousVotingConfig)
+        // No config – prepare keys for new setup
         setExistingAnonConfig(false);
         const keys = await generateRSAKeyPair();
         setGeneratedKeys(keys);
+        setResetAnonKeys(false);
       }
     } catch (_) {
-      // network or unexpected error – treat as missing config
+      // Network or unexpected – treat as missing config but do not log/toast
       setExistingAnonConfig(false);
       const keys = await generateRSAKeyPair();
       setGeneratedKeys(keys);
+      setResetAnonKeys(false);
     }
   };
 
@@ -295,10 +322,17 @@ const CreateProposalModal = () => {
     setKeysDownloaded(true);
   };
 
+  const handleCloseModal = () => {
+    setShowModal(false);
+    if (step >= 10) {
+      window.location.reload();
+    }
+  };
+
   if (!showModal) return <></>;
 
   return (
-    <Modal onClose={() => setShowModal(false)}>
+    <Modal onClose={handleCloseModal}>
       {step == 1 ? (
         <div className="flex flex-col gap-[42px]">
           <div className="flex flex-col gap-[30px]">
@@ -495,6 +529,7 @@ const CreateProposalModal = () => {
               Cancel
             </Button>
             <Button
+              data-testid="proposal-next"
               onClick={() => {
                 try {
                   if (
@@ -506,9 +541,10 @@ const CreateProposalModal = () => {
                   // additional anonymous voting validation
                   if (isAnonymousVoting) {
                     if (!existingAnonConfig || resetAnonKeys) {
-                      if (!generatedKeys || !keysDownloaded) {
+                      // Only require keys to be generated; downloading is encouraged but not blocking
+                      if (!generatedKeys) {
                         throw new Error(
-                          "You must generate and download anonymous voting keys before proceeding.",
+                          "Anonymous voting keys have not been generated yet.",
                         );
                       }
                     }
@@ -569,6 +605,7 @@ const CreateProposalModal = () => {
               Back
             </Button>
             <Button
+              data-testid="proposal-next"
               onClick={() => {
                 try {
                   if (!validateApproveOutcome())
@@ -621,6 +658,7 @@ const CreateProposalModal = () => {
               Back
             </Button>
             <Button
+              data-testid="proposal-next"
               onClick={() => {
                 try {
                   // Compute hour difference between now and the picked calendar date
@@ -667,7 +705,10 @@ const CreateProposalModal = () => {
                   <Button type="secondary" onClick={() => setStep(step - 1)}>
                     Back
                   </Button>
-                  <Button onClick={handleRegisterProposal}>
+                  <Button
+                    onClick={handleRegisterProposal}
+                    data-testid="proposal-register"
+                  >
                     Register Proposal
                   </Button>
                 </div>
@@ -759,13 +800,69 @@ const CreateProposalModal = () => {
             <Button type="secondary" onClick={() => setStep(step - 1)}>
               Back
             </Button>
-            <Button onClick={handleRegisterProposal}>Register Proposal</Button>
+            <Button
+              onClick={handleRegisterProposal}
+              data-testid="proposal-register"
+            >
+              Register Proposal
+            </Button>
           </div>
         </div>
-      ) : step >= 5 && step <= 9 ? (
-        <ProgressStep step={step - 4} />
+      ) : step === 5 &&
+        isAnonymousVoting &&
+        (!existingAnonConfig || resetAnonKeys) ? (
+        <div className="flex flex-col gap-[42px]" data-testid="anon-setup-step">
+          <div className="flex items-start gap-[18px]">
+            <img src="/images/scan.svg" />
+            <div className="flex-grow flex flex-col gap-[18px]">
+              <Step step={1} totalSteps={5} />
+              <Title
+                title="Configure anonymous voting"
+                description="Generate keys and sign the setup transaction. This enables anonymous voting for this project."
+              />
+              {generatedKeys ? (
+                <div className="text-sm text-secondary">
+                  Keys are generated. Proceed to sign the setup transaction.
+                </div>
+              ) : (
+                <div className="text-sm text-secondary">Generating keys…</div>
+              )}
+              <div className="flex justify-end gap-[18px]">
+                <Button
+                  data-testid="sign-setup"
+                  onClick={async () => {
+                    try {
+                      if (!projectName) throw new Error("Project name missing");
+                      if (!generatedKeys)
+                        throw new Error("Anonymous keys missing");
+                      await setupAnonymousVoting(
+                        projectName,
+                        generatedKeys.publicKey,
+                        true,
+                      );
+                      setExistingAnonConfig(true);
+                      setResetAnonKeys(false);
+                      // proceed to proposal creation
+                      const files = preparedFiles || prepareProposalFiles();
+                      await startProposalCreation(files);
+                    } catch (e: any) {
+                      toast.error("Anonymous voting setup", e.message);
+                    }
+                  }}
+                >
+                  Sign setup
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : step >= 6 && step <= 9 ? (
+        <ProgressStep step={step - 5} />
       ) : (
-        <div className="flex items-center gap-[18px]">
+        <div
+          className="flex items-center gap-[18px]"
+          data-testid="flow-success"
+        >
           <img src="/images/flower.svg" />
           <div className="flex-grow flex flex-col gap-[30px]">
             <Title

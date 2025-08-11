@@ -57,7 +57,46 @@ const { title, page } = Astro.props;
 
     // Simplified inline handlers for better performance
     window.addEventListener("openJoinCommunity", async (event) => {
-      // Similar pattern - kept inline
+      try {
+        if (document.querySelector(".join-modal-container")) return;
+        const container = document.createElement("div");
+        container.className = "join-modal-container fixed inset-0 z-[9999]";
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+        const { default: JoinCommunityModal } = await import(
+          "components/page/dashboard/JoinCommunityModal.tsx"
+        );
+        const root = createRoot(container);
+        const handleClose = () => {
+          if (document.body.contains(container))
+            document.body.removeChild(container);
+          try {
+            root.unmount();
+          } catch (e) {}
+        };
+        container.addEventListener("click", (e) => {
+          if (e.target === container) handleClose();
+        });
+
+        const address =
+          event && typeof event === "object" && "detail" in event
+            ? // @ts-ignore - runtime check above
+              event.detail?.address || ""
+            : "";
+
+        root.render(
+          React.createElement(JoinCommunityModal, {
+            onClose: handleClose,
+            prefillAddress: address,
+          }),
+        );
+      } catch (e) {
+        console.error("Error opening join community modal:", e);
+      }
     });
 
     window.addEventListener("openProfileModal", async () => {

@@ -292,7 +292,9 @@ const UpdateConfigModal = () => {
               )}
             </div>
           )}
-          {step >= 4 && step <= 9 && <ProgressStep step={step - 4} />}
+          {step >= 4 && step <= 9 && (
+            <ProgressStep step={step - 4} signLabel="project configuration" />
+          )}
         </Modal>
       )}
     </>

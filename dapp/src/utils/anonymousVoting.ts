@@ -5,7 +5,7 @@
 // is done in this single module so UI components can remain lean.
 
 import { Buffer } from "buffer";
-import { keccak256 } from "js-sha3";
+import { deriveProjectKey } from "./projectKey";
 import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";
 import { decryptWithPrivateKey } from "utils/crypto";
@@ -17,11 +17,8 @@ async function getTansu() {
 }
 
 // Helper to derive the project_key (32-byte buffer)
-function deriveProjectKey(projectName: string): Buffer {
-  return Buffer.from(
-    keccak256.create().update(projectName.toLowerCase()).digest(),
-  );
-}
+// re-export local helper for consistency
+export { deriveProjectKey };
 
 export interface DecodedVote {
   address: string;

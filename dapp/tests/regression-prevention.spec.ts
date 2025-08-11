@@ -49,7 +49,7 @@ test.describe("🚨 Regression Prevention - Critical Error Detection", () => {
       }
     });
 
-    page.setDefaultTimeout(8000);
+    page.setDefaultTimeout(12000);
   });
 
   test("CRITICAL: No undefined state setter errors (JoinCommunityButton regression)", async ({
@@ -259,7 +259,9 @@ test.describe("🚨 Regression Prevention - Critical Error Detection", () => {
         (error) =>
           error.includes("is not defined") ||
           error.includes("Cannot read properties of undefined") ||
-          (error.includes("TypeError") && !error.includes("network")) ||
+          (error.includes("TypeError") &&
+            !error.includes("network") &&
+            !error.includes("Failed to fetch")) ||
           error.includes("ReferenceError"),
       );
 

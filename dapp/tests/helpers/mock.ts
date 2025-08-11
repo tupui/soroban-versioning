@@ -94,6 +94,10 @@ export async function applyAllMocks(page) {
   // Mock ReadContractService functions
   // ──────────────────────────────────────────────
   await page.addInitScript(() => {
+    // Signal test mode to the app for deterministic flows
+    (window as any).__TEST_MODE__ = true;
+    // Force missing anonymous config path by default when requested in tests
+    (window as any).__mockAnonymousConfigMissing = true;
     // Mock getProjectFromName globally
     (window as any).getProjectFromName = async (name) => {
       console.log("Mock getProjectFromName called with:", name);
@@ -129,6 +133,33 @@ export async function applyAllMocks(page) {
     });
   });
 
+  // Stub IPFS helper to make CID deterministic and match upload stub
+  await page.route("**/src/utils/ipfsFunctions.ts", async (route) => {
+    const body =
+      'export const getIpfsBasicLink = (cid) => (cid ? "https://w3s.link/ipfs/" + cid : "");\n' +
+      'export const getProposalLinkFromIpfs = (cid) => (cid ? getIpfsBasicLink(cid) + "/proposal.md" : "");\n' +
+      'export const getOutcomeLinkFromIpfs = (cid) => (cid ? getIpfsBasicLink(cid) + "/outcomes.json" : "");\n' +
+      'export const calculateDirectoryCid = async () => "bafytestcidmock";\n' +
+      "export const fetchFromIPFS = async (...args) => fetch(...args);\n" +
+      "export const fetchJSONFromIPFS = async () => null;\n" +
+      "export const fetchTomlFromCid = async () => undefined;\n";
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body,
+    });
+  });
+
+  // Wallet kit module stub at import level for both FlowService and ContractService
+  await page.route("**/components/stellar-wallets-kit*", async (route) => {
+    const js = `export const kit = { signTransaction: async (xdr) => ({ signedTxXdr: typeof xdr === 'string' ? xdr : String(xdr) }) };`;
+    route.fulfill({
+      status: 200,
+      body: js,
+      headers: { "content-type": "application/javascript" },
+    });
+  });
+
   // ──────────────────────────────────────────────
   // Wallet signing
   // ──────────────────────────────────────────────
@@ -155,27 +186,92 @@ export async function applyAllMocks(page) {
     route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
   });
 
+  // Soroban RPC base URL used by the app (@stellar/stellar-sdk rpc.Server)
+  await page.route("https://soroban-testnet.stellar.org/**", (route) => {
+    const url = route.request().url();
+    if (url.endsWith("/sendTransaction")) {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({
+          status: "SUCCESS",
+          hash: "mock",
+          returnValue: "AAAAAA==",
+        }),
+      });
+      return;
+    }
+    if (url.includes("getTransaction")) {
+      route.fulfill({
+        status: 200,
+        body: JSON.stringify({ status: "SUCCESS", returnValue: "AAAAAA==" }),
+      });
+      return;
+    }
+    route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
+  });
+
   // ──────────────────────────────────────────────
   // Soroban RPC (contract + tansu client)
   // ──────────────────────────────────────────────
   const sorobanPattern = "**/soroban/**";
   await page.route(sorobanPattern, (route) => {
-    // Mock successful badge update
-    if (route.request().url().includes("set_badges")) {
+    const url = route.request().url();
+    // Short-circuit core contract calls with SUCCESS and, when appropriate, a returnValue
+    if (url.includes("create_proposal")) {
       route.fulfill({
         status: 200,
-        body: JSON.stringify({
-          status: "SUCCESS",
-          result: null,
-        }),
+        body: JSON.stringify({ status: "SUCCESS", returnValue: 1 }),
       });
-    } else {
+      return;
+    }
+    if (
+      url.includes("register") ||
+      url.includes("update_config") ||
+      url.includes("add_member") ||
+      url.includes("vote") ||
+      url.includes("execute") ||
+      url.includes("commit") ||
+      url.includes("set_badges")
+    ) {
       route.fulfill({
         status: 200,
         body: JSON.stringify({ status: "SUCCESS" }),
       });
+      return;
     }
+    route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
   });
+
+  // Mock delegation endpoint for uploads
+  await page.route("**/api/w3up-delegation", (route) => {
+    route.fulfill({ status: 200, body: new ArrayBuffer(0) });
+  });
+
+  // Stub w3up client so uploadDirectory returns the same CID as calculateDirectoryCid
+  await page.route("**/@web3-storage/w3up-client*", async (route) => {
+    const js = `export const create = async () => ({ agent: { did: () => 'did:test' }, addSpace: async () => ({ did: () => 'did:test' }), setCurrentSpace: async () => {}, uploadDirectory: async () => ({ toString: () => 'bafytestcidmock' }) });`;
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body: js,
+    });
+  });
+
+  // Stub delegation extract to always return ok
+  await page.route(
+    "**/@web3-storage/w3up-client/delegation*",
+    async (route) => {
+      const js = `export const extract = async () => ({ ok: {} });`;
+      route.fulfill({
+        status: 200,
+        headers: { "content-type": "application/javascript" },
+        body: js,
+      });
+    },
+  );
+
+  // Also stub generic send/getTransaction endpoints in case rpc.Server uses relative paths
+  await stubTransactionSend(page);
 }
 
 export async function mockCreateProposalFlow(page) {

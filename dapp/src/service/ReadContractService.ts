@@ -1,5 +1,6 @@
 import Tansu from "../contracts/soroban_tansu";
 import * as pkg from "js-sha3";
+import { deriveProjectKey } from "../utils/projectKey";
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import { loadedProjectId } from "./StateService";
@@ -72,9 +73,7 @@ async function getProjectFromName(
     return null;
   }
 
-  const projectId = Buffer.from(
-    keccak256.create().update(projectName.toLowerCase()).digest(),
-  );
+  const projectId = deriveProjectKey(projectName);
 
   try {
     const res = await Tansu.get_project({
@@ -109,9 +108,7 @@ async function getProjectFromId(projectId: Buffer): Promise<Project | null> {
 }
 
 async function getProposalPages(project_name: string): Promise<number | null> {
-  const project_key = Buffer.from(
-    keccak256.create().update(project_name.toLowerCase()).digest(),
-  );
+  const project_key = deriveProjectKey(project_name);
 
   try {
     const checkPageExist = async (page: number) => {
@@ -155,9 +152,7 @@ async function getProposals(
   project_name: string,
   page: number,
 ): Promise<ModifiedProposal[] | null> {
-  const project_key = Buffer.from(
-    keccak256.create().update(project_name.toLowerCase()).digest(),
-  );
+  const project_key = deriveProjectKey(project_name);
   try {
     const res = await Tansu.get_dao({
       project_key: project_key,
@@ -183,9 +178,7 @@ async function getProposal(
   projectName: string,
   proposalId: number,
 ): Promise<ModifiedProposal | null> {
-  const project_key = Buffer.from(
-    keccak256.create().update(projectName.toLowerCase()).digest(),
-  );
+  const project_key = deriveProjectKey(projectName);
   try {
     const res = await Tansu.get_proposal({
       project_key: project_key,

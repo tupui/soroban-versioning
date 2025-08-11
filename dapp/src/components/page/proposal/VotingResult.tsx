@@ -7,12 +7,16 @@ interface Props {
   voteStatus: VoteStatus | undefined;
   withDetail?: boolean;
   totalVotesOverride?: number;
+  // When provided, the per-option numbers shown to users are counts of ballots,
+  // not weighted scores. Final outcome still uses weighted scores.
+  countsOverride?: { approve: number; reject: number; abstain: number };
 }
 
 const VotingResult: FC<Props> = ({
   voteStatus,
   withDetail,
   totalVotesOverride,
+  countsOverride,
 }) => {
   const voteResult = useMemo(() => {
     if (voteStatus) {
@@ -52,10 +56,14 @@ const VotingResult: FC<Props> = ({
             <p className="leading-6 text-xl text-primary">
               {totalVotesOverride !== undefined
                 ? totalVotesOverride
-                : voteStatus &&
-                  voteStatus.abstain.score +
-                    voteStatus.approve.score +
-                    voteStatus.reject.score}
+                : countsOverride
+                  ? countsOverride.abstain +
+                    countsOverride.approve +
+                    countsOverride.reject
+                  : voteStatus &&
+                    voteStatus.abstain.score +
+                      voteStatus.approve.score +
+                      voteStatus.reject.score}
             </p>
           </div>
         )}
@@ -65,19 +73,28 @@ const VotingResult: FC<Props> = ({
           <div className="flex flex-col gap-[18px]">
             <p className="leading-4 text-base text-approved">Approved</p>
             <p className="leading-6 text-xl text-primary">
-              {voteStatus?.approve.score} votes
+              {countsOverride
+                ? countsOverride.approve
+                : voteStatus?.approve.score}{" "}
+              votes
             </p>
           </div>
           <div className="flex flex-col gap-[18px]">
             <p className="leading-4 text-base text-cancelled">Cancelled</p>
             <p className="leading-6 text-xl text-primary">
-              {voteStatus?.abstain.score} votes
+              {countsOverride
+                ? countsOverride.abstain
+                : voteStatus?.abstain.score}{" "}
+              votes
             </p>
           </div>
           <div className="flex flex-col gap-[18px]">
             <p className="leading-4 text-base text-rejected">Rejected</p>
             <p className="leading-6 text-xl text-primary">
-              {voteStatus?.reject.score} votes
+              {countsOverride
+                ? countsOverride.reject
+                : voteStatus?.reject.score}{" "}
+              votes
             </p>
           </div>
         </div>

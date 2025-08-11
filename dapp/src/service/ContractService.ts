@@ -8,7 +8,8 @@ import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
 import { Buffer } from "buffer";
-import * as pkg from "js-sha3";
+import * as pkg from "js-sha3"; // kept for local helpers
+import { deriveProjectKey } from "../utils/projectKey";
 import { parseContractError } from "../utils/contractErrors";
 import { checkSimulationError } from "../utils/contractErrors";
 import { retryAsync } from "../utils/retry";
@@ -164,9 +165,7 @@ function mapVoteType(voteType: VoteType): VoteChoice {
  * Generate project key from name
  */
 function getProjectKey(projectName: string): Buffer {
-  return Buffer.from(
-    keccak256.create().update(projectName.toLowerCase()).digest(),
-  );
+  return deriveProjectKey(projectName);
 }
 
 // =============================================================================
@@ -248,13 +247,22 @@ export async function voteToProposal(
   } else {
     // Anonymous voting logic
     const voteIndex = vote === "approve" ? 0 : vote === "reject" ? 1 : 2;
+    // Important: commitments are built from raw votes/seeds without weights.
+    // Weight is applied on-chain when validating/aggregating, so the encoded
+    // vote should be 1 for the chosen option and 0 for others to avoid u32
+    // overflow in later tallies.
     const votesArr: number[] = [0, 0, 0];
-    votesArr[voteIndex] = weight;
+    votesArr[voteIndex] = 1;
 
+    // Choose seeds so that (seed * weight) fits into u32 on-chain.
+    // Max allowed seed per voter given their weight.
+    const MAX_U32 = 0xffffffff; // 4294967295
+    const maxSeed = Math.max(0, Math.floor(MAX_U32 / weight) - 1);
+    const rand32 = crypto.getRandomValues(new Uint32Array(3));
     const seedsArr: number[] = [
-      (crypto.getRandomValues(new Uint32Array(1))[0] || 0) % 1000000,
-      (crypto.getRandomValues(new Uint32Array(1))[0] || 0) % 1000000,
-      (crypto.getRandomValues(new Uint32Array(1))[0] || 0) % 1000000,
+      maxSeed === 0 ? 0 : Number(rand32[0] % (maxSeed + 1)),
+      maxSeed === 0 ? 0 : Number(rand32[1] % (maxSeed + 1)),
+      maxSeed === 0 ? 0 : Number(rand32[2] % (maxSeed + 1)),
     ];
 
     // Get anonymous voting config
@@ -415,9 +423,14 @@ export async function setupAnonymousVoting(
       const configTx = await client.get_anonymous_voting_config({
         project_key: projectKey,
       });
-      if (configTx.result) return true;
+      try {
+        checkSimulationError(configTx as any);
+        if (configTx.result) return true;
+      } catch (_) {
+        // Missing config – fall-through to setup
+      }
     } catch {
-      // Continue with setup
+      // Fall-through to setup on network/simulation errors
     }
   }
 

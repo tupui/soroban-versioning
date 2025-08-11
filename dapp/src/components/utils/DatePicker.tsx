@@ -40,10 +40,9 @@ export function DatePicker({ selectedDate, onDateChange }: DatePickerProps) {
 
   const isDateDisabled = (year: number, month: number, day: number) => {
     const date = new Date(year, month, day);
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    return date < tomorrow;
+    const minMs = Date.now() + 24 * 60 * 60 * 1000; // 24h from now
+    // Disable selecting any calendar date that would represent a time less than 24h from now
+    return date.getTime() < minMs;
   };
 
   const handleDateClick = (day: number) => {

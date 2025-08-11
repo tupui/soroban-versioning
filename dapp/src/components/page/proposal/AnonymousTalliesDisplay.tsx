@@ -13,12 +13,24 @@ const AnonymousTalliesDisplay: React.FC<Props> = ({
   decodedVotes,
   proofOk,
 }) => {
+  // Compute simple counts by looking at decoded votes (each row is one ballot)
+  const counts = decodedVotes.reduce(
+    (acc: { approve: number; reject: number; abstain: number }, v: any) => {
+      if (v.vote === "approve") acc.approve += 1;
+      else if (v.vote === "reject") acc.reject += 1;
+      else acc.abstain += 1;
+      return acc;
+    },
+    { approve: 0, reject: 0, abstain: 0 },
+  );
+
   return (
     <>
       <VotingResult
         voteStatus={voteStatus}
         withDetail
         totalVotesOverride={decodedVotes.length}
+        countsOverride={counts}
       />
       {decodedVotes.length > 0 && (
         <details className="border border-zinc-300 rounded max-h-48 overflow-y-auto">
