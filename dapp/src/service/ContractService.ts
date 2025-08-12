@@ -254,15 +254,16 @@ export async function voteToProposal(
     const votesArr: number[] = [0, 0, 0];
     votesArr[voteIndex] = 1;
 
-    // Choose seeds so that (seed * weight) fits into u32 on-chain.
-    // Max allowed seed per voter given their weight.
-    const MAX_U32 = 0xffffffff; // 4294967295
-    const maxSeed = Math.max(0, Math.floor(MAX_U32 / weight) - 1);
-    const rand32 = crypto.getRandomValues(new Uint32Array(3));
+    // Keep seeds small to avoid aggregated (seed * weight) overflowing u32 when
+    // multiple high-weight voters choose the same option. This matches contract
+    // tests that use small seeds (e.g., 42, 43, 44) and ensures safety for a
+    // handful of heavy voters per option.
+    const SEED_CAP = 100; // 0..99
+    const r = crypto.getRandomValues(new Uint32Array(3));
     const seedsArr: number[] = [
-      maxSeed === 0 ? 0 : Number(rand32[0] % (maxSeed + 1)),
-      maxSeed === 0 ? 0 : Number(rand32[1] % (maxSeed + 1)),
-      maxSeed === 0 ? 0 : Number(rand32[2] % (maxSeed + 1)),
+      Number(r[0] % SEED_CAP),
+      Number(r[1] % SEED_CAP),
+      Number(r[2] % SEED_CAP),
     ];
 
     // Get anonymous voting config

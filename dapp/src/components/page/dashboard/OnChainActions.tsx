@@ -44,11 +44,11 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
     load();
   }, [address, JSON.stringify(projectCache)]);
 
-  // Group by calendar day (YYYY-MM-DD).
+  // Group by calendar day (ISO key YYYY-MM-DD) for stable sorting
   const grouped = actions.reduce<Record<string, OnChainAction[]>>(
     (acc, act) => {
-      const day = formatDate(new Date(act.timestamp).toISOString());
-      (acc[day] ??= []).push(act);
+      const isoKey = new Date(act.timestamp).toISOString().slice(0, 10);
+      (acc[isoKey] ??= []).push(act);
       return acc;
     },
     {},
@@ -69,14 +69,19 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
   return (
     <div className="flex flex-col gap-6 pl-6 max-h-96 overflow-auto overflow-visible">
       {Object.entries(grouped)
+        // Sort day groups by ISO date key descending (latest first)
         .sort(([d1], [d2]) => (d1 < d2 ? 1 : -1))
-        .map(([day, list]) => (
-          <div key={day} className="flex flex-col gap-4">
+        .map(([isoDay, list]) => (
+          <div key={isoDay} className="flex flex-col gap-4">
             <h3 className="relative">
               <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-[#2D0F512E] rounded-full bg-transparent" />
-              <span className="text-lg font-medium text-primary">{day}</span>
+              <span className="text-lg font-medium text-primary">{formatDate(`${isoDay}T00:00:00.000Z`)}</span>
             </h3>
-            {list.map((a) => (
+            {list
+              // Ensure items within a day are sorted by timestamp descending
+              .slice()
+              .sort((a, b) => b.timestamp - a.timestamp)
+              .map((a) => (
               <div key={a.txHash} className="relative">
                 <div className="absolute -left-[21px] lg:-left-[31px] w-[2px] h-full bg-[#2D0F510D]" />
                 {(() => {

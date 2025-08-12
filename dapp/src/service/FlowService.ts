@@ -320,7 +320,7 @@ export async function createProposalFlow({
   }
 
   // Step 2: Create and sign the smart contract transaction with the CID
-  onProgress?.(6); // Signing proposal transaction
+  onProgress?.(7); // Signing proposal transaction (UI index 2)
   const signedTxXdr = await createSignedProposalTransaction(
     projectName,
     proposalName,
@@ -330,7 +330,7 @@ export async function createProposalFlow({
   );
 
   // Step 3: Upload to IPFS using the signed transaction as authentication
-  onProgress?.(7); // Uploading to IPFS
+  onProgress?.(8); // Uploading to IPFS (UI index 3)
   const uploadedCid = await uploadWithDelegation({
     files: proposalFiles,
     type: "proposal",
@@ -386,7 +386,7 @@ export async function joinCommunityFlow({
   const did = client.agent.did();
 
   // Step 2: Create and sign the smart contract transaction with the CID
-  onProgress?.(6); // signing step indicator (align with shared ProgressStep)
+  onProgress?.(7); // signing step indicator (offset -5 → shows Sign)
   const signedTxXdr = await createSignedAddMemberTransaction(
     memberAddress,
     cid,
@@ -394,7 +394,7 @@ export async function joinCommunityFlow({
 
   if (profileFiles.length > 0) {
     // Step 3: Upload to IPFS using the signed transaction as authentication
-    onProgress?.(7); // uploading step indicator
+    onProgress?.(8); // uploading step indicator (offset -5 → shows Uploading)
     const uploadedCid = await uploadWithDelegation({
       files: profileFiles,
       type: "member",
@@ -409,7 +409,7 @@ export async function joinCommunityFlow({
   }
 
   // Step 5: Send the signed transaction
-  onProgress?.(9); // sending step indicator
+  onProgress?.(9); // sending step indicator (offset -5 → shows Sending)
   await sendSignedTransaction(signedTxXdr);
   return true;
 }
@@ -437,7 +437,7 @@ export async function createProjectFlow({
   const did = client.agent.did();
 
   // Step 2 – Create & sign register transaction
-  onProgress?.(7); // signing step indicator
+  onProgress?.(6); // signing step indicator (offset -4 → shows Sign)
 
   const publicKey = loadedPublicKey();
   if (!publicKey) throw new Error("Please connect your wallet first");
@@ -468,7 +468,7 @@ export async function createProjectFlow({
   const { signedTxXdr } = await kit.signTransaction(preparedXdr);
 
   // Step 3 – Upload to IPFS with delegation
-  onProgress?.(8); // uploading step indicator
+  onProgress?.(7); // uploading step indicator (offset -4 → shows Uploading)
 
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
@@ -485,7 +485,7 @@ export async function createProjectFlow({
   }
 
   // Step 5 – Send signed transaction
-  onProgress?.(9); // sending step indicator
+  onProgress?.(8); // sending step indicator (offset -4 → shows Sending)
   await sendSignedTransaction(signedTxXdr);
 
   return true;
@@ -551,7 +551,7 @@ export async function updateConfigFlow({
   const did = client.agent.did();
 
   // sign tx
-  onProgress?.(7);
+  onProgress?.(6); // UI offset -4 → shows "Sign"
   const signedTxXdr = await createSignedUpdateConfigTransaction(
     maintainers,
     githubRepoUrl,
@@ -559,7 +559,7 @@ export async function updateConfigFlow({
   );
 
   // upload
-  onProgress?.(8);
+  onProgress?.(7); // UI offset -4 → shows "Uploading"
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
     type: "project",
@@ -573,7 +573,7 @@ export async function updateConfigFlow({
     );
   }
 
-  onProgress?.(9);
+  onProgress?.(8); // UI offset -4 → shows "Sending"
   await sendSignedTransaction(signedTxXdr);
   return true;
 }

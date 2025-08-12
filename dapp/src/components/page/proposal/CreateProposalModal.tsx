@@ -162,7 +162,7 @@ const CreateProposalModal = () => {
 
   const startProposalCreation = async (files: File[]) => {
     try {
-      // Step progression handled by FlowService onProgress: 6-sign, 7-upload, 8-send
+      // Step progression handled by FlowService onProgress: 7-sign, 8-upload, 9-send
       setStep(6);
 
       // 2️⃣  Calculate voting end timestamp & build proposal transaction

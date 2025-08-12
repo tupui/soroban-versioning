@@ -47,12 +47,15 @@ const UpdateConfigModal = () => {
   const [ghErrors, setGhErrors] = useState<(string | null)[]>([null]);
   const [repoError, setRepoError] = useState<string | null>(null);
 
-  // pre-fill from current config
+  // pre-fill from current config and gate by maintainer status
   useEffect(() => {
     if (!infoLoaded) return;
     const projectInfo = loadProjectInfo();
     const cfg = loadConfigData();
-    if (!projectInfo || !projectInfo.maintainers || !projectInfo.config) return;
+    if (!projectInfo || !projectInfo.maintainers || !projectInfo.config) {
+      setShowButton(false);
+      return;
+    }
     setMaintainerAddresses(projectInfo.maintainers);
     setMaintainerGithubs(
       cfg?.authorGithubNames || projectInfo.maintainers.map(() => ""),
@@ -65,8 +68,17 @@ const UpdateConfigModal = () => {
     setAddrErrors(projectInfo.maintainers.map(() => null));
     setGhErrors(projectInfo.maintainers.map(() => null));
 
-    // show button only if wallet is maintainer handled outside earlier
-    setShowButton(true);
+    // Show button only if the connected wallet is a maintainer
+    // Use the same approach as other project actions
+    import("@service/walletService")
+      .then(({ loadedPublicKey }) => {
+        const publicKey = loadedPublicKey();
+        const isMaintainer = publicKey
+          ? projectInfo.maintainers.includes(publicKey)
+          : false;
+        setShowButton(isMaintainer);
+      })
+      .catch(() => setShowButton(false));
   }, [infoLoaded]);
 
   const handleClose = () => {
