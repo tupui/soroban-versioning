@@ -5,7 +5,7 @@ import {
   ClientOptions as ContractClientOptions,
   MethodOptions,
 } from "@stellar/stellar-sdk/contract";
-import type { u32, u64, Option } from "@stellar/stellar-sdk/contract";
+import type { u32, u64, u128, Option } from "@stellar/stellar-sdk/contract";
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
@@ -319,8 +319,8 @@ export interface Client {
       seeds,
     }: {
       project_key: Buffer;
-      votes: Array<u32>;
-      seeds: Array<u32>;
+      votes: Array<u128>;
+      seeds: Array<u128>;
     },
     options?: {
       /**
@@ -478,8 +478,8 @@ export interface Client {
       maintainer: string;
       project_key: Buffer;
       proposal_id: u32;
-      tallies: Option<Array<u32>>;
-      seeds: Option<Array<u32>>;
+      tallies: Option<Array<u128>>;
+      seeds: Option<Array<u128>>;
     },
     options?: {
       /**
@@ -533,8 +533,8 @@ export interface Client {
     }: {
       project_key: Buffer;
       proposal: Proposal;
-      tallies: Array<u32>;
-      seeds: Array<u32>;
+      tallies: Array<u128>;
+      seeds: Array<u128>;
     },
     options?: {
       /**

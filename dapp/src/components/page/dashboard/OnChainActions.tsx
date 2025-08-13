@@ -75,34 +75,36 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
           <div key={isoDay} className="flex flex-col gap-4">
             <h3 className="relative">
               <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-[#2D0F512E] rounded-full bg-transparent" />
-              <span className="text-lg font-medium text-primary">{formatDate(`${isoDay}T00:00:00.000Z`)}</span>
+              <span className="text-lg font-medium text-primary">
+                {formatDate(`${isoDay}T00:00:00.000Z`)}
+              </span>
             </h3>
             {list
               // Ensure items within a day are sorted by timestamp descending
               .slice()
               .sort((a, b) => b.timestamp - a.timestamp)
               .map((a) => (
-              <div key={a.txHash} className="relative">
-                <div className="absolute -left-[21px] lg:-left-[31px] w-[2px] h-full bg-[#2D0F510D]" />
-                {(() => {
-                  const link = proposalLink(a);
-                  const props = link
-                    ? { commitLink: link }
-                    : { shaLink: txExplorerUrl(a.txHash) };
-                  return (
-                    <CommitRecord
-                      message={summaryFor(a)}
-                      sha={a.txHash}
-                      {...props}
-                      bgClass="bg-indigo-50"
-                      projectName={a.projectName ?? null}
-                      showXDR={a.raw}
-                      proposalLink={proposalLink(a) ?? null}
-                    />
-                  );
-                })()}
-              </div>
-            ))}
+                <div key={a.txHash} className="relative">
+                  <div className="absolute -left-[21px] lg:-left-[31px] w-[2px] h-full bg-[#2D0F510D]" />
+                  {(() => {
+                    const link = proposalLink(a);
+                    const props = link
+                      ? { commitLink: link }
+                      : { shaLink: txExplorerUrl(a.txHash) };
+                    return (
+                      <CommitRecord
+                        message={summaryFor(a)}
+                        sha={a.txHash}
+                        {...props}
+                        bgClass="bg-indigo-50"
+                        projectName={a.projectName ?? null}
+                        showXDR={a.raw}
+                        proposalLink={proposalLink(a) ?? null}
+                      />
+                    );
+                  })()}
+                </div>
+              ))}
           </div>
         ))}
     </div>

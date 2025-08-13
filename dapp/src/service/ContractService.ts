@@ -254,17 +254,9 @@ export async function voteToProposal(
     const votesArr: number[] = [0, 0, 0];
     votesArr[voteIndex] = 1;
 
-    // Keep seeds small to avoid aggregated (seed * weight) overflowing u32 when
-    // multiple high-weight voters choose the same option. This matches contract
-    // tests that use small seeds (e.g., 42, 43, 44) and ensures safety for a
-    // handful of heavy voters per option.
-    const SEED_CAP = 100; // 0..99
+    // Generate cryptographically secure 32-bit seeds.
     const r = crypto.getRandomValues(new Uint32Array(3));
-    const seedsArr: number[] = [
-      Number(r[0] % SEED_CAP),
-      Number(r[1] % SEED_CAP),
-      Number(r[2] % SEED_CAP),
-    ];
+    const seedsArr: number[] = [Number(r[0]), Number(r[1]), Number(r[2])];
 
     // Get anonymous voting config
     const configTx = await client.get_anonymous_voting_config({
