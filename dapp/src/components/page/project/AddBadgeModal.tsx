@@ -1,7 +1,7 @@
 import { useStore } from "@nanostores/react";
 import { loadProjectInfo } from "@service/StateService";
 import { loadedPublicKey } from "@service/walletService";
-import { addBadges } from "@service/ContractService";
+import { setBadges } from "@service/ContractService";
 import Button from "components/utils/Button";
 import Modal from "components/utils/Modal";
 import type { Badge } from "../../../../packages/tansu";
@@ -13,8 +13,6 @@ const badgeOptions: { label: string; value: Badge }[] = [
   { label: "Developer", value: 10000000 },
   { label: "Triage", value: 5000000 },
   { label: "Community", value: 1000000 },
-  { label: "Verified", value: 500000 },
-  { label: "Default", value: 1 },
 ];
 
 const AddBadgeModal = () => {
@@ -24,7 +22,6 @@ const AddBadgeModal = () => {
   const [memberAddress, setMemberAddress] = useState("");
   const [selectedBadges, setSelectedBadges] = useState<Badge[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [updateSuccessful, setUpdateSuccessful] = useState(false);
 
   useEffect(() => {
     if (isProjectInfoLoaded) {
@@ -41,11 +38,7 @@ const AddBadgeModal = () => {
 
   const handleClose = () => {
     setIsOpen(false);
-    setUpdateSuccessful(false);
-    // Reload page if update was successful to show fresh data
-    if (updateSuccessful) {
-      window.location.reload();
-    }
+    // Note: Page reload for successful operations is now handled by toast.success()
   };
 
   const handleToggleBadge = (badge: Badge) => {
@@ -61,11 +54,9 @@ const AddBadgeModal = () => {
     }
     setIsLoading(true);
     try {
-      await addBadges(memberAddress, selectedBadges);
+      await setBadges(memberAddress, selectedBadges);
       toast.success("Add badge", "Badges added successfully");
-      window.dispatchEvent(new CustomEvent("badgesUpdated"));
-      setUpdateSuccessful(true);
-      // Don't close modal immediately - let user close it manually
+      // Note: Modal will be closed and page refreshed automatically by toast.success()
     } catch (err: any) {
       toast.error("Add badge", err.message);
     } finally {

@@ -231,7 +231,7 @@ export async function fetchOnChainActions(
             details.meta = paramToString(args[1]);
             break;
           }
-          case "add_badges": {
+          case "set_badges": {
             projectKey = paramBytesToHex(args[1]);
             details.member = paramToString(args[2]);
             const badgeVecObj = args[3];
@@ -284,6 +284,10 @@ export async function fetchOnChainActions(
         if (a.projectKey && a.projectName) {
           PROJECT_CACHE.set(normalizeHex(a.projectKey)!, a.projectName);
         }
+      }
+
+      // Third pass - resolve any remaining missing names after cache is fully populated
+      for (const a of actions) {
         if (!a.projectName && a.projectKey) {
           const name = lookupProjectName(a.projectKey);
           if (name) a.projectName = name;
@@ -291,7 +295,7 @@ export async function fetchOnChainActions(
       }
 
       return actions;
-    } catch {
+    } catch (error) {
       clearTimeout(timeoutId);
       throw error;
     }

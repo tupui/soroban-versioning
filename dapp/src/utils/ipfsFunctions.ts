@@ -129,7 +129,7 @@ export const calculateDirectoryCid = async (
       const dirCid = await client.uploadDirectory(filesArray);
       return dirCid.toString();
     }
-  } catch {
+  } catch (error) {
     // This is a truly unexpected error during CID calculation
     // Keep this log since it's a critical operation that shouldn't fail
     console.error("Error calculating directory CID:", error);
@@ -174,7 +174,7 @@ export const fetchFromIPFS = async (
 
     clearTimeout(id);
     return response;
-  } catch {
+  } catch (error) {
     clearTimeout(id);
     throw error;
   }

@@ -100,7 +100,7 @@ export function withErrorHandling<T, Args extends any[]>(
   return async (...args: Args): Promise<T> => {
     try {
       return await fn(...args);
-    } catch {
+    } catch (error) {
       handleError(error, context, { rethrow: true });
       throw error; // TypeScript needs this even though rethrow: true already throws
     }

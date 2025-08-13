@@ -22,15 +22,13 @@ const UpdateHashModal = () => {
       const projectInfo = loadProjectInfo();
 
       if (projectInfo) {
-        try {
-          getLatestCommitHash(projectInfo?.config.url || "").then(
-            (latestSha) => {
-              setLatestHash(latestSha || "");
-            },
-          );
-        } catch (error: any) {
-          toast.error("Something Went Wrong!", error.message);
-        }
+        getLatestCommitHash(projectInfo?.config.url || "")
+          .then((latestSha) => {
+            setLatestHash(latestSha || "");
+          })
+          .catch((_error: any) => {
+            // Silently handle errors
+          });
         const connectedPublicKey = loadedPublicKey();
         const isMaintainer = connectedPublicKey
           ? projectInfo.maintainers.includes(connectedPublicKey)
@@ -60,10 +58,9 @@ const UpdateHashModal = () => {
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
         }
-      } catch {
-        if (import.meta.env.DEV) {
-          console.error("Error refreshing project data:", error);
-        }
+      } catch (refreshError) {
+        if (import.meta.env.DEV)
+          console.error("Error refreshing project data:", refreshError);
         // Don't show error to user as the update was successful
       }
 
@@ -74,9 +71,8 @@ const UpdateHashModal = () => {
       setUpdateSuccessful(true);
       // Don't close modal immediately - let user close it manually
     } catch (error: any) {
-      if (import.meta.env.DEV) {
+      if (import.meta.env.DEV)
         console.error("Error updating Commit Hash:", error);
-      }
       toast.error(
         "Update Commit Hash",
         error.message || "Failed to update commit hash. Please try again.",

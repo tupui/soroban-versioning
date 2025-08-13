@@ -115,6 +115,13 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                   setProfileImageUrl(candidate);
                 }
               };
+              img.onerror = () => {
+                // Silently handle 404 errors - profile images are optional
+                if (idx === exts.length - 1 && !found) {
+                  // If this was the last extension and no image found, clear the URL
+                  setProfileImageUrl("");
+                }
+              };
             });
           }
         } catch {
@@ -433,9 +440,9 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                         {proj.name}
                       </p>
                       <div className="flex flex-wrap justify-center gap-2">
-                        {proj.badges.map((b, i) => (
+                        {Array.from(new Set(proj.badges)).map((b) => (
                           <span
-                            key={i}
+                            key={b}
                             className="px-2 py-0.5 sm:px-3 sm:py-1 bg-primary text-white text-xs sm:text-sm rounded"
                           >
                             {badgeName(b)}

@@ -8,8 +8,10 @@ import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
 import { Buffer } from "buffer";
-import * as pkg from "js-sha3";
+import * as pkg from "js-sha3"; // kept for local helpers
+import { deriveProjectKey } from "../utils/projectKey";
 import { parseContractError } from "../utils/contractErrors";
+import { checkSimulationError } from "../utils/contractErrors";
 import { retryAsync } from "../utils/retry";
 import type { VoteType } from "types/proposal";
 
@@ -51,6 +53,12 @@ async function submitTransaction(assembledTx: any): Promise<any> {
     let sim;
     try {
       sim = await assembledTx.simulate();
+      // Ensure simulation actually succeeded (no embedded error field)
+      try {
+        checkSimulationError(sim as any);
+      } catch (e: any) {
+        throw new Error(parseContractError(e));
+      }
     } catch (error: any) {
       throw new Error(parseContractError(error));
     }
@@ -69,6 +77,13 @@ async function submitTransaction(assembledTx: any): Promise<any> {
     const result = await sendSignedTransaction(signedTxXdr);
     return result;
   } catch (error: any) {
+    // Handle specific txMalformed errors
+    if (error.message?.includes("txMalformed")) {
+      throw new Error(
+        "Transaction malformed - this usually indicates an issue with parameter formatting or contract state. Please ensure the member exists and the project is properly registered.",
+      );
+    }
+
     if (error.message?.includes("Error(Contract")) {
       throw new Error(parseContractError(error));
     }
@@ -99,9 +114,13 @@ async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
   }
 
   if (sendResponse.status === "ERROR") {
-    throw new Error(
-      `Transaction failed: ${JSON.stringify(sendResponse.errorResult)}`,
-    );
+    // Align with other flows: report error as-is with parsed contract error where possible
+    const errorStr = JSON.stringify(sendResponse.errorResult);
+    const contractErrorMatch = errorStr.match(/Error\(Contract, #(\d+)\)/);
+    if (contractErrorMatch) {
+      throw new Error(parseContractError({ message: errorStr } as any));
+    }
+    throw new Error(`Transaction failed: ${errorStr}`);
   }
 
   // For successful transactions, we need to wait for confirmation
@@ -146,7 +165,7 @@ function mapVoteType(voteType: VoteType): VoteChoice {
  * Generate project key from name
  */
 function getProjectKey(projectName: string): Buffer {
-  return Buffer.from(keccak256.create().update(projectName).digest());
+  return deriveProjectKey(projectName);
 }
 
 // =============================================================================
@@ -161,9 +180,15 @@ export async function commitHash(commit_hash: string): Promise<boolean> {
   if (!projectId) throw new Error("No project defined");
 
   const client = getClient();
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   const assembledTx = await client.commit({
     maintainer: client.options.publicKey!,
-    project_key: projectId,
+    project_key: projectKey,
     hash: commit_hash,
   });
 
@@ -222,19 +247,27 @@ export async function voteToProposal(
   } else {
     // Anonymous voting logic
     const voteIndex = vote === "approve" ? 0 : vote === "reject" ? 1 : 2;
+    // Important: commitments are built from raw votes/seeds without weights.
+    // Weight is applied on-chain when validating/aggregating, so the encoded
+    // vote should be 1 for the chosen option and 0 for others to avoid u32
+    // overflow in later tallies.
     const votesArr: number[] = [0, 0, 0];
-    votesArr[voteIndex] = weight;
+    votesArr[voteIndex] = 1;
 
-    const seedsArr: number[] = [
-      (crypto.getRandomValues(new Uint32Array(1))[0] || 0) % 1000000,
-      (crypto.getRandomValues(new Uint32Array(1))[0] || 0) % 1000000,
-      (crypto.getRandomValues(new Uint32Array(1))[0] || 0) % 1000000,
-    ];
+    // Generate cryptographically secure 32-bit seeds.
+    const r = crypto.getRandomValues(new Uint32Array(3));
+    const seedsArr: number[] = [Number(r[0]), Number(r[1]), Number(r[2])];
 
     // Get anonymous voting config
     const configTx = await client.get_anonymous_voting_config({
       project_key: projectKey,
     });
+    // Ensure config actually exists (not an error bubbled in result)
+    try {
+      checkSimulationError(configTx as any);
+    } catch (_) {
+      throw new Error("Anonymous voting not configured for this project");
+    }
     const publicKeyStr = configTx.result.public_key;
 
     // Encrypt votes and seeds
@@ -307,22 +340,13 @@ export async function execute(
   return await submitTransaction(assembledTx);
 }
 
-/**
- * Execute proposal (wrapper)
- */
-export async function executeProposal(
-  project_name: string,
-  proposal_id: number,
-  tallies?: number[],
-  seeds?: number[],
-): Promise<any> {
-  return execute(project_name, proposal_id, tallies, seeds);
-}
+// Direct export - no wrapper needed
+export { execute as executeProposal };
 
 /**
- * Add badges to member
+ * Set badges for member
  */
-export async function addBadges(
+export async function setBadges(
   member_address: string,
   badges: Badge[],
 ): Promise<boolean> {
@@ -330,9 +354,43 @@ export async function addBadges(
   if (!projectId) throw new Error("No project defined");
 
   const client = getClient();
-  const assembledTx = await client.add_badges({
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
+  // Basic input checks to align with other flows
+  if (!member_address || member_address.length < 56) {
+    throw new Error("Invalid member address format");
+  }
+  // Keep parity with other flows: rely on contract errors rather than custom pre-flight
+
+  if (!badges || badges.length === 0) {
+    throw new Error("At least one badge must be selected");
+  }
+
+  // Validate badge values
+  const validBadgeValues = [10000000, 5000000, 1000000, 500000, 1];
+  for (const badge of badges) {
+    if (!validBadgeValues.includes(badge)) {
+      throw new Error(`Invalid badge value: ${badge}`);
+    }
+  }
+
+  if (import.meta.env.DEV) {
+    console.log("Setting badges:", {
+      maintainer: client.options.publicKey,
+      projectKey: projectKey.toString("hex"),
+      member: member_address,
+      badges: badges,
+    });
+  }
+
+  // Build transaction using current bindings (key)
+  const assembledTx: any = await (client as any).set_badges({
     maintainer: client.options.publicKey!,
-    key: projectId,
+    key: projectKey,
     member: member_address,
     badges,
   });
@@ -358,13 +416,19 @@ export async function setupAnonymousVoting(
       const configTx = await client.get_anonymous_voting_config({
         project_key: projectKey,
       });
-      if (configTx.result) return true;
+      try {
+        checkSimulationError(configTx as any);
+        if (configTx.result) return true;
+      } catch (_) {
+        // Missing config – fall-through to setup
+      }
     } catch {
-      // Continue with setup
+      // Fall-through to setup on network/simulation errors
     }
   }
 
   const assembledTx = await client.anonymous_voting_setup({
+    maintainer: client.options.publicKey!,
     project_key: projectKey,
     public_key,
   });

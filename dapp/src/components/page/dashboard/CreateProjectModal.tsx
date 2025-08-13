@@ -820,7 +820,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
           </div>
         </div>
       ) : step >= 5 && step <= 9 ? (
-        <ProgressStep step={step - 4} />
+        <ProgressStep step={step - 4} signLabel="project registration" />
       ) : (
         <div className="flex flex-col gap-[42px]">
           <div className="flex items-start gap-[18px]">

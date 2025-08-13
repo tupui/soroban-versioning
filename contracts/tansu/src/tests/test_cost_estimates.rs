@@ -179,7 +179,7 @@ fn test_cost_add_member_and_badges() {
     let badges = vec![&setup.env, Badge::Verified];
     setup
         .contract
-        .add_badges(&setup.grogu, &project_id, &new_member, &badges);
+        .set_badges(&setup.grogu, &project_id, &new_member, &badges);
 
     let budget = setup.env.cost_estimate().budget();
     println!("Cost Estimate - add_member_and_badges");

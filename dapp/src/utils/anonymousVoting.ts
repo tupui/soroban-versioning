@@ -5,7 +5,7 @@
 // is done in this single module so UI components can remain lean.
 
 import { Buffer } from "buffer";
-import { keccak256 } from "js-sha3";
+import { deriveProjectKey } from "./projectKey";
 import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";
 import { decryptWithPrivateKey } from "utils/crypto";
@@ -17,9 +17,8 @@ async function getTansu() {
 }
 
 // Helper to derive the project_key (32-byte buffer)
-function deriveProjectKey(projectName: string): Buffer {
-  return Buffer.from(keccak256.create().update(projectName).digest());
-}
+// re-export local helper for consistency
+export { deriveProjectKey };
 
 export interface DecodedVote {
   address: string;
@@ -81,6 +80,7 @@ export async function computeAnonymousVotingData(
       (data as { encrypted_seeds?: string[] }).encrypted_seeds ?? [];
 
     let voteChoiceIdx = -1;
+    let selectedSeedRaw = 0;
     for (let i = 0; i < 3; i++) {
       if (i >= encryptedVotes.length || i >= encryptedSeeds.length) continue;
       const vCipher = encryptedVotes[i] as string | undefined;
@@ -105,7 +105,10 @@ export async function computeAnonymousVotingData(
         sDec = parseInt(numStr);
       }
 
-      if (vDec > 0) voteChoiceIdx = i;
+      if (vDec > 0) {
+        voteChoiceIdx = i;
+        selectedSeedRaw = sDec; // capture per-voter unweighted seed for display
+      }
       // Apply voting weight to both vote value and seed
       talliesArr[i] += vDec * weight;
       seedsArr[i] += sDec * weight;
@@ -135,7 +138,9 @@ export async function computeAnonymousVotingData(
           : voteChoiceIdx === 1
             ? "reject"
             : "abstain",
-      seed: seedsArr[voteChoiceIdx >= 0 ? voteChoiceIdx : 0] ?? 0,
+      // Show the voter's own seed (unweighted) to avoid confusion with
+      // aggregated, weighted seed tallies used for on-chain proof
+      seed: selectedSeedRaw,
       weight,
       maxWeight,
     });

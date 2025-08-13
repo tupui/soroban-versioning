@@ -91,10 +91,9 @@ contract_bindings: contract_build-release  ## Create bindings
 		--output-dir dapp/packages/tansu \
 		--overwrite && \
 	cd dapp/packages/tansu && \
-	bun update && \
 	bun run build && \
 	cd ../.. && \
-	bun formatter
+	bun format
 
 contract_deploy:  ## Deploy Soroban contract to testnet
 	stellar contract deploy \
@@ -113,7 +112,9 @@ contract_upgrade:  ## After manually pulling the wasm from the pipeline, update 
     	--id $(shell cat .stellar/tansu_id) \
     	-- \
     	upgrade \
-		--new_wasm_hash $(shell stellar contract upload --source-account mando-$(network) --network $(network) --wasm $(wasm))
+		--new_wasm_hash $(shell stellar contract upload --source-account mando-$(network) --network $(network) --wasm $(wasm)) \
+		--admin $(shell stellar keys address mando-$(network)) \
+		--domain_contract_id $(domain_contract_id)
 
 # --------- Soroban Domains --------- #
 
@@ -167,8 +168,7 @@ contract_register:
     	--name tansu \
     	--maintainers '["$(shell stellar keys address mando-$(network))", "$(shell stellar keys address grogu-$(network))"]' \
     	--url https://github.com/tupui/soroban-versioning \
-    	--hash 920b7ffed638360e7259c4b6a4691ef947cfb9bc4ab1b3d6b7f0628c71e86b25 \
-    	--domain_contract_id $(domain_contract_id)
+    	--hash 920b7ffed638360e7259c4b6a4691ef947cfb9bc4ab1b3d6b7f0628c71e86b25
 
 contract_commit:
 	stellar contract invoke \

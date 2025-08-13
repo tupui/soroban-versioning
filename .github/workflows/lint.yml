@@ -50,11 +50,29 @@ jobs:
       PUBLIC_DEFAULT_TIMEOUT: "30"
       SOROBAN_NETWORK: "testnet"
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Get Bun cache directory
+        id: bun-cache-dir
+        run: echo "dir=$(bun pm cache)" >> ${GITHUB_OUTPUT}
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ steps.bun-cache-dir.outputs.dir }}
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-lint-${{ hashFiles('**/bun.lockb', '**/package.json', '**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-lint-
+            ${{ runner.os }}-bun-
 
       - name: Install website dependencies
-        run: cd website && bun install
+        run: cd website && bun install --frozen-lockfile
 
       - name: Check MDX
         run: cd website && bun linter
@@ -63,10 +81,10 @@ jobs:
         run: cd website && bun run build
 
       - name: Install App dependencies
-        run: cd dapp && bun install
+        run: cd dapp && bun install --frozen-lockfile
 
       - name: Lint dApp
         run: cd dapp && bun run lint
 
-      - name: Build app
-        run: cd dapp && bun run build
+      - name: Build app (static for lighthouse)
+        run: cd dapp && bun run build:lighthouse
