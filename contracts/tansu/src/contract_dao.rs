@@ -100,8 +100,8 @@ impl DaoTrait for Tansu {
     fn build_commitments_from_votes(
         env: Env,
         project_key: Bytes,
-        votes: Vec<u32>,
-        seeds: Vec<u32>,
+        votes: Vec<u128>,
+        seeds: Vec<u128>,
     ) -> Vec<BytesN<96>> {
         let vote_config =
             <Tansu as DaoTrait>::get_anonymous_voting_config(env.clone(), project_key);
@@ -112,8 +112,8 @@ impl DaoTrait for Tansu {
 
         let mut commitments = Vec::new(&env);
         for (vote_, seed_) in votes.iter().zip(seeds.iter()) {
-            let vote_: U256 = U256::from_u32(&env, vote_);
-            let seed_: U256 = U256::from_u32(&env, seed_);
+            let vote_: U256 = U256::from_u128(&env, vote_);
+            let seed_: U256 = U256::from_u128(&env, seed_);
             let seed_point_ = bls12_381.g1_mul(&seed_generator_point, &seed_.into());
             let vote_point_ = bls12_381.g1_mul(&vote_generator_point, &vote_.into());
 
@@ -201,8 +201,8 @@ impl DaoTrait for Tansu {
                 commitments: <Tansu as DaoTrait>::build_commitments_from_votes(
                     env.clone(),
                     project_key.clone(),
-                    vec![&env, 0u32, 0u32, 1u32],
-                    vec![&env, 0u32, 0u32, 0u32],
+                    vec![&env, 0u128, 0u128, 1u128],
+                    vec![&env, 0u128, 0u128, 0u128],
                 ),
             }),
         };
@@ -364,8 +364,8 @@ impl DaoTrait for Tansu {
         maintainer: Address,
         project_key: Bytes,
         proposal_id: u32,
-        tallies: Option<Vec<u32>>,
-        seeds: Option<Vec<u32>>,
+        tallies: Option<Vec<u128>>,
+        seeds: Option<Vec<u128>>,
     ) -> types::ProposalStatus {
         maintainer.require_auth();
 
@@ -451,8 +451,8 @@ impl DaoTrait for Tansu {
         env: Env,
         project_key: Bytes,
         proposal: types::Proposal,
-        tallies: Vec<u32>,
-        seeds: Vec<u32>,
+        tallies: Vec<u128>,
+        seeds: Vec<u128>,
     ) -> bool {
         // only allow to proof if proposal is not active
         if proposal.status != types::ProposalStatus::Active {
@@ -479,8 +479,8 @@ impl DaoTrait for Tansu {
         let mut commitment_checks = Vec::new(&env);
         for it in tallies.iter().zip(seeds.iter()) {
             let (tally_, seed_) = it;
-            let seed_: U256 = U256::from_u32(&env, seed_);
-            let tally_: U256 = U256::from_u32(&env, tally_);
+            let seed_: U256 = U256::from_u128(&env, seed_);
+            let tally_: U256 = U256::from_u128(&env, tally_);
             let seed_point_ = bls12_381.g1_mul(&seed_generator_point, &seed_.into());
             let tally_commitment_votes_ = bls12_381.g1_mul(&vote_generator_point, &tally_.into());
             let commitment_check_ = bls12_381.g1_add(&tally_commitment_votes_, &seed_point_);
@@ -605,9 +605,9 @@ pub fn public_execute(proposal: &types::Proposal) -> types::ProposalStatus {
     for vote_ in &proposal.vote_data.votes {
         if let types::Vote::PublicVote(vote) = &vote_ {
             match vote.vote_choice {
-                types::VoteChoice::Approve => voted_approve += vote.weight,
-                types::VoteChoice::Reject => voted_reject += vote.weight,
-                types::VoteChoice::Abstain => voted_abstain += vote.weight,
+                types::VoteChoice::Approve => voted_approve += vote.weight as u128,
+                types::VoteChoice::Reject => voted_reject += vote.weight as u128,
+                types::VoteChoice::Abstain => voted_abstain += vote.weight as u128,
             };
         }
     }
@@ -626,7 +626,7 @@ pub fn public_execute(proposal: &types::Proposal) -> types::ProposalStatus {
 ///
 /// # Returns
 /// * `types::ProposalStatus` - The final status (Approved if approve > reject, Rejected if reject > approve, Cancelled if equal)
-pub fn anonymous_execute(tallies: &Vec<u32>) -> types::ProposalStatus {
+pub fn anonymous_execute(tallies: &Vec<u128>) -> types::ProposalStatus {
     let mut iter = tallies.iter();
 
     let voted_approve = iter.next().unwrap();
@@ -650,9 +650,9 @@ pub fn anonymous_execute(tallies: &Vec<u32>) -> types::ProposalStatus {
 /// # Returns
 /// * `types::ProposalStatus` - The final status (Approved, Rejected, or Cancelled)
 fn tallies_to_result(
-    voted_approve: u32,
-    voted_reject: u32,
-    voted_abstain: u32,
+    voted_approve: u128,
+    voted_reject: u128,
+    voted_abstain: u128,
 ) -> types::ProposalStatus {
     // accept or reject if we have a majority
     if voted_approve > (voted_abstain + voted_reject) {

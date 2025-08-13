@@ -6,13 +6,13 @@ use super::test_utils::{create_test_data, init_contract};
 
 fn commitment(
     env: &Env,
-    vote: &u32,
-    seed: &u32,
+    vote: &u128,
+    seed: &u128,
     vote_generator_point: &G1Affine,
     seed_generator_point: &G1Affine,
 ) -> G1Affine {
-    let vote_fr = Fr::from_u256(U256::from_u32(env, *vote).clone());
-    let seed_fr = Fr::from_u256(U256::from_u32(env, *seed).clone());
+    let vote_fr = Fr::from_u256(U256::from_u128(env, *vote).clone());
+    let seed_fr = Fr::from_u256(U256::from_u128(env, *seed).clone());
 
     let bls12_381 = env.crypto().bls12_381();
 
@@ -38,12 +38,12 @@ fn add_commitment(
     env: &Env,
     tally: &G1Affine,
     commitment: &G1Affine,
-    seed: &u32,
+    seed: &u128,
     seed_generator: &G1Affine,
 ) -> G1Affine {
     let bls12_381 = env.crypto().bls12_381();
 
-    let seed_fr = Fr::from_u256(U256::from_u32(env, *seed).clone());
+    let seed_fr = Fr::from_u256(U256::from_u128(env, *seed).clone());
     let seed_point = bls12_381.g1_mul(seed_generator, &seed_fr);
     let neg_seed = neg_value(env, seed_point);
 
@@ -54,9 +54,9 @@ fn add_commitment(
     bls12_381.g1_add(tally, &recovered_vote)
 }
 
-fn add_vote(env: &Env, vote: &u32, seed: &u32, tally_vote: &Fr) -> (Fr, Fr) {
-    let vote_fr = Fr::from_u256(U256::from_u32(env, *vote).clone());
-    let seed_fr = Fr::from_u256(U256::from_u32(env, *seed).clone());
+fn add_vote(env: &Env, vote: &u128, seed: &u128, tally_vote: &Fr) -> (Fr, Fr) {
+    let vote_fr = Fr::from_u256(U256::from_u128(env, *vote).clone());
+    let seed_fr = Fr::from_u256(U256::from_u128(env, *seed).clone());
 
     let mut new_tally_vote = tally_vote.clone();
     new_tally_vote = new_tally_vote.add(vote_fr);
@@ -81,12 +81,12 @@ fn test_vote_maths() {
     let seed_generator_point = bls12_381.hash_to_g1(&seed_generator, &seed_dst);
 
     // init tallies
-    let mut tally_votes = Fr::from_u256(U256::from_u32(&env, 0));
-    let mut tally_seed = Fr::from_u256(U256::from_u32(&env, 0));
+    let mut tally_votes = Fr::from_u256(U256::from_u128(&env, 0));
+    let mut tally_seed = Fr::from_u256(U256::from_u128(&env, 0));
 
     // casting votes, on-chain store tally_votes, encrypted version of seed_fr and commitment
-    let vote_a = 1_u32;
-    let seed_a = 60_u32;
+    let vote_a = 1_u128;
+    let seed_a = 60_u128;
     let vote_commitment_a = commitment(
         &env,
         &vote_a,
@@ -97,8 +97,8 @@ fn test_vote_maths() {
     let seed_a_fr;
     (tally_votes, seed_a_fr) = add_vote(&env, &vote_a, &seed_a, &tally_votes);
 
-    let vote_b = 2_u32;
-    let seed_b = 30_u32;
+    let vote_b = 2_u128;
+    let seed_b = 30_u128;
     let vote_commitment_b = commitment(
         &env,
         &vote_b,
@@ -109,8 +109,8 @@ fn test_vote_maths() {
     let seed_b_fr;
     (tally_votes, seed_b_fr) = add_vote(&env, &vote_b, &seed_b, &tally_votes);
 
-    let vote_c = 5_u32;
-    let seed_c = 10_u32;
+    let vote_c = 5_u128;
+    let seed_c = 10_u128;
     let vote_commitment_c = commitment(
         &env,
         &vote_c,
@@ -122,7 +122,7 @@ fn test_vote_maths() {
     (tally_votes, seed_c_fr) = add_vote(&env, &vote_c, &seed_c, &tally_votes);
 
     // voting ends
-    let ref_tally = U256::from_u32(&env, vote_a + vote_b + vote_c);
+    let ref_tally = U256::from_u128(&env, vote_a + vote_b + vote_c);
 
     let mut tally = tally_votes.to_u256();
 
@@ -186,8 +186,8 @@ fn anonymous_vote_commitments_roundtrip() {
         .anonymous_voting_setup(&setup.mando, &project_key, &pub_key);
 
     // test data
-    let votes = vec![&setup.env, 0u32, 1u32, 2u32];
-    let seeds = vec![&setup.env, 42u32, 43u32, 44u32];
+    let votes = vec![&setup.env, 0u128, 1u128, 2u128];
+    let seeds = vec![&setup.env, 42u128, 43u128, 44u128];
 
     // expected commitments (re-using same math off-chain)
     let bls12_381 = setup.env.crypto().bls12_381();

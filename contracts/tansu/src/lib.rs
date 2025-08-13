@@ -88,8 +88,8 @@ pub trait DaoTrait {
     fn build_commitments_from_votes(
         env: Env,
         project_key: Bytes,
-        votes: Vec<u32>,
-        seeds: Vec<u32>,
+        votes: Vec<u128>,
+        seeds: Vec<u128>,
     ) -> Vec<BytesN<96>>;
 
     fn create_proposal(
@@ -109,16 +109,16 @@ pub trait DaoTrait {
         maintainer: Address,
         project_key: Bytes,
         proposal_id: u32,
-        tallies: Option<Vec<u32>>,
-        seeds: Option<Vec<u32>>,
+        tallies: Option<Vec<u128>>,
+        seeds: Option<Vec<u128>>,
     ) -> types::ProposalStatus;
 
     fn proof(
         env: Env,
         project_key: Bytes,
         proposal: types::Proposal,
-        tallies: Vec<u32>,
-        seeds: Vec<u32>,
+        tallies: Vec<u128>,
+        seeds: Vec<u128>,
     ) -> bool;
 
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;

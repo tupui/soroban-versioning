@@ -143,8 +143,8 @@ fn dao_anonymous() {
         ],
         commitments: setup.contract.build_commitments_from_votes(
             &id,
-            &vec![&setup.env, 0u32, 0u32, 1u32],
-            &vec![&setup.env, 0u32, 0u32, 0u32],
+            &vec![&setup.env, 0u128, 0u128, 1u128],
+            &vec![&setup.env, 0u128, 0u128, 0u128],
         ),
     });
 
@@ -170,8 +170,8 @@ fn dao_anonymous() {
         ],
         commitments: setup.contract.build_commitments_from_votes(
             &id,
-            &vec![&setup.env, 3u32, 1u32, 1u32],
-            &vec![&setup.env, 5u32, 4u32, 6u32],
+            &vec![&setup.env, 3u128, 1u128, 1u128],
+            &vec![&setup.env, 5u128, 4u128, 6u128],
         ),
     });
     setup.contract.vote(&kuiil, &id, &proposal_id, &vote_);
@@ -182,8 +182,8 @@ fn dao_anonymous() {
         &setup.grogu,
         &id,
         &proposal_id,
-        &Some(vec![&setup.env, 9u32, 3u32, 500003u32]),
-        &Some(vec![&setup.env, 15u32, 12u32, 18u32]),
+        &Some(vec![&setup.env, 9u128, 3u128, 500003u128]),
+        &Some(vec![&setup.env, 15u128, 12u128, 18u128]),
     );
 
     assert_eq!(vote_result, ProposalStatus::Cancelled);
@@ -359,7 +359,7 @@ fn voting_errors() {
             &setup.mando,
             &id,
             &proposal_id,
-            &Some(vec![&setup.env, 9u32, 3u32, 500003u32]),
+            &Some(vec![&setup.env, 9u128, 3u128, 500003u128]),
             &None,
         )
         .unwrap_err()
@@ -380,8 +380,8 @@ fn voting_errors() {
             &setup.grogu,
             &id,
             &proposal_id_anonymous,
-            &Some(vec![&setup.env, 0u32, 0u32, 500_001u32]), // 500_000u32
-            &Some(vec![&setup.env, 0u32, 0u32, 0u32]),
+            &Some(vec![&setup.env, 0u128, 0u128, 500_001u128]), // 500_000u128
+            &Some(vec![&setup.env, 0u128, 0u128, 0u128]),
         )
         .unwrap_err()
         .unwrap();
