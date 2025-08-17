@@ -10,6 +10,7 @@ import { deriveProjectKey } from "../utils/projectKey";
 
 //
 import { sendSignedTransaction, signAssembledTransaction } from "./TxService";
+import { checkSimulationError } from "../utils/contractErrors";
 
 interface UploadWithDelegationParams {
   files: File[];
@@ -107,6 +108,9 @@ async function createSignedProposalTransaction(
     public_voting: publicVoting,
   });
 
+  // Check for simulation errors (contract errors) before signing
+  checkSimulationError(tx as any);
+
   return await signAssembledTransaction(tx);
 }
 
@@ -131,6 +135,9 @@ async function createSignedAddMemberTransaction(
     member_address: address,
     meta: meta,
   });
+
+  // Check for simulation errors (contract errors) before signing
+  checkSimulationError(tx as any);
 
   return await signAssembledTransaction(tx);
 }
@@ -305,6 +312,9 @@ export async function createProjectFlow({
     ipfs: expectedCid,
   });
 
+  // Check for simulation errors (contract errors) before signing
+  checkSimulationError(tx as any);
+
   const signedTxXdr = await signAssembledTransaction(tx);
 
   // Step 3 – Upload to IPFS with delegation
@@ -357,6 +367,9 @@ async function createSignedUpdateConfigTransaction(
     url: configUrl,
     ipfs: cid,
   });
+
+  // Check for simulation errors (contract errors) before signing
+  checkSimulationError(tx as any);
 
   return await signAssembledTransaction(tx);
 }

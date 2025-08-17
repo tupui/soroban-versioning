@@ -162,10 +162,10 @@ const UpdateConfigModal = () => {
   if (!showButton) return null;
   return (
     <>
-              <button
-          className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
-          onClick={() => setOpen(true)}
-        >
+      <button
+        className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
+        onClick={() => setOpen(true)}
+      >
         <img src="/icons/gear.svg" className="w-5 h-5 flex-shrink-0" />
         <span className="text-sm sm:text-base text-primary font-medium">
           Update config

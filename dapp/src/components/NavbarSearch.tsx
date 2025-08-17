@@ -113,11 +113,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
         window.location.href = `/?search=${encodeURIComponent(searchTerm)}&from=${encodeURIComponent(currentFullUrl)}`;
       }
     }
-
-
   };
-
-
 
   const handleAddProject = () => {
     if (!isWalletConnected) {
@@ -158,9 +154,11 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
   return (
     <div className="flex items-center gap-6 w-full">
       {/* Mobile: Expandable search that takes full width when focused */}
-      <div className={`search-container relative transition-all duration-300 ease-in-out ${
-        isSearchFocused || searchTerm ? 'w-full' : 'flex-1'
-      }`}>
+      <div
+        className={`search-container relative transition-all duration-300 ease-in-out ${
+          isSearchFocused || searchTerm ? "w-full" : "flex-1"
+        }`}
+      >
         <div className="flex items-center border border-zinc-800 h-10 md:h-12 bg-white rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all duration-300 w-full">
           <div className="flex-shrink-0 pl-4">
             <img
@@ -211,9 +209,11 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
       </div>
 
       {/* Add Project button - always visible on desktop, conditionally hidden on mobile when searching */}
-      <div className={`ml-6 transition-all duration-300 ease-in-out ${
-        isSearchFocused || searchTerm ? 'hidden md:block' : 'block'
-      }`}>
+      <div
+        className={`ml-6 transition-all duration-300 ease-in-out ${
+          isSearchFocused || searchTerm ? "hidden md:block" : "block"
+        }`}
+      >
         <Button
           type="primary"
           order="secondary"
@@ -222,7 +222,9 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
           title={buttonTitle}
           size="sm"
         >
-          <span className="text-xs md:text-sm lg:text-base font-medium">+ Add Project</span>
+          <span className="text-xs md:text-sm lg:text-base font-medium">
+            + Add Project
+          </span>
         </Button>
       </div>
     </div>

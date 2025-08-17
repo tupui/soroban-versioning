@@ -36,28 +36,16 @@ function getClient() {
  * Uses the proven pattern from FlowService
  */
 async function submitTransaction(assembledTx: any): Promise<any> {
-  try {
-    // If this is a real assembled transaction (SDK binding), it will expose
-    // simulate/prepare/toXDR. Some tests or mocks may pass a plain object
-    // (already-executed result); in that case, just return it.
-    const hasSimulate = typeof assembledTx?.simulate === "function";
-    const hasToXdr = typeof assembledTx?.toXDR === "function";
-    if (!hasSimulate && !hasToXdr) {
-      return assembledTx?.result ?? assembledTx;
-    }
-
-    return await signAndSend(assembledTx);
-  } catch (error: any) {
-    if (error.message?.includes("txMalformed")) {
-      throw new Error(
-        "Transaction malformed - this usually indicates an issue with parameter formatting or contract state. Please ensure the member exists and the project is properly registered.",
-      );
-    }
-    if (error.message?.includes("Error(Contract")) {
-      throw new Error(parseContractError(error));
-    }
-    throw new Error(`Transaction failed: ${error.message || "Unknown error"}`);
+  // If this is a real assembled transaction (SDK binding), it will expose
+  // simulate/prepare/toXDR. Some tests or mocks may pass a plain object
+  // (already-executed result); in that case, just return it.
+  const hasSimulate = typeof assembledTx?.simulate === "function";
+  const hasToXdr = typeof assembledTx?.toXDR === "function";
+  if (!hasSimulate && !hasToXdr) {
+    return assembledTx?.result ?? assembledTx;
   }
+
+  return await signAndSend(assembledTx);
 }
 
 //
@@ -109,6 +97,9 @@ export async function commitHash(commit_hash: string): Promise<boolean> {
     hash: commit_hash,
   });
 
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
+
   await submitTransaction(assembledTx);
   return true;
 }
@@ -131,6 +122,8 @@ export async function voteToProposal(
       project_key: projectKey,
       member_address: client.options.publicKey!,
     });
+    // Check for simulation errors (contract errors)
+    checkSimulationError(weightTx as any);
     weight = Number(weightTx.result) || 1;
   } catch {
     // Default weight
@@ -143,6 +136,8 @@ export async function voteToProposal(
       project_key: projectKey,
       proposal_id: Number(proposal_id),
     });
+    // Check for simulation errors (contract errors)
+    checkSimulationError(proposalTx as any);
     isPublicVoting = proposalTx.result.vote_data.public_voting;
   } catch {
     // Default to public
@@ -180,11 +175,7 @@ export async function voteToProposal(
       project_key: projectKey,
     });
     // Ensure config actually exists (not an error bubbled in result)
-    try {
-      checkSimulationError(configTx as any);
-    } catch (_) {
-      throw new Error("Anonymous voting not configured for this project");
-    }
+    checkSimulationError(configTx as any);
     const publicKeyStr = configTx.result.public_key;
 
     // Encrypt votes and seeds using project-configured public key
@@ -217,11 +208,7 @@ export async function voteToProposal(
         }),
       ]);
       // Ensure the helper call did not surface a simulation error payload
-      try {
-        checkSimulationError(commitmentsTx as any);
-      } catch (e: any) {
-        throw new Error(parseContractError(e));
-      }
+      checkSimulationError(commitmentsTx as any);
     } catch (e: any) {
       // Normalize Wasm VM/host errors to user-friendly text
       throw new Error(parseContractError(e));
@@ -248,6 +235,9 @@ export async function voteToProposal(
     vote: votePayload,
   });
 
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
+
   await submitTransaction(assembledTx);
   return true;
 }
@@ -272,6 +262,9 @@ export async function execute(
     seeds: seeds as unknown as bigint[] | undefined,
   });
 
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
+
   return await submitTransaction(assembledTx);
 }
 
@@ -295,27 +288,7 @@ export async function setBadges(
     ? projectId
     : Buffer.from(projectId, "hex");
 
-  // Basic input checks to align with other flows
-  if (!member_address || member_address.length < 56) {
-    throw new Error("Invalid member address format");
-  }
-  // Keep parity with other flows: rely on contract errors rather than custom pre-flight
-
-  if (!badges || badges.length === 0) {
-    throw new Error("At least one badge must be selected");
-  }
-
-  // Validate badge values
-  const validBadgeValues = [10000000, 5000000, 1000000, 500000, 1];
-  for (const badge of badges) {
-    if (!validBadgeValues.includes(badge)) {
-      throw new Error(`Invalid badge value: ${badge}`);
-    }
-  }
-
-  if (import.meta.env.DEV) {
-    // Development logging removed for production
-  }
+  // Rely on contract validation rather than duplicating checks
 
   // Build transaction using current bindings (key)
   const assembledTx: any = await (client as any).set_badges({
@@ -324,6 +297,9 @@ export async function setBadges(
     member: member_address,
     badges,
   });
+
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
 
   await submitTransaction(assembledTx);
   return true;
@@ -346,12 +322,8 @@ export async function setupAnonymousVoting(
       const configTx = await client.get_anonymous_voting_config({
         project_key: projectKey,
       });
-      try {
-        checkSimulationError(configTx as any);
-        if (configTx.result) return true;
-      } catch (_) {
-        // Missing config – fall-through to setup
-      }
+      checkSimulationError(configTx as any);
+      if (configTx.result) return true;
     } catch {
       // Fall-through to setup on network/simulation errors
     }
@@ -362,6 +334,9 @@ export async function setupAnonymousVoting(
     project_key: projectKey,
     public_key,
   });
+
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
 
   await submitTransaction(assembledTx);
   return true;

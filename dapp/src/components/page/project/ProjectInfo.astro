@@ -88,7 +88,10 @@ import { toast } from "utils/utils";
       class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
     >
       <p class="leading-4 text-base text-secondary">Maintainers</p>
-      <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9 p-4"></ul>
+      <ul
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9 p-4"
+      >
+      </ul>
       <div class="flex view-all"></div>
     </div>
     <div
@@ -291,8 +294,10 @@ import { toast } from "utils/utils";
               ? "leading-[14px] text-sm text-secondary cursor-pointer underline"
               : "leading-6 text-xl text-primary truncate cursor-pointer underline";
             addrP.textContent = displayName
-              ? `(${maintainer.slice(0, 16)}...)`
-              : maintainer.slice(0, 20);
+              ? `(${maintainer.length > 16 ? maintainer.slice(0, 16) + "..." : maintainer})`
+              : maintainer.length > 20
+                ? maintainer.slice(0, 20) + "..."
+                : maintainer;
             li.appendChild(addrP);
 
             if (!displayName) {
@@ -615,10 +620,12 @@ import { toast } from "utils/utils";
             secDiv.appendChild(title);
 
             const ul = document.createElement("ul");
-            ul.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9";
+            ul.className =
+              "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9";
             sec.list.forEach((addr) => {
-                          const li = document.createElement("li");
-            li.className = "relative cursor-pointer p-3 bg-gray-50 rounded-md";
+              const li = document.createElement("li");
+              li.className =
+                "relative cursor-pointer p-3 bg-gray-50 rounded-md";
               li.onclick = (e) => {
                 e.stopPropagation();
                 openProfileModal(addr);
@@ -626,7 +633,8 @@ import { toast } from "utils/utils";
               const addrP = document.createElement("p");
               addrP.className =
                 "leading-[14px] text-sm text-primary truncate underline";
-              addrP.textContent = addr.slice(0, 20);
+              addrP.textContent =
+                addr.length > 20 ? addr.slice(0, 20) + "..." : addr;
               li.appendChild(addrP);
               ul.appendChild(li);
             });

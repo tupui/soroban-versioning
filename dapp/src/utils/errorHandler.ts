@@ -17,26 +17,30 @@ interface ErrorHandlerOptions {
  * Extract contract error code and message from error object
  */
 export function extractContractError(error: any): {
-  errorCode: ContractErrorMessageKey;
+  errorCode: number;
   errorMessage: string;
 } {
   if (error.code === -4) {
     return {
-      errorCode: error.code as ContractErrorMessageKey,
+      errorCode: error.code,
       errorMessage: error.message,
     };
   }
 
   const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
-  let errorCode: ContractErrorMessageKey = 0;
+  let errorCode = 0;
 
   if (errorCodeMatch && errorCodeMatch[1]) {
-    errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
+    errorCode = parseInt(errorCodeMatch[1], 10);
   }
+
+  // Use our constants file for user-friendly error messages
+  const errorMessage =
+    contractErrorMessages[errorCode] || `Contract error #${errorCode}`;
 
   return {
     errorCode,
-    errorMessage: contractErrorMessages[errorCode] || "Unknown contract error",
+    errorMessage,
   };
 }
 

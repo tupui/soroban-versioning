@@ -1,4 +1,4 @@
-import { ContractErrors } from "../../packages/tansu";
+import { contractErrorMessages } from "../constants/contractErrorMessages";
 
 /**
  * Parse contract error from simulation result or error message
@@ -12,9 +12,11 @@ export function parseContractError(error: any): string {
   const errorMatch = errorMessage.match(/Error\(Contract, #(\d+)\)/);
   if (errorMatch && errorMatch[1]) {
     const errorCode = parseInt(errorMatch[1]);
-    const contractError = (ContractErrors as any)[errorCode];
-    if (contractError) {
-      return contractError.message;
+    // Use our constants file for user-friendly error messages
+    const parsedErrorMessage =
+      contractErrorMessages[errorCode as keyof typeof contractErrorMessages];
+    if (parsedErrorMessage) {
+      return parsedErrorMessage;
     }
     return `Contract error #${errorCode}`;
   }
@@ -25,9 +27,11 @@ export function parseContractError(error: any): string {
   );
   if (hostErrorMatch && hostErrorMatch[1]) {
     const errorCode = parseInt(hostErrorMatch[1]);
-    const contractError = (ContractErrors as any)[errorCode];
-    if (contractError) {
-      return contractError.message;
+    // Use our constants file for user-friendly error messages
+    const parsedErrorMessage =
+      contractErrorMessages[errorCode as keyof typeof contractErrorMessages];
+    if (parsedErrorMessage) {
+      return parsedErrorMessage;
     }
     return `Contract error #${errorCode}`;
   }
@@ -60,6 +64,7 @@ export function parseContractError(error: any): string {
 
 /**
  * Check if an AssembledTransaction result has a simulation error
+ * Throws an Error with the parsed error message if there is an error
  */
 export function checkSimulationError(result: any): void {
   if (result?.simulation?.error) {

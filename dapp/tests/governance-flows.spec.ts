@@ -29,7 +29,7 @@ test.describe("Governance Happy-Path Flows", () => {
 
     // Just verify the page loads without errors
     await expect(page.locator("body")).toBeVisible();
-    
+
     // Check that the page doesn't crash and shows basic content
     const pageContent = await page.locator("body").textContent();
     // For now, just check that the page loads without errors
@@ -37,7 +37,9 @@ test.describe("Governance Happy-Path Flows", () => {
     expect(pageContent !== null).toBeTruthy();
   });
 
-  test("Anonymous proposal with missing config shows setup step and completes", async ({ page }) => {
+  test("Anonymous proposal with missing config shows setup step and completes", async ({
+    page,
+  }) => {
     // Navigate to governance page
     try {
       await page.goto("/governance?name=demo", {
@@ -52,14 +54,16 @@ test.describe("Governance Happy-Path Flows", () => {
 
     // Just verify the page loads without errors
     await expect(page.locator("body")).toBeVisible();
-    
+
     // Check that the page doesn't crash and shows basic content
     const pageContent = await page.locator("body").textContent();
     // For now, just check that the page loads without errors
     expect(pageContent !== null).toBeTruthy();
   });
 
-  test("Anonymous proposal with existing config skips setup", async ({ page }) => {
+  test("Anonymous proposal with existing config skips setup", async ({
+    page,
+  }) => {
     // Navigate to governance page
     try {
       await page.goto("/governance?name=demo", {
@@ -74,7 +78,7 @@ test.describe("Governance Happy-Path Flows", () => {
 
     // Just verify the page loads without errors
     await expect(page.locator("body")).toBeVisible();
-    
+
     // Check that the page doesn't crash and shows basic content
     const pageContent = await page.locator("body").textContent();
     // For now, just check that the page loads without errors

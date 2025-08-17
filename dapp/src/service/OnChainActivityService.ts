@@ -191,7 +191,7 @@ export async function fetchOnChainActions(
               );
               PROJECT_CACHE.set(keyHex!, projectName);
               details.name = projectName;
-              
+
               // Extract IPFS CID from the contract call
               details.ipfs = paramToString(args[4]); // ipfs is arg4 (maintainer, name, maintainers, url, ipfs)
 

@@ -53,7 +53,8 @@
     "preview": "astro preview",
     "start": "astro dev",
     "test": "bun playwright test --reporter=dot",
-    "lint": "prettier -c . && eslint src/ --ext .ts,.tsx && ts-prune --project tsconfig.json",
+    "lint": "prettier -c . && eslint src/ --ext .ts,.tsx && ts-prune --project tsconfig.json && bun scripts/validate-contract-errors.js",
+    "validate-errors": "bun scripts/validate-contract-errors.js",
     "format": "prettier --write .",
     "audit": "bun run build:lighthouse && bunx serve dist -l 3000 & sleep 8 && bunx lighthouse http://localhost:3000 --output=json --output-path=./lighthouse-local-results.json --chrome-flags=\"--headless --disable-dev-shm-usage\" && pkill -f serve && cat lighthouse-local-results.json | jq '.categories | with_entries(.value = .value.score)'"
   },

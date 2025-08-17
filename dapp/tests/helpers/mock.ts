@@ -105,7 +105,12 @@ export async function applyAllMocks(page) {
         maintainers: ["G".padEnd(56, "A"), "G".padEnd(56, "C"), "${WALLET_PK}"],
         config: { url: "https://github.com/test/demo", ipfs: "abc123" },
       };
-      console.log("Mock getProjectFromName called with:", name, "returning:", result);
+      console.log(
+        "Mock getProjectFromName called with:",
+        name,
+        "returning:",
+        result,
+      );
       return result;
     };
 
@@ -114,7 +119,10 @@ export async function applyAllMocks(page) {
       return 1; // Return 1 page
     };
 
-    (window as any).getProposals = async (projectName: string, page: number) => {
+    (window as any).getProposals = async (
+      projectName: string,
+      page: number,
+    ) => {
       return []; // Return empty proposals array
     };
   });
@@ -417,12 +425,18 @@ export async function applyAllMocks(page) {
     // @ts-ignore
     window.kit = {
       signTransaction: async (xdr) => ({ signedTxXdr: xdr }),
-      getAddress: async () => ({ address: '${WALLET_PK}' }),
+      getAddress: async () => ({ address: "${WALLET_PK}" }),
       isConnected: async () => true,
       requestAccess: async () => true,
-      signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
-      signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
-      getNetwork: async () => ({ network: 'testnet' })
+      signAuthEntry: async () => ({
+        signedAuthEntry: "mock",
+        signerAddress: "${WALLET_PK}",
+      }),
+      signMessage: async () => ({
+        signature: "mock",
+        signerAddress: "${WALLET_PK}",
+      }),
+      getNetwork: async () => ({ network: "testnet" }),
     };
   });
 

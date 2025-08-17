@@ -26,7 +26,9 @@ const { page } = Astro.props;
             />
           </a>
           <div class="hidden lg:flex items-center gap-2 whitespace-nowrap">
-            <p class="text-base md:text-lg font-bold text-primary leading-none">Tansu</p>
+            <p class="text-base md:text-lg font-bold text-primary leading-none">
+              Tansu
+            </p>
             <p class="text-sm font-bold text-secondary leading-none">- alpha</p>
           </div>
         </div>
@@ -37,16 +39,11 @@ const { page } = Astro.props;
         </div>
 
         <!-- Wallet connect and community button on right -->
-        <div
-          class="flex items-center gap-4 md:gap-6 flex-shrink-0"
-        >
+        <div class="flex items-center gap-4 md:gap-6 flex-shrink-0">
           <div class="ml-6">
             <ConnectWallet />
           </div>
-          <div
-            id="join-community-wrapper"
-            class="hidden sm:block"
-          >
+          <div id="join-community-wrapper" class="hidden sm:block">
             <JoinCommunityButton client:load />
           </div>
         </div>

@@ -262,15 +262,10 @@ function isStellarNetworkError(error: any): boolean {
 export async function signAssembledTransaction(
   assembledTx: any,
 ): Promise<string> {
-  try {
-    const sim = await assembledTx.simulate();
+  const sim = await assembledTx.simulate();
 
-    if ((assembledTx as any).prepare) {
-      await (assembledTx as any).prepare(sim);
-    }
-  } catch (error: any) {
-    // Normalize Wasm VM/host errors to user-friendly text
-    throw new Error(parseContractError(error));
+  if ((assembledTx as any).prepare) {
+    await (assembledTx as any).prepare(sim);
   }
 
   const preparedXdr = assembledTx.toXDR();
