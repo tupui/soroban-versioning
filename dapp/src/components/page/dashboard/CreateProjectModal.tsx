@@ -21,11 +21,12 @@ import {
 } from "utils/validations";
 import Textarea from "components/utils/Textarea";
 import ProgressStep from "components/utils/ProgressStep";
+import Spinner from "components/utils/Spinner";
 
 // Get domain contract ID from environment with fallback
 const SOROBAN_DOMAIN_CONTRACT_ID =
   import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID ||
-  "CDVEWMU4UFI7MXKYZAATXROJRZZKQHZWRCR443STHMPE3MOTM6HAB7R7"; // Fallback value
+  "CAQWEZNN5X7LFD6PZBQXALVH4LSJW2KGNDMFJBQ3DWHXUVQ2JIZ6AQU6"; // Fallback value
 
 const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [step, setStep] = useState(1);
@@ -325,7 +326,6 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
         tomlFile,
         githubRepoUrl,
         maintainers: maintainerAddresses,
-        domainContractId,
         onProgress: setStep,
       });
 
@@ -339,7 +339,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
           setProjectRepoInfo(username, repoName);
         }
 
-        const tomlData = await fetchTomlFromCid(project.config.hash);
+        const tomlData = await fetchTomlFromCid(project.config.ipfs);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigData(configData);
@@ -443,7 +443,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                   {domainStatus && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/3 flex items-center">
                       {domainStatus === "checking" ? (
-                        <div className="animate-spin h-5 w-5 border-2 border-gray-500 rounded-full border-t-transparent"></div>
+                        <Spinner />
                       ) : domainStatus === "available" ? (
                         <div className="flex items-center text-green-600">
                           <img

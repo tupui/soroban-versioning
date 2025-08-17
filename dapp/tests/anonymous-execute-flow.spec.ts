@@ -61,6 +61,48 @@ test("execute() receives weighted tallies/seeds for anonymous proposal", async (
     });
   });
 
+  // Stub ContractService execute to just forward to the mocked client
+  await page.route("**/src/service/ContractService.ts", (route) => {
+    const body = `
+      export async function execute(project_name, proposal_id, tallies, seeds){
+        const c = (globalThis).__tansuClient;
+        if (!c?.options?.publicKey) c.options = { publicKey: 'G'.padEnd(56,'A') };
+        return c.execute({ tallies, seeds });
+      }
+      export { execute as executeProposal };
+    `;
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body,
+    });
+  });
+
+  // Stub wallet kit so signing path is never reached (we only test argument wiring)
+  await page.route("**/src/components/stellar-wallets-kit.ts", (route) => {
+    const body = `export const kit = { signTransaction: async (xdr) => ({ signedTxXdr: xdr }) };`;
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body,
+    });
+  });
+
+  // Stub walletService to provide a connected publicKey
+  await page.route("**/src/service/walletService.ts", (route) => {
+    const body = `
+      export function loadedPublicKey(){ return 'G'.padEnd(56,'A'); }
+      export function setPublicKey(){}
+      export function disconnect(){}
+      export function initializeConnection(){}
+    `;
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body,
+    });
+  });
+
   await page.goto("/", { waitUntil: "domcontentloaded" });
 
   // Compute tallies with the utils, then call execute through the service

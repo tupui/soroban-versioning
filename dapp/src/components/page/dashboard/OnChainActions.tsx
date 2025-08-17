@@ -3,12 +3,14 @@
 // CommitRecord component for individual rows.
 
 import { useEffect, useState } from "react";
+import Spinner from "../../utils/Spinner";
 import {
   fetchOnChainActions,
   seedProjectNameCache,
   type OnChainAction,
 } from "../../../service/OnChainActivityService";
 import { formatDate } from "../../../utils/formatTimeFunctions";
+import { getStellarExpertUrl } from "../../../utils/urls";
 import CommitRecord from "../../CommitRecord";
 import {
   paramNamesForMethod,
@@ -57,7 +59,7 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-6">
-        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
+        <Spinner />
       </div>
     );
   }
@@ -90,7 +92,9 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
                     const link = proposalLink(a);
                     const props = link
                       ? { commitLink: link }
-                      : { shaLink: txExplorerUrl(a.txHash) };
+                      : {
+                          shaLink: getStellarExpertUrl(a.txHash, "transaction"),
+                        };
                     return (
                       <CommitRecord
                         message={summaryFor(a)}
@@ -116,11 +120,6 @@ export default OnChainActions;
 // -----------------------------------------------------------------------------
 // Helper utilities
 // -----------------------------------------------------------------------------
-
-function txExplorerUrl(hash: string): string {
-  const net = import.meta.env.SOROBAN_NETWORK || "testnet";
-  return `https://stellar.expert/explorer/${net}/tx/${hash}`;
-}
 
 function summaryFor(a: OnChainAction): string {
   const firstLine = summaryForMethod(a.method, a.details);

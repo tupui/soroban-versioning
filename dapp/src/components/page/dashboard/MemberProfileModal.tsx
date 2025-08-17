@@ -10,7 +10,7 @@ import { connectedPublicKey } from "../../../utils/store";
 
 import { getProjectFromId } from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
-import { getStellarExplorerURL } from "../../../utils/urls";
+import { getStellarExpertUrl } from "../../../utils/urls";
 import CopyButton from "components/utils/CopyButton";
 import { Buffer } from "buffer";
 import OnChainActions from "./OnChainActions";
@@ -199,7 +199,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
 
   // Address display component with copy functionality
   const AddressDisplay = ({ address }: { address: string }) => {
-    const explorerUrl = getStellarExplorerURL(address);
+    const explorerUrl = getStellarExpertUrl(address);
 
     return (
       <div className="mt-1 bg-zinc-50 p-2 rounded flex items-center gap-2 w-full">
@@ -290,7 +290,9 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
     <Modal onClose={onClose} fullWidth>
       {isLoading ? (
         <div className="flex items-center justify-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div>
+            <img src="/images/loading.svg" className="w-12 animate-spin" />
+          </div>
         </div>
       ) : (
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full">

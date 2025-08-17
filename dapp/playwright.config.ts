@@ -9,6 +9,7 @@ export default defineConfig({
     "**/regression-prevention.spec.ts",
     "**/governance-flows.spec.ts",
     "**/happy-flows.spec.ts",
+    "**/anonymous-*.spec.ts",
   ],
 
   // Performance optimizations

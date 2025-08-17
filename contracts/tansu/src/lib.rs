@@ -56,7 +56,7 @@ pub trait VersioningTrait {
         name: String,
         maintainers: Vec<Address>,
         url: String,
-        hash: String,
+        ipfs: String,
     ) -> Bytes;
 
     fn update_config(

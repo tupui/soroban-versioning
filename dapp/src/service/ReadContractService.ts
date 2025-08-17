@@ -1,7 +1,5 @@
 import Tansu from "../contracts/soroban_tansu";
-import * as pkg from "js-sha3";
 import { deriveProjectKey } from "../utils/projectKey";
-const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import { loadedProjectId } from "./StateService";
 import { modifyProposalFromContract } from "utils/utils";
@@ -255,3 +253,26 @@ export {
   getMember,
   getBadges,
 };
+
+/**
+ * Check whether anonymous voting is configured for a given project name.
+ * Returns true when configuration exists, false otherwise.
+ */
+export async function hasAnonymousVotingConfig(
+  projectName: string,
+): Promise<boolean> {
+  try {
+    const project_key = deriveProjectKey(projectName);
+    const tx = await (Tansu as any).get_anonymous_voting_config({
+      project_key,
+    });
+    try {
+      checkSimulationError(tx);
+      return !!tx.result;
+    } catch (_) {
+      return false;
+    }
+  } catch (_) {
+    return false;
+  }
+}

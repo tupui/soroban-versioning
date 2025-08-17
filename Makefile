@@ -102,6 +102,7 @@ contract_deploy:  ## Deploy Soroban contract to testnet
   		--network $(network) \
   		-- \
   		--admin $(shell stellar keys address mando-$(network)) \
+		--domain_contract_id $(domain_contract_id) \
   		> .stellar/tansu_id && \
   	cat .stellar/tansu_id
 

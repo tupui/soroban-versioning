@@ -20,7 +20,6 @@ const VerifyAnonymousVotesModal: React.FC<Props> = ({
 }) => {
   const [step, setStep] = useState(1);
   const [processingError, setProcessingError] = useState<string | null>(null);
-  const [tallies, setTallies] = useState<number[] | null>(null);
   const [voteStatus, setVoteStatus] = useState<VoteStatus | null>(null);
   const [proofOk, setProofOk] = useState<boolean | null>(null);
   const [decodedVotes, setDecodedVotes] = useState<any[]>([]);
@@ -33,7 +32,6 @@ const VerifyAnonymousVotesModal: React.FC<Props> = ({
         privKey,
         true,
       );
-      setTallies(data.tallies);
       setVoteStatus(data.voteStatus);
       setProofOk(data.proofOk ?? null);
       setDecodedVotes(data.decodedVotes);

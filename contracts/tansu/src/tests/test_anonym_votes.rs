@@ -230,3 +230,98 @@ fn anonymous_voting_setup_is_reachable() {
         "anonymous_voting_setup should succeed in the mock env"
     );
 }
+
+#[test]
+fn weighted_commitments_roundtrip_bounds_check() {
+    let env = Env::default();
+
+    // Generators (same domain separation as contract)
+    // On-chain: these are derived in the contract using hash_to_g1.
+    // Off-chain: clients mirror this to build commitments consistently.
+    let bls12_381 = env.crypto().bls12_381();
+    let vote_generator = Bytes::from_slice(&env, b"VOTE_GENERATOR");
+    let vote_dst = Bytes::from_slice(&env, b"VOTE_COMMITMENT");
+    let seed_generator = Bytes::from_slice(&env, b"SEED_GENERATOR");
+    let seed_dst = Bytes::from_slice(&env, b"VOTE_SEED");
+
+    let g_vote = bls12_381.hash_to_g1(&vote_generator, &vote_dst);
+    let g_seed = bls12_381.hash_to_g1(&seed_generator, &seed_dst);
+
+    // One-hot vote and random seed (unweighted base)
+    // Off-chain: voter prepares base commitment C = v*G + r*H.
+    let v: u128 = 1; // approve
+    let r: u128 = 12345;
+    let base_commitment = commitment(&env, &v, &r, &g_vote, &g_seed);
+
+    // Simple bound: assume protocol publishes a maximum allowed weight
+    // On-chain today (public weights): contract checks weight <= get_max_weight(...).
+    // For hidden weights, this must be enforced by verifying a proof at vote-time.
+    // This test demonstrates the algebra; it does NOT implement the proof.
+    let w_max: u32 = 1_500_000;
+
+    // The voter privately chooses a weight w within bounds (hidden in real protocol)
+    // Off-chain: voter picks w and constructs a proof "w in [1, w_max]".
+    // On-chain: the contract should verify that proof during vote submission.
+    let w: u32 = 1_500_000; // choose full allowance here
+    assert!(w > 0 && w <= w_max, "weight must be within [1, w_max]");
+
+    // Scale commitment by hidden weight: C' = w * C
+    // Off-chain: voter computes scaled commitment C' and submits it with the proof.
+    // On-chain: contract stores C' only if the proof verifies.
+    //
+    // Proof structure at vote submission (conceptual):
+    // 1) Same-scalar proof (NIZK): proves the existence of the same secret w such that
+    //    for each i, C'i = w * Ci. To bind the transcript to a specific w, include an
+    //    auxiliary pair (U, U' = w * U) and verify all relations together with one
+    //    Fiat–Shamir challenge.
+    //    - Inputs on-chain (public): {Ci}, {C'i}, U, U', transcript bytes
+    //    - Check on-chain: verify_same_scalar({Ci},{C'i},U,U',proof) == true
+    //
+    // 2) Range/bound proof for w (NIZK): ensure 1 <= w <= W_max without revealing w.
+    //    A practical approach is a k-bit binary proof where 2^k - 1 <= W_max, proving
+    //    U' encodes w = sum_{j=0..k-1} b_j * 2^j with bits b_j in {0,1}:
+    //    - For each bit b_j, prove b_j ∈ {0,1} via a small OR-proof.
+    //    - Prove U' is the linear combination of U with those bits as scalars.
+    //    - Reuse the same U, U' from (1) to link both proofs to the same w.
+    //    - Inputs on-chain (public): U, U', W_max (or k), transcript bytes
+    //    - Check on-chain: verify_binary_range_proof(U,U',k,proof_bits) == true
+    //
+    // If both proofs pass, the contract records only {C'i} (the weighted commitments).
+    // Note: this test demonstrates the algebraic identity that makes (2) tally-time
+    // verification possible; it does not implement those NIZKs.
+    let w_fr = Fr::from_u256(U256::from_u32(&env, w).into());
+    let weighted_commitment = bls12_381.g1_mul(&base_commitment, &w_fr);
+
+    // Independently reconstruct weighted commitment from weighted tallies
+    // Off-chain (tally phase): maintainer decrypts seeds to obtain Σ(w*r) and
+    // constructs tallies Σ(w*v). These are passed to the contract's proof(...),
+    // which recomputes G*(Σ w*v) + H*(Σ w*r) and compares with Σ stored C'.
+    // Here we demonstrate the per-vote equivalence locally: T_v = w*v, T_r = w*r
+    let t_v: u128 = (w as u128) * v;
+    let t_r: u128 = (w as u128) * r;
+    let t_v_fr = Fr::from_u256(U256::from_u128(&env, t_v).into());
+    let t_r_fr = Fr::from_u256(U256::from_u128(&env, t_r).into());
+    let vote_part = bls12_381.g1_mul(&g_vote, &t_v_fr);
+    let seed_part = bls12_381.g1_mul(&g_seed, &t_r_fr);
+    let reconstructed = bls12_381.g1_add(&vote_part, &seed_part);
+
+    // Round-trip equality: w*(v*G + r*H) == (w*v)*G + (w*r)*H.
+    // This is the algebra that makes aggregate verification possible at execute().
+    assert_eq!(weighted_commitment, reconstructed);
+
+    // Optional: identity check ensures w != 0 (lower bound)
+    // On-chain: a proof system should also rule out w=0; identity check is a sanity guard.
+    let mut g1_identity = [0u8; 96];
+    g1_identity[0] = 0x40; // compressed identity encoding used in other tests
+    let id = G1Affine::from_bytes(soroban_sdk::BytesN::from_array(&env, &g1_identity));
+    assert_ne!(weighted_commitment, id);
+
+    // Summary of flows:
+    // - Vote submission (on-chain): verify a zero-knowledge proof that hidden w is within bounds
+    //   and that C' = w*C for the same w, then store C'.
+    // - Execute/tally (on-chain): verify Σ stored C' equals G*(Σ w*v) + H*(Σ w*r)
+    //   using tallies and decrypted seed sums provided by maintainer.
+    // This test illustrates the math equivalence used by the tally check and
+    // clarifies that the per-voter bound enforcement must happen at submission
+    // via a proof (not implemented here).
+}

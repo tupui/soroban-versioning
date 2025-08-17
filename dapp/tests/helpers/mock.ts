@@ -100,12 +100,22 @@ export async function applyAllMocks(page) {
     (window as any).__mockAnonymousConfigMissing = true;
     // Mock getProjectFromName globally
     (window as any).getProjectFromName = async (name) => {
-      console.log("Mock getProjectFromName called with:", name);
-      return {
+      const result = {
         name: name || "demo",
-        maintainers: ["G".padEnd(56, "A"), "G".padEnd(56, "C")],
-        config: { url: "https://github.com/test/demo", hash: "abc123" },
+        maintainers: ["G".padEnd(56, "A"), "G".padEnd(56, "C"), "${WALLET_PK}"],
+        config: { url: "https://github.com/test/demo", ipfs: "abc123" },
       };
+      console.log("Mock getProjectFromName called with:", name, "returning:", result);
+      return result;
+    };
+
+    // Mock other ReadContractService functions needed by governance components
+    (window as any).getProposalPages = async (projectName: string) => {
+      return 1; // Return 1 page
+    };
+
+    (window as any).getProposals = async (projectName: string, page: number) => {
+      return []; // Return empty proposals array
     };
   });
 
@@ -124,12 +134,159 @@ export async function applyAllMocks(page) {
         }
         return originalGetProjectFromName(name);
       }
+
+      // Mock proposal functions
+      export async function getProposalPages(projectName) {
+        if ((window as any).getProposalPages) {
+          return (window as any).getProposalPages(projectName);
+        }
+        return 1;
+      }
+
+      export async function getProposals(projectName, page) {
+        if ((window as any).getProposals) {
+          return (window as any).getProposals(projectName, page);
+        }
+        return [];
+      }
     `;
 
     route.fulfill({
       status: response.status(),
       headers: response.headers(),
-      body: body,
+      body,
+    });
+  });
+
+  // Mock ReadContractService at multiple import paths to ensure it works
+  await page.route("**/service/ReadContractService*", async (route) => {
+    const body = `
+      // Mock ReadContractService functions
+      export async function getProjectFromName(name) {
+        if (window.getProjectFromName) {
+          return window.getProjectFromName(name);
+        }
+        // For new project names, return null to indicate they don't exist
+        if (name === "testproject123" || name === "newproject" || name === "flowtest") {
+          return null;
+        }
+        // For existing project names, return the project data
+        return { name: "demo", maintainers: ["G".padEnd(56, "A")], config: { url: "https://github.com/test/demo", ipfs: "abc123" } };
+      }
+
+      export async function getProjectFromId(id) {
+        return { name: "demo", maintainers: ["G".padEnd(56, "A")], config: { url: "https://github.com/test/demo", ipfs: "abc123" } };
+      }
+
+      export async function getMember(address) {
+        return { address, badges: [], meta: "test member" };
+      }
+
+      export async function getProject(projectKey) {
+        return { name: "demo", maintainers: ["G".padEnd(56, "A")], config: { url: "https://github.com/test/demo", ipfs: "abc123" } };
+      }
+
+      export async function getProjectHash(projectKey) {
+        return "abc123";
+      }
+
+      export async function getBadges(projectKey) {
+        return {
+          community: false,
+          developer: false,
+          triage: false,
+          verified: false
+        };
+      }
+
+      export async function getProposalPages(projectName) {
+        if (window.getProposalPages) {
+          return window.getProposalPages(projectName);
+        }
+        return 1;
+      }
+
+      export async function getProposals(projectName, page) {
+        if (window.getProposals) {
+          return window.getProposals(projectName, page);
+        }
+        return [];
+      }
+
+      export async function hasAnonymousVotingConfig(projectName) {
+        return false;
+      }
+    `;
+    route.fulfill({
+      status: 200,
+      body,
+      headers: { "content-type": "application/javascript" },
+    });
+  });
+
+  // Mock @service alias for ReadContractService
+  await page.route("**/@service/ReadContractService*", async (route) => {
+    const body = `
+      // Mock ReadContractService functions via @service alias
+      export async function getProjectFromName(name) {
+        if (window.getProjectFromName) {
+          return window.getProjectFromName(name);
+        }
+        // For new project names, return null to indicate they don't exist
+        if (name === "testproject123" || name === "newproject" || name === "flowtest") {
+          return null;
+        }
+        // For existing project names, return the project data
+        return { name: "demo", maintainers: ["G".padEnd(56, "A")], config: { url: "https://github.com/test/demo", ipfs: "abc123" } };
+      }
+
+      export async function getProjectFromId(id) {
+        return { name: "demo", maintainers: ["G".padEnd(56, "A")], config: { url: "https://github.com/test/demo", ipfs: "abc123" } };
+      }
+
+      export async function getMember(address) {
+        return { address, badges: [], meta: "test member" };
+      }
+
+      export async function getProject(projectKey) {
+        return { name: "demo", maintainers: ["G".padEnd(56, "A")], config: { url: "https://github.com/test/demo", ipfs: "abc123" } };
+      }
+
+      export async function getProjectHash(projectKey) {
+        return "abc123";
+      }
+
+      export async function getBadges(projectKey) {
+        return {
+          community: false,
+          developer: false,
+          triage: false,
+          verified: false
+        };
+      }
+
+      export async function getProposalPages(projectName) {
+        if (window.getProposalPages) {
+          return window.getProposalPages(projectName);
+        }
+        return 1;
+      }
+
+      export async function getProposals(projectName, page) {
+        if (window.getProposals) {
+          return window.getProposals(projectName, page);
+        }
+        return [];
+      }
+
+      export async function hasAnonymousVotingConfig(projectName) {
+        return false;
+      }
+    `;
+    route.fulfill({
+      status: 200,
+      body,
+      headers: { "content-type": "application/javascript" },
     });
   });
 
@@ -152,7 +309,98 @@ export async function applyAllMocks(page) {
 
   // Wallet kit module stub at import level for both FlowService and ContractService
   await page.route("**/components/stellar-wallets-kit*", async (route) => {
-    const js = `export const kit = { signTransaction: async (xdr) => ({ signedTxXdr: typeof xdr === 'string' ? xdr : String(xdr) }) };`;
+    const js = `export const kit = { 
+      signTransaction: async (xdr) => ({ signedTxXdr: typeof xdr === 'string' ? xdr : String(xdr) }),
+      getAddress: async () => ({ address: '${WALLET_PK}' }),
+      isConnected: async () => true,
+      requestAccess: async () => true,
+      signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
+      signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
+      getNetwork: async () => ({ network: 'testnet' })
+    };`;
+    route.fulfill({
+      status: 200,
+      body: js,
+      headers: { "content-type": "application/javascript" },
+    });
+  });
+
+  // Mock stellar-wallets-kit package to prevent @stellar/freighter-api import errors
+  await page.route("**/@creit.tech/stellar-wallets-kit*", async (route) => {
+    const body = `
+      // Mock stellar-wallets-kit to avoid @stellar/freighter-api import errors
+      export const allowAllModules = () => [];
+      export const FREIGHTER_ID = 'freighter';
+      export class StellarWalletsKit {
+        constructor(config) {
+          this.config = config;
+        }
+        async signTransaction(xdr) {
+          return { signedTxXdr: typeof xdr === 'string' ? xdr : String(xdr) };
+        }
+        async getAddress() {
+          return { address: '${WALLET_PK}' };
+        }
+        async isConnected() {
+          return true;
+        }
+        async requestAccess() {
+          return true;
+        }
+        async signAuthEntry() {
+          return { signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' };
+        }
+        async signMessage() {
+          return { signature: 'mock', signerAddress: '${WALLET_PK}' };
+        }
+        async getNetwork() {
+          return { network: 'testnet' };
+        }
+      }
+      
+      export class LedgerModule {
+        constructor() {}
+        async signTransaction(xdr) {
+          return { signedTxXdr: typeof xdr === 'string' ? xdr : String(xdr) };
+        }
+        async getAddress() {
+          return { address: '${WALLET_PK}' };
+        }
+        async isConnected() {
+          return true;
+        }
+        async requestAccess() {
+          return true;
+        }
+        async signAuthEntry() {
+          return { signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' };
+        }
+        async signMessage() {
+          return { signature: 'mock', signerAddress: '${WALLET_PK}' };
+        }
+        async getNetwork() {
+          return { network: 'testnet' };
+        }
+      }
+    `;
+    route.fulfill({
+      status: 200,
+      body,
+      headers: { "content-type": "application/javascript" },
+    });
+  });
+
+  // Mock stellar-wallets-kit at multiple import paths
+  await page.route("**/components/stellar-wallets-kit*", async (route) => {
+    const js = `export const kit = { 
+      signTransaction: async (xdr) => ({ signedTxXdr: typeof xdr === 'string' ? xdr : String(xdr) }),
+      getAddress: async () => ({ address: '${WALLET_PK}' }),
+      isConnected: async () => true,
+      requestAccess: async () => true,
+      signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
+      signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
+      getNetwork: async () => ({ network: 'testnet' })
+    };`;
     route.fulfill({
       status: 200,
       body: js,
@@ -169,7 +417,43 @@ export async function applyAllMocks(page) {
     // @ts-ignore
     window.kit = {
       signTransaction: async (xdr) => ({ signedTxXdr: xdr }),
+      getAddress: async () => ({ address: '${WALLET_PK}' }),
+      isConnected: async () => true,
+      requestAccess: async () => true,
+      signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
+      signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
+      getNetwork: async () => ({ network: 'testnet' })
     };
+  });
+
+  // Mock wallet service to provide authenticated user for tests
+  await page.route("**/src/service/walletService.ts", (route) => {
+    const body = `
+      export function loadedPublicKey(){ return '${WALLET_PK}'; }
+      export function setPublicKey(){}
+      export function disconnect(){}
+      export function initializeConnection(){}
+    `;
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body,
+    });
+  });
+
+  // Also mock the wallet service with the @service alias pattern
+  await page.route("**/@service/walletService*", (route) => {
+    const body = `
+      export function loadedPublicKey(){ return '${WALLET_PK}'; }
+      export function setPublicKey(){}
+      export function disconnect(){}
+      export function initializeConnection(){}
+    `;
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body,
+    });
   });
 
   // ──────────────────────────────────────────────
@@ -356,19 +640,17 @@ export async function applyDiagnosticMocks(page) {
       url.includes("soroban") ||
       url.includes("horizon")
     ) {
-      console.log(`[MOCK] Intercepting: ${url}`);
+      // Diagnostic logging removed for production
     }
     route.continue();
   });
 
   // Mock with logging
   await page.route("https://raw.githubusercontent.com/**", (route) => {
-    console.log(`[MOCK] GitHub raw content: ${route.request().url()}`);
     route.fulfill({ status: 200, body: "# Mock README\nTest" });
   });
 
   await page.route("**/soroban/**", (route) => {
-    console.log(`[MOCK] Soroban RPC: ${route.request().url()}`);
     route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
   });
 
@@ -378,12 +660,7 @@ export async function applyDiagnosticMocks(page) {
     // @ts-ignore
     window.kit = {
       signTransaction: async (xdr) => {
-        console.log(
-          "[MOCK] Wallet signTransaction called with XDR length:",
-          xdr?.length,
-        );
         if (!xdr || typeof xdr !== "string") {
-          console.error("[MOCK] Invalid XDR provided to wallet:", xdr);
           throw new Error("Invalid XDR provided to wallet");
         }
         return { signedTxXdr: `signed_${xdr}` };

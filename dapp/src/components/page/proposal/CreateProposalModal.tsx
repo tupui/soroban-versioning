@@ -21,7 +21,7 @@ import { setupAnonymousVoting } from "@service/ContractService";
 import ProgressStep from "components/utils/ProgressStep";
 
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
-import { Buffer } from "buffer";
+//
 import { navigate } from "astro:transitions/client";
 
 const CreateProposalModal = () => {
@@ -60,7 +60,7 @@ const CreateProposalModal = () => {
   } | null>(null);
   const [existingAnonConfig, setExistingAnonConfig] = useState<boolean>(false);
   const [resetAnonKeys, setResetAnonKeys] = useState<boolean>(false);
-  const [keysDownloaded, setKeysDownloaded] = useState<boolean>(false);
+  const [_, setKeysDownloaded] = useState<boolean>(false);
   const [proposalNameError, setProposalNameError] = useState<string | null>(
     null,
   );
@@ -261,39 +261,15 @@ const CreateProposalModal = () => {
     }
 
     try {
-      // Test-only hook: respected only when explicit test mode flag is present
-      if (
-        typeof window !== "undefined" &&
-        (window as any).__TEST_MODE__ &&
-        (window as any).__mockAnonymousConfigMissing === true
-      ) {
-        setExistingAnonConfig(false);
-        const keys = await generateRSAKeyPair();
-        setGeneratedKeys(keys);
-        setResetAnonKeys(false);
-        return;
-      }
-
-      const { default: Tansu } = await import(
-        "../../../contracts/soroban_tansu"
+      const { hasAnonymousVotingConfig } = await import(
+        "@service/ReadContractService"
       );
-      const pkg = await import("js-sha3");
-      const { keccak256 } = pkg;
-      const project_key = Buffer.from(
-        keccak256.create().update(projectName.toLowerCase()).digest(),
-      );
-
-      // Probe existing config; missing config will surface as simulation error (#16)
-      const tx = await Tansu.get_anonymous_voting_config({ project_key });
-      try {
-        const { checkSimulationError } = await import("utils/contractErrors");
-        checkSimulationError(tx);
-        // Config exists
+      const exists = await hasAnonymousVotingConfig(projectName);
+      if (exists) {
         setExistingAnonConfig(true);
         setResetAnonKeys(false);
         setGeneratedKeys(null);
-      } catch (_) {
-        // No config – prepare keys for new setup
+      } else {
         setExistingAnonConfig(false);
         const keys = await generateRSAKeyPair();
         setGeneratedKeys(keys);

@@ -9,18 +9,10 @@
  */
 
 const Loading = ({ theme = "light" }: { theme?: "dark" | "light" }) => {
-  const bgColor = theme === "dark" ? "bg-white" : "bg-black";
-
   return (
-    <div className="flex space-y-4 space-x-2 justify-center items-center dark:invert">
-      <span className="sr-only">Loading...</span>
-      <div
-        className={`h-8 w-8 ${bgColor} rounded-full animate-bounce [animation-delay:-0.3s]`}
-      ></div>
-      <div
-        className={`h-8 w-8 ${bgColor} rounded-full animate-bounce [animation-delay:-0.15s]`}
-      ></div>
-      <div className={`h-8 w-8 ${bgColor} rounded-full animate-bounce`}></div>
+    <div className="flex flex-col items-center justify-center gap-3">
+      <img src="/images/loading.svg" className="w-10 animate-spin" />
+      <span className="sr-only">Loading…</span>
     </div>
   );
 };

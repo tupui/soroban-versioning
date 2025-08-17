@@ -51,7 +51,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
   };
 
   const handleContribute = async () => {
-    const { sendXLM } = await import("service/PaymentService");
+    const { sendXLM } = await import("service/TxService");
     const { getAddressFromDomain } = await import(
       "service/SorobanDomainContractService"
     );
@@ -64,8 +64,19 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
     try {
       const domainInfo = await getAddressFromDomain("tansu");
 
-      if ("owner" in domainInfo.value) {
-        const domainOwnerAddress = domainInfo.value.owner;
+      if (domainInfo && domainInfo.owner) {
+        // Prefer explicit address field if present; otherwise fall back to owner
+        let dest = (domainInfo as any).address || domainInfo.owner;
+        try {
+          const { StrKey } = await import("@stellar/stellar-sdk");
+          if (!StrKey.isValidEd25519PublicKey(dest)) {
+            throw new Error("Invalid owner address in domain record");
+          }
+        } catch (_) {
+          toast.error("Support", "Cannot read domain information.");
+          return;
+        }
+        const domainOwnerAddress = dest as string;
         const payment = await sendXLM(
           amount.toString(),
           domainOwnerAddress as string,

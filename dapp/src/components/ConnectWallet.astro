@@ -19,17 +19,17 @@
     data-connect
     aria-controls="connect-wrap"
     aria-label="Connect wallet to start using Tansu"
-    class="w-[130px] sm:w-[162px] md:w-[180px] h-10 md:h-12 flex justify-center items-center gap-2 md:gap-3 bg-white shadow-button truncate focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+    class="h-8 md:h-10 lg:h-12 px-3 md:px-4 lg:px-6 flex justify-center items-center gap-1 md:gap-2 bg-white shadow-button truncate focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200"
   >
     <span
-      class="text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-pink truncate"
+      class="text-xs md:text-sm lg:text-base font-medium text-pink truncate"
     >
       Connect
     </span>
     <img
       src="/icons/connect.png"
       alt="Connect wallet icon"
-      class="w-4 md:w-5 h-4 md:h-5 flex-shrink-0"
+      class="w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 flex-shrink-0"
       width="20"
       height="20"
     />
@@ -59,7 +59,7 @@
       button.textContent = "";
       const textElement = document.createElement("span");
       textElement.className =
-        "text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-white truncate";
+        "hidden sm:inline text-xs md:text-sm lg:text-base font-medium text-white truncate";
       textElement.textContent = "Profile";
       const imgElement = document.createElement("img");
       imgElement.src = "/icons/profile.svg";
@@ -138,12 +138,12 @@
       button.textContent = "";
       const textElement = document.createElement("span");
       textElement.className =
-        "text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-pink truncate";
+        "text-xs md:text-sm lg:text-base font-medium text-pink truncate";
       textElement.textContent = "Connect";
       const imgElement = document.createElement("img");
       imgElement.src = "/icons/connect.png";
       imgElement.alt = "Connect wallet icon";
-      imgElement.className = "w-4 md:w-5 h-4 md:h-5 flex-shrink-0";
+      imgElement.className = "w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 flex-shrink-0";
       imgElement.setAttribute("width", "20");
       imgElement.setAttribute("height", "20");
       button.appendChild(textElement);

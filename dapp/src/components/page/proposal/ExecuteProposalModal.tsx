@@ -86,7 +86,6 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 
   useEffect(() => {
     if (!displayVoteStatus) return;
-    const { approve, abstain, reject } = displayVoteStatus;
     // computedResult is derived via useMemo; no state updates needed here
   }, [displayVoteStatus]);
 
@@ -142,7 +141,6 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       setSeeds(data.seeds);
       setDisplayVoteStatus(data.voteStatus);
       setDecodedVotes(data.decodedVotes);
-      setVoteCounts(data.voteCounts);
       setProofOk(data.proofOk ?? null);
       setProcessingError(null);
       if (isAnonymous) setStep(2);

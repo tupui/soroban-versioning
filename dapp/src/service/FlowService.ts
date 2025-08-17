@@ -1,14 +1,15 @@
 import { calculateDirectoryCid } from "../utils/ipfsFunctions";
 import { create } from "@web3-storage/w3up-client";
 import { extract } from "@web3-storage/w3up-client/delegation";
-import { kit } from "../components/stellar-wallets-kit";
+//
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
 import { deriveProjectKey } from "../utils/projectKey";
-import { parseContractError } from "utils/contractErrors";
+//
 
-import { retryAsync } from "../utils/retry";
+//
+import { sendSignedTransaction, signAssembledTransaction } from "./TxService";
 
 interface UploadWithDelegationParams {
   files: File[];
@@ -106,22 +107,7 @@ async function createSignedProposalTransaction(
     public_voting: publicVoting,
   });
 
-  let sim;
-  try {
-    sim = await tx.simulate();
-  } catch (error: any) {
-    throw new Error(parseContractError(error));
-  }
-
-  if ((tx as any).prepare) {
-    await (tx as any).prepare(sim);
-  }
-
-  const preparedXdr = tx.toXDR();
-
-  // Sign the transaction
-  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
-  return signedTxXdr;
+  return await signAssembledTransaction(tx);
 }
 
 /**
@@ -134,6 +120,11 @@ async function createSignedAddMemberTransaction(
   const address = memberAddress || loadedPublicKey();
   if (!address) throw new Error("Please connect your wallet first");
 
+  // Validate meta parameter - ensure it's not just whitespace
+  if (meta.trim() === "") {
+    meta = ""; // Use empty string instead of whitespace
+  }
+
   Tansu.options.publicKey = address;
 
   const tx = await Tansu.add_member({
@@ -141,148 +132,14 @@ async function createSignedAddMemberTransaction(
     meta: meta,
   });
 
-  // Simulate the transaction to prepare it with Soroban data
-  try {
-    await tx.simulate();
-  } catch (error: any) {
-    // If simulation fails, parse and throw a user-friendly error
-    throw new Error(parseContractError(error));
-  }
-
-  // Get the transaction XDR after simulation
-  const preparedXdr = tx.toXDR();
-
-  // Sign the transaction
-  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
-  return signedTxXdr;
+  return await signAssembledTransaction(tx);
 }
 
 /**
  * Send a signed transaction to the network
  */
-async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
-  const { Transaction, rpc } = await import("@stellar/stellar-sdk");
-  const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
-
-  // The JS SDK Transaction class can only parse classic envelopes; Soroban
-  // contract transactions include additional SorobanTransactionData and may
-  // therefore be rejected as MALFORMED when re-encoded. The Soroban RPC
-  // server happily accepts a base64-encoded envelope string though, so we
-  // short-circuit and post the raw XDR if we already have it signed.
-
-  let sendResponse: any;
-  try {
-    // Cast to any because typings accept only Transaction, but Soroban RPC
-    // supports base64 envelope; the runtime call is valid.
-
-    sendResponse = await retryAsync(() =>
-      (server as any).sendTransaction(signedTxXdr),
-    );
-  } catch (_) {
-    // Fallback to legacy path for classic txs
-    const transaction = new Transaction(
-      signedTxXdr,
-      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-    );
-    sendResponse = await retryAsync(() => server.sendTransaction(transaction));
-  }
-
-  if (sendResponse.status === "ERROR") {
-    // Try to parse contract error from the response
-    const errorResultStr = JSON.stringify(sendResponse.errorResult);
-    const contractErrorMatch = errorResultStr.match(
-      /Error\(Contract, #(\d+)\)/,
-    );
-    if (contractErrorMatch) {
-      throw new Error(parseContractError({ message: errorResultStr }));
-    }
-    throw new Error(`Transaction failed: ${errorResultStr}`);
-  }
-
-  // Handle immediate SUCCESS with a returnValue
-  if (sendResponse.status === "SUCCESS") {
-    if (sendResponse.returnValue) {
-      try {
-        const { xdr, scValToNative } = await import("@stellar/stellar-sdk");
-        let decoded: any;
-        if (typeof sendResponse.returnValue === "string") {
-          const scVal = xdr.ScVal.fromXDR(sendResponse.returnValue, "base64");
-          decoded = scValToNative(scVal);
-        } else {
-          decoded = scValToNative(sendResponse.returnValue);
-        }
-        if (typeof decoded === "bigint") return Number(decoded);
-        if (typeof decoded === "number") return decoded;
-        if (typeof decoded === "boolean") return decoded;
-        const coerced = Number(decoded);
-        return isNaN(coerced) ? decoded : coerced;
-      } catch (_) {
-        return true;
-      }
-    }
-    return true;
-  }
-
-  // For successful transactions that are pending, we need to wait for confirmation
-  if (sendResponse.status === "PENDING") {
-    // Wait for transaction confirmation
-    let getResponse = await server.getTransaction(sendResponse.hash);
-    let retries = 0;
-    const maxRetries = 30;
-
-    while (getResponse.status === "NOT_FOUND" && retries < maxRetries) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      getResponse = await server.getTransaction(sendResponse.hash);
-      retries++;
-    }
-
-    if (getResponse.status === "SUCCESS") {
-      // Extract the result from the transaction meta
-      if (getResponse.returnValue) {
-        try {
-          // Lazy-load decoder utilities from stellar-sdk
-          const { xdr, scValToNative } = await import("@stellar/stellar-sdk");
-
-          let decoded: any;
-          if (typeof getResponse.returnValue === "string") {
-            // Base64-encoded XDR string
-            const scVal = xdr.ScVal.fromXDR(getResponse.returnValue, "base64");
-            decoded = scValToNative(scVal);
-          } else {
-            // Already a ScVal object
-            decoded = scValToNative(getResponse.returnValue);
-          }
-
-          // For the create_proposal call we expect an integer ID
-          if (typeof decoded === "bigint") return Number(decoded);
-          if (typeof decoded === "number") return decoded;
-
-          // If the contract returns a boolean (other flows) just pass it through
-          if (typeof decoded === "boolean") return decoded;
-
-          // Fallback: attempt numeric coercion
-          const coerced = Number(decoded);
-          return isNaN(coerced) ? decoded : coerced;
-        } catch (_) {
-          // On any failure, indicate generic success so the outer flow can continue
-          return true;
-        }
-      }
-      return true;
-    } else if (getResponse.status === "FAILED") {
-      // Try to extract contract error from failed transaction
-      const resultStr = JSON.stringify(getResponse);
-      const contractErrorMatch = resultStr.match(/Error\(Contract, #(\d+)\)/);
-      if (contractErrorMatch) {
-        throw new Error(parseContractError({ message: resultStr }));
-      }
-      throw new Error(`Transaction failed with status: ${getResponse.status}`);
-    } else {
-      throw new Error(`Transaction failed with status: ${getResponse.status}`);
-    }
-  }
-
-  return sendResponse;
+async function sendSignedTransactionLocal(signedTxXdr: string): Promise<any> {
+  return sendSignedTransaction(signedTxXdr);
 }
 
 /**
@@ -310,14 +167,9 @@ export async function createProposalFlow({
   // Step 1: Calculate the CID
   const expectedCid = await calculateDirectoryCid(proposalFiles);
 
-  // Create the W3UP client to get the DID (test mode uses static DID)
-  let did: string;
-  if (typeof window !== "undefined" && (window as any).__TEST_MODE__) {
-    did = "did:test";
-  } else {
-    const client = await create();
-    did = client.agent.did();
-  }
+  // Create the W3UP client to get the DID
+  const client = await create();
+  const did = client.agent.did();
 
   // Step 2: Create and sign the smart contract transaction with the CID
   onProgress?.(7); // Signing proposal transaction (UI index 2)
@@ -348,12 +200,13 @@ export async function createProposalFlow({
 
   // Step 5: Send the signed transaction
   onProgress?.(9); // Sending transaction (align with ProgressStep step 4)
-  const result = await sendSignedTransaction(signedTxXdr);
+  const result = await sendSignedTransactionLocal(signedTxXdr);
 
   // The result should be the proposal ID
   if (typeof result === "number") return result;
-  if (typeof window !== "undefined" && (window as any).__TEST_MODE__) return 1;
-  return parseInt(result.toString());
+  const parsed = Number(result);
+  if (!Number.isNaN(parsed)) return parsed;
+  throw new Error("Unexpected contract response: missing proposal id");
 }
 
 /**
@@ -374,7 +227,7 @@ export async function joinCommunityFlow({
   profileFiles,
   onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
-  let cid = " "; // Default for no profile
+  let cid = ""; // Default for no profile - use empty string instead of single space
 
   if (profileFiles.length > 0) {
     // Step 1: Calculate the CID
@@ -410,7 +263,7 @@ export async function joinCommunityFlow({
 
   // Step 5: Send the signed transaction
   onProgress?.(9); // sending step indicator (offset -5 → shows Sending)
-  await sendSignedTransaction(signedTxXdr);
+  await sendSignedTransactionLocal(signedTxXdr);
   return true;
 }
 
@@ -445,27 +298,14 @@ export async function createProjectFlow({
   Tansu.options.publicKey = publicKey;
 
   const tx = await Tansu.register({
-    name: projectName,
     maintainer: publicKey,
+    name: projectName,
     maintainers,
     url: githubRepoUrl,
-    hash: expectedCid,
+    ipfs: expectedCid,
   });
 
-  let sim;
-  try {
-    sim = await tx.simulate();
-  } catch (error: any) {
-    throw new Error(parseContractError(error));
-  }
-
-  // Prepare transaction with simulation data when supported
-  if ((tx as any).prepare) {
-    await (tx as any).prepare(sim);
-  }
-
-  const preparedXdr = tx.toXDR();
-  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
+  const signedTxXdr = await signAssembledTransaction(tx);
 
   // Step 3 – Upload to IPFS with delegation
   onProgress?.(7); // uploading step indicator (offset -4 → shows Uploading)
@@ -486,7 +326,7 @@ export async function createProjectFlow({
 
   // Step 5 – Send signed transaction
   onProgress?.(8); // sending step indicator (offset -4 → shows Sending)
-  await sendSignedTransaction(signedTxXdr);
+  await sendSignedTransactionLocal(signedTxXdr);
 
   return true;
 }
@@ -515,23 +355,10 @@ async function createSignedUpdateConfigTransaction(
     key: projectKey,
     maintainers: maintainers,
     url: configUrl,
-    hash: cid,
+    ipfs: cid,
   });
 
-  // Simulate & prepare
-  let sim;
-  try {
-    sim = await tx.simulate();
-  } catch (e: any) {
-    throw new Error(parseContractError(e));
-  }
-  if ((tx as any).prepare) {
-    await (tx as any).prepare(sim);
-  }
-
-  const preparedXdr = tx.toXDR();
-  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
-  return signedTxXdr;
+  return await signAssembledTransaction(tx);
 }
 
 export async function updateConfigFlow({

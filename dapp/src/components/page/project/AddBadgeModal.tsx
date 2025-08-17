@@ -69,16 +69,16 @@ const AddBadgeModal = () => {
       {showButton && (
         <button
           id="badge-button"
-          className="p-[12px_16px] sm:p-[18px_30px] flex gap-2 sm:gap-3 bg-white cursor-pointer w-full sm:w-auto text-left"
+          className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
           onClick={() => setIsOpen(true)}
         >
           <img
             src="/icons/plus-fill.svg"
-            className="w-5 h-5 sm:w-auto sm:h-auto"
+            className="w-5 h-5 flex-shrink-0"
           />
-          <p className="leading-5 text-base sm:text-xl text-primary whitespace-nowrap">
+          <span className="text-sm sm:text-base text-primary font-medium">
             Add badge
-          </p>
+          </span>
         </button>
       )}
       {isOpen && (

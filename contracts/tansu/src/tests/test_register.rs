@@ -16,8 +16,8 @@ fn register_events() {
     let setup = create_test_data();
 
     let name = String::from_str(&setup.env, "tansu");
-    let url = String::from_str(&setup.env, "github.com/file.toml");
-    let hash = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
+    let url = String::from_str(&setup.env, "github.com/tansu");
+    let ipfs = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
     let maintainers = vec![&setup.env, setup.grogu.clone(), setup.mando.clone()];
 
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
@@ -25,7 +25,7 @@ fn register_events() {
 
     let id = setup
         .contract
-        .register(&setup.grogu, &name, &maintainers, &url, &hash);
+        .register(&setup.grogu, &name, &maintainers, &url, &ipfs);
 
     let mut all_events = setup.env.events().all();
     all_events.pop_front(); // transfer event from the domain contract
@@ -55,14 +55,14 @@ fn register_double_registration_error() {
     let _id = init_contract(&setup);
 
     let name = String::from_str(&setup.env, "tansu");
-    let url = String::from_str(&setup.env, "github.com/file.toml");
-    let hash = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
+    let url = String::from_str(&setup.env, "github.com/tansu");
+    let ipfs = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
     let maintainers = vec![&setup.env, setup.grogu.clone(), setup.mando.clone()];
 
     // double registration
     let err = setup
         .contract
-        .try_register(&setup.grogu, &name, &maintainers, &url, &hash)
+        .try_register(&setup.grogu, &name, &maintainers, &url, &ipfs)
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::ProjectAlreadyExist.into());
@@ -77,14 +77,14 @@ fn register_name_too_long_error() {
         &setup.env,
         "soroban-versioningsoroban-versioningsoroban-versioningsoroban-versioning",
     );
-    let url = String::from_str(&setup.env, "github.com/file.toml");
-    let hash = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
+    let url = String::from_str(&setup.env, "github.com/tansu");
+    let ipfs = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
     let maintainers = vec![&setup.env, setup.grogu.clone(), setup.mando.clone()];
 
     // name too long
     let err = setup
         .contract
-        .try_register(&setup.grogu, &name_long, &maintainers, &url, &hash)
+        .try_register(&setup.grogu, &name_long, &maintainers, &url, &ipfs)
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::InvalidDomainError.into());
@@ -96,8 +96,8 @@ fn register_maintainer_not_domain_owner_error() {
     let _id = init_contract(&setup);
 
     let _name = String::from_str(&setup.env, "tansu");
-    let url = String::from_str(&setup.env, "github.com/file.toml");
-    let hash = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
+    let url = String::from_str(&setup.env, "github.com/tansu");
+    let ipfs = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
     let maintainers = vec![&setup.env, setup.grogu.clone(), setup.mando.clone()];
 
     // maintainer not domain owner
@@ -108,7 +108,7 @@ fn register_maintainer_not_domain_owner_error() {
     let name_b_str = String::from_str(&setup.env, "bob");
     let err = setup
         .contract
-        .try_register(&setup.grogu, &name_b_str, &maintainers, &url, &hash)
+        .try_register(&setup.grogu, &name_b_str, &maintainers, &url, &ipfs)
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::MaintainerNotDomainOwner.into());

@@ -330,8 +330,8 @@ const JoinCommunityModal: FC<
               <Button type="secondary" onClick={onClose}>
                 Cancel
               </Button>
-              <Button isLoading={isLoading} onClick={handleJoin}>
-                {isUploading ? "Uploading to IPFS..." : "Join"}
+              <Button isLoading={isLoading || isUploading} onClick={handleJoin}>
+                Join
               </Button>
             </div>
           </div>

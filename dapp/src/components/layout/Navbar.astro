@@ -15,35 +15,37 @@ const { page } = Astro.props;
     <div class="max-w-[1920px] mx-auto">
       <div class="pt-[40px] md:pt-[60px] flex items-center h-16">
         <!-- Logo and text on left -->
-        <div class="flex-shrink-0 flex items-center gap-[12px] mr-2">
+        <div class="flex items-center gap-2 md:gap-3 flex-shrink-0">
           <a href="/" class="flex-shrink-0" aria-label="Tansu homepage">
             <img
               alt="Tansu logo"
               src="/logo.svg"
-              class="h-10 md:h-12"
+              class="h-8 md:h-10 lg:h-12"
               width="48"
               height="48"
             />
           </a>
-          <div class="hidden sm:flex gap-[12px] whitespace-nowrap">
-            <p class="text-lg font-bold text-primary">Tansu</p>
-            <p class="text-lg font-bold text-secondary">- alpha</p>
+          <div class="hidden lg:flex items-center gap-2 whitespace-nowrap">
+            <p class="text-base md:text-lg font-bold text-primary leading-none">Tansu</p>
+            <p class="text-sm font-bold text-secondary leading-none">- alpha</p>
           </div>
         </div>
 
-        <!-- Search bar in middle -->
-        <div class="flex-grow flex justify-center mx-2">
+        <!-- Search bar - takes remaining space -->
+        <div class="flex-1 flex justify-start ml-3 md:ml-4">
           <NavbarSearch client:load onAddProject={() => {}} />
         </div>
 
         <!-- Wallet connect and community button on right -->
         <div
-          class="flex-shrink-0 flex gap-[8px] md:gap-[12px] items-center ml-auto"
+          class="flex items-center gap-4 md:gap-6 flex-shrink-0"
         >
-          <ConnectWallet />
+          <div class="ml-6">
+            <ConnectWallet />
+          </div>
           <div
             id="join-community-wrapper"
-            class="w-[130px] sm:w-[162px] md:w-[180px]"
+            class="hidden sm:block"
           >
             <JoinCommunityButton client:load />
           </div>

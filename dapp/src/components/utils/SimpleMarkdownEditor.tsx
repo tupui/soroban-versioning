@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Markdown from "markdown-to-jsx";
+import DOMPurify from "dompurify";
 import "github-markdown-css";
 
 interface SimpleMarkdownEditorProps {
@@ -86,8 +87,13 @@ const SimpleMarkdownEditor: React.FC<SimpleMarkdownEditorProps> = ({
         ) : (
           <div className="markdown-body p-4 min-h-[200px]">
             {value.trim() ? (
-              <Markdown options={{ overrides: markdownOverrides }}>
-                {value}
+              <Markdown
+                options={{
+                  overrides: markdownOverrides,
+                  disableParsingRawHTML: true,
+                }}
+              >
+                {DOMPurify.sanitize(value)}
               </Markdown>
             ) : (
               <p className="text-gray-500 italic">Nothing to preview...</p>

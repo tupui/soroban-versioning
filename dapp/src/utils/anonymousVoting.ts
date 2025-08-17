@@ -4,7 +4,6 @@
 // All heavy lifting (fetching proposal, decrypting votes, computing tallies/seeds and optional proof)
 // is done in this single module so UI components can remain lean.
 
-import { Buffer } from "buffer";
 import { deriveProjectKey } from "./projectKey";
 import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";

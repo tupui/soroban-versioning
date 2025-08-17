@@ -205,7 +205,7 @@ export type ProjectKey =
       values: readonly [Buffer];
     };
 export interface Config {
-  hash: string;
+  ipfs: string;
   url: string;
 }
 export interface Project {
@@ -898,7 +898,7 @@ export interface Client {
    * * `name` - The project name (max 15 characters)
    * * `maintainers` - List of maintainer addresses for the project
    * * `url` - The project's Git repository URL
-   * * `hash` - The current commit hash
+   * * `ipfs` - CID of the tansu.toml file with associated metadata
    *
    * # Returns
    * * `Bytes` - The project key (keccak256 hash of the name)
@@ -916,13 +916,13 @@ export interface Client {
       name,
       maintainers,
       url,
-      hash,
+      ipfs,
     }: {
       maintainer: string;
       name: string;
       maintainers: Array<string>;
       url: string;
-      hash: string;
+      ipfs: string;
     },
     options?: {
       /**
@@ -963,13 +963,13 @@ export interface Client {
       key,
       maintainers,
       url,
-      hash,
+      ipfs,
     }: {
       maintainer: string;
       key: Buffer;
       maintainers: Array<string>;
       url: string;
-      hash: string;
+      ipfs: string;
     },
     options?: {
       /**

@@ -135,34 +135,36 @@ test.describe("🚨 Regression Prevention - Critical Error Detection", () => {
           commitHash,
           voteToProposal,
           execute,
-          addBadges,
+          setBadges,
           setupAnonymousVoting,
-        } = await import("./src/service/ContractService.ts");
+        } = await import("../src/service/ContractService.ts");
 
         // Verify all methods exist and are functions
         const methods = {
           commitHash,
           voteToProposal,
           execute,
-          addBadges,
+          setBadges,
           setupAnonymousVoting,
         };
-        const results = {};
+        const results: Record<string, boolean> = {};
 
         for (const [name, method] of Object.entries(methods)) {
           results[name] = typeof method === "function";
         }
 
         return { success: true, methods: results, error: null };
-      } catch (error) {
+      } catch (error: any) {
         return { success: false, methods: {}, error: error.message };
       }
     });
 
     expect(contractServiceTest.success).toBe(true);
-    expect(contractServiceTest.methods.commitHash).toBe(true);
-    expect(contractServiceTest.methods.voteToProposal).toBe(true);
-    expect(contractServiceTest.methods.execute).toBe(true);
+    if (contractServiceTest.success) {
+      expect(contractServiceTest.methods.commitHash).toBe(true);
+      expect(contractServiceTest.methods.voteToProposal).toBe(true);
+      expect(contractServiceTest.methods.execute).toBe(true);
+    }
 
     // Check for the specific SDK method errors we fixed
     const sdkMethodErrors = allConsoleErrors.filter(
@@ -199,11 +201,13 @@ test.describe("🚨 Regression Prevention - Critical Error Detection", () => {
     const transactionTest = await page.evaluate(async () => {
       try {
         // Test the exact flow that was failing
-        const { commitHash } = await import("./src/service/ContractService.ts");
+        const { commitHash } = await import(
+          "../src/service/ContractService.ts"
+        );
 
         // This should not throw switch/XDR parsing errors during initialization
         return { success: true, error: null };
-      } catch (error) {
+      } catch (error: any) {
         return { success: false, error: error.message };
       }
     });
@@ -301,9 +305,7 @@ test.describe("🚨 Regression Prevention - Critical Error Detection", () => {
 
     expect(diagnosticErrors).toHaveLength(0);
 
-    console.log(
-      `✅ Diagnostic test completed. Total console messages: ${allConsoleErrors.length}`,
-    );
+    // Diagnostic test completed successfully
   });
 
   test("CRITICAL: Badge update functionality works correctly", async ({

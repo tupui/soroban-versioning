@@ -32,6 +32,28 @@ export function parseContractError(error: any): string {
     return `Contract error #${errorCode}`;
   }
 
+  // Handle Wasm VM errors with diagnostic topics
+  if (/HostError: Error\(WasmVm,/.test(errorMessage)) {
+    // Try to extract the function name from diagnostic topics
+    const fnMatch = errorMessage.match(
+      /topics:\[fn_call,[^,]+,\s*([a-zA-Z0-9_]+)\]/,
+    );
+    const fnName = fnMatch?.[1];
+
+    // Specific unreachable/invalid action hints
+    if (
+      /UnreachableCodeReached|InvalidAction/i.test(errorMessage) ||
+      /build_commitments_from_votes/.test(errorMessage)
+    ) {
+      const where = fnName ? ` in ${fnName}()` : "";
+      return `Invalid input for contract execution${where}. For anonymous voting, ensure your key file matches this proposal and try again.`;
+    }
+
+    // Generic VM error fallback with optional function name
+    const where = fnName ? ` in ${fnName}()` : "";
+    return `Contract VM error${where}. Please retry. If the issue persists, check project configuration.`;
+  }
+
   // If we can't parse it, return the raw error
   return errorMessage || "Unknown error during simulation";
 }

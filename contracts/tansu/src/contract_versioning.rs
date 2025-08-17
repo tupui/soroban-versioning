@@ -19,7 +19,7 @@ impl VersioningTrait for Tansu {
     /// * `name` - The project name (max 15 characters)
     /// * `maintainers` - List of maintainer addresses for the project
     /// * `url` - The project's Git repository URL
-    /// * `hash` - The current commit hash
+    /// * `ipfs` - CID of the tansu.toml file with associated metadata
     ///
     /// # Returns
     /// * `Bytes` - The project key (keccak256 hash of the name)
@@ -36,11 +36,11 @@ impl VersioningTrait for Tansu {
         name: String,
         maintainers: Vec<Address>,
         url: String,
-        hash: String,
+        ipfs: String,
     ) -> Bytes {
         let project = types::Project {
             name: name.clone(),
-            config: types::Config { url, hash },
+            config: types::Config { url, ipfs },
             maintainers,
         };
         let str_len = name.len() as usize;
@@ -116,13 +116,13 @@ impl VersioningTrait for Tansu {
         key: Bytes,
         maintainers: Vec<Address>,
         url: String,
-        hash: String,
+        ipfs: String,
     ) {
         let key_ = types::ProjectKey::Key(key.clone());
 
         let mut project = crate::auth_maintainers(&env, &maintainer, &key);
 
-        let config = types::Config { url, hash };
+        let config = types::Config { url, ipfs };
         project.config = config;
         project.maintainers = maintainers;
         env.storage().persistent().set(&key_, &project);
