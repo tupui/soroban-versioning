@@ -44,25 +44,14 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
       console.log("Dispatched show-create-project-modal event");
     }
 
-    // Wait a moment for the modal to open
-    await page.waitForTimeout(1000);
+    // Wait for modal to be created and rendered
+    await page.waitForSelector(".project-modal-container", { timeout: 10000 });
 
-    // Check if modal opened
-    const modalCount = await page.locator(".project-modal-container").count();
-    console.log("Modal count:", modalCount);
-
-    if (modalCount === 0) {
-      console.log("Modal not found, checking for any modal-like elements");
-      const anyModal = await page
-        .locator("[class*='modal'], [class*='Modal'], .fixed")
-        .count();
-      console.log("Any modal-like elements:", anyModal);
-
-      return; // Exit test if modal didn't open
-    }
-
-    // Wait for modal to be visible
+    // Wait for modal to be fully visible and rendered
     await expect(page.locator(".project-modal-container")).toBeVisible();
+
+    // Wait for the modal content to be fully loaded
+    await page.waitForTimeout(1000);
 
     // Debug: Check what's actually in the modal
     const modalContent = await page
@@ -91,9 +80,9 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
       ),
     ).toBeVisible();
 
-    // Verify the modal has the expected structure
+    // Verify the modal has the expected structure - corrected CSS class from text-xl to text-2xl
     await expect(
-      page.locator(".project-modal-container .text-xl.font-medium"),
+      page.locator(".project-modal-container .text-2xl.font-medium"),
     ).toContainText("Welcome to Your New Project!");
 
     // Verify the Next button is present

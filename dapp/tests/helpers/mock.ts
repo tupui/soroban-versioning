@@ -1,5 +1,8 @@
 // @ts-nocheck
 
+import { rpcMock } from "./rpcMock";
+import { WALLET_PK, MOCK_PROJECT, MOCK_PROPOSAL, MOCK_MEMBER } from "./data";
+
 /** Common mocks for Playwright tests */
 export async function stubRpc(page) {
   await page.route("**/rpc**", (route) => {
@@ -16,16 +19,7 @@ export async function stubRpc(page) {
       /async function getMember\([^}]+\}/gs,
       `async function getMember(memberAddress) {
         if (!memberAddress) return null;
-        return window.mockGetMemberResponse || {
-          member_address: memberAddress,
-          meta: "QmTestCID123mockipfs456789abcdef",
-          projects: [
-            {
-              project: new Uint8Array([116, 101, 115, 116]),
-              badges: ["contributor", "maintainer"]
-            }
-          ]
-        };
+        return window.mockGetMemberResponse || ${JSON.stringify(MOCK_MEMBER)};
       }`,
     );
 
@@ -75,6 +69,7 @@ export async function stubGithub(page) {
     // minimal TOML with project details
     const toml = `name = "${MOCK_PROJECT.name}"
 description = "${MOCK_PROJECT.description}"
+url = "${MOCK_PROJECT.config_url}"
 `;
     route.fulfill({ status: 200, body: toml });
   });
@@ -82,9 +77,6 @@ description = "${MOCK_PROJECT.description}"
     route.fulfill({ status: 200, body: "" });
   });
 }
-
-import { rpcMock } from "./rpcMock";
-import { WALLET_PK, MOCK_PROJECT } from "./data";
 
 export async function applyAllMocks(page) {
   // Allow everything by default, we only override selected external calls
@@ -98,6 +90,8 @@ export async function applyAllMocks(page) {
     (window as any).__TEST_MODE__ = true;
     // Force missing anonymous config path by default when requested in tests
     (window as any).__mockAnonymousConfigMissing = true;
+    // Define WALLET_PK in window context for mocks to use
+    (window as any).WALLET_PK = "${WALLET_PK}";
     // Mock getProjectFromName globally
     (window as any).getProjectFromName = async (name) => {
       const result = {
@@ -123,7 +117,13 @@ export async function applyAllMocks(page) {
       projectName: string,
       page: number,
     ) => {
-      return []; // Return empty proposals array
+      return [MOCK_PROPOSAL]; // Return mock proposal
+    };
+
+    // Mock getMember function
+    (window as any).getMember = async (memberAddress: string) => {
+      if (!memberAddress) return null;
+      return MOCK_MEMBER;
     };
   });
 
@@ -155,14 +155,22 @@ export async function applyAllMocks(page) {
         if ((window as any).getProposals) {
           return (window as any).getProposals(projectName, page);
         }
-        return [];
+        return [${JSON.stringify(MOCK_PROPOSAL)}];
+      }
+
+      // Mock getMember function
+      export async function getMember(memberAddress) {
+        if ((window as any).getMember) {
+          return (window as any).getMember(memberAddress);
+        }
+        return ${JSON.stringify(MOCK_MEMBER)};
       }
     `;
 
     route.fulfill({
       status: response.status(),
       headers: response.headers(),
-      body,
+      body: body,
     });
   });
 
@@ -178,33 +186,8 @@ export async function applyAllMocks(page) {
         if (name === "testproject123" || name === "newproject" || name === "flowtest") {
           return null;
         }
-        // For existing project names, return the project data
-        return { name: "demo", maintainers: ["G".padEnd(56, "A")], config: { url: "https://github.com/test/demo", ipfs: "abc123" } };
-      }
-
-      export async function getProjectFromId(id) {
-        return { name: "demo", maintainers: ["G".padEnd(56, "A")], config: { url: "https://github.com/test/demo", ipfs: "abc123" } };
-      }
-
-      export async function getMember(address) {
-        return { address, badges: [], meta: "test member" };
-      }
-
-      export async function getProject(projectKey) {
-        return { name: "demo", maintainers: ["G".padEnd(56, "A")], config: { url: "https://github.com/test/demo", ipfs: "abc123" } };
-      }
-
-      export async function getProjectHash(projectKey) {
-        return "abc123";
-      }
-
-      export async function getBadges(projectKey) {
-        return {
-          community: false,
-          developer: false,
-          triage: false,
-          verified: false
-        };
+        // Return mock project for existing names
+        return ${JSON.stringify(MOCK_PROJECT)};
       }
 
       export async function getProposalPages(projectName) {
@@ -218,7 +201,42 @@ export async function applyAllMocks(page) {
         if (window.getProposals) {
           return window.getProposals(projectName, page);
         }
-        return [];
+        return [${JSON.stringify(MOCK_PROPOSAL)}];
+      }
+
+      export async function getMember(memberAddress) {
+        if (window.mockGetMemberResponse) {
+          return window.mockGetMemberResponse;
+        }
+        if (window.getMember) {
+          return window.getMember(memberAddress);
+        }
+        return ${JSON.stringify(MOCK_MEMBER)};
+      }
+
+      export async function getProject(projectKey) {
+        return ${JSON.stringify(MOCK_PROJECT)};
+      }
+
+      export async function getProjectFromId(projectId) {
+        return ${JSON.stringify(MOCK_PROJECT)};
+      }
+
+      export async function getProjectHash(projectKey) {
+        return "abc123";
+      }
+
+      export async function getBadges(projectKey) {
+        return {
+          developer: [window.WALLET_PK || "${WALLET_PK}"],
+          triage: [],
+          community: [window.WALLET_PK || "${WALLET_PK}"],
+          verified: [window.WALLET_PK || "${WALLET_PK}"],
+        };
+      }
+
+      export async function getProposal(projectKey, proposalId) {
+        return ${JSON.stringify(MOCK_PROPOSAL)};
       }
 
       export async function hasAnonymousVotingConfig(projectName) {
@@ -227,8 +245,8 @@ export async function applyAllMocks(page) {
     `;
     route.fulfill({
       status: 200,
-      body,
       headers: { "content-type": "application/javascript" },
+      body,
     });
   });
 
@@ -474,7 +492,16 @@ export async function applyAllMocks(page) {
   // GitHub raw content (README / TOML)
   // ──────────────────────────────────────────────
   await page.route("https://raw.githubusercontent.com/**", (route) => {
-    route.fulfill({ status: 200, body: "# Mock README\nTest" });
+    const url = route.request().url();
+    if (url.includes("tansu.toml")) {
+      const toml = `name = "${MOCK_PROJECT.name}"
+description = "${MOCK_PROJECT.description}"
+url = "${MOCK_PROJECT.config_url}"
+`;
+      route.fulfill({ status: 200, body: toml });
+    } else {
+      route.fulfill({ status: 200, body: "# Mock README\nTest" });
+    }
   });
 
   // ──────────────────────────────────────────────

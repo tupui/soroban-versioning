@@ -289,7 +289,7 @@ fn weighted_commitments_roundtrip_bounds_check() {
     // If both proofs pass, the contract records only {C'i} (the weighted commitments).
     // Note: this test demonstrates the algebraic identity that makes (2) tally-time
     // verification possible; it does not implement those NIZKs.
-    let w_fr = Fr::from_u256(U256::from_u32(&env, w).into());
+    let w_fr = Fr::from_u256(U256::from_u32(&env, w));
     let weighted_commitment = bls12_381.g1_mul(&base_commitment, &w_fr);
 
     // Independently reconstruct weighted commitment from weighted tallies
@@ -299,8 +299,8 @@ fn weighted_commitments_roundtrip_bounds_check() {
     // Here we demonstrate the per-vote equivalence locally: T_v = w*v, T_r = w*r
     let t_v: u128 = (w as u128) * v;
     let t_r: u128 = (w as u128) * r;
-    let t_v_fr = Fr::from_u256(U256::from_u128(&env, t_v).into());
-    let t_r_fr = Fr::from_u256(U256::from_u128(&env, t_r).into());
+    let t_v_fr = Fr::from_u256(U256::from_u128(&env, t_v));
+    let t_r_fr = Fr::from_u256(U256::from_u128(&env, t_r));
     let vote_part = bls12_381.g1_mul(&g_vote, &t_v_fr);
     let seed_part = bls12_381.g1_mul(&g_seed, &t_r_fr);
     let reconstructed = bls12_381.g1_add(&vote_part, &seed_part);
