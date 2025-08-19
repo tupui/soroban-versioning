@@ -2,7 +2,6 @@ import { retryAsync } from "../utils/retry";
 import { parseContractError } from "../utils/contractErrors";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { toast } from "utils/utils";
-import { kit } from "../components/stellar-wallets-kit";
 import { loadedPublicKey } from "./walletService";
 
 /**
@@ -188,6 +187,7 @@ export async function sendXLM(
       .build();
 
     // Sign the transaction using the wallet kit
+    const { kit } = await import("../components/stellar-wallets-kit");
     const { signedTxXdr } = await kit.signTransaction(transaction.toXDR());
 
     // For classic Stellar transactions, we need to submit to Horizon directly

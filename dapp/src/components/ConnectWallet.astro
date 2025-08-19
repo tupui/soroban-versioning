@@ -45,7 +45,6 @@
     disconnect,
   } from "../service/walletService";
   import { truncateMiddle } from "../utils/utils";
-  import { kit } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
@@ -98,6 +97,9 @@
       }
 
       try {
+        // Dynamic import to avoid build-time resolution issues
+        const { kit } = await import("./stellar-wallets-kit");
+
         await kit.openModal({
           onWalletSelected: async (option: { id: string }) => {
             try {
