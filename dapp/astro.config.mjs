@@ -21,8 +21,12 @@ export default defineConfig({
       rollupOptions: {
         output: {
           manualChunks: (id) => {
-            // React and core UI libraries
-            if (id.includes("react") || id.includes("react-dom")) {
+            // Keep React and React DOM together to avoid scheduler issues
+            if (
+              id.includes("react") ||
+              id.includes("react-dom") ||
+              id.includes("scheduler")
+            ) {
               return "react-vendor";
             }
             // Stellar blockchain libraries
@@ -32,7 +36,6 @@ export default defineConfig({
             ) {
               return "stellar-vendor";
             }
-            // Remove old MDXEditor chunks - no longer needed
             // Crypto libraries
             if (
               id.includes("crypto") ||
@@ -63,6 +66,9 @@ export default defineConfig({
     },
     ssr: {
       noExternal: ["@astrojs/react"],
+    },
+    optimizeDeps: {
+      include: ["react", "react-dom", "scheduler"],
     },
   },
   compressHTML: true,
