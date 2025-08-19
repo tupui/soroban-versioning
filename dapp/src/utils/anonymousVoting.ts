@@ -28,8 +28,8 @@ export interface DecodedVote {
 }
 
 export interface AnonymousVotingData {
-  tallies: number[]; // length 3: approve/reject/abstain – weighted
-  seeds: number[]; // length 3 – sum of seeds per choice
+  tallies: bigint[]; // length 3: approve/reject/abstain – weighted
+  seeds: bigint[]; // length 3 – sum of seeds per choice
   voteCounts: number[]; // length 3 – un-weighted counts (needed for proof)
   voteStatus: VoteStatus;
   decodedVotes: DecodedVote[];
@@ -109,10 +109,12 @@ export async function computeAnonymousVotingData(
         selectedSeedRaw = sDec; // capture per-voter unweighted seed for display
       }
       // Apply voting weight to both vote value and seed
-      talliesArr[i] += vDec * weight;
-      seedsArr[i] += sDec * weight;
-      if (vDec > 0) {
-        voteCounts[i] += 1;
+      if (talliesArr[i] !== undefined && seedsArr[i] !== undefined && voteCounts[i] !== undefined) {
+        talliesArr[i] += vDec * weight;
+        seedsArr[i] += sDec * weight;
+        if (vDec > 0) {
+          voteCounts[i] += 1;
+        }
       }
     }
 
@@ -174,8 +176,8 @@ export async function computeAnonymousVotingData(
       const proofRes = await Tansu.proof({
         project_key,
         proposal: rawProposal,
-        tallies: talliesArr as unknown as number[],
-        seeds: seedsArr as unknown as number[],
+        tallies: talliesArr.map(n => BigInt(n)),
+        seeds: seedsArr.map(n => BigInt(n)),
       });
       proofOk = !!proofRes.result;
     } catch (_) {
@@ -184,8 +186,8 @@ export async function computeAnonymousVotingData(
   }
 
   return {
-    tallies: talliesArr,
-    seeds: seedsArr,
+    tallies: talliesArr.map(n => BigInt(n)),
+    seeds: seedsArr.map(n => BigInt(n)),
     voteCounts,
     voteStatus,
     decodedVotes: decodedPerVoter,

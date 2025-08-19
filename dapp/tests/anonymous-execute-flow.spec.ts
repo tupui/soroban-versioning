@@ -122,6 +122,6 @@ test("execute() receives weighted tallies/seeds for anonymous proposal", async (
   expect(ok).toBeTruthy();
   const captured = await page.evaluate(() => (window as any).__captured);
   // From one voter: vote=1*weight(3) => tallies [3,0,0]; seeds [10*3,0,0] => [30,0,0]
-  expect(captured.executeArgs.tallies).toEqual([3, 0, 0]);
-  expect(captured.executeArgs.seeds).toEqual([30, 0, 0]);
+  expect(captured.executeArgs.tallies).toEqual([3n, 0n, 0n]);
+  expect(captured.executeArgs.seeds).toEqual([30n, 0n, 0n]);
 });

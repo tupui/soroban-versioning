@@ -39,8 +39,14 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isMaintainer, setIsMaintainer] = useState(false);
   const [decodedVotes, setDecodedVotes] = useState<any[]>([]);
-
   const [proofOk, setProofOk] = useState<boolean | null>(null);
+  const [privateKey, setPrivateKey] = useState<string>("");
+
+  // Local vote status that may be updated once we compute tallies for
+  // anonymous proposals.
+  const [displayVoteStatus, setDisplayVoteStatus] = useState<
+    VoteStatus | undefined
+  >(voteStatus);
 
   const computedResult = useMemo(() => {
     if (!displayVoteStatus) return null;
@@ -66,12 +72,6 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
         return null;
     }
   }, [outcome, computedResult]);
-
-  // Local vote status that may be updated once we compute tallies for
-  // anonymous proposals.
-  const [displayVoteStatus, setDisplayVoteStatus] = useState<
-    VoteStatus | undefined
-  >(voteStatus);
 
   useEffect(() => {
     if (

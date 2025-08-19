@@ -79,8 +79,8 @@ test.describe("Anonymous voting – proof computation", () => {
           tallies,
           seeds,
         }: {
-          tallies: number[];
-          seeds: number[];
+          tallies: bigint[];
+          seeds: bigint[];
         }) {
           (window as any).__captured.proofArgs = { tallies, seeds };
           return { result: true } as any;
@@ -113,14 +113,14 @@ test.describe("Anonymous voting – proof computation", () => {
     });
 
     // Expected weighted tallies: [5,2,1]
-    expect(tallies).toEqual([5, 2, 1]);
+    expect(tallies).toEqual([5n, 2n, 1n]);
 
     // Seeds are aggregated per option with weights applied:
     // V1 seeds [7,8,9]*5 → [35,40,45]
     // V2 seeds [3,4,5]*2 → [6,8,10]
     // V3 seeds [1,1,1]*1 → [1,1,1]
-    // Sum → [42,49,56]
-    expect(seeds).toEqual([42, 49, 56]);
+    // Total: [35+6+1, 40+8+1, 45+10+1] = [42,49,56]
+    expect(seeds).toEqual([42n, 49n, 56n]);
 
     // Ensure the same arrays were used for the proof call
     const captured = await page.evaluate(() => (window as any).__captured);
