@@ -83,9 +83,6 @@ jobs:
       - name: Install App dependencies
         run: cd dapp && bun install --frozen-lockfile
 
-      - name: Setup environment variables
-        run: cd dapp && cp .env.example .env
-
       - name: Lint dApp
         run: cd dapp && bun run lint
 
