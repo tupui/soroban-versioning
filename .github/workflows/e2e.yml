@@ -29,7 +29,6 @@ jobs:
       PUBLIC_TANSU_OWNER_ID: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
       PUBLIC_DEFAULT_FEE: "100"
       PUBLIC_DEFAULT_TIMEOUT: "30"
-      SOROBAN_NETWORK: "testnet"
     defaults:
       run:
         working-directory: ./dapp

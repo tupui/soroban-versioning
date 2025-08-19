@@ -43,12 +43,14 @@ jobs:
       # Default Soroban network configuration for static build & linting
       PUBLIC_SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org:443"
       PUBLIC_SOROBAN_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+      PUBLIC_HORIZON_URL: "https://horizon-testnet.stellar.org"
       PUBLIC_TANSU_CONTRACT_ID: "CTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
       PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CAQWEZNN5X7LFD6PZBQXALVH4LSJW2KGNDMFJBQ3DWHXUVQ2JIZ6AQU6"
       PUBLIC_TANSU_OWNER_ID: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
       PUBLIC_DEFAULT_FEE: "100"
       PUBLIC_DEFAULT_TIMEOUT: "30"
-      SOROBAN_NETWORK: "testnet"
+      STORACHA_SING_PRIVATE_KEY: ""
+      STORACHA_PROOF: ""
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

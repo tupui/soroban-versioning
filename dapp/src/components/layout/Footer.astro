@@ -1,6 +1,7 @@
 ---
 const year = new Date().getFullYear();
-const network = import.meta.env.SOROBAN_NETWORK;
+const horizonUrl = import.meta.env.PUBLIC_HORIZON_URL;
+const network = horizonUrl.includes("testnet") ? "testnet" : "public";
 const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 ---
 
