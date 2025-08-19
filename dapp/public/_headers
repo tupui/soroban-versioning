@@ -1,38 +1,9 @@
 /*
-  # Security Headers
+  # Essential Security Headers
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   
-  # Content Security Policy
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https: wss: blob:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'
-
-/*.js
-  # Cache static assets aggressively
-  Cache-Control: public, max-age=31536000, immutable
-  # Enable compression
-  Content-Encoding: gzip, br
-
-/*.css
-  # Cache static assets aggressively  
-  Cache-Control: public, max-age=31536000, immutable
-  # Enable compression
-  Content-Encoding: gzip, br
-
-/*.svg
-  # Cache static assets
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.png
-  # Cache static assets
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.jpg
-  # Cache static assets
-  Cache-Control: public, max-age=31536000, immutable
-
-/*.webp
-  # Cache static assets
-  Cache-Control: public, max-age=31536000, immutable
+  # Content Security Policy - Minimal for dapp functionality
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https: wss:; object-src 'none'
