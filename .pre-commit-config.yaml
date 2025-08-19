@@ -52,7 +52,7 @@ repos:
         name: dApp contract error validation
         language: node
         pass_filenames: false
-        entry: bash -c "cd dapp && bun scripts/validate-contract-errors.js"
+        entry: bash -c "cd dapp && node scripts/validate-contract-errors.js"
       - id: website
         name: website prettier
         additional_dependencies:
