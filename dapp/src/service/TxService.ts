@@ -20,7 +20,7 @@ export async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
     sendResponse = await retryAsync(() =>
       (server as any).sendTransaction(signedTxXdr),
     );
-  } catch (error) {
+  } catch (_error) {
     const transaction = new Transaction(
       signedTxXdr,
       import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,

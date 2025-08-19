@@ -70,6 +70,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-playwright-
 
+      - name: Setup environment variables
+        run: cp .env.example .env
+
       - name: Build application
         run: bun run build
 

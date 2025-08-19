@@ -34,13 +34,13 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   const [step, setStep] = useState(1);
   const [isAnonymous, setIsAnonymous] = useState(false);
 
-  const [tallies, setTallies] = useState<number[] | null>(null);
-  const [seeds, setSeeds] = useState<number[] | null>(null);
+  const [seeds, setSeeds] = useState<bigint[] | null>(null);
+  const [tallies, setTallies] = useState<bigint[] | null>(null);
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isMaintainer, setIsMaintainer] = useState(false);
   const [decodedVotes, setDecodedVotes] = useState<any[]>([]);
   const [proofOk, setProofOk] = useState<boolean | null>(null);
-  const [privateKey, setPrivateKey] = useState<string>("");
+  const [_privateKey, setPrivateKey] = useState<string>("");
 
   // Local vote status that may be updated once we compute tallies for
   // anonymous proposals.

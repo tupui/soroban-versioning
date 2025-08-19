@@ -248,8 +248,8 @@ export async function voteToProposal(
 export async function execute(
   project_name: string,
   proposal_id: number,
-  tallies?: number[],
-  seeds?: number[],
+  tallies?: bigint[],
+  seeds?: bigint[],
 ): Promise<any> {
   const client = getClient();
   const projectKey = getProjectKey(project_name);
@@ -258,8 +258,8 @@ export async function execute(
     maintainer: client.options.publicKey!,
     project_key: projectKey,
     proposal_id: Number(proposal_id),
-    tallies: tallies as unknown as bigint[] | undefined,
-    seeds: seeds as unknown as bigint[] | undefined,
+    tallies,
+    seeds,
   });
 
   // Check for simulation errors (contract errors) before submitting

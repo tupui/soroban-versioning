@@ -1,7 +1,4 @@
-import {
-  contractErrorMessages,
-  type ContractErrorMessageKey,
-} from "../constants/contractErrorMessages";
+import { contractErrorMessages } from "../constants/contractErrorMessages";
 
 /**
  * Error handling utility for the application
@@ -36,7 +33,8 @@ export function extractContractError(error: any): {
 
   // Use our constants file for user-friendly error messages
   const errorMessage =
-    contractErrorMessages[errorCode] || `Contract error #${errorCode}`;
+    contractErrorMessages[errorCode as keyof typeof contractErrorMessages] ||
+    `Contract error #${errorCode}`;
 
   return {
     errorCode,
