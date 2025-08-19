@@ -99,8 +99,8 @@ const LatestCommit = () => {
             <Tooltip
               text={
                 latestCommitStatus == Status.Match
-                  ? "Latest SHA on-chain exists on GitHub"
-                  : "Latest SHA on-chain cannot be found on GitHub"
+                  ? "Latest SHA on-chain exists in Git history"
+                  : "Latest SHA on-chain cannot be found in Git history"
               }
             >
               <img src="/icons/info.svg" />
@@ -122,7 +122,7 @@ const LatestCommit = () => {
       {/* Configuration link */}
       {isProjectInfoLoaded && (
         <a
-          href={`${getIpfsBasicLink(loadProjectInfo()?.config.hash || "")}/tansu.toml`}
+          href={`${getIpfsBasicLink(loadProjectInfo()?.config.ipfs || "")}/tansu.toml`}
           target="_blank"
           className="flex items-center gap-1 text-[#07711E] hover:underline"
         >

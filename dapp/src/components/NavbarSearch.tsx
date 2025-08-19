@@ -13,7 +13,7 @@ const HOME_PATH = "/";
 
 const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [originalUrl, setOriginalUrl] = useState("");
   const [isWalletConnected, setIsWalletConnected] = useState(false);
 
@@ -113,15 +113,6 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
         window.location.href = `/?search=${encodeURIComponent(searchTerm)}&from=${encodeURIComponent(currentFullUrl)}`;
       }
     }
-
-    // Reset the input after search on mobile
-    if (isExpanded) {
-      setTimeout(() => setIsExpanded(false), 500);
-    }
-  };
-
-  const toggleSearch = () => {
-    setIsExpanded(!isExpanded);
   };
 
   const handleAddProject = () => {
@@ -138,6 +129,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
 
   const handleClearSearch = () => {
     setSearchTerm("");
+    setIsSearchFocused(false);
 
     const searchParams = new URLSearchParams(window.location.search);
     const fromUrl = searchParams.get("from");
@@ -160,25 +152,27 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
     : "Connect wallet to add project";
 
   return (
-    <div className="flex items-center gap-2 w-full max-w-[500px]">
+    <div className="flex items-center gap-6 w-full">
+      {/* Mobile: Expandable search that takes full width when focused */}
       <div
-        className={`search-container relative flex-grow transition-all duration-200 ${isExpanded ? "w-full" : "w-0 md:w-full"}`}
+        className={`search-container relative transition-all duration-300 ease-in-out ${
+          isSearchFocused || searchTerm ? "w-full" : "flex-1"
+        }`}
       >
-        <div
-          className={`flex items-center border border-zinc-800 h-10 md:h-12 transition-all duration-200 ${isExpanded ? "w-full" : "w-0 md:w-full overflow-hidden"}`}
-        >
-          <div className="flex-shrink-0 pl-2">
+        <div className="flex items-center border border-zinc-800 h-10 md:h-12 bg-white rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all duration-300 w-full">
+          <div className="flex-shrink-0 pl-4">
             <img
               src="/icons/search.svg"
               width={16}
               height={16}
-              className="icon-search"
+              className="icon-search text-gray-400"
+              alt="Search"
             />
           </div>
           <input
             type="text"
             placeholder="Search projects or community..."
-            className="w-full h-full font-firacode text-base leading-5 px-2 border-none outline-none"
+            className="w-full h-full font-firacode text-sm md:text-base leading-6 px-3 border-none outline-none bg-transparent placeholder-gray-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => {
@@ -186,10 +180,17 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
                 handleSearch();
               }
             }}
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => {
+              // Keep focused state if there's text, otherwise unfocus
+              if (!searchTerm) {
+                setIsSearchFocused(false);
+              }
+            }}
           />
           {searchTerm && (
             <button
-              className="absolute right-[10px] top-1/2 transform -translate-y-1/2 cursor-pointer p-1"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer p-2 hover:bg-gray-100 rounded transition-colors"
               onClick={handleClearSearch}
               type="button"
               title="Clear search"
@@ -207,30 +208,25 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
         </div>
       </div>
 
-      {/* Mobile search icon */}
+      {/* Add Project button - always visible on desktop, conditionally hidden on mobile when searching */}
       <div
-        className={`md:hidden flex-shrink-0 cursor-pointer ${isExpanded ? "hidden" : "block"}`}
-        onClick={toggleSearch}
+        className={`ml-6 transition-all duration-300 ease-in-out ${
+          isSearchFocused || searchTerm ? "hidden md:block" : "block"
+        }`}
       >
-        <img
-          src="/icons/search.svg"
-          width={20}
-          height={20}
-          className="icon-search"
-        />
+        <Button
+          type="primary"
+          order="secondary"
+          className="h-8 md:h-10 lg:h-12 px-3 md:px-4 lg:px-6 whitespace-nowrap transition-all duration-200 flex items-center justify-center text-xs md:text-sm lg:text-base font-medium"
+          onClick={handleAddProject}
+          title={buttonTitle}
+          size="sm"
+        >
+          <span className="text-xs md:text-sm lg:text-base font-medium">
+            + Add Project
+          </span>
+        </Button>
       </div>
-
-      <Button
-        type="primary"
-        order="secondary"
-        icon="/icons/plus-fill.svg"
-        className={`h-10 md:h-12 px-2 sm:px-[15px] whitespace-nowrap transition-all duration-200 flex items-center justify-center ${isExpanded ? "hidden md:flex" : "flex"}`}
-        onClick={handleAddProject}
-        title={buttonTitle}
-        size="xs"
-      >
-        <span className="hidden sm:inline-block">Add Project</span>
-      </Button>
     </div>
   );
 };

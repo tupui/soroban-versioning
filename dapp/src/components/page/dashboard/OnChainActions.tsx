@@ -3,12 +3,14 @@
 // CommitRecord component for individual rows.
 
 import { useEffect, useState } from "react";
+import Spinner from "../../utils/Spinner";
 import {
   fetchOnChainActions,
   seedProjectNameCache,
   type OnChainAction,
 } from "../../../service/OnChainActivityService";
 import { formatDate } from "../../../utils/formatTimeFunctions";
+import { getStellarExpertUrl } from "../../../utils/urls";
 import CommitRecord from "../../CommitRecord";
 import {
   paramNamesForMethod,
@@ -44,11 +46,11 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
     load();
   }, [address, JSON.stringify(projectCache)]);
 
-  // Group by calendar day (YYYY-MM-DD).
+  // Group by calendar day (ISO key YYYY-MM-DD) for stable sorting
   const grouped = actions.reduce<Record<string, OnChainAction[]>>(
     (acc, act) => {
-      const day = formatDate(new Date(act.timestamp).toISOString());
-      (acc[day] ??= []).push(act);
+      const isoKey = new Date(act.timestamp).toISOString().slice(0, 10);
+      (acc[isoKey] ??= []).push(act);
       return acc;
     },
     {},
@@ -57,7 +59,7 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-6">
-        <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary" />
+        <Spinner />
       </div>
     );
   }
@@ -69,35 +71,44 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
   return (
     <div className="flex flex-col gap-6 pl-6 max-h-96 overflow-auto overflow-visible">
       {Object.entries(grouped)
+        // Sort day groups by ISO date key descending (latest first)
         .sort(([d1], [d2]) => (d1 < d2 ? 1 : -1))
-        .map(([day, list]) => (
-          <div key={day} className="flex flex-col gap-4">
+        .map(([isoDay, list]) => (
+          <div key={isoDay} className="flex flex-col gap-4">
             <h3 className="relative">
               <div className="absolute -left-6 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-[#2D0F512E] rounded-full bg-transparent" />
-              <span className="text-lg font-medium text-primary">{day}</span>
+              <span className="text-lg font-medium text-primary">
+                {formatDate(`${isoDay}T00:00:00.000Z`)}
+              </span>
             </h3>
-            {list.map((a) => (
-              <div key={a.txHash} className="relative">
-                <div className="absolute -left-[21px] lg:-left-[31px] w-[2px] h-full bg-[#2D0F510D]" />
-                {(() => {
-                  const link = proposalLink(a);
-                  const props = link
-                    ? { commitLink: link }
-                    : { shaLink: txExplorerUrl(a.txHash) };
-                  return (
-                    <CommitRecord
-                      message={summaryFor(a)}
-                      sha={a.txHash}
-                      {...props}
-                      bgClass="bg-indigo-50"
-                      projectName={a.projectName ?? null}
-                      showXDR={a.raw}
-                      proposalLink={proposalLink(a) ?? null}
-                    />
-                  );
-                })()}
-              </div>
-            ))}
+            {list
+              // Ensure items within a day are sorted by timestamp descending
+              .slice()
+              .sort((a, b) => b.timestamp - a.timestamp)
+              .map((a) => (
+                <div key={a.txHash} className="relative">
+                  <div className="absolute -left-[21px] lg:-left-[31px] w-[2px] h-full bg-[#2D0F510D]" />
+                  {(() => {
+                    const link = proposalLink(a);
+                    const props = link
+                      ? { commitLink: link }
+                      : {
+                          shaLink: getStellarExpertUrl(a.txHash, "transaction"),
+                        };
+                    return (
+                      <CommitRecord
+                        message={summaryFor(a)}
+                        sha={a.txHash}
+                        {...props}
+                        bgClass="bg-indigo-50"
+                        projectName={a.projectName ?? null}
+                        showXDR={a.raw}
+                        proposalLink={proposalLink(a) ?? null}
+                      />
+                    );
+                  })()}
+                </div>
+              ))}
           </div>
         ))}
     </div>
@@ -109,11 +120,6 @@ export default OnChainActions;
 // -----------------------------------------------------------------------------
 // Helper utilities
 // -----------------------------------------------------------------------------
-
-function txExplorerUrl(hash: string): string {
-  const net = import.meta.env.SOROBAN_NETWORK || "testnet";
-  return `https://stellar.expert/explorer/${net}/tx/${hash}`;
-}
 
 function summaryFor(a: OnChainAction): string {
   const firstLine = summaryForMethod(a.method, a.details);

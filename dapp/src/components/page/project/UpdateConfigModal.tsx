@@ -47,12 +47,15 @@ const UpdateConfigModal = () => {
   const [ghErrors, setGhErrors] = useState<(string | null)[]>([null]);
   const [repoError, setRepoError] = useState<string | null>(null);
 
-  // pre-fill from current config
+  // pre-fill from current config and gate by maintainer status
   useEffect(() => {
     if (!infoLoaded) return;
     const projectInfo = loadProjectInfo();
     const cfg = loadConfigData();
-    if (!projectInfo || !projectInfo.maintainers || !projectInfo.config) return;
+    if (!projectInfo || !projectInfo.maintainers || !projectInfo.config) {
+      setShowButton(false);
+      return;
+    }
     setMaintainerAddresses(projectInfo.maintainers);
     setMaintainerGithubs(
       cfg?.authorGithubNames || projectInfo.maintainers.map(() => ""),
@@ -65,8 +68,17 @@ const UpdateConfigModal = () => {
     setAddrErrors(projectInfo.maintainers.map(() => null));
     setGhErrors(projectInfo.maintainers.map(() => null));
 
-    // show button only if wallet is maintainer handled outside earlier
-    setShowButton(true);
+    // Show button only if the connected wallet is a maintainer
+    // Use the same approach as other project actions
+    import("@service/walletService")
+      .then(({ loadedPublicKey }) => {
+        const publicKey = loadedPublicKey();
+        const isMaintainer = publicKey
+          ? projectInfo.maintainers.includes(publicKey)
+          : false;
+        setShowButton(isMaintainer);
+      })
+      .catch(() => setShowButton(false));
   }, [infoLoaded]);
 
   const handleClose = () => {
@@ -151,10 +163,13 @@ const UpdateConfigModal = () => {
   return (
     <>
       <button
-        className="p-[12px_16px] sm:p-[18px_30px] bg-white"
+        className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
         onClick={() => setOpen(true)}
       >
-        Update config
+        <img src="/icons/gear.svg" className="w-5 h-5 flex-shrink-0" />
+        <span className="text-sm sm:text-base text-primary font-medium">
+          Update config
+        </span>
       </button>
       {open && (
         <Modal onClose={handleClose}>
@@ -292,7 +307,9 @@ const UpdateConfigModal = () => {
               )}
             </div>
           )}
-          {step >= 4 && step <= 9 && <ProgressStep step={step - 4} />}
+          {step >= 4 && step <= 9 && (
+            <ProgressStep step={step - 4} signLabel="project configuration" />
+          )}
         </Modal>
       )}
     </>

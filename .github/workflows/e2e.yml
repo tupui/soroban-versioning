@@ -1,0 +1,89 @@
+name: E2E Tests
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "dapp/**"
+      - ".github/workflows/e2e.yml"
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Soroban network configuration for e2e tests
+      PUBLIC_SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org:443"
+      PUBLIC_SOROBAN_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+      PUBLIC_TANSU_CONTRACT_ID: "CTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+      PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CAQWEZNN5X7LFD6PZBQXALVH4LSJW2KGNDMFJBQ3DWHXUVQ2JIZ6AQU6"
+      PUBLIC_TANSU_OWNER_ID: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+      PUBLIC_DEFAULT_FEE: "100"
+      PUBLIC_DEFAULT_TIMEOUT: "30"
+    defaults:
+      run:
+        working-directory: ./dapp
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Get Bun cache directory
+        id: bun-cache-dir
+        run: echo "dir=$(bun pm cache)" >> ${GITHUB_OUTPUT}
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ steps.bun-cache-dir.outputs.dir }}
+            ~/.bun/install/cache
+            ./node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb', '**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: bunx playwright install --with-deps chromium
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Setup environment variables
+        run: cp .env.example .env
+
+      - name: Build application
+        run: bun run build
+
+      - name: Run E2E tests
+        run: bun run test
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: |
+            ./dapp/test-results/
+            ./dapp/playwright-report/
+          retention-days: 7

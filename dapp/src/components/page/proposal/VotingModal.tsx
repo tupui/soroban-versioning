@@ -128,8 +128,11 @@ const VotingModal: React.FC<VotersModalProps> = ({
                 <Button type="secondary" onClick={onClose}>
                   Close
                 </Button>
-                <Button onClick={() => !isLoading && handleVote()}>
-                  {isLoading ? "Voting..." : "Vote"}
+                <Button
+                  isLoading={isLoading}
+                  onClick={() => !isLoading && handleVote()}
+                >
+                  Vote
                 </Button>
               </div>
               <p className="text-base text-secondary">
@@ -158,8 +161,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
                   <span className={`text-${selectedOption}`}>
                     {voteTypeLabelMap[selectedOption!]}!
                   </span>{" "}
-                  Your positive feedback helps this proposal move closer to
-                  realization.
+                  Your feedback helps this proposal move closer to execution.
                 </>
               }
             />

@@ -5,7 +5,7 @@ import {
   ClientOptions as ContractClientOptions,
   MethodOptions,
 } from "@stellar/stellar-sdk/contract";
-import type { u32, u64, Option } from "@stellar/stellar-sdk/contract";
+import type { u32, u64, u128, Option } from "@stellar/stellar-sdk/contract";
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
@@ -89,7 +89,6 @@ export type DataKey =
     };
 export interface Badges {
   community: Array<string>;
-  default: Array<string>;
   developer: Array<string>;
   triage: Array<string>;
   verified: Array<string>;
@@ -206,7 +205,7 @@ export type ProjectKey =
       values: readonly [Buffer];
     };
 export interface Config {
-  hash: string;
+  ipfs: string;
   url: string;
 }
 export interface Project {
@@ -217,18 +216,26 @@ export interface Project {
 export interface Client {
   /**
    * Construct and simulate a anonymous_voting_setup transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Anonymous voting primitives.
+   * Setup anonymous voting for a project.
+   *
+   * Configures BLS12-381 cryptographic primitives for anonymous voting.
+   * Only the contract admin can call this function.
    *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - Unique identifier for the project
-   * * `public_key` - Asymmetric public key to be used to encode seeds
+   * * `public_key` - Asymmetric public key to be used for vote encryption
+   *
+   * # Panics
+   * * If the caller is not the contract admin
    */
   anonymous_voting_setup: (
     {
+      maintainer,
       project_key,
       public_key,
     }: {
+      maintainer: string;
       project_key: Buffer;
       public_key: string;
     },
@@ -249,6 +256,17 @@ export interface Client {
   ) => Promise<AssembledTransaction<null>>;
   /**
    * Construct and simulate a get_anonymous_voting_config transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get the anonymous voting configuration for a project.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - The project key identifier
+   *
+   * # Returns
+   * * `types::AnonymousVoteConfig` - The anonymous voting configuration
+   *
+   * # Panics
+   * * If no anonymous voting configuration exists for the project
    */
   get_anonymous_voting_config: (
     {
@@ -273,22 +291,26 @@ export interface Client {
   ) => Promise<AssembledTransaction<AnonymousVoteConfig>>;
   /**
    * Construct and simulate a build_commitments_from_votes transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Build all three commitments from the votes and seeds.
+   * Build vote commitments from votes and seeds for anonymous voting.
    *
-   * Does not take into account weights as this will be considered only
-   * during the tallying phase.
+   * Creates BLS12-381 commitments for each vote using the formula:
+   * C = g^vote * h^seed where g and h are generator points.
    *
-   * Calling that on the smart contract itself would reveal the votes and seeds.
-   * This can be run in simulation in your RPC or used as a basis for
-   * implementation client-side.
+   * Note: This function does not consider voting weights, which are applied
+   * during the tallying phase. Calling this on the smart contract would reveal
+   * the votes and seeds, so it must be run either in simulation or client-side.
    *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - Unique identifier for the project
-   * * `votes` - Vector of votes.
-   * * `seeds` - Vector of seeds.
+   * * `votes` - Vector of vote choices (0=abstain, 1=approve, 2=reject)
+   * * `seeds` - Vector of random seeds for each vote
+   *
    * # Returns
-   * * `Vec<BytesN<96>>` - The three voting commitments.
+   * * `Vec<BytesN<96>>` - Vector of vote commitments (one per vote)
+   *
+   * # Panics
+   * * If no anonymous voting configuration exists for the project
    */
   build_commitments_from_votes: (
     {
@@ -297,8 +319,8 @@ export interface Client {
       seeds,
     }: {
       project_key: Buffer;
-      votes: Array<u32>;
-      seeds: Array<u32>;
+      votes: Array<u128>;
+      seeds: Array<u128>;
     },
     options?: {
       /**
@@ -317,8 +339,8 @@ export interface Client {
   ) => Promise<AssembledTransaction<Array<Buffer>>>;
   /**
    * Construct and simulate a create_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Create a proposal on the DAO of the project.
-   * Proposal initiators are automatically put in the abstain group.
+   * Create a new proposal for a project.
+   *
    * # Arguments
    * * `env` - The environment object
    * * `proposer` - Address of the proposal creator
@@ -326,8 +348,16 @@ export interface Client {
    * * `title` - Title of the proposal
    * * `ipfs` - IPFS content identifier describing the proposal
    * * `voting_ends_at` - UNIX timestamp when voting ends
+   * * `public_voting` - Whether voting is public or anonymous
    * # Returns
-   * * `u32` - The ID of the created proposal
+   * * `u32` - The ID of the created proposal.
+   *
+   * The proposer is automatically added to the abstain group.
+   *
+   * # Panics
+   * * If the title is too long
+   * * If the voting period is invalid
+   * * If the project doesn't exist
    */
   create_proposal: (
     {
@@ -363,13 +393,25 @@ export interface Client {
   /**
    * Construct and simulate a vote transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Cast a vote on a proposal.
-   * Double votes are not allowed.
+   *
+   * Allows a member to vote on a proposal.
+   * The vote can be either public or anonymous depending on the proposal configuration.
+   * For public votes, the choice and weight are visible. For anonymous votes, only
+   * the weight is visible, and the choice is encrypted.
+   *
    * # Arguments
    * * `env` - The environment object
-   * * `voter` - Address of the voter
-   * * `project_key` - Unique identifier for the project
-   * * `proposal_id` - ID of the proposal
-   * * `vote` - Approve, reject or abstain decision
+   * * `voter` - The address of the voter
+   * * `project_key` - The project key identifier
+   * * `proposal_id` - The ID of the proposal to vote on
+   * * `vote` - The vote data (public or anonymous)
+   *
+   * # Panics
+   * * If the voter has already voted
+   * * If the voting period has ended
+   * * If the proposal doesn't exist
+   * * If the voter's weight exceeds their maximum allowed weight
+   * * If the voter is not a member of the project
    */
   vote: (
     {
@@ -402,22 +444,28 @@ export interface Client {
    * Construct and simulate a execute transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Execute a vote after the voting period ends.
    *
-   * When proposals are anonymous, `tally` is validated against the sum of
-   * all vote commitments. The `seed` is essential for the validation.
-   *
-   * # Panics
-   *
-   * Double votes are not allowed. Tally and seed must be present for
-   * anonymous votes and forbidden otherwise. For anonymous votes, it will
-   * panic if the commitment proof validation fails.
+   * Processes the voting results and determines the final status of the proposal.
+   * For public votes, the results are calculated directly from vote counts.
+   * For anonymous votes, tallies and seeds are validated against vote commitments
+   * to ensure the results are correct.
    *
    * # Arguments
    * * `env` - The environment object
-   * * `maintainer` - Address of the maintainer
-   * * `project_key` - Unique identifier for the project
-   * * `proposal_id` - ID of the proposal
+   * * `maintainer` - The address of the maintainer executing the proposal
+   * * `project_key` - The project key identifier
+   * * `proposal_id` - The ID of the proposal to execute
    * * [`Option<tallies>`] - decoded tally values (scaled by weights), respectively Approve, reject and abstain
    * * [`Option<seeds>`] - decoded seed values (scaled by weights), respectively Approve, reject and abstain
+   *
+   * # Returns
+   * * `types::ProposalStatus` - The final status of the proposal (Approved, Rejected, or Cancelled)
+   *
+   * # Panics
+   * * If the voting period hasn't ended
+   * * If the proposal doesn't exist
+   * * If tallies/seeds are missing for anonymous votes
+   * * If commitment validation fails for anonymous votes
+   * *
    */
   execute: (
     {
@@ -430,8 +478,8 @@ export interface Client {
       maintainer: string;
       project_key: Buffer;
       proposal_id: u32;
-      tallies: Option<Array<u32>>;
-      seeds: Option<Array<u32>>;
+      tallies: Option<Array<u128>>;
+      seeds: Option<Array<u128>>;
     },
     options?: {
       /**
@@ -450,26 +498,31 @@ export interface Client {
   ) => Promise<AssembledTransaction<ProposalStatus>>;
   /**
    * Construct and simulate a proof transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Voting choice commitment.
+   * Verify vote commitment proof for anonymous voting.
    *
-   * Recover the commitment by removing the randomization introduced by the
-   * seed.
+   * Validates that the provided tallies and seeds match the vote commitments
+   * without revealing individual votes. This ensures the integrity of anonymous
+   * voting results.
    *
-   * Vote commitment is:
+   * The commitment is:
    *
    * C = g^v * h^r (in additive notation: g*v + h*r),
    *
-   * where g, h point generator and v is the vote choice, r is the seed.
-   * Voting weight is introduced during the tallying phase.
+   * where g, h are BLS12-381 generator points and v is the vote choice,
+   * r is the seed. Voting weight is introduced during the tallying phase.
    *
    * # Arguments
    * * `env` - The environment object
-   * * `project_key` - Unique identifier for the project
-   * * `commitment` - Vote commitment
-   * * `tally` - decoded tally value (scaled by weights)
-   * * `seed` - decoded seed value (scaled by weights)
+   * * `project_key` - The project key identifier
+   * * `proposal` - The proposal containing vote commitments
+   * * `tallies` - Decoded tally values [approve, reject, abstain] (scaled by weights)
+   * * `seeds` - Decoded seed values [approve, reject, abstain] (scaled by weights)
+   *
    * # Returns
-   * * `bool` - True if the commitment match
+   * * `bool` - True if all commitments match the provided tallies and seeds
+   *
+   * # Panics
+   * * If no anonymous voting configuration exists for the project
    */
   proof: (
     {
@@ -480,8 +533,8 @@ export interface Client {
     }: {
       project_key: Buffer;
       proposal: Proposal;
-      tallies: Array<u32>;
-      seeds: Array<u32>;
+      tallies: Array<u128>;
+      seeds: Array<u128>;
     },
     options?: {
       /**
@@ -500,14 +553,18 @@ export interface Client {
   ) => Promise<AssembledTransaction<boolean>>;
   /**
    * Construct and simulate a get_dao transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Get one page of proposal of the DAO.
-   * A page has 0 to MAX_PROPOSALS_PER_PAGE proposals.
+   * Returns a page of proposals (0 to MAX_PROPOSALS_PER_PAGE proposals per page).
+   *
    * # Arguments
    * * `env` - The environment object
-   * * `project_key` - Unique identifier for the project
-   * * `page` - Page of proposals
+   * * `project_key` - The project key identifier
+   * * `page` - The page number (0-based)
+   *
    * # Returns
-   * * `types::Dao` - The Dao object (vector of proposals)
+   * * `types::Dao` - The DAO object containing a page of proposals
+   *
+   * # Panics
+   * * If the page number is out of bounds
    */
   get_dao: (
     {
@@ -534,13 +591,18 @@ export interface Client {
   ) => Promise<AssembledTransaction<Dao>>;
   /**
    * Construct and simulate a get_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Only return a single proposal
+   * Get a single proposal by ID.
+   *
    * # Arguments
    * * `env` - The environment object
-   * * `project_key` - Unique identifier for the project
-   * * `proposal_id` - ID of the proposal
+   * * `project_key` - The project key identifier
+   * * `proposal_id` - The ID of the proposal to retrieve
+   *
    * # Returns
    * * `types::Proposal` - The proposal object
+   *
+   * # Panics
+   * * If the proposal doesn't exist
    */
   get_proposal: (
     {
@@ -567,6 +629,15 @@ export interface Client {
   ) => Promise<AssembledTransaction<Proposal>>;
   /**
    * Construct and simulate a add_member transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Add a new member to the system with metadata.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `member_address` - The address of the member to add
+   * * `meta` - Metadata string associated with the member (e.g., IPFS hash)
+   *
+   * # Panics
+   * * If the member already exists
    */
   add_member: (
     {
@@ -593,6 +664,17 @@ export interface Client {
   ) => Promise<AssembledTransaction<null>>;
   /**
    * Construct and simulate a get_member transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get member information including all project badges.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `member_address` - The address of the member to retrieve
+   *
+   * # Returns
+   * * `types::Member` - Member information including metadata and project badges
+   *
+   * # Panics
+   * * If the member doesn't exist
    */
   get_member: (
     {
@@ -616,9 +698,26 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<Member>>;
   /**
-   * Construct and simulate a add_badges transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Construct and simulate a set_badges transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Set badges for a member in a specific project.
+   *
+   * This function replaces all existing badges for the member in the specified project
+   * with the new badge list. The member's maximum voting
+   * weight is calculated as the sum of all assigned badge weights.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `maintainer` - The address of the maintainer (must be authorized)
+   * * `key` - The project key identifier
+   * * `member` - The address of the member to set badges for
+   * * `badges` - Vector of badges to assign
+   *
+   * # Panics
+   * * If the maintainer is not authorized
+   * * If the member doesn't exist
+   * * If the project doesn't exist
    */
-  add_badges: (
+  set_badges: (
     {
       maintainer,
       key,
@@ -647,6 +746,17 @@ export interface Client {
   ) => Promise<AssembledTransaction<null>>;
   /**
    * Construct and simulate a get_badges transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get all badges for a specific project, organized by badge type.
+   *
+   * Returns a structure containing vectors of member addresses for each badge type
+   * (Developer, Triage, Community, Verified, Default).
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `key` - The project key identifier
+   *
+   * # Returns
+   * * `types::Badges` - Structure containing member addresses for each badge type
    */
   get_badges: (
     {
@@ -671,6 +781,23 @@ export interface Client {
   ) => Promise<AssembledTransaction<Badges>>;
   /**
    * Construct and simulate a get_max_weight transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get the maximum voting weight for a member in a specific project.
+   *
+   * Calculates the sum of all badge weights for the member in the project.
+   * If no badges are assigned, returns the Default badge weight (1).
+   * This weight determines the maximum number of votes the member can cast
+   * in a single voting transaction.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - The project key identifier
+   * * `member_address` - The address of the member
+   *
+   * # Returns
+   * * `u32` - The maximum voting weight for the member
+   *
+   * # Panics
+   * * If the member doesn't exist
    */
   get_max_weight: (
     {
@@ -697,6 +824,19 @@ export interface Client {
   ) => Promise<AssembledTransaction<u32>>;
   /**
    * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Upgrade the contract to a new WASM version.
+   *
+   * Only the current admin can call this function. Updates the contract's WASM hash
+   * changes the admin and domain contract configuration.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `new_wasm_hash` - The hash of the new WASM blob to deploy
+   * * `admin` - The new admin address
+   * * `domain_contract_id` - The new domain contract address
+   *
+   * # Panics
+   * * If the caller is not the current admin
    */
   upgrade: (
     {
@@ -725,6 +865,10 @@ export interface Client {
   ) => Promise<AssembledTransaction<null>>;
   /**
    * Construct and simulate a version transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get the current version of the contract.
+   *
+   * # Returns
+   * * `u32` - The contract version number
    */
   version: (options?: {
     /**
@@ -742,7 +886,29 @@ export interface Client {
   }) => Promise<AssembledTransaction<u32>>;
   /**
    * Construct and simulate a register transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Register a new Git projects and associated metadata.
+   * Register a new project.
+   *
+   * Creates a new project entry with maintainers, URL, and commit hash.
+   * Also registers the project name in the domain contract if not already registered.
+   * The project key is generated using keccak256 hash of the project name.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `maintainer` - The address of the maintainer calling this function
+   * * `name` - The project name (max 15 characters)
+   * * `maintainers` - List of maintainer addresses for the project
+   * * `url` - The project's Git repository URL
+   * * `ipfs` - CID of the tansu.toml file with associated metadata
+   *
+   * # Returns
+   * * `Bytes` - The project key (keccak256 hash of the name)
+   *
+   * # Panics
+   * * If the project name is longer than 15 characters
+   * * If the project already exists
+   * * If the maintainer is not authorized
+   * * If the domain registration fails
+   * * If the maintainer doesn't own an existing domain
    */
   register: (
     {
@@ -750,13 +916,13 @@ export interface Client {
       name,
       maintainers,
       url,
-      hash,
+      ipfs,
     }: {
       maintainer: string;
       name: string;
       maintainers: Array<string>;
       url: string;
-      hash: string;
+      ipfs: string;
     },
     options?: {
       /**
@@ -775,7 +941,21 @@ export interface Client {
   ) => Promise<AssembledTransaction<Buffer>>;
   /**
    * Construct and simulate a update_config transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Change the configuration of the project.
+   * Update the configuration of an existing project.
+   *
+   * Allows maintainers to change the project's URL, commit hash, and maintainer list.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `maintainer` - The address of the maintainer calling this function
+   * * `key` - The project key identifier
+   * * `maintainers` - New list of maintainer addresses
+   * * `url` - New Git repository URL
+   * * `hash` - New commit hash
+   *
+   * # Panics
+   * * If the project doesn't exist
+   * * If the maintainer is not authorized
    */
   update_config: (
     {
@@ -783,13 +963,13 @@ export interface Client {
       key,
       maintainers,
       url,
-      hash,
+      ipfs,
     }: {
       maintainer: string;
       key: Buffer;
       maintainers: Array<string>;
       url: string;
-      hash: string;
+      ipfs: string;
     },
     options?: {
       /**
@@ -808,7 +988,19 @@ export interface Client {
   ) => Promise<AssembledTransaction<null>>;
   /**
    * Construct and simulate a commit transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Set the last commit hash
+   * Set the latest commit hash for a project.
+   *
+   * Updates the current commit hash for the specified project.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `maintainer` - The address of the maintainer calling this function
+   * * `project_key` - The project key identifier
+   * * `hash` - The new commit hash
+   *
+   * # Panics
+   * * If the project doesn't exist
+   * * If the maintainer is not authorized
    */
   commit: (
     {
@@ -838,6 +1030,17 @@ export interface Client {
   /**
    * Construct and simulate a get_commit transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get the last commit hash
+   * Get the latest commit hash for a project.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - The project key identifier
+   *
+   * # Returns
+   * * `String` - The current commit hash
+   *
+   * # Panics
+   * * If the project doesn't exist
    */
   get_commit: (
     {
@@ -862,6 +1065,17 @@ export interface Client {
   ) => Promise<AssembledTransaction<string>>;
   /**
    * Construct and simulate a get_project transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get project information including configuration and maintainers.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `project_key` - The project key identifier
+   *
+   * # Returns
+   * * `types::Project` - Project information including name, config, and maintainers
+   *
+   * # Panics
+   * * If the project doesn't exist
    */
   get_project: (
     {
@@ -924,7 +1138,7 @@ export declare class Client extends ContractClient {
     get_proposal: (json: string) => AssembledTransaction<Proposal>;
     add_member: (json: string) => AssembledTransaction<null>;
     get_member: (json: string) => AssembledTransaction<Member>;
-    add_badges: (json: string) => AssembledTransaction<null>;
+    set_badges: (json: string) => AssembledTransaction<null>;
     get_badges: (json: string) => AssembledTransaction<Badges>;
     get_max_weight: (json: string) => AssembledTransaction<number>;
     upgrade: (json: string) => AssembledTransaction<null>;

@@ -2,8 +2,15 @@
   <div
     id="get-started"
     class="absolute hidden top-6 -left-16 xl:flex flex-col gap-2 transform -rotate-[13deg]"
+    aria-hidden="true"
   >
-    <img src="/arrow.svg" alt="" class="w-[56px] h-[69px]" />
+    <img
+      src="/arrow.svg"
+      alt="Arrow pointing to connect button"
+      class="w-[56px] h-[69px]"
+      width="56"
+      height="69"
+    />
     <p class="text-victormono text-lg italic text-zinc-700 text-nowrap">
       Get Started
     </p>
@@ -11,17 +18,20 @@
   <button
     data-connect
     aria-controls="connect-wrap"
-    class="w-[130px] sm:w-[162px] md:w-[180px] h-10 md:h-12 flex justify-center items-center gap-2 md:gap-3 bg-white shadow-button truncate"
+    aria-label="Connect wallet to start using Tansu"
+    class="h-8 md:h-10 lg:h-12 px-3 md:px-4 lg:px-6 flex justify-center items-center gap-1 md:gap-2 bg-white shadow-button truncate focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200"
   >
-    <p
-      class="text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-pink truncate"
+    <span
+      class="text-xs md:text-sm lg:text-base font-medium text-pink truncate"
     >
       Connect
-    </p>
+    </span>
     <img
       src="/icons/connect.png"
-      alt=""
-      class="w-4 md:w-5 h-4 md:h-5 flex-shrink-0"
+      alt="Connect wallet icon"
+      class="w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 flex-shrink-0"
+      width="20"
+      height="20"
     />
   </button>
 </div>
@@ -35,7 +45,6 @@
     disconnect,
   } from "../service/walletService";
   import { truncateMiddle } from "../utils/utils";
-  import { kit } from "./stellar-wallets-kit";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
@@ -47,17 +56,20 @@
       const truncatedKey = truncateMiddle(publicKey, 13);
       // Safe DOM manipulation instead of innerHTML
       button.textContent = "";
-      const textElement = document.createElement("p");
+      const textElement = document.createElement("span");
       textElement.className =
-        "text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-white truncate";
+        "hidden sm:inline text-xs md:text-sm lg:text-base font-medium text-white truncate";
       textElement.textContent = "Profile";
       const imgElement = document.createElement("img");
       imgElement.src = "/icons/profile.svg";
-      imgElement.alt = "";
+      imgElement.alt = "User profile icon";
       imgElement.className = "w-4 md:w-5 h-4 md:h-5 flex-shrink-0";
+      imgElement.setAttribute("width", "20");
+      imgElement.setAttribute("height", "20");
       button.appendChild(textElement);
       button.appendChild(imgElement);
       button.title = publicKey;
+      button.setAttribute("aria-label", "Open user profile");
       button.classList.toggle("bg-white", false);
       button.classList.toggle("bg-primary", true);
       button.classList.toggle("text-white", true);
@@ -85,6 +97,9 @@
       }
 
       try {
+        // Dynamic import to avoid build-time resolution issues
+        const { kit } = await import("./stellar-wallets-kit");
+
         await kit.openModal({
           onWalletSelected: async (option: { id: string }) => {
             try {
@@ -123,17 +138,21 @@
       disconnect();
       // Reset button to Connect state using safe DOM manipulation
       button.textContent = "";
-      const textElement = document.createElement("p");
+      const textElement = document.createElement("span");
       textElement.className =
-        "text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-pink truncate";
+        "text-xs md:text-sm lg:text-base font-medium text-pink truncate";
       textElement.textContent = "Connect";
       const imgElement = document.createElement("img");
       imgElement.src = "/icons/connect.png";
-      imgElement.alt = "";
-      imgElement.className = "w-4 md:w-5 h-4 md:h-5 flex-shrink-0";
+      imgElement.alt = "Connect wallet icon";
+      imgElement.className =
+        "w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 flex-shrink-0";
+      imgElement.setAttribute("width", "20");
+      imgElement.setAttribute("height", "20");
       button.appendChild(textElement);
       button.appendChild(imgElement);
       button.title = "";
+      button.setAttribute("aria-label", "Connect wallet to start using Tansu");
       button.classList.toggle("bg-white", true);
       button.classList.toggle("bg-primary", false);
       button.classList.toggle("text-white", false);

@@ -49,9 +49,9 @@ export function useFormValidation<T extends Record<string, any>>(
         const error = await rule.validate(formData[field], formData);
         setErrors((prev) => ({ ...prev, [field]: error }));
         return error === null;
-      } catch {
+      } catch (err) {
         const errorMessage =
-          error instanceof Error ? error.message : "Validation failed";
+          err instanceof Error ? err.message : "Validation failed";
         setErrors((prev) => ({ ...prev, [field]: errorMessage }));
         return false;
       }
@@ -74,9 +74,9 @@ export function useFormValidation<T extends Record<string, any>>(
         if (error !== null) {
           isValid = false;
         }
-      } catch {
+      } catch (err) {
         const errorMessage =
-          error instanceof Error ? error.message : "Validation failed";
+          err instanceof Error ? err.message : "Validation failed";
         newErrors[rule.field] = errorMessage;
         isValid = false;
       }

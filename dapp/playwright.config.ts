@@ -7,6 +7,9 @@ export default defineConfig({
     "**/essential-flows.spec.ts",
     "**/comprehensive-flows.spec.ts",
     "**/regression-prevention.spec.ts",
+    "**/governance-flows.spec.ts",
+    "**/happy-flows.spec.ts",
+    "**/anonymous-*.spec.ts",
   ],
 
   // Performance optimizations
@@ -18,7 +21,8 @@ export default defineConfig({
   // Fast execution settings
   fullyParallel: true,
   retries: 0,
-  workers: 1, // Single worker for consistency
+  // Use more workers locally for speed; keep single worker on CI for stability
+  workers: process.env.CI ? 1 : undefined,
 
   // Minimal reporting for speed
   reporter: [["line"]],

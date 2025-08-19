@@ -70,8 +70,8 @@ pub fn create_test_data() -> TestSetup {
 
 pub fn init_contract(setup: &TestSetup) -> Bytes {
     let name = String::from_str(&setup.env, "tansu");
-    let url = String::from_str(&setup.env, "github.com/file.toml");
-    let hash = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
+    let url = String::from_str(&setup.env, "github.com/tansu");
+    let ipfs = String::from_str(&setup.env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710990");
     let maintainers = vec![&setup.env, setup.grogu.clone(), setup.mando.clone()];
 
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
@@ -79,5 +79,5 @@ pub fn init_contract(setup: &TestSetup) -> Bytes {
 
     setup
         .contract
-        .register(&setup.grogu, &name, &maintainers, &url, &hash)
+        .register(&setup.grogu, &name, &maintainers, &url, &ipfs)
 }

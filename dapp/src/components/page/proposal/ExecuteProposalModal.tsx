@@ -34,43 +34,44 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   const [step, setStep] = useState(1);
   const [isAnonymous, setIsAnonymous] = useState(false);
 
-  const [tallies, setTallies] = useState<number[] | null>(null);
-  const [seeds, setSeeds] = useState<number[] | null>(null);
+  const [seeds, setSeeds] = useState<bigint[] | null>(null);
+  const [tallies, setTallies] = useState<bigint[] | null>(null);
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isMaintainer, setIsMaintainer] = useState(false);
   const [decodedVotes, setDecodedVotes] = useState<any[]>([]);
-
   const [proofOk, setProofOk] = useState<boolean | null>(null);
-
-  const voteResultAndXdr: {
-    voteResult: VoteResultType | null;
-    xdr: string | null;
-  } = useMemo(() => {
-    if (voteStatus && outcome) {
-      const { approve, abstain, reject } = voteStatus;
-      let voteResult: VoteResultType | null = null;
-      let xdr: string | null = null;
-      if (approve.score > abstain.score + reject.score) {
-        voteResult = VoteResultType.APPROVE;
-        xdr = outcome?.approved?.xdr || null;
-      } else if (reject.score > approve.score + abstain.score) {
-        voteResult = VoteResultType.REJECT;
-        xdr = outcome?.rejected?.xdr || null;
-      } else {
-        voteResult = VoteResultType.CANCEL;
-        xdr = outcome?.cancelled?.xdr || null;
-      }
-      return { voteResult, xdr };
-    } else {
-      return { voteResult: null, xdr: null };
-    }
-  }, [voteStatus, outcome]);
+  const [_privateKey, setPrivateKey] = useState<string>("");
 
   // Local vote status that may be updated once we compute tallies for
   // anonymous proposals.
   const [displayVoteStatus, setDisplayVoteStatus] = useState<
     VoteStatus | undefined
   >(voteStatus);
+
+  const computedResult = useMemo(() => {
+    if (!displayVoteStatus) return null;
+    const { approve, abstain, reject } = displayVoteStatus;
+    if (approve.score > abstain.score + reject.score) {
+      return VoteResultType.APPROVE;
+    } else if (reject.score > approve.score + abstain.score) {
+      return VoteResultType.REJECT;
+    }
+    return VoteResultType.CANCEL;
+  }, [displayVoteStatus]);
+
+  const executionXdr = useMemo(() => {
+    if (!outcome || !computedResult) return null;
+    switch (computedResult) {
+      case VoteResultType.APPROVE:
+        return outcome.approved?.xdr || null;
+      case VoteResultType.REJECT:
+        return outcome.rejected?.xdr || null;
+      case VoteResultType.CANCEL:
+        return outcome.cancelled?.xdr || null;
+      default:
+        return null;
+    }
+  }, [outcome, computedResult]);
 
   useEffect(() => {
     if (
@@ -85,12 +86,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 
   useEffect(() => {
     if (!displayVoteStatus) return;
-    const { approve, abstain, reject } = displayVoteStatus;
-    if (approve.score > abstain.score + reject.score)
-      setComputedResult(VoteResultType.APPROVE);
-    else if (reject.score > approve.score + abstain.score)
-      setComputedResult(VoteResultType.REJECT);
-    else setComputedResult(VoteResultType.CANCEL);
+    // computedResult is derived via useMemo; no state updates needed here
   }, [displayVoteStatus]);
 
   useEffect(() => {
@@ -126,9 +122,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       setPrivateKey(parsed.privateKey);
       await computeTallies(parsed.privateKey);
     } catch (err: any) {
-      if (import.meta.env.DEV) {
-        console.error(err);
-      }
+      // Silent in prod, log only in dev
+      if (import.meta.env.DEV) console.error(err);
       setProcessingError(err.message || "Failed to process key-file");
     }
   };
@@ -146,7 +141,6 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       setSeeds(data.seeds);
       setDisplayVoteStatus(data.voteStatus);
       setDecodedVotes(data.decodedVotes);
-      setVoteCounts(data.voteCounts);
       setProofOk(data.proofOk ?? null);
       setProcessingError(null);
       if (isAnonymous) setStep(2);
@@ -176,7 +170,6 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       await executeProposal(
         projectName,
         proposalId,
-        voteResultAndXdr.xdr,
         tallies ?? undefined,
         seeds ?? undefined,
       );
@@ -314,18 +307,17 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
                 description="Review the transaction details before execution. You can verify the XDR and proceed with the final step."
               />
               <VotingResult voteStatus={displayVoteStatus} />
-              <div className="flex flex-col items-start gap-[18px]">
-                <p className="leading-4 text-base text-secondary">XDR</p>
-                <div className="p-[8px_18px] bg-[#FFEFA8] flex items-center gap-[18px]">
-                  <p className="leading-[18px] text-lg text-primary">
-                    {(voteResultAndXdr.xdr || "").slice(0, 24) + "..."}
-                  </p>
-                  <CopyButton
-                    textToCopy={voteResultAndXdr.xdr || ""}
-                    size="sm"
-                  />
+              {executionXdr && (
+                <div className="flex flex-col items-start gap-[18px]">
+                  <p className="leading-4 text-base text-secondary">XDR</p>
+                  <div className="p-[8px_18px] bg-[#FFEFA8] flex items-center gap-[18px]">
+                    <p className="leading-[18px] text-lg text-primary">
+                      {executionXdr.slice(0, 24) + "..."}
+                    </p>
+                    <CopyButton textToCopy={executionXdr} size="sm" />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <div className="flex justify-end gap-[18px]">

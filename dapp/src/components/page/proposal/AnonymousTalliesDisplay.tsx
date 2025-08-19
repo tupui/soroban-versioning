@@ -13,12 +13,24 @@ const AnonymousTalliesDisplay: React.FC<Props> = ({
   decodedVotes,
   proofOk,
 }) => {
+  // Compute simple counts by looking at decoded votes (each row is one ballot)
+  const counts = decodedVotes.reduce(
+    (acc: { approve: number; reject: number; abstain: number }, v: any) => {
+      if (v.vote === "approve") acc.approve += 1;
+      else if (v.vote === "reject") acc.reject += 1;
+      else acc.abstain += 1;
+      return acc;
+    },
+    { approve: 0, reject: 0, abstain: 0 },
+  );
+
   return (
     <>
       <VotingResult
         voteStatus={voteStatus}
         withDetail
         totalVotesOverride={decodedVotes.length}
+        countsOverride={counts}
       />
       {decodedVotes.length > 0 && (
         <details className="border border-zinc-300 rounded max-h-48 overflow-y-auto">
@@ -49,13 +61,25 @@ const AnonymousTalliesDisplay: React.FC<Props> = ({
       )}
 
       {proofOk !== undefined && (
-        <div className="flex items-center gap-2 mt-4">
-          <p className="text-base">Proof validation:</p>
-          {proofOk === null ? null : proofOk ? (
-            <span className="text-green-600 font-semibold">valid ✅</span>
-          ) : (
-            <span className="text-red-600 font-semibold">failed ❌</span>
-          )}
+        <div className="flex flex-col gap-2 mt-4">
+          <div className="flex items-center gap-2">
+            <p className="text-base">Proof:</p>
+            {proofOk === null ? null : proofOk ? (
+              <span aria-label="proof-ok" className="text-green-600 text-xl">
+                ✅
+              </span>
+            ) : (
+              <span aria-label="proof-failed" className="text-red-600 text-xl">
+                ❌
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-secondary max-w-prose">
+            This check verifies that the aggregated tallies and seeds correspond
+            to the on-chain vote commitments (weights applied during
+            verification). Use it to confirm decrypted results before executing
+            the proposal.
+          </p>
         </div>
       )}
     </>

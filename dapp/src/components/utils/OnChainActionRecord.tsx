@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import CommitRecord from "components/page/project/CommitRecord.jsx";
+import CommitRecord from "components/CommitRecord";
 import type { ReactNode } from "react";
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
  */
 const OnChainActionRecord = ({
   description,
-  date,
+  date: _date,
   txHash,
   explorerLink,
   raw: _raw,
@@ -42,14 +42,9 @@ const OnChainActionRecord = ({
 
   return (
     <CommitRecord
-      message={description as string}
-      date={date}
-      authorName=""
-      authorGithubLink=""
-      sha={txHash.substring(0, 7)}
-      commitLink={explorerLink}
-      isMaintainer={false}
-      showDate={false}
+      message={String(description)}
+      sha={txHash}
+      shaLink={explorerLink}
       bgClass="bg-indigo-50"
     />
   );

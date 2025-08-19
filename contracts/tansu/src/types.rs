@@ -14,7 +14,6 @@ pub struct Badges {
     pub triage: Vec<Address>,
     pub community: Vec<Address>,
     pub verified: Vec<Address>,
-    pub default: Vec<Address>,
 }
 
 #[contracttype]
@@ -129,8 +128,8 @@ pub enum ProjectKey {
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Config {
-    pub url: String,  // link to toml file with project metadata
-    pub hash: String, // hash of the file found at the URL
+    pub url: String,  // link to VCS
+    pub ipfs: String, // CID of the tansu.toml file with metadata
 }
 
 #[contracttype]

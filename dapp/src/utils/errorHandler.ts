@@ -1,7 +1,4 @@
-import {
-  contractErrorMessages,
-  type ContractErrorMessageKey,
-} from "../constants/contractErrorMessages";
+import { contractErrorMessages } from "../constants/contractErrorMessages";
 
 /**
  * Error handling utility for the application
@@ -17,26 +14,31 @@ interface ErrorHandlerOptions {
  * Extract contract error code and message from error object
  */
 export function extractContractError(error: any): {
-  errorCode: ContractErrorMessageKey;
+  errorCode: number;
   errorMessage: string;
 } {
   if (error.code === -4) {
     return {
-      errorCode: error.code as ContractErrorMessageKey,
+      errorCode: error.code,
       errorMessage: error.message,
     };
   }
 
   const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
-  let errorCode: ContractErrorMessageKey = 0;
+  let errorCode = 0;
 
   if (errorCodeMatch && errorCodeMatch[1]) {
-    errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
+    errorCode = parseInt(errorCodeMatch[1], 10);
   }
+
+  // Use our constants file for user-friendly error messages
+  const errorMessage =
+    contractErrorMessages[errorCode as keyof typeof contractErrorMessages] ||
+    `Contract error #${errorCode}`;
 
   return {
     errorCode,
-    errorMessage: contractErrorMessages[errorCode] || "Unknown contract error",
+    errorMessage,
   };
 }
 
@@ -100,7 +102,7 @@ export function withErrorHandling<T, Args extends any[]>(
   return async (...args: Args): Promise<T> => {
     try {
       return await fn(...args);
-    } catch {
+    } catch (error) {
       handleError(error, context, { rethrow: true });
       throw error; // TypeScript needs this even though rethrow: true already throws
     }

@@ -22,15 +22,13 @@ const UpdateHashModal = () => {
       const projectInfo = loadProjectInfo();
 
       if (projectInfo) {
-        try {
-          getLatestCommitHash(projectInfo?.config.url || "").then(
-            (latestSha) => {
-              setLatestHash(latestSha || "");
-            },
-          );
-        } catch (error: any) {
-          toast.error("Something Went Wrong!", error.message);
-        }
+        getLatestCommitHash(projectInfo?.config.url || "")
+          .then((latestSha) => {
+            setLatestHash(latestSha || "");
+          })
+          .catch((_error: any) => {
+            // Silently handle errors
+          });
         const connectedPublicKey = loadedPublicKey();
         const isMaintainer = connectedPublicKey
           ? projectInfo.maintainers.includes(connectedPublicKey)
@@ -60,10 +58,9 @@ const UpdateHashModal = () => {
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
         }
-      } catch {
-        if (import.meta.env.DEV) {
-          console.error("Error refreshing project data:", error);
-        }
+      } catch (refreshError) {
+        if (import.meta.env.DEV)
+          console.error("Error refreshing project data:", refreshError);
         // Don't show error to user as the update was successful
       }
 
@@ -74,9 +71,8 @@ const UpdateHashModal = () => {
       setUpdateSuccessful(true);
       // Don't close modal immediately - let user close it manually
     } catch (error: any) {
-      if (import.meta.env.DEV) {
+      if (import.meta.env.DEV)
         console.error("Error updating Commit Hash:", error);
-      }
       toast.error(
         "Update Commit Hash",
         error.message || "Failed to update commit hash. Please try again.",
@@ -91,13 +87,13 @@ const UpdateHashModal = () => {
       {showButton && (
         <button
           id="commit-button"
-          className="p-[12px_16px] sm:p-[18px_30px] flex gap-2 sm:gap-3 bg-white cursor-pointer w-full sm:w-auto text-left"
+          className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
           onClick={() => setIsOpen(true)}
         >
-          <img src="/icons/gear.svg" className="w-5 h-5 sm:w-auto sm:h-auto" />
-          <p className="leading-5 text-base sm:text-xl text-primary whitespace-nowrap">
+          <img src="/icons/git.svg" className="w-5 h-5 flex-shrink-0" />
+          <span className="text-sm sm:text-base text-primary font-medium">
             Update Hash
-          </p>
+          </span>
         </button>
       )}
       {isOpen && (

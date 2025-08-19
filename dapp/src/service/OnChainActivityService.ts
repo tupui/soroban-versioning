@@ -52,13 +52,6 @@ export function seedProjectNameCache(mapping: Record<string, string>): void {
   });
 }
 
-/** Convert Soroban network identifier → Horizon base URL. */
-function horizonBase(net: string): string {
-  return net === "public" || net === "mainnet" || net === "publicnet"
-    ? "https://horizon.stellar.org"
-    : "https://horizon-testnet.stellar.org";
-}
-
 /** Decode base64 ScVal using stellar-sdk xdr utilities and convert to JS */
 function decodeScVal(b64: string): any {
   try {
@@ -122,7 +115,7 @@ export async function fetchOnChainActions(
   }
 
   const fetchPromise = (async (): Promise<OnChainAction[]> => {
-    const base = horizonBase(import.meta.env.SOROBAN_NETWORK || "testnet");
+    const base = import.meta.env.PUBLIC_HORIZON_URL;
     const url = `${base}/accounts/${accountId}/operations?limit=200&order=desc`;
 
     // Add timeout and abort controller for better performance
@@ -199,6 +192,9 @@ export async function fetchOnChainActions(
               PROJECT_CACHE.set(keyHex!, projectName);
               details.name = projectName;
 
+              // Extract IPFS CID from the contract call
+              details.ipfs = paramToString(args[4]); // ipfs is arg4 (maintainer, name, maintainers, url, ipfs)
+
               // The contract returns the canonical project_key (Bytes) in the
               // transaction result – decode and cache it so on-chain calls that
               // use the raw key (add_member, commit, …) can resolve the name.
@@ -221,7 +217,7 @@ export async function fetchOnChainActions(
           case "update_config": {
             projectKey = paramBytesToHex(args[1]);
             details.url = paramToString(args[3]);
-            details.hash = paramToString(args[4]);
+            details.ipfs = paramToString(args[4]); // ipfs is arg4 (maintainer, key, maintainers, url, ipfs)
             break;
           }
           case "add_member": {
@@ -231,7 +227,7 @@ export async function fetchOnChainActions(
             details.meta = paramToString(args[1]);
             break;
           }
-          case "add_badges": {
+          case "set_badges": {
             projectKey = paramBytesToHex(args[1]);
             details.member = paramToString(args[2]);
             const badgeVecObj = args[3];
@@ -284,6 +280,10 @@ export async function fetchOnChainActions(
         if (a.projectKey && a.projectName) {
           PROJECT_CACHE.set(normalizeHex(a.projectKey)!, a.projectName);
         }
+      }
+
+      // Third pass - resolve any remaining missing names after cache is fully populated
+      for (const a of actions) {
         if (!a.projectName && a.projectKey) {
           const name = lookupProjectName(a.projectKey);
           if (name) a.projectName = name;
@@ -291,7 +291,7 @@ export async function fetchOnChainActions(
       }
 
       return actions;
-    } catch {
+    } catch (error) {
       clearTimeout(timeoutId);
       throw error;
     }

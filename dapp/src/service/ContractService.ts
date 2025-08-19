@@ -8,14 +8,12 @@ import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
 import { Buffer } from "buffer";
-import * as pkg from "js-sha3";
+import { deriveProjectKey } from "../utils/projectKey";
 import { parseContractError } from "../utils/contractErrors";
-import { retryAsync } from "../utils/retry";
+import { checkSimulationError } from "../utils/contractErrors";
+//
 import type { VoteType } from "types/proposal";
-
-const { keccak256 } = pkg;
-
-let kitPromise: Promise<any> | null = null;
+import { signAndSend } from "./TxService";
 
 /**
  * Get configured contract client instance (using proven working Tansu instance)
@@ -31,100 +29,26 @@ function getClient() {
   return Tansu;
 }
 
-/**
- * Get Stellar Wallets Kit
- */
-async function getKit() {
-  if (!kitPromise) {
-    kitPromise = import("../components/stellar-wallets-kit").then((m) => m.kit);
-  }
-  return kitPromise;
-}
+//
 
 /**
  * Universal transaction submitter - handles all contract calls
  * Uses the proven pattern from FlowService
  */
 async function submitTransaction(assembledTx: any): Promise<any> {
-  try {
-    // Step 1: Simulate the transaction
-    let sim;
-    try {
-      sim = await assembledTx.simulate();
-    } catch (error: any) {
-      throw new Error(parseContractError(error));
-    }
-
-    // Step 2: Prepare the transaction (if supported)
-    if ((assembledTx as any).prepare) {
-      await (assembledTx as any).prepare(sim);
-    }
-
-    // Step 3: Get XDR and sign
-    const preparedXdr = assembledTx.toXDR();
-    const kit = await getKit();
-    const { signedTxXdr } = await kit.signTransaction(preparedXdr);
-
-    // Step 4: Send the signed transaction
-    const result = await sendSignedTransaction(signedTxXdr);
-    return result;
-  } catch (error: any) {
-    if (error.message?.includes("Error(Contract")) {
-      throw new Error(parseContractError(error));
-    }
-    throw new Error(`Transaction failed: ${error.message || "Unknown error"}`);
+  // If this is a real assembled transaction (SDK binding), it will expose
+  // simulate/prepare/toXDR. Some tests or mocks may pass a plain object
+  // (already-executed result); in that case, just return it.
+  const hasSimulate = typeof assembledTx?.simulate === "function";
+  const hasToXdr = typeof assembledTx?.toXDR === "function";
+  if (!hasSimulate && !hasToXdr) {
+    return assembledTx?.result ?? assembledTx;
   }
+
+  return await signAndSend(assembledTx);
 }
 
-/**
- * Send a signed transaction to the network (from FlowService)
- */
-async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
-  const { Transaction, rpc } = await import("@stellar/stellar-sdk");
-  const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
-
-  let sendResponse;
-  try {
-    // Use the proven FlowService pattern - direct XDR submission with retry
-    sendResponse = await retryAsync(() =>
-      (server as any).sendTransaction(signedTxXdr),
-    );
-  } catch (_) {
-    // Fallback to legacy path for classic txs
-    const transaction = new Transaction(
-      signedTxXdr,
-      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-    );
-    sendResponse = await retryAsync(() => server.sendTransaction(transaction));
-  }
-
-  if (sendResponse.status === "ERROR") {
-    throw new Error(
-      `Transaction failed: ${JSON.stringify(sendResponse.errorResult)}`,
-    );
-  }
-
-  // For successful transactions, we need to wait for confirmation
-  if (sendResponse.status === "PENDING") {
-    let getResponse = await server.getTransaction(sendResponse.hash);
-    let retries = 0;
-    const maxRetries = 30;
-
-    while (getResponse.status === "NOT_FOUND" && retries < maxRetries) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      getResponse = await server.getTransaction(sendResponse.hash);
-      retries++;
-    }
-
-    if (getResponse.status === "SUCCESS") {
-      return true; // Success
-    } else if (getResponse.status === "FAILED") {
-      throw new Error(`Transaction failed: ${getResponse.status}`);
-    }
-  }
-
-  return sendResponse;
-}
+//
 
 /**
  * Map UI vote type to contract vote choice
@@ -146,7 +70,7 @@ function mapVoteType(voteType: VoteType): VoteChoice {
  * Generate project key from name
  */
 function getProjectKey(projectName: string): Buffer {
-  return Buffer.from(keccak256.create().update(projectName).digest());
+  return deriveProjectKey(projectName);
 }
 
 // =============================================================================
@@ -161,11 +85,20 @@ export async function commitHash(commit_hash: string): Promise<boolean> {
   if (!projectId) throw new Error("No project defined");
 
   const client = getClient();
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   const assembledTx = await client.commit({
     maintainer: client.options.publicKey!,
-    project_key: projectId,
+    project_key: projectKey,
     hash: commit_hash,
   });
+
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
 
   await submitTransaction(assembledTx);
   return true;
@@ -189,6 +122,8 @@ export async function voteToProposal(
       project_key: projectKey,
       member_address: client.options.publicKey!,
     });
+    // Check for simulation errors (contract errors)
+    checkSimulationError(weightTx as any);
     weight = Number(weightTx.result) || 1;
   } catch {
     // Default weight
@@ -201,6 +136,8 @@ export async function voteToProposal(
       project_key: projectKey,
       proposal_id: Number(proposal_id),
     });
+    // Check for simulation errors (contract errors)
+    checkSimulationError(proposalTx as any);
     isPublicVoting = proposalTx.result.vote_data.public_voting;
   } catch {
     // Default to public
@@ -222,42 +159,60 @@ export async function voteToProposal(
   } else {
     // Anonymous voting logic
     const voteIndex = vote === "approve" ? 0 : vote === "reject" ? 1 : 2;
+    // Important: commitments are built from raw votes/seeds without weights.
+    // Weight is applied on-chain when validating/aggregating, so the encoded
+    // vote should be 1 for the chosen option and 0 for others to avoid u32
+    // overflow in later tallies.
     const votesArr: number[] = [0, 0, 0];
-    votesArr[voteIndex] = weight;
+    votesArr[voteIndex] = 1;
 
-    const seedsArr: number[] = [
-      (crypto.getRandomValues(new Uint32Array(1))[0] || 0) % 1000000,
-      (crypto.getRandomValues(new Uint32Array(1))[0] || 0) % 1000000,
-      (crypto.getRandomValues(new Uint32Array(1))[0] || 0) % 1000000,
-    ];
+    // Generate cryptographically secure 32-bit seeds.
+    const r = crypto.getRandomValues(new Uint32Array(3));
+    const seedsArr: number[] = [Number(r[0]), Number(r[1]), Number(r[2])];
 
     // Get anonymous voting config
     const configTx = await client.get_anonymous_voting_config({
       project_key: projectKey,
     });
+    // Ensure config actually exists (not an error bubbled in result)
+    checkSimulationError(configTx as any);
     const publicKeyStr = configTx.result.public_key;
 
-    // Encrypt votes and seeds
+    // Encrypt votes and seeds using project-configured public key
     const saltPrefix = `${client.options.publicKey}:${project_name}:${proposal_id}`;
     const { encryptWithPublicKey } = await import("../utils/crypto");
 
-    const [encryptedSeeds, encryptedVotes, commitmentsTx] = await Promise.all([
-      Promise.all(
-        seedsArr.map((s) =>
-          encryptWithPublicKey(`${saltPrefix}:${s}`, publicKeyStr),
+    let encryptedSeeds: string[];
+    let encryptedVotes: string[];
+    let commitmentsTx: any;
+    try {
+      // Encode votes/seeds as u128 for contract bindings
+      const votesU128 = votesArr.map((v) => BigInt(v));
+      const seedsU128 = seedsArr.map((s) => BigInt(s));
+
+      [encryptedSeeds, encryptedVotes, commitmentsTx] = await Promise.all([
+        Promise.all(
+          seedsArr.map((s) =>
+            encryptWithPublicKey(`${saltPrefix}:${s}`, publicKeyStr),
+          ),
         ),
-      ),
-      Promise.all(
-        votesArr.map((v) =>
-          encryptWithPublicKey(`${saltPrefix}:${v}`, publicKeyStr),
+        Promise.all(
+          votesArr.map((v) =>
+            encryptWithPublicKey(`${saltPrefix}:${v}`, publicKeyStr),
+          ),
         ),
-      ),
-      client.build_commitments_from_votes({
-        project_key: projectKey,
-        votes: votesArr as unknown as number[],
-        seeds: seedsArr as unknown as number[],
-      }),
-    ]);
+        client.build_commitments_from_votes({
+          project_key: projectKey,
+          votes: votesU128 as unknown as bigint[],
+          seeds: seedsU128 as unknown as bigint[],
+        }),
+      ]);
+      // Ensure the helper call did not surface a simulation error payload
+      checkSimulationError(commitmentsTx as any);
+    } catch (e: any) {
+      // Normalize Wasm VM/host errors to user-friendly text
+      throw new Error(parseContractError(e));
+    }
 
     votePayload = {
       tag: "AnonymousVote",
@@ -280,6 +235,9 @@ export async function voteToProposal(
     vote: votePayload,
   });
 
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
+
   await submitTransaction(assembledTx);
   return true;
 }
@@ -290,8 +248,8 @@ export async function voteToProposal(
 export async function execute(
   project_name: string,
   proposal_id: number,
-  tallies?: number[],
-  seeds?: number[],
+  tallies?: bigint[],
+  seeds?: bigint[],
 ): Promise<any> {
   const client = getClient();
   const projectKey = getProjectKey(project_name);
@@ -300,29 +258,23 @@ export async function execute(
     maintainer: client.options.publicKey!,
     project_key: projectKey,
     proposal_id: Number(proposal_id),
-    tallies: tallies as unknown as number[] | undefined,
-    seeds: seeds as unknown as number[] | undefined,
+    tallies,
+    seeds,
   });
+
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
 
   return await submitTransaction(assembledTx);
 }
 
-/**
- * Execute proposal (wrapper)
- */
-export async function executeProposal(
-  project_name: string,
-  proposal_id: number,
-  tallies?: number[],
-  seeds?: number[],
-): Promise<any> {
-  return execute(project_name, proposal_id, tallies, seeds);
-}
+// Direct export - no wrapper needed
+export { execute as executeProposal };
 
 /**
- * Add badges to member
+ * Set badges for member
  */
-export async function addBadges(
+export async function setBadges(
   member_address: string,
   badges: Badge[],
 ): Promise<boolean> {
@@ -330,12 +282,24 @@ export async function addBadges(
   if (!projectId) throw new Error("No project defined");
 
   const client = getClient();
-  const assembledTx = await client.add_badges({
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
+  // Rely on contract validation rather than duplicating checks
+
+  // Build transaction using current bindings (key)
+  const assembledTx: any = await (client as any).set_badges({
     maintainer: client.options.publicKey!,
-    key: projectId,
+    key: projectKey,
     member: member_address,
     badges,
   });
+
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
 
   await submitTransaction(assembledTx);
   return true;
@@ -358,16 +322,21 @@ export async function setupAnonymousVoting(
       const configTx = await client.get_anonymous_voting_config({
         project_key: projectKey,
       });
+      checkSimulationError(configTx as any);
       if (configTx.result) return true;
     } catch {
-      // Continue with setup
+      // Fall-through to setup on network/simulation errors
     }
   }
 
   const assembledTx = await client.anonymous_voting_setup({
+    maintainer: client.options.publicKey!,
     project_key: projectKey,
     public_key,
   });
+
+  // Check for simulation errors (contract errors) before submitting
+  checkSimulationError(assembledTx as any);
 
   await submitTransaction(assembledTx);
   return true;

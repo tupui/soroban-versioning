@@ -18,7 +18,19 @@ import {
 import { projectCardModalOpen } from "../../../utils/store";
 import { extractConfigData, toast } from "../../../utils/utils";
 
-const ProjectCard = ({ config }) => {
+interface ProjectConfig {
+  projectName: string;
+  description?: string;
+  logoImageLink?: string | null;
+  officials: {
+    websiteLink?: string;
+    githubLink?: string;
+  };
+  socialLinks: Record<string, string | undefined>;
+  organizationName?: string;
+}
+
+const ProjectCard = ({ config }: { config: ProjectConfig }) => {
   const handleCardClick = async () => {
     refreshLocalStorage();
     try {
@@ -30,7 +42,7 @@ const ProjectCard = ({ config }) => {
         if (username && repoName) {
           setProjectRepoInfo(username, repoName);
         }
-        const tomlData = await fetchTomlFromCid(project.config.hash);
+        const tomlData = await fetchTomlFromCid(project.config.ipfs);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigData(configData);
@@ -45,9 +57,10 @@ const ProjectCard = ({ config }) => {
             latestSha.match(/^[a-f0-9]{40}$/)
           ) {
             setProjectLatestSha(latestSha);
+          } else {
+            setProjectLatestSha("");
           }
-          setProjectLatestSha("");
-        } catch (error) {
+        } catch (error: any) {
           toast.error("Something Went Wrong!", error.message);
         }
         projectCardModalOpen.set(true);
@@ -57,7 +70,7 @@ const ProjectCard = ({ config }) => {
           `There is not such project: ${config.projectName}`,
         );
       }
-    } catch (e) {
+    } catch (e: any) {
       if (import.meta.env.DEV) {
         console.error(e);
       }
@@ -74,7 +87,7 @@ const ProjectCard = ({ config }) => {
         <img
           src={
             config.logoImageLink !== undefined
-              ? convertGitHubLink(config.logoImageLink)
+              ? convertGitHubLink(config.logoImageLink as string)
               : "/fallback-image.jpg"
           }
           alt={config.projectName}

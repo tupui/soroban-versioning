@@ -122,7 +122,7 @@ const Voters: FC<VotersProps> = ({
                 <p className="leading-6 text-xl text-primary">@{voter.name}</p>
               )}
               <p className="leading-[14px] text-sm text-secondary">
-                ({truncateMiddle(voter.address, 24)})
+                ({truncateMiddle(voter.address, 16)})
               </p>
             </div>
           ))}
