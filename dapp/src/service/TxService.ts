@@ -213,10 +213,14 @@ export async function sendXLM(
 
     const result = await response.json();
 
-    if (result.status === "SUCCESS" || result.status === "PENDING") {
+    // Check if the transaction was successful according to Horizon API
+    if (result && result.successful === true) {
       return true;
     } else {
-      throw new Error(`Transaction failed: ${result.status}`);
+      // If not successful, check for error details
+      const errorDetails =
+        result?.error || result?.message || "Transaction failed on network";
+      throw new Error(errorDetails);
     }
   } catch (error: any) {
     // Show network-specific errors to help users understand what went wrong
