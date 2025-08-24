@@ -10,6 +10,7 @@ pub struct TestSetup {
     pub token_stellar: token::StellarAssetClient<'static>,
     pub grogu: Address,
     pub mando: Address,
+    pub contract_admin: Address,
 }
 
 pub fn create_env() -> Env {
@@ -51,8 +52,10 @@ pub fn create_test_data() -> TestSetup {
     );
 
     let contract_admin = Address::generate(&env);
-    let contract_id = env.register(Tansu, (&contract_admin, &domain_id));
+    let contract_id = env.register(Tansu, (&contract_admin,));
     let contract = TansuClient::new(&env, &contract_id);
+
+    contract.set_domain_contract_id(&contract_admin, &domain_id);
 
     let grogu = Address::generate(&env);
     let mando = Address::generate(&env);
@@ -65,6 +68,7 @@ pub fn create_test_data() -> TestSetup {
         token_stellar,
         grogu,
         mando,
+        contract_admin,
     }
 }
 
