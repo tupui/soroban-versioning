@@ -1,9 +1,12 @@
 use soroban_sdk::{
-    Address, Bytes, BytesN, Env, IntoVal, String, Symbol, Val, Vec, contractimpl, panic_with_error,
-    symbol_short, vec,
+    Address, Bytes, BytesN, Env, Event, IntoVal, String, Symbol, Val, Vec, contractimpl,
+    panic_with_error, vec,
 };
 
-use crate::{Tansu, TansuArgs, TansuClient, VersioningTrait, domain_contract, errors, types};
+use crate::{
+    Tansu, TansuArgs, TansuClient, TansuTrait, VersioningTrait, domain_contract, errors, events,
+    types,
+};
 
 #[contractimpl]
 impl VersioningTrait for Tansu {
@@ -38,10 +41,12 @@ impl VersioningTrait for Tansu {
         url: String,
         ipfs: String,
     ) -> Bytes {
+        Tansu::require_not_paused(env.clone());
+
         let project = types::Project {
             name: name.clone(),
             config: types::Config { url, ipfs },
-            maintainers,
+            maintainers: maintainers.clone(),
         };
         let str_len = name.len() as usize;
         if str_len > 15 {
@@ -65,7 +70,7 @@ impl VersioningTrait for Tansu {
         } else {
             maintainer.require_auth();
             if !project.maintainers.contains(&maintainer) {
-                panic_with_error!(&env, &errors::ContractErrors::UnregisteredMaintainer);
+                panic_with_error!(&env, &errors::ContractErrors::UnauthorizedSigner);
             }
 
             let domain_contract_id: Address = env
@@ -89,8 +94,12 @@ impl VersioningTrait for Tansu {
             }
             env.storage().persistent().set(&key_, &project);
 
-            env.events()
-                .publish((symbol_short!("register"), key.clone()), name);
+            events::ProjectRegistered {
+                project_key: key.clone(),
+                name: name.clone(),
+                maintainer: maintainer.clone(),
+            }
+            .publish(&env);
             key
         }
     }
@@ -118,6 +127,8 @@ impl VersioningTrait for Tansu {
         url: String,
         ipfs: String,
     ) {
+        Tansu::require_not_paused(env.clone());
+
         let key_ = types::ProjectKey::Key(key.clone());
 
         let mut project = crate::auth_maintainers(&env, &maintainer, &key);
@@ -126,6 +137,12 @@ impl VersioningTrait for Tansu {
         project.config = config;
         project.maintainers = maintainers;
         env.storage().persistent().set(&key_, &project);
+
+        events::ProjectConfigUpdated {
+            project_key: key.clone(),
+            maintainer: maintainer.clone(),
+        }
+        .publish(&env);
     }
 
     /// Set the latest commit hash for a project.
@@ -142,12 +159,14 @@ impl VersioningTrait for Tansu {
     /// * If the project doesn't exist
     /// * If the maintainer is not authorized
     fn commit(env: Env, maintainer: Address, project_key: Bytes, hash: String) {
+        Tansu::require_not_paused(env.clone());
+
         crate::auth_maintainers(&env, &maintainer, &project_key);
         env.storage()
             .persistent()
             .set(&types::ProjectKey::LastHash(project_key.clone()), &hash);
-        env.events()
-            .publish((symbol_short!("commit"), project_key), hash);
+
+        events::Commit { project_key, hash }.publish(&env);
     }
 
     /// Get the last commit hash

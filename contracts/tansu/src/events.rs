@@ -36,8 +36,9 @@ pub struct MemberAdded {
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BadgesUpdated {
-    pub member: Address,
+    pub project_key: Bytes,
     pub maintainer: Address,
+    pub member: Address,
     pub badges_count: u32,
 }
 
@@ -58,7 +59,6 @@ pub struct VoteCast {
     #[topic]
     pub project_key: Bytes,
     pub voter: Address,
-    pub vote_weight: u32,
 }
 
 #[contractevent]
