@@ -1,10 +1,15 @@
 use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
 
+// Constants
+pub const TIMELOCK_DELAY: u64 = 24 * 3600; // 24 hours in seconds
+
 #[contracttype]
 pub enum DataKey {
-    Admin,            // Contract administrator
     DomainContractId, // Address of the SorobanDomain contract
     Member(Address),  // Member of the DAO, address
+    Paused,           // Contract pause state
+    UpgradeProposal,  // Pending upgrade proposal
+    AdminsConfig,     // Admin configuration for upgrades and other admin operations
 }
 
 #[contracttype]
@@ -96,6 +101,22 @@ pub struct AnonymousVoteConfig {
     pub vote_generator_point: BytesN<96>,
     pub seed_generator_point: BytesN<96>,
     pub public_key: String,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct AdminsConfig {
+    pub threshold: u32,       // M-of-N threshold (e.g., 2 for 2-of-3)
+    pub admins: Vec<Address>, // List of authorized admins
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct UpgradeProposal {
+    pub wasm_hash: BytesN<32>,
+    pub executable_at: u64,
+    pub approvals: Vec<Address>,
+    pub admins_config: AdminsConfig,
 }
 
 #[contracttype]

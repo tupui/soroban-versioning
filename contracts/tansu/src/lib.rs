@@ -14,6 +14,7 @@ mod contract_membership;
 mod contract_tansu;
 mod contract_versioning;
 mod errors;
+mod events;
 #[cfg(test)]
 mod tests;
 mod types;
@@ -24,9 +25,30 @@ contractmeta!(key = "Description", val = "Tansu - Soroban Versioning");
 pub struct Tansu;
 
 pub trait TansuTrait {
-    fn __constructor(env: Env, admin: Address, domain_contract_id: Address);
+    fn __constructor(env: Env, admin: Address);
 
-    fn upgrade(env: Env, new_wasm_hash: BytesN<32>, admin: Address, domain_contract_id: Address);
+    fn pause(env: Env, admin: Address, paused: bool);
+
+    fn require_not_paused(env: Env);
+
+    fn get_admins_config(env: Env) -> types::AdminsConfig;
+
+    fn get_domain_contract_id(env: Env) -> Address;
+
+    fn set_domain_contract_id(env: Env, admin: Address, domain_contract_id: Address);
+
+    fn propose_upgrade(
+        env: Env,
+        caller: Address,
+        new_wasm_hash: BytesN<32>,
+        new_admins_config: Option<types::AdminsConfig>,
+    );
+
+    fn approve_upgrade(env: Env, signer: Address);
+
+    fn finalize_upgrade(env: Env, executor: Address, accept: bool);
+
+    fn get_upgrade_proposal(env: Env) -> types::UpgradeProposal;
 
     fn version() -> u32;
 }
@@ -135,7 +157,7 @@ fn auth_maintainers(env: &Env, maintainer: &Address, project_key: &Bytes) -> typ
         .get::<types::ProjectKey, types::Project>(&project_key_)
     {
         if !project.maintainers.contains(maintainer) {
-            panic_with_error!(&env, &errors::ContractErrors::UnregisteredMaintainer);
+            panic_with_error!(&env, &errors::ContractErrors::UnauthorizedSigner);
         }
         project
     } else {
