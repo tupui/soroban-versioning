@@ -30,9 +30,7 @@ pub enum ContractErrors {
     UnknownMember = 18,
     MemberAlreadyExist = 19,
     VoterWeight = 20,
-    // Security features
-    ContractPaused = 21,
-    VoteLimitExceeded = 23,
-    // Multisig governance
-    UpgradeError = 26,
+    VoteLimitExceeded = 21,
+    ContractPaused = 22,
+    UpgradeError = 23,
 }
