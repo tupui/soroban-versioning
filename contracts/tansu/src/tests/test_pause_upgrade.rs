@@ -1,7 +1,7 @@
 use super::test_utils::create_test_data;
 use crate::errors::ContractErrors;
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
-use soroban_sdk::{Address, BytesN, IntoVal, Map, Symbol, Val, vec};
+use soroban_sdk::{Address, BytesN, IntoVal, Map, Symbol, Val, bytesn, vec};
 
 #[test]
 fn test_pause_unpause() {
@@ -97,8 +97,11 @@ fn test_unauthorized_pause_attempt() {
 fn test_upgrade_flow() {
     let setup = create_test_data();
 
-    // Generate a dummy WASM hash
-    let wasm_hash = BytesN::from_array(&setup.env, &[1u8; 32]);
+    // Use a real WASM hash (from test_snapshot - hex(int(a, 16)))
+    let wasm_hash = bytesn!(
+        &setup.env,
+        0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    );
 
     // Propose an upgrade
     setup
@@ -159,14 +162,18 @@ fn test_upgrade_flow() {
         .ledger()
         .set_timestamp(setup.env.ledger().timestamp() + 24 * 3600 + 1);
 
-    // setup
-    //     .contract
-    //     .finalize_upgrade(&setup.contract_admin, &true);
+    // Execute the upgrade now that we have a valid hash
+    setup
+        .contract
+        .finalize_upgrade(&setup.contract_admin, &true);
 
-    // Instead of executing the upgrade (which can fail due to missing WASM hash),
-    // let's just verify the proposal exists
-    let proposal = setup.contract.get_upgrade_proposal();
-    assert_eq!(proposal.wasm_hash, wasm_hash);
+    // Verify the upgrade was successful by checking that the proposal no longer exists
+    let err = setup
+        .contract
+        .try_get_upgrade_proposal()
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(err, ContractErrors::UpgradeError.into());
 }
 
 #[test]
