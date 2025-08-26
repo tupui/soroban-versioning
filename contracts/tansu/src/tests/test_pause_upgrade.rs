@@ -97,7 +97,7 @@ fn test_unauthorized_pause_attempt() {
 fn test_upgrade_flow() {
     let setup = create_test_data();
 
-    // Use a real WASM hash (from test_snapshot - hex(int(a, 16)))
+    // WASM hash of the current contract (from test_snapshot - hex(int(..., 16)))
     let wasm_hash = bytesn!(
         &setup.env,
         0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
@@ -162,7 +162,6 @@ fn test_upgrade_flow() {
         .ledger()
         .set_timestamp(setup.env.ledger().timestamp() + 24 * 3600 + 1);
 
-    // Execute the upgrade now that we have a valid hash
     setup
         .contract
         .finalize_upgrade(&setup.contract_admin, &true);
