@@ -114,13 +114,6 @@ pub struct UpgradeApproved {
 
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct UpgradeExecuted {
-    pub admin: Address,
-    pub new_wasm_hash: Bytes,
-}
-
-#[contractevent]
-#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct UpgradeCancelled {
     pub admin: Address,
     pub wasm_hash: Bytes,

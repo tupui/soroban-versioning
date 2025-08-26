@@ -267,15 +267,9 @@ impl TansuTrait for Tansu {
                 .instance()
                 .remove(&types::DataKey::UpgradeProposal);
 
-            // Update WASM
+            // Update WASM and send a SYSTEM event
             env.deployer()
                 .update_current_contract_wasm(upgrade_proposal.wasm_hash.clone());
-
-            events::UpgradeExecuted {
-                admin,
-                new_wasm_hash: upgrade_proposal.wasm_hash.into(),
-            }
-            .publish(&env);
         } else {
             // Delete the proposal entirely
             env.storage()

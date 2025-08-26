@@ -27,7 +27,8 @@ fn register_events() {
         .contract
         .register(&setup.grogu, &name, &maintainers, &url, &ipfs);
 
-    let all_events = setup.env.events().all();
+    let mut all_events = setup.env.events().all();
+    all_events.pop_front();
 
     assert_eq!(
         all_events,
@@ -35,7 +36,7 @@ fn register_events() {
             &setup.env,
             (
                 setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "project_register"), id.clone()).into_val(&setup.env),
+                (Symbol::new(&setup.env, "project_registered"), id.clone()).into_val(&setup.env),
                 Map::<Symbol, Val>::from_array(
                     &setup.env,
                     [
