@@ -1,6 +1,4 @@
-use soroban_sdk::{
-    Address, BytesN, Env, Event, contractimpl, panic_with_error, testutils::Address as _, vec,
-};
+use soroban_sdk::{Address, BytesN, Env, Event, contractimpl, panic_with_error, vec};
 
 use crate::{Tansu, TansuArgs, TansuClient, TansuTrait, events, types};
 
@@ -25,11 +23,7 @@ impl TansuTrait for Tansu {
             .instance()
             .set(&types::DataKey::AdminsConfig, &admins_config);
 
-        // Set a default domain contract ID (will be updated by set_domain_contract_id)
-        let default_domain_id = Address::generate(&env);
-        env.storage()
-            .instance()
-            .set(&types::DataKey::DomainContractId, &default_domain_id);
+        Self::pause(env, admin, true);
     }
 
     /// Pause or unpause the contract (emergency stop.)
@@ -142,8 +136,6 @@ impl TansuTrait for Tansu {
         new_admins_config: Option<types::AdminsConfig>,
     ) {
         auth_admin(&env, &admin);
-
-        Self::require_not_paused(env.clone());
 
         if env
             .storage()

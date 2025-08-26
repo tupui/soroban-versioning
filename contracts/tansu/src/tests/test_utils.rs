@@ -55,6 +55,7 @@ pub fn create_test_data() -> TestSetup {
     let contract_id = env.register(Tansu, (&contract_admin,));
     let contract = TansuClient::new(&env, &contract_id);
 
+    contract.pause(&contract_admin, &false);
     contract.set_domain_contract_id(&contract_admin, &domain_id);
 
     let grogu = Address::generate(&env);

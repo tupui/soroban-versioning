@@ -1,7 +1,7 @@
 use super::test_utils::create_test_data;
 use crate::errors::ContractErrors;
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
-use soroban_sdk::{Address, BytesN, IntoVal, Map, Symbol, Val, bytesn, vec};
+use soroban_sdk::{Address, BytesN, IntoVal, Map, String, Symbol, Val, bytesn, vec};
 
 #[test]
 fn test_pause_unpause() {
@@ -33,10 +33,11 @@ fn test_pause_unpause() {
     );
 
     // Operations fail when paused
-    let wasm_hash = BytesN::from_array(&setup.env, &[1u8; 32]);
+    let member = Address::generate(&setup.env);
+    let meta = String::from_str(&setup.env, "abcd");
     let err = setup
         .contract
-        .try_propose_upgrade(&setup.contract_admin, &wasm_hash, &None)
+        .try_add_member(&member, &meta)
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::ContractPaused.into());
@@ -71,9 +72,7 @@ fn test_pause_unpause() {
     );
 
     // try again set operation
-    setup
-        .contract
-        .propose_upgrade(&setup.contract_admin, &wasm_hash, &None);
+    setup.contract.add_member(&member, &meta);
 }
 
 #[test]
