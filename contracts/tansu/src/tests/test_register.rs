@@ -1,7 +1,7 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::{contract_versioning::domain_register, errors::ContractErrors};
 use soroban_sdk::testutils::Events;
-use soroban_sdk::{Bytes, IntoVal, String, symbol_short, vec};
+use soroban_sdk::{Bytes, IntoVal, Map, String, Symbol, Val, symbol_short, vec};
 
 #[test]
 fn register_project() {
@@ -27,16 +27,26 @@ fn register_events() {
         .contract
         .register(&setup.grogu, &name, &maintainers, &url, &ipfs);
 
-    let mut all_events = setup.env.events().all();
-    all_events.pop_front(); // transfer event from the domain contract
+    let all_events = setup.env.events().all();
+
     assert_eq!(
         all_events,
         vec![
             &setup.env,
             (
                 setup.contract_id.clone(),
-                (symbol_short!("register"), id.clone()).into_val(&setup.env),
-                name.into_val(&setup.env)
+                (Symbol::new(&setup.env, "project_register"), id.clone()).into_val(&setup.env),
+                Map::<Symbol, Val>::from_array(
+                    &setup.env,
+                    [
+                        (symbol_short!("name"), name.clone().into_val(&setup.env)),
+                        (
+                            Symbol::new(&setup.env, "maintainer"),
+                            setup.grogu.clone().into_val(&setup.env)
+                        ),
+                    ],
+                )
+                .into_val(&setup.env),
             ),
         ]
     );
@@ -45,7 +55,7 @@ fn register_events() {
         55, 174, 131, 192, 111, 222, 16, 67, 114, 71, 67, 51, 90, 194, 243, 145, 147, 7, 137, 46,
         230, 48, 124, 206, 140, 12, 99, 234, 165, 73, 225, 86,
     ];
-    let expected_id = soroban_sdk::Bytes::from_array(&setup.env, &expected_id);
+    let expected_id = Bytes::from_array(&setup.env, &expected_id);
     assert_eq!(id, expected_id);
 }
 

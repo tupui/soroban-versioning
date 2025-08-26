@@ -49,13 +49,21 @@ impl DaoTrait for Tansu {
         let vote_config = types::AnonymousVoteConfig {
             vote_generator_point,
             seed_generator_point,
-            public_key,
+            public_key: public_key.clone(),
         };
 
         env.storage().instance().set(
-            &types::ProjectKey::AnonymousVoteConfig(project_key),
+            &types::ProjectKey::AnonymousVoteConfig(project_key.clone()),
             &vote_config,
         );
+
+        // Emit event for anonymous voting setup
+        events::AnonymousVotingSetup {
+            project_key,
+            maintainer,
+            public_key,
+        }
+        .publish(&env);
     }
 
     /// Get the anonymous voting configuration for a project.
@@ -241,9 +249,10 @@ impl DaoTrait for Tansu {
         );
 
         events::ProposalCreated {
-            project_key: project_key.clone(),
-            title: proposal.title.clone(),
-            proposer: proposer.clone(),
+            project_key,
+            proposal_id,
+            title: proposal.title,
+            proposer,
             voting_ends_at,
             public_voting,
         }
@@ -352,8 +361,9 @@ impl DaoTrait for Tansu {
         );
 
         events::VoteCast {
-            project_key: project_key.clone(),
-            voter: voter.clone(),
+            project_key,
+            proposal_id,
+            voter,
         }
         .publish(&env);
     }
@@ -447,6 +457,7 @@ impl DaoTrait for Tansu {
 
         events::ProposalExecuted {
             project_key: project_key.clone(),
+            proposal_id,
             status: match proposal.status {
                 types::ProposalStatus::Active => String::from_str(&env, "Active"),
                 types::ProposalStatus::Approved => String::from_str(&env, "Approved"),

@@ -33,10 +33,7 @@ impl MembershipTrait for Tansu {
             };
             env.storage().persistent().set(&member_key_, &member);
 
-            events::MemberAdded {
-                member_address: member_address.clone(),
-            }
-            .publish(&env);
+            events::MemberAdded { member_address }.publish(&env);
         };
     }
 

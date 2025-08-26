@@ -1,8 +1,7 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::errors::ContractErrors;
-use soroban_sdk::Map;
 use soroban_sdk::testutils::{Address as _, Events};
-use soroban_sdk::{Address, IntoVal, String, Symbol, Val, symbol_short, vec};
+use soroban_sdk::{Address, IntoVal, Map, String, Symbol, Val, symbol_short, vec};
 
 #[test]
 fn commit_flow() {

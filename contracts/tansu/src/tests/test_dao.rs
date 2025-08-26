@@ -3,8 +3,8 @@ use crate::{
     errors::ContractErrors,
     types::{AnonymousVote, Badge, Dao, ProposalStatus, PublicVote, Vote, VoteChoice},
 };
-use soroban_sdk::testutils::{Address as _, Ledger};
-use soroban_sdk::{Address, BytesN, String, vec};
+use soroban_sdk::testutils::{Address as _, Events, Ledger};
+use soroban_sdk::{Address, BytesN, IntoVal, Map, String, Symbol, Val, vec};
 
 #[test]
 fn proposal_flow() {
@@ -23,6 +23,45 @@ fn proposal_flow() {
             .contract
             .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true);
 
+    // Verify proposal creation event
+    let all_events = setup.env.events().all();
+    assert_eq!(
+        all_events,
+        vec![
+            &setup.env,
+            (
+                setup.contract_id.clone(),
+                (Symbol::new(&setup.env, "proposal_created"), id.clone()).into_val(&setup.env),
+                Map::<Symbol, Val>::from_array(
+                    &setup.env,
+                    [
+                        (
+                            Symbol::new(&setup.env, "proposal_id"),
+                            proposal_id.into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "title"),
+                            title.clone().into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "proposer"),
+                            setup.grogu.clone().into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "voting_ends_at"),
+                            voting_ends_at.into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "public_voting"),
+                            true.into_val(&setup.env)
+                        ),
+                    ],
+                )
+                .into_val(&setup.env),
+            ),
+        ]
+    );
+
     setup.contract.vote(
         &setup.mando,
         &id,
@@ -34,10 +73,68 @@ fn proposal_flow() {
         }),
     );
 
+    // Verify vote cast event
+    let all_events = setup.env.events().all();
+    assert_eq!(
+        all_events,
+        vec![
+            &setup.env,
+            (
+                setup.contract_id.clone(),
+                (Symbol::new(&setup.env, "vote_cast"), id.clone()).into_val(&setup.env),
+                Map::<Symbol, Val>::from_array(
+                    &setup.env,
+                    [
+                        (
+                            Symbol::new(&setup.env, "proposal_id"),
+                            proposal_id.into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "voter"),
+                            setup.mando.clone().into_val(&setup.env)
+                        ),
+                    ],
+                )
+                .into_val(&setup.env),
+            ),
+        ]
+    );
+
     setup.env.ledger().set_timestamp(voting_ends_at + 1);
     let result = setup
         .contract
         .execute(&setup.mando, &id, &proposal_id, &None, &None);
+
+    // Verify proposal executed event
+    let all_events = setup.env.events().all();
+    assert_eq!(
+        all_events,
+        vec![
+            &setup.env,
+            (
+                setup.contract_id.clone(),
+                (Symbol::new(&setup.env, "proposal_executed"), id.clone()).into_val(&setup.env),
+                Map::<Symbol, Val>::from_array(
+                    &setup.env,
+                    [
+                        (
+                            Symbol::new(&setup.env, "proposal_id"),
+                            proposal_id.into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "status"),
+                            String::from_str(&setup.env, "Cancelled").into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "maintainer"),
+                            setup.mando.clone().into_val(&setup.env)
+                        ),
+                    ],
+                )
+                .into_val(&setup.env),
+            ),
+        ]
+    );
 
     assert_eq!(result, ProposalStatus::Cancelled);
 }
@@ -107,6 +204,36 @@ fn dao_anonymous() {
     setup
         .contract
         .anonymous_voting_setup(&setup.mando, &id, &public_key);
+
+    let all_events = setup.env.events().all();
+    assert_eq!(
+        all_events,
+        vec![
+            &setup.env,
+            (
+                setup.contract_id.clone(),
+                (
+                    Symbol::new(&setup.env, "anonymous_voting_setup"),
+                    id.clone()
+                )
+                    .into_val(&setup.env),
+                Map::<Symbol, Val>::from_array(
+                    &setup.env,
+                    [
+                        (
+                            Symbol::new(&setup.env, "maintainer"),
+                            setup.mando.clone().into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "public_key"),
+                            public_key.into_val(&setup.env)
+                        ),
+                    ],
+                )
+                .into_val(&setup.env),
+            ),
+        ]
+    );
 
     // Add a member with elevated rights
     let kuiil = Address::generate(&setup.env);

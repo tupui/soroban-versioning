@@ -47,6 +47,7 @@ pub struct BadgesUpdated {
 pub struct ProposalCreated {
     #[topic]
     pub project_key: Bytes,
+    pub proposal_id: u32,
     pub title: String,
     pub proposer: Address,
     pub voting_ends_at: u64,
@@ -58,6 +59,7 @@ pub struct ProposalCreated {
 pub struct VoteCast {
     #[topic]
     pub project_key: Bytes,
+    pub proposal_id: u32,
     pub voter: Address,
 }
 
@@ -66,6 +68,7 @@ pub struct VoteCast {
 pub struct ProposalExecuted {
     #[topic]
     pub project_key: Bytes,
+    pub proposal_id: u32,
     pub status: String,
     pub maintainer: Address,
 }
@@ -75,6 +78,15 @@ pub struct ProposalExecuted {
 pub struct ContractPaused {
     pub paused: bool,
     pub admin: Address,
+}
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct AnonymousVotingSetup {
+    #[topic]
+    pub project_key: Bytes,
+    pub maintainer: Address,
+    pub public_key: String,
 }
 
 #[contractevent]

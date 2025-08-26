@@ -96,8 +96,8 @@ impl VersioningTrait for Tansu {
 
             events::ProjectRegistered {
                 project_key: key.clone(),
-                name: name.clone(),
-                maintainer: maintainer.clone(),
+                name,
+                maintainer,
             }
             .publish(&env);
             key
@@ -139,8 +139,8 @@ impl VersioningTrait for Tansu {
         env.storage().persistent().set(&key_, &project);
 
         events::ProjectConfigUpdated {
-            project_key: key.clone(),
-            maintainer: maintainer.clone(),
+            project_key: key,
+            maintainer,
         }
         .publish(&env);
     }
