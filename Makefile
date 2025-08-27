@@ -102,7 +102,6 @@ contract_deploy:  ## Deploy Soroban contract to testnet
   		--network $(network) \
   		-- \
   		--admin $(shell stellar keys address mando-$(network)) \
-		--domain_contract_id $(domain_contract_id) \
   		> .stellar/tansu_id && \
   	cat .stellar/tansu_id
 
@@ -114,8 +113,17 @@ contract_upgrade:  ## After manually pulling the wasm from the pipeline, update 
     	-- \
     	upgrade \
 		--new_wasm_hash $(shell stellar contract upload --source-account mando-$(network) --network $(network) --wasm $(wasm)) \
+		--admin $(shell stellar keys address mando-$(network))
+
+contract_unpause:  ## Unpause the contract
+	stellar contract invoke \
+    	--source-account mando-$(network) \
+    	--network $(network) \
+    	--id $(shell cat .stellar/tansu_id) \
+    	-- \
+    	pause \
 		--admin $(shell stellar keys address mando-$(network)) \
-		--domain_contract_id $(domain_contract_id)
+		--paused false
 
 # --------- Soroban Domains --------- #
 
@@ -139,6 +147,16 @@ contract_domain_init:
 		--col_asset $(shell stellar contract id asset --asset native --network $(network)) \
 		--min_duration 31536000 \
 		--allowed_tlds '[{"bytes": "786c6d"}]'
+
+contract_set_domain_contract_id:  ## Set the SorobanDomain contract address
+	stellar contract invoke \
+    	--source-account mando-$(network) \
+    	--network $(network) \
+    	--id $(shell cat .stellar/tansu_id) \
+    	-- \
+    	set_domain_contract_id \
+		--admin $(shell stellar keys address mando-$(network)) \
+		--domain_contract_id $(domain_contract_id)
 
 # --------- CONTRACT USAGE EXAMPLES --------- #
 
@@ -169,7 +187,7 @@ contract_register:
     	--name tansu \
     	--maintainers '["$(shell stellar keys address mando-$(network))", "$(shell stellar keys address grogu-$(network))"]' \
     	--url https://github.com/tupui/soroban-versioning \
-    	--hash 920b7ffed638360e7259c4b6a4691ef947cfb9bc4ab1b3d6b7f0628c71e86b25
+    	--ipfs bafybeicnbbhyc4vhbuokk57lrmg4hkbvkmtcp6p3ubaptbus6kl2idthki
 
 contract_commit:
 	stellar contract invoke \
