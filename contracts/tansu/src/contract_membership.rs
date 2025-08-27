@@ -1,6 +1,6 @@
-use soroban_sdk::{Address, Bytes, Env, String, Vec, contractimpl, panic_with_error};
+use soroban_sdk::{Address, Bytes, Env, Event, String, Vec, contractimpl, panic_with_error};
 
-use crate::{MembershipTrait, Tansu, TansuArgs, TansuClient, errors, types};
+use crate::{MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types};
 
 #[contractimpl]
 impl MembershipTrait for Tansu {
@@ -14,6 +14,8 @@ impl MembershipTrait for Tansu {
     /// # Panics
     /// * If the member already exists
     fn add_member(env: Env, member_address: Address, meta: String) {
+        Tansu::require_not_paused(env.clone());
+
         member_address.require_auth();
 
         let member_key_ = types::DataKey::Member(member_address.clone());
@@ -30,6 +32,8 @@ impl MembershipTrait for Tansu {
                 meta,
             };
             env.storage().persistent().set(&member_key_, &member);
+
+            events::MemberAdded { member_address }.publish(&env);
         };
     }
 
@@ -78,6 +82,8 @@ impl MembershipTrait for Tansu {
         member: Address,
         badges: Vec<types::Badge>,
     ) {
+        Tansu::require_not_paused(env.clone());
+
         crate::auth_maintainers(&env, &maintainer, &key);
 
         let member_key_ = types::DataKey::Member(member.clone());
@@ -146,6 +152,14 @@ impl MembershipTrait for Tansu {
 
         env.storage().persistent().set(&badges_key_, &badges_);
         env.storage().persistent().set(&member_key_, &member_);
+
+        events::BadgesUpdated {
+            project_key: key,
+            maintainer,
+            member,
+            badges_count: badges.len(),
+        }
+        .publish(&env);
     }
 
     /// Get all badges for a specific project, organized by badge type.

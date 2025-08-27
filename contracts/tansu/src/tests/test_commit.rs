@@ -1,7 +1,7 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::errors::ContractErrors;
 use soroban_sdk::testutils::{Address as _, Events};
-use soroban_sdk::{Address, IntoVal, String, symbol_short, vec};
+use soroban_sdk::{Address, IntoVal, Map, String, Symbol, Val, symbol_short, vec};
 
 #[test]
 fn commit_flow() {
@@ -31,7 +31,11 @@ fn commit_events() {
             (
                 setup.contract_id.clone(),
                 (symbol_short!("commit"), id.clone()).into_val(&setup.env),
-                hash_commit.into_val(&setup.env)
+                Map::<Symbol, Val>::from_array(
+                    &setup.env,
+                    [(symbol_short!("hash"), hash_commit.into_val(&setup.env)),],
+                )
+                .into_val(&setup.env),
             ),
         ]
     );
@@ -50,5 +54,5 @@ fn commit_unregistered_maintainer_error() {
         .try_commit(&bob, &id, &hash_commit)
         .unwrap_err()
         .unwrap();
-    assert_eq!(err, ContractErrors::UnregisteredMaintainer.into());
+    assert_eq!(err, ContractErrors::UnauthorizedSigner.into());
 }

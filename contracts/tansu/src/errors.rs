@@ -8,7 +8,7 @@ pub enum ContractErrors {
     // Versioning
     InvalidKey = 1,
     ProjectAlreadyExist = 2,
-    UnregisteredMaintainer = 3,
+    UnauthorizedSigner = 3,
     NoHashFound = 4,
     // Soroban Domains
     InvalidDomainError = 5,
@@ -30,4 +30,7 @@ pub enum ContractErrors {
     UnknownMember = 18,
     MemberAlreadyExist = 19,
     VoterWeight = 20,
+    VoteLimitExceeded = 21,
+    ContractPaused = 22,
+    UpgradeError = 23,
 }

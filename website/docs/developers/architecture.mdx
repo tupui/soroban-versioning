@@ -19,43 +19,7 @@ A person which is part of a project’s team. This is not necessarily tight to a
 
 ## Soroban Contract
 
-The Soroban contract handles all on-chain features of the projects from registration, administration, to pushing new code versions. It provides the following minimal Application Programming Interface (API):
-
-```rust
-fn register(maintainer: Address, name: String, maintainers: Vec<Address>, url: String, hash: String, domain_contract_id: Address) -> Bytes
-
-fn update_config(maintainer: Address, key: Bytes, maintainers: Vec<Address>, url: String, hash: String)
-
-fn commit(maintainer: Address, project_key: Bytes, hash: String)
-
-fn get_commit(project_key: Bytes) -> String
-
-struct Config {
-    hash: String,
-    url: String
-}
-
-struct Project {
-    config: Config,
-    maintainers: Vec<Address>,
-    name: String
-}
-
-enum ProjectKey {
-    Key(Bytes),
-    LastHash(Bytes)
-}
-
-enum ContractErrors {
-    UnexpectedError = 0,
-    InvalidKey = 1,
-    ProjectAlreadyExist = 2,
-    UnregisteredMaintainer = 3,
-    NoHashFound = 4,
-    InvalidDomainError = 5,
-    MaintainerNotDomainOwner = 6,
-}
-```
+The Soroban contract handles all on-chain features of the projects from registration, administration, to pushing new code versions.
 
 When maintainers register their projects, a unique hash based on the project name is created. This serves as a `project_key` to uniquely identify a project and is stored as a data entry on the ledger.
 

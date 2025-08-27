@@ -32,6 +32,9 @@ export const contractErrorMessages = {
   18: "The member does not exist. Please ensure the member address is correct and the member has been registered.",
   19: "The member already exists.",
   20: "Invalid voter weight calculation.",
+  21: "Too many voters already.",
+  22: "Contract is paused.",
+  23: "Contract upgrade error.",
 };
 
 export type ContractErrorMessageKey = keyof typeof contractErrorMessages;

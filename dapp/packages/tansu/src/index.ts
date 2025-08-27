@@ -21,6 +21,7 @@ import type {
   Typepoint,
   Duration,
 } from "@stellar/stellar-sdk/contract";
+
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
@@ -34,7 +35,7 @@ export const ContractErrors = {
   0: { message: "UnexpectedError" },
   1: { message: "InvalidKey" },
   2: { message: "ProjectAlreadyExist" },
-  3: { message: "UnregisteredMaintainer" },
+  3: { message: "UnauthorizedSigner" },
   4: { message: "NoHashFound" },
   5: { message: "InvalidDomainError" },
   6: { message: "MaintainerNotDomainOwner" },
@@ -52,6 +53,9 @@ export const ContractErrors = {
   18: { message: "UnknownMember" },
   19: { message: "MemberAlreadyExist" },
   20: { message: "VoterWeight" },
+  21: { message: "VoteLimitExceeded" },
+  22: { message: "ContractPaused" },
+  23: { message: "UpgradeError" },
 };
 
 export type DataKey =
@@ -1042,6 +1046,7 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<Project>>;
 }
+
 export class Client extends ContractClient {
   static async deploy<T = Client>(
     /** Constructor/Initialization Args for the contract's `__constructor` method */
@@ -1062,6 +1067,7 @@ export class Client extends ContractClient {
   ): Promise<AssembledTransaction<T>> {
     return ContractClient.deploy({ admin, domain_contract_id }, options);
   }
+
   constructor(public readonly options: ContractClientOptions) {
     super(
       new ContractSpec([
@@ -1109,6 +1115,7 @@ export class Client extends ContractClient {
       options,
     );
   }
+
   public readonly fromJSON = {
     anonymous_voting_setup: this.txFromJSON<null>,
     get_anonymous_voting_config: this.txFromJSON<AnonymousVoteConfig>,
