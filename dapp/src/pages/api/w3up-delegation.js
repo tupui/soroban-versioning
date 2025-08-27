@@ -5,7 +5,8 @@ import pkg from "js-sha3";
 import decryptProof from "../../utils/decryptAES256";
 const { keccak256 } = pkg;
 
-export const prerender = process.env.LIGHTHOUSE_BUILD !== "true";
+// Only prerender this API during Lighthouse builds, but default to false
+export const prerender = process.env.LIGHTHOUSE_BUILD === "true";
 
 /**
  * Validates the request based on the type
