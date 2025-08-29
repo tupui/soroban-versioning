@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, BytesN, Env, Event, contractimpl, panic_with_error, vec};
+use soroban_sdk::{Address, BytesN, Env, contractimpl, panic_with_error, vec};
 
 use crate::{Tansu, TansuArgs, TansuClient, TansuTrait, events, types};
 

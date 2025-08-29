@@ -54,6 +54,7 @@ async function uploadWithDelegation({
   did,
 }: UploadWithDelegationParams): Promise<string> {
   const apiUrl = `/api/w3up-delegation`;
+
   const response = await fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -61,11 +62,26 @@ async function uploadWithDelegation({
   });
 
   if (!response.ok) {
-    const data = await response.json();
-    throw new Error(data.error);
+    const contentType = response.headers.get("content-type");
+
+    let errorMessage = "Unknown error";
+    try {
+      if (contentType?.includes("application/json")) {
+        const data = await response.json();
+        errorMessage = data.error || errorMessage;
+      } else {
+        const text = await response.text();
+        errorMessage = text || errorMessage;
+      }
+    } catch (parseError) {
+      console.error("Failed to parse error response:", parseError);
+    }
+
+    throw new Error(errorMessage);
   }
 
   const data = await response.arrayBuffer();
+
   const delegation = await extract(new Uint8Array(data));
   if (!delegation.ok) {
     throw new Error("Failed to extract delegation", {
@@ -255,16 +271,21 @@ export async function joinCommunityFlow({
   if (profileFiles.length > 0) {
     // Step 3: Upload to IPFS using the signed transaction as authentication
     onProgress?.(8); // uploading step indicator (offset -5 → shows Uploading)
-    const uploadedCid = await uploadWithDelegation({
-      files: profileFiles,
-      type: "member",
-      signedTxXdr,
-      did,
-    });
+    try {
+      const uploadedCid = await uploadWithDelegation({
+        files: profileFiles,
+        type: "member",
+        signedTxXdr,
+        did,
+      });
 
-    // Step 4: Verify CID matches
-    if (uploadedCid !== cid) {
-      throw new Error(`CID mismatch: expected ${cid}, got ${uploadedCid}`);
+      // Step 4: Verify CID matches
+      if (uploadedCid !== cid) {
+        throw new Error(`CID mismatch: expected ${cid}, got ${uploadedCid}`);
+      }
+    } catch (error) {
+      console.error("IPFS upload error:", error);
+      throw error;
     }
   }
 

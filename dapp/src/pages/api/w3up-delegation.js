@@ -5,8 +5,8 @@ import pkg from "js-sha3";
 import decryptProof from "../../utils/decryptAES256";
 const { keccak256 } = pkg;
 
-// Only prerender this API during Lighthouse builds, but default to false
-export const prerender = process.env.LIGHTHOUSE_BUILD === "true";
+// This must be a server-side endpoint to handle POST requests
+export const prerender = false;
 
 /**
  * Validates the request based on the type
@@ -58,13 +58,7 @@ async function validateRequest(type, signedTxXdr, projectName) {
         if (import.meta.env.DEV) {
           console.error("Error validating proposal request:", error);
         }
-        return new Response(
-          JSON.stringify({ error: "Invalid request format" }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+        throw new Error("Invalid request format");
       }
 
     case "member":
@@ -131,11 +125,22 @@ export const POST = async ({ request }) => {
     console.error("Error creating delegation:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: err.message.includes("not found") ? 404 : 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
 
 async function generateDelegation(did) {
+  // Validate environment variables first
+  const key = import.meta.env.STORACHA_SING_PRIVATE_KEY;
+  let storachaProof = import.meta.env.STORACHA_PROOF;
+
+  if (!key || !storachaProof) {
+    throw new Error(
+      "Storacha credentials not configured. Please set STORACHA_SING_PRIVATE_KEY and STORACHA_PROOF environment variables.",
+    );
+  }
+
   // Dynamic imports to avoid initialization issues
   const { create } = await import("@web3-storage/w3up-client");
   const { Signer } = await import(
@@ -146,8 +151,6 @@ async function generateDelegation(did) {
     "@web3-storage/w3up-client/stores/memory"
   );
 
-  const key = import.meta.env.STORACHA_SING_PRIVATE_KEY;
-  let storachaProof = import.meta.env.STORACHA_PROOF;
   if (storachaProof.length === 64) {
     storachaProof = await decryptProof(storachaProof);
   }

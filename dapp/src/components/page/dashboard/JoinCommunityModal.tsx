@@ -128,6 +128,8 @@ const JoinCommunityModal: FC<
         toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
         setUpdateSuccessful(true);
+        setIsLoading(false);
+        setIsUploading(false);
         // Don't close modal immediately - let user close it manually
         return;
       }
@@ -171,6 +173,8 @@ const JoinCommunityModal: FC<
         toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
         setUpdateSuccessful(true);
+        setIsLoading(false);
+        setIsUploading(false);
         // Don't close modal immediately - let user close it manually
       } catch (ipfsError: any) {
         console.error("IPFS upload error:", ipfsError);

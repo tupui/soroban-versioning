@@ -1,6 +1,6 @@
 use soroban_sdk::{
-    Address, Bytes, BytesN, Env, Event, IntoVal, String, Symbol, Val, Vec, contractimpl,
-    panic_with_error, vec,
+    Address, Bytes, BytesN, Env, IntoVal, String, Symbol, Val, Vec, contractimpl, panic_with_error,
+    vec,
 };
 
 use crate::{
