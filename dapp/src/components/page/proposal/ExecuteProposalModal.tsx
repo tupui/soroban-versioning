@@ -119,6 +119,11 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       const parsed = JSON.parse(text);
       if (!parsed.privateKey)
         throw new Error("Invalid key-file – missing privateKey field");
+      // Validate uploaded key against on-chain config (centralized helper)
+      const { validateAnonymousKeyForProject } = await import(
+        "utils/anonymousVoting"
+      );
+      await validateAnonymousKeyForProject(projectName!, parsed.publicKey);
       setPrivateKey(parsed.privateKey);
       await computeTallies(parsed.privateKey);
     } catch (err: any) {

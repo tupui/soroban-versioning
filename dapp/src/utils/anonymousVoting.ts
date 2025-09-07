@@ -19,6 +19,34 @@ async function getTansu() {
 // re-export local helper for consistency
 export { deriveProjectKey };
 
+/**
+ * Validate that an uploaded key-file (optionally containing a publicKey)
+ * matches the project's anonymous voting configuration. Throws a helpful
+ * error if the project's config is missing or the key mismatches.
+ */
+export async function validateAnonymousKeyForProject(
+  projectName: string,
+  uploadedPublicKey?: string,
+): Promise<void> {
+  const Tansu = await getTansu();
+  const project_key = deriveProjectKey(projectName);
+  try {
+    const { result: cfg } = await Tansu.get_anonymous_voting_config({
+      project_key,
+    });
+    if (uploadedPublicKey && uploadedPublicKey !== cfg.public_key) {
+      throw new Error(
+        "Key file does not match this project's anonymous voting key",
+      );
+    }
+  } catch (e: any) {
+    if (e?.message?.includes("NoAnonymousVotingConfig")) {
+      throw new Error("Anonymous voting is not configured for this project");
+    }
+    // Swallow transient/network errors here so callers can proceed to decryption
+  }
+}
+
 export interface DecodedVote {
   address: string;
   vote: "approve" | "reject" | "abstain";
