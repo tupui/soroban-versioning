@@ -10,9 +10,13 @@ ifndef domain_contract_id
 	override domain_contract_id = $(shell cat .stellar/soroban_domain_id)
 endif
 
+override domain_contract_id_mainnet = "CATRNPHYKNXAPNLHEYH55REB6YSAJLGCPA4YM6L3WUKSZOPI77M2UMKI"
+
 ifndef wasm
 override wasm = target/wasm32v1-none/release/tansu.optimized.wasm
 endif
+
+override domain_wasm_hash = $(shell openssl sha256 contracts/domain_current.wasm | awk '{print $$2}')
 
 # Add help text after each target name starting with '\#\#'
 help:   ## show this help
@@ -105,16 +109,6 @@ contract_deploy:  ## Deploy Soroban contract to testnet
   		> .stellar/tansu_id && \
   	cat .stellar/tansu_id
 
-contract_upgrade:  ## After manually pulling the wasm from the pipeline, update the contract
-	stellar contract invoke \
-    	--source-account mando-$(network) \
-    	--network $(network) \
-    	--id $(shell cat .stellar/tansu_id) \
-    	-- \
-    	upgrade \
-		--new_wasm_hash $(shell stellar contract upload --source-account mando-$(network) --network $(network) --wasm $(wasm)) \
-		--admin $(shell stellar keys address mando-$(network))
-
 contract_unpause:  ## Unpause the contract
 	stellar contract invoke \
     	--source-account mando-$(network) \
@@ -124,6 +118,35 @@ contract_unpause:  ## Unpause the contract
     	pause \
 		--admin $(shell stellar keys address mando-$(network)) \
 		--paused false
+
+contract_propose_upgrade:  ## After manually pulling the wasm from the pipeline, use it to propose to update the contract
+	stellar contract invoke \
+    	--source-account mando-$(network) \
+    	--network $(network) \
+    	--id $(shell cat .stellar/tansu_id) \
+    	-- \
+    	propose_upgrade \
+		--admin $(shell stellar keys address mando-$(network)) \
+		--new_wasm_hash $(shell stellar contract upload --source-account mando-$(network) --network $(network) --wasm $(wasm))
+
+contract_approve_upgrade:  ## Approve the current upgrade proposal
+	stellar contract invoke \
+    	--source-account mando-$(network) \
+    	--network $(network) \
+    	--id $(shell cat .stellar/tansu_id) \
+    	-- \
+    	approve_upgrade \
+		--admin $(shell stellar keys address mando-$(network))
+
+contract_finalize_upgrade:  ## Execute the approved upgrade proposal
+	stellar contract invoke \
+    	--source-account mando-$(network) \
+    	--network $(network) \
+    	--id $(shell cat .stellar/tansu_id) \
+    	-- \
+    	finalize_upgrade \
+		--admin $(shell stellar keys address mando-$(network)) \
+		--accept true
 
 # --------- Soroban Domains --------- #
 
@@ -156,7 +179,14 @@ contract_set_domain_contract_id:  ## Set the SorobanDomain contract address
     	-- \
     	set_domain_contract_id \
 		--admin $(shell stellar keys address mando-$(network)) \
-		--domain_contract_id $(domain_contract_id)
+		--domain_contract '{"address":"$(domain_contract_id)","wasm_hash":"$(domain_wasm_hash)"}'
+
+contract_domain_fetch_latest:  ## Fetch latest Domain wasm from mainnet and store as domain_<sha256>.wasm
+	@echo "Fetching domain contract $(domain_contract_id_mainnet) from mainnet..."
+	stellar contract fetch --id $(domain_contract_id_mainnet) --network mainnet > contracts/domain_latest.wasm
+	@HASH=$$(openssl sha256 contracts/domain_latest.wasm | awk '{print $$2}'); \
+	mv contracts/domain_latest.wasm contracts/domain_current.wasm; \
+	echo "Saved to contracts/domain_$$HASH.wasm and updated contracts/domain_current.wasm"
 
 # --------- CONTRACT USAGE EXAMPLES --------- #
 

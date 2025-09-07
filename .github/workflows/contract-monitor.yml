@@ -37,17 +37,17 @@ jobs:
           CURRENT_HASH=$(stellar contract fetch --id ${{ env.CONTRACT_ID }} --network mainnet | openssl sha256)
           echo "Computed hash: $CURRENT_HASH"
           echo "CURRENT_HASH=$CURRENT_HASH" >> $GITHUB_ENV
-          
+
 
       - name: Compare hashes
         run: |
-          stored_hash=$(cat contracts/domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm | openssl sha256)
+          stored_hash=$(openssl sha256 contracts/domain_current.wasm)
           
           if [ "$stored_hash" != "${{ env.CURRENT_HASH }}" ]; then
             echo "Error: Contract hash has changed!" >> "$GITHUB_STEP_SUMMARY"
             echo "Stored hash: $stored_hash" >> "$GITHUB_STEP_SUMMARY"
             echo "Current hash: ${{ env.CURRENT_HASH }}" >> "$GITHUB_STEP_SUMMARY"
-            echo "Please update contract/domain_[...].wasm file after verifying the contract change." >> "$GITHUB_STEP_SUMMARY"
+            echo "Please update contract/domain_current.wasm file after verifying the contract change." >> "$GITHUB_STEP_SUMMARY"
             exit 1
           else
             echo "Contract hash matches stored hash at $(date -u)."
