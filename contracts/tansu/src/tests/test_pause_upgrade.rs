@@ -1,5 +1,6 @@
 use super::test_utils::create_test_data;
 use crate::errors::ContractErrors;
+use crate::types;
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
 use soroban_sdk::{Address, BytesN, IntoVal, Map, String, Symbol, Val, bytesn, vec};
 
@@ -355,11 +356,16 @@ fn test_domain_contract_id_update() {
 
     // Create a new domain contract ID
     let new_domain_id = Address::generate(&setup.env);
+    let wasm_hash = BytesN::from_array(&setup.env, &[2u8; 32]);
+    let new_domain = types::DomainContract {
+        address: new_domain_id,
+        wasm_hash,
+    };
 
     // Update the domain contract ID
     setup
         .contract
-        .set_domain_contract_id(&setup.contract_admin, &new_domain_id);
+        .set_domain_contract_id(&setup.contract_admin, &new_domain);
 
     // Verify the event
     let events = setup.env.events().all();
@@ -369,7 +375,7 @@ fn test_domain_contract_id_update() {
             &setup.env,
             (
                 setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "domain_contract_id_updated"),).into_val(&setup.env),
+                (Symbol::new(&setup.env, "domain_contract_updated"),).into_val(&setup.env),
                 Map::<Symbol, Val>::from_array(
                     &setup.env,
                     [
@@ -378,8 +384,12 @@ fn test_domain_contract_id_update() {
                             setup.contract_admin.clone().into_val(&setup.env)
                         ),
                         (
-                            Symbol::new(&setup.env, "domain_contract_id"),
-                            new_domain_id.into_val(&setup.env)
+                            Symbol::new(&setup.env, "address"),
+                            new_domain.address.into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "wasm_hash"),
+                            new_domain.wasm_hash.into_val(&setup.env)
                         ),
                     ],
                 )
@@ -389,6 +399,6 @@ fn test_domain_contract_id_update() {
     );
 
     // Verify the update was successful
-    let retrieved_domain_id = setup.contract.get_domain_contract_id();
-    assert_eq!(retrieved_domain_id, new_domain_id);
+    let retrieved_domain = setup.contract.get_domain_contract_id();
+    assert_eq!(retrieved_domain, new_domain);
 }

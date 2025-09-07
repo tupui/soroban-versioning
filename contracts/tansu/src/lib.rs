@@ -33,9 +33,9 @@ pub trait TansuTrait {
 
     fn get_admins_config(env: Env) -> types::AdminsConfig;
 
-    fn get_domain_contract_id(env: Env) -> Address;
+    fn get_domain_contract_id(env: Env) -> types::DomainContract;
 
-    fn set_domain_contract_id(env: Env, admin: Address, domain_contract_id: Address);
+    fn set_domain_contract_id(env: Env, admin: Address, domain_contract: types::DomainContract);
 
     fn propose_upgrade(
         env: Env,

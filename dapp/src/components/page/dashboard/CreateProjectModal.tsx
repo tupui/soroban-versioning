@@ -8,7 +8,7 @@ import { navigate } from "astro:transitions/client";
 import Button from "components/utils/Button";
 import Input from "components/utils/Input";
 import Label from "components/utils/Label";
-import Modal, { type ModalProps } from "components/utils/Modal";
+import FlowProgressModal from "components/utils/FlowProgressModal";
 import Step from "components/utils/Step";
 import Title from "components/utils/Title";
 import { useState, type FC, useCallback, useEffect } from "react";
@@ -20,7 +20,6 @@ import {
   validateMaintainerAddress,
 } from "utils/validations";
 import Textarea from "components/utils/Textarea";
-import ProgressStep from "components/utils/ProgressStep";
 import Spinner from "components/utils/Spinner";
 
 // Get domain contract ID from environment with fallback
@@ -66,6 +65,11 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [orgDescriptionError, setOrgDescriptionError] = useState<string | null>(
     null,
   );
+
+  // Flow state management
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Verify domain contract ID on mount
   useEffect(() => {
@@ -400,7 +404,27 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
   >([null]);
 
   return (
-    <Modal onClose={onClose}>
+    <FlowProgressModal
+      isOpen={true}
+      onClose={onClose}
+      onSuccess={() => {
+        onClose();
+        navigate(`/project?name=${projectName}`);
+      }}
+      step={step}
+      setStep={setStep}
+      isLoading={isLoading}
+      setIsLoading={setIsLoading}
+      isUploading={isUploading}
+      setIsUploading={setIsUploading}
+      isSuccessful={isSuccessful}
+      setIsSuccessful={setIsSuccessful}
+      error={error}
+      setError={setError}
+      signLabel="project registration"
+      successTitle="Your Project Is Live!"
+      successMessage="Congratulations! You've successfully created your project. Let's get the ball rolling!"
+    >
       {step == 1 ? (
         <div
           key={step}
@@ -819,31 +843,8 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
             </Label>
           </div>
         </div>
-      ) : step >= 5 && step <= 9 ? (
-        <ProgressStep step={step - 4} signLabel="project registration" />
-      ) : (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex items-start gap-[18px]">
-            <img className="flex-none w-[360px]" src="/images/flower.svg" />
-            <div className="flex-grow flex flex-col gap-[30px]">
-              <Step step={step} totalSteps={5} />
-              <Title
-                title="Your Project Is Live!"
-                description="Congratulations! You've successfully created your project. Let's get the ball rolling!"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-[18px]">
-            <Button onClick={() => navigate(`/project?name=${projectName}`)}>
-              View Project
-            </Button>
-            <Button type="secondary" onClick={onClose}>
-              Close
-            </Button>
-          </div>
-        </div>
-      )}
-    </Modal>
+      ) : null}
+    </FlowProgressModal>
   );
 };
 

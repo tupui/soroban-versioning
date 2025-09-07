@@ -91,10 +91,10 @@ impl TansuTrait for Tansu {
     ///
     /// # Returns
     /// * `Address` - The Soroban Domain contract ID
-    fn get_domain_contract_id(env: Env) -> Address {
+    fn get_domain_contract_id(env: Env) -> types::DomainContract {
         env.storage()
             .instance()
-            .get(&types::DataKey::DomainContractId)
+            .get(&types::DataKey::DomainContract)
             .unwrap()
     }
 
@@ -103,17 +103,18 @@ impl TansuTrait for Tansu {
     /// # Arguments
     /// * `env` - The environment object
     /// * `admin` - The admin address
-    /// * `domain_contract_id` - The new domain contract ID
-    fn set_domain_contract_id(env: Env, admin: Address, domain_contract_id: Address) {
+    /// * `domain_contract` - The new domain contract
+    fn set_domain_contract_id(env: Env, admin: Address, domain_contract: types::DomainContract) {
         auth_admin(&env, &admin);
 
         env.storage()
             .instance()
-            .set(&types::DataKey::DomainContractId, &domain_contract_id);
+            .set(&types::DataKey::DomainContract, &domain_contract);
 
-        events::DomainContractIdUpdated {
+        events::DomainContractUpdated {
             admin,
-            domain_contract_id,
+            address: domain_contract.address,
+            wasm_hash: domain_contract.wasm_hash,
         }
         .publish(&env);
     }

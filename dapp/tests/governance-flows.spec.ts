@@ -25,7 +25,7 @@ test.describe("Governance Happy-Path Flows", () => {
     }
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     // Just verify the page loads without errors
     await expect(page.locator("body")).toBeVisible();
@@ -50,7 +50,7 @@ test.describe("Governance Happy-Path Flows", () => {
     }
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     // Just verify the page loads without errors
     await expect(page.locator("body")).toBeVisible();
@@ -74,7 +74,7 @@ test.describe("Governance Happy-Path Flows", () => {
     }
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     // Just verify the page loads without errors
     await expect(page.locator("body")).toBeVisible();
@@ -96,7 +96,7 @@ test.describe("Governance Happy-Path Flows", () => {
     }
 
     // Wait for page to load
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     // Simulate wallet connection
     await page.evaluate(() => {

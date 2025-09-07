@@ -7,7 +7,7 @@ import {
 } from "@service/StateService";
 import { projectInfoLoaded } from "utils/store";
 import { useEffect, useState } from "react";
-import Modal from "components/utils/Modal";
+import FlowProgressModal from "components/utils/FlowProgressModal";
 import Button from "components/utils/Button";
 import Input from "components/utils/Input";
 import Textarea from "components/utils/Textarea";
@@ -21,7 +21,6 @@ import { updateConfigFlow } from "@service/FlowService";
 import { toast, extractConfigData } from "utils/utils";
 import { getProject } from "@service/ReadContractService";
 import { calculateDirectoryCid } from "utils/ipfsFunctions";
-import ProgressStep from "components/utils/ProgressStep";
 
 const UpdateConfigModal = () => {
   const infoLoaded = useStore(projectInfoLoaded);
@@ -30,6 +29,11 @@ const UpdateConfigModal = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [updateSuccessful, setUpdateSuccessful] = useState(false);
+
+  // Flow state management
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // fields
   const [maintainerAddresses, setMaintainerAddresses] = useState<string[]>([
@@ -172,7 +176,27 @@ const UpdateConfigModal = () => {
         </span>
       </button>
       {open && (
-        <Modal onClose={handleClose}>
+        <FlowProgressModal
+          isOpen={open}
+          onClose={handleClose}
+          onSuccess={() => {
+            handleClose();
+            window.location.reload();
+          }}
+          step={step}
+          setStep={setStep}
+          isLoading={isLoading}
+          setIsLoading={setIsLoading}
+          isUploading={isUploading}
+          setIsUploading={setIsUploading}
+          isSuccessful={isSuccessful}
+          setIsSuccessful={setIsSuccessful}
+          error={error}
+          setError={setError}
+          signLabel="project configuration"
+          successTitle="Config Updated!"
+          successMessage="Project configuration updated successfully."
+        >
           {step <= 3 && (
             <div className="flex flex-col gap-8">
               {step === 1 && (
@@ -307,10 +331,7 @@ const UpdateConfigModal = () => {
               )}
             </div>
           )}
-          {step >= 4 && step <= 9 && (
-            <ProgressStep step={step - 4} signLabel="project configuration" />
-          )}
-        </Modal>
+        </FlowProgressModal>
       )}
     </>
   );

@@ -1,6 +1,6 @@
 //! Event definitions for the Tansu contract.
 
-use soroban_sdk::{Address, Bytes, String, contractevent};
+use soroban_sdk::{Address, Bytes, BytesN, String, contractevent};
 
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -91,9 +91,10 @@ pub struct AnonymousVotingSetup {
 
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct DomainContractIdUpdated {
+pub struct DomainContractUpdated {
     pub admin: Address,
-    pub domain_contract_id: Address,
+    pub address: Address,
+    pub wasm_hash: BytesN<32>,
 }
 
 #[contractevent]

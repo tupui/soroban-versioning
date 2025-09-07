@@ -8,12 +8,14 @@ sidebar_position: 1
 
 :::note[Maintainer]
 
-A person which is part of a project’s team. This is not necessarily tight to any specific role nor commit rights.
+A person which is part of a project's team. This is not necessarily tight to any specific role nor commit rights.
 
 :::
 
+## System Overview
+
 1. Using the dApp, a maintainer registers a project providing a unique name, some metadata and a list of maintainers.
-2. The project’s registration triggers an event which can be listened to by anyone on the network. As part of our dApp infrastructure, we listen to all events and store then in our database;
+2. The project's registration triggers an event which can be listened to by anyone on the network. As part of our dApp infrastructure, we listen to all events and store then in our database;
 3. Either using the dApp, or from tools provided to directly call the contract, maintainers can update projects data. Most notably, the last commit hash;
 4. Users can use the dApp to easily get insights on a project. They see the project history, can click on specific commits to have more information and link to the centralized platform used by the project itself.
 
@@ -33,11 +35,27 @@ Each project stores 3 elements on-chain:
 
 Maintainers can call the contract to update the commit hash as they develop their code. This contract call triggers an event containing the project_key and the commit hash.
 
-Everyone can get a project’s commit hash at any time by either making a simulation or even making a cross-contract call.
+Everyone can get a project's commit hash at any time by either making a simulation or even making a cross-contract call.
 
-## Backend
+## Smart Contract Features
 
-At the interface between the contract and the dApp, we will have a backend infrastructure doing the heavy lifting. The backend API and specification will be open so that anyone can easily use their own infrastructure or build on top of it more easily.
+### Core Functions
+
+- **Project Management**: Registration, updates, and configuration
+- **Governance**: Proposal creation, voting, and execution
+- **Membership**: Member registration and badge management
+- **Anonymous Voting**: BLS12-381 cryptographic voting system
+
+### Security Features
+
+- **Access Control**: Role-based permissions for maintainers
+- **Input Validation**: Comprehensive validation of all contract inputs
+- **Event Emission**: All state changes emit verifiable events
+- **Upgrade Mechanism**: Controlled contract upgrade system
+
+## Backend Infrastructure
+
+At the interface between the contract and the dApp, we have a backend infrastructure doing the heavy lifting. The backend API and specification will be open so that anyone can easily use their own infrastructure or build on top of it more easily.
 
 A PostgreSQL database will store all events, and we will use FastAPI along with SQLAlchemy to interact with it. Having a DB will help us save on explicit contract calls. Specific endpoints are yet to be defined. The contract calls will be made in Python thanks to the libraries py-stellar-base and soroban-cli-python (which was built by our team).
 
@@ -45,11 +63,20 @@ The other key component which we are already bringing is Git hooks. Upon specifi
 
 We also need to think about the most reluctant maintainers and have ways to observe off-chain data and pre-update on-chain data.
 
+## IPFS Integration
+
+Tansu uses IPFS for decentralized content storage:
+
+- **Proposal Content**: Rich text descriptions and metadata
+- **Member Profiles**: Profile images and biographical information
+- **Project Metadata**: Configuration files and documentation
+- **Content Addressing**: Immutable content hashes for verification
+
 ## dApp
 
 The first version of the dApp is simple and focus on a basic feature set. We first need to build trust with the community and only then we can expand our feature set with what our users actually need.
 
-The dApp leverages well-known JS SDKs to propose an effective and familiar user interface. We are using Astro with the `stellar-wallets-kit` (and soon `sorobandomains-sdk`.) This helps us build faster and handle addresses and signing safely so that our system never sees a user's secret key–hence fully non-custodial.
+The dApp leverages well-known JS SDKs to propose an effective and familiar user interface. We are using Astro with the `stellar-wallets-kit` and `sorobandomains-sdk`. This helps us build faster and handle addresses and signing safely so that our system never sees a user's secret key–hence fully non-custodial.
 
 Maintainers will be able to handle all aspects of their projects on the dApp. They will have tools to add or remove maintainers, update metadata and set the new commit hash of the project.
 

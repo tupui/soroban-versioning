@@ -4,12 +4,19 @@ use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
 pub const TIMELOCK_DELAY: u64 = 24 * 3600; // 24 hours in seconds
 
 #[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct DomainContract {
+    pub address: Address,
+    pub wasm_hash: BytesN<32>,
+}
+
+#[contracttype]
 pub enum DataKey {
-    DomainContractId, // Address of the SorobanDomain contract
-    Member(Address),  // Member of the DAO, address
-    Paused,           // Contract pause state
-    UpgradeProposal,  // Pending upgrade proposal
-    AdminsConfig,     // Admin configuration for upgrades and other admin operations
+    DomainContract,  // Address and wasm hash of the SorobanDomain contract
+    Member(Address), // Member of the DAO, address
+    Paused,          // Contract pause state
+    UpgradeProposal, // Pending upgrade proposal
+    AdminsConfig,    // Admin configuration for upgrades and other admin operations
 }
 
 #[contracttype]

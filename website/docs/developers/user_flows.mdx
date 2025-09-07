@@ -129,15 +129,15 @@ sequenceDiagram
   participant M as Maintainer
   participant V as Voter
   participant D as dApp
-  participant RSA as RSAKeys
+  participant BLS as BLS12-381
   participant IPFS as IPFS
   participant SC as SorobanContract
 
   M->>D: Create Proposal
   opt Anonymous Voting
-    D->>RSA: Generate Key Pair
-    RSA-->>D: Public/Private Keys
-    D->>M: Download Private Key
+    D->>SC: Call anonymous_voting_setup()
+    SC-->>D: Store generator points & ECDH pubkey
+    D->>M: Download ECDH private key
   end
   D->>IPFS: Upload Proposal Content
   IPFS-->>D: Return CID
@@ -147,19 +147,22 @@ sequenceDiagram
   V->>D: View Proposal
   V->>D: Cast Vote
   alt Public Vote
-    D->>SC: Submit vote() with address
+    D->>SC: Submit vote() with PublicVote
   else Anonymous Vote
-    D->>RSA: Encrypt Vote with Public Key
-    D->>SC: Submit encrypted vote()
+    D->>BLS: Generate commitments C = G(v) + H(r)
+    D->>D: Encrypt votes & seeds with ECDH
+    D->>SC: Submit AnonymousVote with commitments
   end
   SC-->>D: Vote Recorded
 
   M->>D: Execute Proposal
   alt Anonymous Proposal
-    M->>D: Upload Decryption Key
-    D->>SC: Submit execute() with tallies
+    M->>D: Upload ECDH private key
+    D->>D: Decrypt votes & compute tallies
+    D->>SC: Submit execute() with tallies & seeds
+    SC->>SC: Verify commitments match tallies
   else Public Proposal
-    D->>SC: Submit execute()
+    D->>SC: Submit execute() without tallies
   end
   SC-->>D: Proposal Executed
 ```
@@ -168,20 +171,20 @@ sequenceDiagram
 
 #### Key Generation
 
-- **RSA 2048-bit keys** generated client-side using Web Crypto API
+- **ECDH key pairs** generated client-side using Web Crypto API
 - **Private key download** required before proposal submission
 - **Public key storage** in smart contract for vote encryption
 
 #### Vote Encryption
 
-- **Vote commitment scheme**: Votes encrypted with RSA public key
-- **Salt-based binding**: Each vote bound to voter address and proposal ID
-- **Zero-knowledge proofs**: Commitment verification without revealing votes
+- **BLS12-381 commitment scheme**: Votes committed as C = G(v) + H(r) where G, H are generator points
+- **ECDH encryption**: Votes and seeds encrypted with ECDH public key
+- **Commitment verification**: Contract verifies commitments match revealed tallies and seeds
 
 #### Execution Phase
 
 - **Private key upload**: Required to decrypt and tally anonymous votes
-- **Verification**: Contract verifies commitments match decrypted votes
+- **Verification**: Contract verifies commitments match decrypted votes using BLS12-381
 - **Privacy preservation**: Only final tallies revealed, individual votes remain private
 
 ### Security Considerations
@@ -189,7 +192,7 @@ sequenceDiagram
 - **Proposal immutability**: Content stored on IPFS cannot be modified
 - **Vote integrity**: Cryptographic commitments prevent vote manipulation
 - **Execution authorization**: Only maintainers can execute proposals
-- **Time-bounded voting**: Proposals have fixed voting periods (25h minimum, 30d maximum)
+- **Time-bounded voting**: Proposals have fixed voting periods (24h minimum, 30d maximum)
 
 ---
 
@@ -215,11 +218,12 @@ sequenceDiagram
     D->>IPFS: Upload profile.json + image
     IPFS-->>D: Return CID
   end
-  D->>SC: Submit add_member()
+  D->>SC: Submit add_member() with meta
   SC-->>D: Member Added
 
   M->>D: Assign Badges
-  M->>SC: Submit add_badges()
+  M->>SC: Submit set_badges() with badge list
+  SC->>SC: Replace existing badges for project
   SC-->>D: Badges Assigned
   D->>U: Show Updated Profile
 ```
@@ -306,61 +310,3 @@ sequenceDiagram
   H-->>dApp: Transaction Success
   dApp->>D: Show Confirmation
 ```
-
-### Payment Features
-
-- **Direct Payments**: XLM transfers directly to maintainer addresses
-- **Multi-recipient Support**: Donations can be split among multiple maintainers
-- **Transaction Transparency**: All donations visible on Stellar blockchain
-- **Fee Handling**: Network fees paid by donor
-
----
-
-## Security Architecture
-
-### Input Validation
-
-- **Zod Schema Validation**: All form inputs validated with type-safe schemas
-- **XSS Protection**: DOMPurify sanitization on all user content
-- **SQL Injection Prevention**: Parameterized queries in backend
-- **Rate Limiting**: API endpoints protected against abuse
-
-### Wallet Security
-
-- **Non-custodial Design**: Private keys never leave user's wallet
-- **Transaction Simulation**: All transactions simulated before signing
-- **Error Handling**: Graceful handling of wallet disconnections and rejections
-
-### Smart Contract Security
-
-- **Reentrancy Protection**: All contract functions protected against reentrancy
-- **Access Controls**: Role-based permissions for sensitive operations
-- **Input Validation**: All contract inputs validated and sanitized
-- **Overflow Protection**: Safe arithmetic operations throughout
-
-### Data Integrity
-
-- **IPFS Content Addressing**: Content hashes ensure data integrity
-- **Contract Events**: All state changes emit verifiable events
-- **Cryptographic Signatures**: All transactions cryptographically signed
-- **Immutable Storage**: Critical data stored immutably on-chain
-
----
-
-## Testing and Quality Assurance
-
-### End-to-End Testing
-
-- **Playwright Test Suite**: Comprehensive UI flow testing
-- **Network Mocking**: Tests run against mocked Stellar/IPFS responses
-- **Error Scenarios**: Full coverage of error conditions and edge cases
-- **Performance Testing**: Load time and responsiveness validation
-
-### Security Testing
-
-- **Input Fuzzing**: Automated testing with malicious inputs
-- **XSS Protection**: Verified protection against common attack vectors
-- **Contract Auditing**: Smart contracts undergo security audits
-- **Dependency Scanning**: Regular vulnerability scans of dependencies
-
-This documentation ensures that all user flows are well-understood, properly implemented, and thoroughly tested for a production-ready decentralized application.

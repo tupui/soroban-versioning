@@ -1,6 +1,6 @@
 use soroban_sdk::{
-    Address, Bytes, BytesN, Env, IntoVal, String, Symbol, Val, Vec, contractimpl, panic_with_error,
-    vec,
+    Address, Bytes, BytesN, Env, Executable, IntoVal, String, Symbol, Val, Vec, contractimpl,
+    panic_with_error, vec,
 };
 
 use crate::{
@@ -73,18 +73,25 @@ impl VersioningTrait for Tansu {
                 panic_with_error!(&env, &errors::ContractErrors::UnauthorizedSigner);
             }
 
-            let domain_contract_id: Address = env
+            let domain_contract: types::DomainContract = env
                 .storage()
                 .instance()
-                .get(&types::DataKey::DomainContractId)
+                .get(&types::DataKey::DomainContract)
                 .unwrap();
+
+            let contract_executable = domain_contract.address.executable();
+            if contract_executable != Some(Executable::Wasm(domain_contract.wasm_hash)) {
+                panic_with_error!(&env, &errors::ContractErrors::InvalidDomainError)
+            }
 
             let node = domain_node(&env, &key);
             let record_keys = domain_contract::RecordKeys::Record(node);
 
-            let domain_client = domain_contract::Client::new(&env, &domain_contract_id);
+            let domain_client = domain_contract::Client::new(&env, &domain_contract.address);
             match domain_client.try_record(&record_keys) {
-                Ok(Ok(None)) => domain_register(&env, &name_b, &maintainer, domain_contract_id),
+                Ok(Ok(None)) => {
+                    domain_register(&env, &name_b, &maintainer, domain_contract.address)
+                }
                 Ok(Ok(Some(domain_contract::Record::Domain(domain)))) => {
                     if domain.owner != maintainer {
                         panic_with_error!(&env, &errors::ContractErrors::MaintainerNotDomainOwner)

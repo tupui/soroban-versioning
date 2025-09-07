@@ -73,19 +73,40 @@ export declare const ContractErrors: {
   20: {
     message: string;
   };
+  21: {
+    message: string;
+  };
+  22: {
+    message: string;
+  };
+  23: {
+    message: string;
+  };
 };
+export interface DomainContract {
+  address: string;
+  wasm_hash: Buffer;
+}
 export type DataKey =
   | {
-      tag: "Admin";
-      values: void;
-    }
-  | {
-      tag: "DomainContractId";
+      tag: "DomainContract";
       values: void;
     }
   | {
       tag: "Member";
       values: readonly [string];
+    }
+  | {
+      tag: "Paused";
+      values: void;
+    }
+  | {
+      tag: "UpgradeProposal";
+      values: void;
+    }
+  | {
+      tag: "AdminsConfig";
+      values: void;
     };
 export interface Badges {
   community: Array<string>;
@@ -168,6 +189,16 @@ export interface AnonymousVoteConfig {
   public_key: string;
   seed_generator_point: Buffer;
   vote_generator_point: Buffer;
+}
+export interface AdminsConfig {
+  admins: Array<string>;
+  threshold: u32;
+}
+export interface UpgradeProposal {
+  admins_config: AdminsConfig;
+  approvals: Array<string>;
+  executable_at: u64;
+  wasm_hash: Buffer;
 }
 export interface Proposal {
   id: u32;
@@ -823,30 +854,22 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<u32>>;
   /**
-   * Construct and simulate a upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Upgrade the contract to a new WASM version.
-   *
-   * Only the current admin can call this function. Updates the contract's WASM hash
-   * changes the admin and domain contract configuration.
+   * Construct and simulate a pause transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Pause or unpause the contract (emergency stop.)
    *
    * # Arguments
    * * `env` - The environment object
-   * * `new_wasm_hash` - The hash of the new WASM blob to deploy
-   * * `admin` - The new admin address
-   * * `domain_contract_id` - The new domain contract address
-   *
-   * # Panics
-   * * If the caller is not the current admin
+   * * `admin` - The admin address
+   * * `paused` - Pause or unpause the contract operations which change
+   * ledger states.
    */
-  upgrade: (
+  pause: (
     {
-      new_wasm_hash,
       admin,
-      domain_contract_id,
+      paused,
     }: {
-      new_wasm_hash: Buffer;
       admin: string;
-      domain_contract_id: string;
+      paused: boolean;
     },
     options?: {
       /**
@@ -863,6 +886,239 @@ export interface Client {
       simulate?: boolean;
     },
   ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a require_not_paused transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Require that the contract is not paused, panic if it is
+   *
+   * # Panics
+   * * If the contract is paused.
+   */
+  require_not_paused: (options?: {
+    /**
+     * The fee to pay for the transaction. Default: BASE_FEE
+     */
+    fee?: number;
+    /**
+     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+     */
+    timeoutInSeconds?: number;
+    /**
+     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+     */
+    simulate?: boolean;
+  }) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a get_admins_config transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get current administrators configuration.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   *
+   * # Returns
+   * * `types::AdminsConfig` - The administrators configuration
+   */
+  get_admins_config: (options?: {
+    /**
+     * The fee to pay for the transaction. Default: BASE_FEE
+     */
+    fee?: number;
+    /**
+     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+     */
+    timeoutInSeconds?: number;
+    /**
+     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+     */
+    simulate?: boolean;
+  }) => Promise<AssembledTransaction<AdminsConfig>>;
+  /**
+   * Construct and simulate a get_domain_contract_id transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get the current Soroban Domain contract ID.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   *
+   * # Returns
+   * * `Address` - The Soroban Domain contract ID
+   */
+  get_domain_contract_id: (options?: {
+    /**
+     * The fee to pay for the transaction. Default: BASE_FEE
+     */
+    fee?: number;
+    /**
+     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+     */
+    timeoutInSeconds?: number;
+    /**
+     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+     */
+    simulate?: boolean;
+  }) => Promise<AssembledTransaction<DomainContract>>;
+  /**
+   * Construct and simulate a set_domain_contract_id transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Set the Soroban Domain contract ID.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `admin` - The admin address
+   * * `domain_contract` - The new domain contract
+   */
+  set_domain_contract_id: (
+    {
+      admin,
+      domain_contract,
+    }: {
+      admin: string;
+      domain_contract: DomainContract;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a propose_upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Propose a contract upgrade.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `admin` - An admin address
+   * * `new_wasm_hash` - The new WASM hash
+   * * `new_admins_config` - Optional new admin configuration (None to keep current)
+   *
+   * # Panics
+   * * If the admin is not authorized
+   * * If there is already an existing proposal (cancel the previous first)
+   */
+  propose_upgrade: (
+    {
+      admin,
+      new_wasm_hash,
+      new_admins_config,
+    }: {
+      admin: string;
+      new_wasm_hash: Buffer;
+      new_admins_config: Option<AdminsConfig>;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a approve_upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Approve an upgrade proposal
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `admin` - An admin address
+   *
+   * # Panics
+   * * If the admin is not authorized
+   * * If the admin already approved
+   * * If there is no upgrade to approve
+   */
+  approve_upgrade: (
+    {
+      admin,
+    }: {
+      admin: string;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a finalize_upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Execute or cancel upgrade proposal
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `admin` - An admin address
+   * * `accept` - true to accept and false to reject.
+   *
+   * Upgrades can always be cancelled but only executed if there are enough
+   * approvals and the timelock period is over.
+   *
+   * # Panics
+   * * If the admin is not authorized
+   * * If it is too early to execute
+   * * If there are not enough approvals
+   * * If there is no upgrade to execute
+   */
+  finalize_upgrade: (
+    {
+      admin,
+      accept,
+    }: {
+      admin: string;
+      accept: boolean;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a get_upgrade_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get upgrade proposal details
+   */
+  get_upgrade_proposal: (options?: {
+    /**
+     * The fee to pay for the transaction. Default: BASE_FEE
+     */
+    fee?: number;
+    /**
+     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+     */
+    timeoutInSeconds?: number;
+    /**
+     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+     */
+    simulate?: boolean;
+  }) => Promise<AssembledTransaction<UpgradeProposal>>;
   /**
    * Construct and simulate a version transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get the current version of the contract.
@@ -1105,10 +1361,8 @@ export declare class Client extends ContractClient {
     /** Constructor/Initialization Args for the contract's `__constructor` method */
     {
       admin,
-      domain_contract_id,
     }: {
       admin: string;
-      domain_contract_id: string;
     },
     /** Options for initializing a Client as well as for calling a method, with extras specific to deploying. */
     options: MethodOptions &
@@ -1141,7 +1395,19 @@ export declare class Client extends ContractClient {
     set_badges: (json: string) => AssembledTransaction<null>;
     get_badges: (json: string) => AssembledTransaction<Badges>;
     get_max_weight: (json: string) => AssembledTransaction<number>;
-    upgrade: (json: string) => AssembledTransaction<null>;
+    pause: (json: string) => AssembledTransaction<null>;
+    require_not_paused: (json: string) => AssembledTransaction<null>;
+    get_admins_config: (json: string) => AssembledTransaction<AdminsConfig>;
+    get_domain_contract_id: (
+      json: string,
+    ) => AssembledTransaction<DomainContract>;
+    set_domain_contract_id: (json: string) => AssembledTransaction<null>;
+    propose_upgrade: (json: string) => AssembledTransaction<null>;
+    approve_upgrade: (json: string) => AssembledTransaction<null>;
+    finalize_upgrade: (json: string) => AssembledTransaction<null>;
+    get_upgrade_proposal: (
+      json: string,
+    ) => AssembledTransaction<UpgradeProposal>;
     version: (json: string) => AssembledTransaction<number>;
     register: (json: string) => AssembledTransaction<Buffer<ArrayBufferLike>>;
     update_config: (json: string) => AssembledTransaction<null>;

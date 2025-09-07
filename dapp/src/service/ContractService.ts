@@ -11,6 +11,7 @@ import { Buffer } from "buffer";
 import { deriveProjectKey } from "../utils/projectKey";
 import { parseContractError } from "../utils/contractErrors";
 import { checkSimulationError } from "../utils/contractErrors";
+import { handleFreighterError } from "../utils/errorHandler";
 //
 import type { VoteType } from "types/proposal";
 import { signAndSend } from "./TxService";
@@ -45,7 +46,13 @@ async function submitTransaction(assembledTx: any): Promise<any> {
     return assembledTx?.result ?? assembledTx;
   }
 
-  return await signAndSend(assembledTx);
+  try {
+    return await signAndSend(assembledTx);
+  } catch (error: any) {
+    // Use enhanced error handling for Freighter-specific issues
+    const errorMessage = handleFreighterError(error, "Transaction submission");
+    throw new Error(errorMessage);
+  }
 }
 
 //

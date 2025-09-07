@@ -1,11 +1,10 @@
-// Removed heavy @mdxeditor/editor imports - using SimpleMarkdownEditor instead
 import { getProjectFromName } from "@service/ReadContractService";
 import Button from "components/utils/Button";
 import { DatePicker } from "components/utils/DatePicker";
 import { ExpandableText } from "components/utils/ExpandableText";
 import Input from "components/utils/Input";
 import Label from "components/utils/Label";
-import Modal from "components/utils/Modal";
+import FlowProgressModal from "components/utils/FlowProgressModal";
 import Step from "components/utils/Step";
 import Title from "components/utils/Title";
 import { useCallback, useEffect, useState } from "react";
@@ -18,10 +17,7 @@ import { validateProposalName, validateTextContent } from "utils/validations";
 import OutcomeInput from "./OutcomeInput";
 import { generateRSAKeyPair } from "utils/crypto";
 import { setupAnonymousVoting } from "@service/ContractService";
-import ProgressStep from "components/utils/ProgressStep";
-
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
-//
 import { navigate } from "astro:transitions/client";
 
 const CreateProposalModal = () => {
@@ -69,6 +65,12 @@ const CreateProposalModal = () => {
     string | null
   >(null);
   const [approveXdrError, setApproveXdrError] = useState<string | null>(null);
+
+  // Flow state management
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const checkSubmitAvailability = () => {
     if (!connectedAddress) throw new Error("Please connect your wallet first");
@@ -162,6 +164,7 @@ const CreateProposalModal = () => {
 
   const startProposalCreation = async (files: File[]) => {
     try {
+      setIsLoading(true);
       // Step progression handled by FlowService onProgress: 7-sign, 8-upload, 9-send
       setStep(6);
 
@@ -199,11 +202,16 @@ const CreateProposalModal = () => {
       const cid = await calculateDirectoryCid(files);
       setIpfsLink(getIpfsBasicLink(cid));
 
-      // Done (Step 5 in ProgressStep terms)
-      setStep(10);
+      // Success
+      setIsSuccessful(true);
+      setStep(0);
     } catch (err: any) {
       console.error(err.message);
-      toast.error("Submit proposal", err.message);
+      setError(err.message);
+      setStep(0);
+    } finally {
+      setIsLoading(false);
+      setIsUploading(false);
     }
   };
 
@@ -224,7 +232,8 @@ const CreateProposalModal = () => {
       await startProposalCreation(files);
     } catch (err: any) {
       console.error(err.message);
-      toast.error("Submit proposal", err.message);
+      setError(err.message);
+      setStep(0);
     }
   };
 
@@ -308,7 +317,27 @@ const CreateProposalModal = () => {
   if (!showModal) return <></>;
 
   return (
-    <Modal onClose={handleCloseModal}>
+    <FlowProgressModal
+      isOpen={showModal}
+      onClose={handleCloseModal}
+      onSuccess={() => {
+        setShowModal(false);
+        navigate(`/proposal?id=${proposalId}&name=${projectName}`);
+      }}
+      step={step}
+      setStep={setStep}
+      isLoading={isLoading}
+      setIsLoading={setIsLoading}
+      isUploading={isUploading}
+      setIsUploading={setIsUploading}
+      isSuccessful={isSuccessful}
+      setIsSuccessful={setIsSuccessful}
+      error={error}
+      setError={setError}
+      signLabel="proposal"
+      successTitle="Your Proposal Is Live!"
+      successMessage="Congratulations! You've successfully submitted your proposal. Let's move forward and make it a success!"
+    >
       {step == 1 ? (
         <div className="flex flex-col gap-[42px]">
           <div className="flex flex-col gap-[30px]">
@@ -822,7 +851,7 @@ const CreateProposalModal = () => {
                       const files = preparedFiles || prepareProposalFiles();
                       await startProposalCreation(files);
                     } catch (e: any) {
-                      toast.error("Anonymous voting setup", e.message);
+                      setError(e.message);
                     }
                   }}
                 >
@@ -832,42 +861,8 @@ const CreateProposalModal = () => {
             </div>
           </div>
         </div>
-      ) : step >= 6 && step <= 9 ? (
-        <ProgressStep step={step - 5} />
-      ) : (
-        <div
-          className="flex items-center gap-[18px]"
-          data-testid="flow-success"
-        >
-          <img src="/images/flower.svg" />
-          <div className="flex-grow flex flex-col gap-[30px]">
-            <Title
-              title="Your Proposal Is Live!"
-              description="Congratulations! You've successfully submitted your proposal. Let's move forward and make it a success!"
-            />
-            <div className="flex justify-end gap-[18px]">
-              <Button type="secondary" onClick={() => setShowModal(false)}>
-                Close
-              </Button>
-              <Button
-                type="secondary"
-                icon="/icons/share.svg"
-                onClick={() => window.open(ipfsLink, "_blank")}
-              >
-                Share
-              </Button>
-              <Button
-                onClick={() =>
-                  navigate(`/proposal?id=${proposalId}&name=${projectName}`)
-                }
-              >
-                View Proposal
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </Modal>
+      ) : null}
+    </FlowProgressModal>
   );
 };
 

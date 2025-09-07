@@ -260,17 +260,24 @@ import { toast } from "utils/utils";
         if (ul) {
           ul.innerHTML = "";
           // Prefer the order straight from tansu.toml (guaranteed 1-1)
-          const useToml =
+          const hasMapping =
             configData &&
             Array.isArray(configData.maintainersAddresses) &&
             Array.isArray(configData.authorGithubNames) &&
             configData.maintainersAddresses.length ===
               configData.authorGithubNames.length;
 
-          const addrArr = useToml
-            ? configData.maintainersAddresses
-            : projectInfo.maintainers;
-          const handleArr = useToml ? configData.authorGithubNames : [];
+          // Build address→handle map (order-independent)
+          let addrToHandle: Record<string, string> = {};
+          if (hasMapping) {
+            for (let i = 0; i < configData.maintainersAddresses.length; i++) {
+              addrToHandle[configData.maintainersAddresses[i]] =
+                configData.authorGithubNames[i] || "";
+            }
+          }
+
+          // Use on-chain list for authoritative membership
+          const addrArr = projectInfo.maintainers;
 
           for (let idx = 0; idx < addrArr.length; idx++) {
             if (!viewAll && idx > 5) continue;
@@ -279,7 +286,7 @@ import { toast } from "utils/utils";
             const li = document.createElement("li");
             li.className = "flex flex-col gap-2 mb-4 p-3 bg-gray-50 rounded-md";
 
-            const displayName = handleArr[idx] || "";
+            const displayName = addrToHandle[maintainer] || "";
 
             if (displayName) {
               const nameP = document.createElement("p");

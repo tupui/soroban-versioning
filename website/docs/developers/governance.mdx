@@ -13,11 +13,14 @@ Below is a mermaid diagram illustrating the proposal lifecycle:
 ```mermaid
 graph LR;
     A[Create Proposal] --> B[Active];
-    B -->|Vote period elapsed| C{Tallies};
-    C -->|Approved| D[Approved];
-    C -->|Rejected| E[Rejected];
-    C -->|Cancelled| F[Cancelled];
-    D -->|execute| G[(on-chain / off-chain action)];
+    B -->|Vote period elapsed| C{Execute};
+    C -->|Public Voting| D[Direct Tally];
+    C -->|Anonymous Voting| E[Upload Tallies & Seeds];
+    D --> F[Approved/Rejected/Cancelled];
+    E --> G[Verify Commitments];
+    G --> H[Approved/Rejected/Cancelled];
+    F -->|If Approved| I[(Execute XDR Action)];
+    H -->|If Approved| I;
 ```
 
 1. **create_proposal** – a maintainer submits a new proposal (title, ipfs, voting_ends_at, public_voting).
@@ -53,11 +56,11 @@ The helper `build_commitments_from_votes` can be called in simulation to reprodu
 
 ## Weights & quorum
 
-The effective weight of a vote is given by [`get_max_weight`](./membership.mdx). The contract does **not** impose a fixed quorum rule – instead it considers the raw tallies:
+The effective weight of a vote is given by [`get_max_weight`](./membership.mdx). The contract does **not** impose a fixed quorum rule – instead it considers the weighted tallies:
 
-- `approve > reject` → **Approved**
-- `reject ≥ approve` → **Rejected**
-- Any exceptional path (e.g. maintainer forcing a stop) → **Cancelled**
+- `approve > (abstain + reject)` → **Approved**
+- `reject > (abstain + approve)` → **Rejected**
+- Otherwise → **Cancelled** (including when approve = reject)
 
 Custom quorum logic (percentage, thresholds…) can be built off-chain before deciding whether to call `execute`.
 

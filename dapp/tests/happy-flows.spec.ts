@@ -12,11 +12,31 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
     page.setDefaultTimeout(5_000);
   });
 
+  test.afterEach(async ({ page }) => {
+    // Clean up any open modals or state
+    try {
+      // Close any open modals by clicking escape or close buttons
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(100);
+
+      // Also try to close any visible modals
+      const closeButtons = page.locator("button", {
+        hasText: /Close|Cancel|×/,
+      });
+      if ((await closeButtons.count()) > 0) {
+        await closeButtons.first().click();
+        await page.waitForTimeout(100);
+      }
+    } catch (e) {
+      // Ignore cleanup errors
+    }
+  });
+
   test("Project creation modal – basic functionality", async ({ page }) => {
     await page.goto("/");
 
     // Wait for page to be ready
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("networkidle", { timeout: 15000 });
 
     // Debug: Check what's on the page
     const pageContent = await page.locator("body").textContent();
@@ -110,20 +130,14 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
     // Wait for page to load
     await page.waitForTimeout(1000);
 
-    // Open join modal via the app's known event if button isn't present or flaky
+    // Look for the Join button and click it
     const joinButton = page.locator("button", { hasText: "Join" }).first();
-    if (await joinButton.isVisible({ timeout: 1500 }).catch(() => false)) {
-      await joinButton.click();
-    } else {
-      await page.evaluate(() => {
-        const ev = new CustomEvent("openProfileModal");
-        window.dispatchEvent(ev);
-      });
-    }
+    await expect(joinButton).toBeVisible({ timeout: 5000 });
+    await joinButton.click();
 
-    // Modal visible
+    // Wait for modal to be properly rendered
     await expect(page.getByText("Join the Community")).toBeVisible({
-      timeout: 8000,
+      timeout: 10000,
     });
 
     // Fill minimal required fields
