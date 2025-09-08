@@ -4,9 +4,7 @@ use soroban_sdk::contractmeta;
 use soroban_sdk::{Address, Bytes, BytesN, Env, String, Vec, contract, panic_with_error};
 
 mod domain_contract {
-    soroban_sdk::contractimport!(
-        file = "../domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm"
-    );
+    soroban_sdk::contractimport!(file = "../domain_current.wasm");
 }
 
 mod contract_dao;
