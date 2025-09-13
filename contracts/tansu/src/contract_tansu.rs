@@ -1,6 +1,5 @@
-use soroban_sdk::{Address, BytesN, Env, String, contractimpl, panic_with_error, vec};
-
 use crate::{Tansu, TansuArgs, TansuClient, TansuTrait, events, types, validate_contract};
+use soroban_sdk::{Address, BytesN, Env, String, contractimpl, panic_with_error, vec};
 
 #[contractimpl]
 impl TansuTrait for Tansu {
@@ -128,7 +127,7 @@ impl TansuTrait for Tansu {
             admin,
             contract_key: String::from_str(&env, "collateral"),
             address: collateral_contract.address,
-            wasm_hash: collateral_contract.wasm_hash,
+            wasm_hash: None,
         }
         .publish(&env);
     }

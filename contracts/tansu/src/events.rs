@@ -95,7 +95,7 @@ pub struct ContractUpdated {
     pub admin: Address,
     pub contract_key: String,
     pub address: Address,
-    pub wasm_hash: BytesN<32>,
+    pub wasm_hash: Option<BytesN<32>>,
 }
 
 #[contractevent]

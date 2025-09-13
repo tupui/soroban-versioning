@@ -7,7 +7,7 @@ pub const TIMELOCK_DELAY: u64 = 24 * 3600; // 24 hours in seconds
 #[derive(Clone, Debug, PartialEq)]
 pub struct Contract {
     pub address: Address,
-    pub wasm_hash: BytesN<32>,
+    pub wasm_hash: Option<BytesN<32>>,
 }
 
 #[contracttype]

@@ -178,6 +178,7 @@ impl DaoTrait for Tansu {
         }
 
         // proposers deposit a collateral
+        proposer.require_auth();
         let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
         let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
         token_stellar.transfer(

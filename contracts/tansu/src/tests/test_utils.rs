@@ -1,6 +1,6 @@
 use crate::{Tansu, TansuClient, domain_contract, types};
 use soroban_sdk::testutils::Address as _;
-use soroban_sdk::{Address, Bytes, BytesN, Env, Executable, String, Vec, token, vec};
+use soroban_sdk::{Address, Bytes, Env, Executable, String, Vec, token, vec};
 
 pub struct TestSetup {
     pub env: Env,
@@ -59,14 +59,20 @@ pub fn create_test_data() -> TestSetup {
 
     let wasm_hash = match domain_id.executable().unwrap() {
         Executable::Wasm(wasm) => wasm,
-        _ => BytesN::from_array(&env, &[2u8; 32]),
+        _ => panic!(),
     };
 
     let new_domain = types::Contract {
         address: domain_id.clone(),
-        wasm_hash,
+        wasm_hash: Some(wasm_hash.clone()),
     };
     contract.set_domain_contract(&contract_admin, &new_domain);
+
+    let new_collateral = types::Contract {
+        address: sac.address(),
+        wasm_hash: None,
+    };
+    contract.set_collateral_contract(&contract_admin, &new_collateral);
 
     let grogu = Address::generate(&env);
     let mando = Address::generate(&env);
@@ -91,6 +97,7 @@ pub fn init_contract(setup: &TestSetup) -> Bytes {
 
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
     setup.token_stellar.mint(&setup.grogu, &genesis_amount);
+    setup.token_stellar.mint(&setup.mando, &genesis_amount);
 
     setup
         .contract
