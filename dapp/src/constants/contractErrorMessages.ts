@@ -35,6 +35,7 @@ export const contractErrorMessages = {
   21: "Too many voters already.",
   22: "Contract is paused.",
   23: "Contract upgrade error.",
+  24: "Contract validation error.",
 };
 
 export type ContractErrorMessageKey = keyof typeof contractErrorMessages;

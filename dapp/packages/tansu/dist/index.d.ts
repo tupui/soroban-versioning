@@ -82,16 +82,24 @@ export declare const ContractErrors: {
   23: {
     message: string;
   };
+  24: {
+    message: string;
+  };
 };
-export interface DomainContract {
+export interface Contract {
   address: string;
-  wasm_hash: Buffer;
+  wasm_hash: Option<Buffer>;
 }
-export type DataKey =
+export type ContractKey =
   | {
       tag: "DomainContract";
       values: void;
     }
+  | {
+      tag: "CollateralContract";
+      values: void;
+    };
+export type DataKey =
   | {
       tag: "Member";
       values: readonly [string];
@@ -203,6 +211,7 @@ export interface UpgradeProposal {
 export interface Proposal {
   id: u32;
   ipfs: string;
+  proposer: string;
   status: ProposalStatus;
   title: string;
   vote_data: VoteData;
@@ -932,45 +941,53 @@ export interface Client {
     simulate?: boolean;
   }) => Promise<AssembledTransaction<AdminsConfig>>;
   /**
-   * Construct and simulate a get_domain_contract_id transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Get the current Soroban Domain contract ID.
-   *
-   * # Arguments
-   * * `env` - The environment object
-   *
-   * # Returns
-   * * `Address` - The Soroban Domain contract ID
-   */
-  get_domain_contract_id: (options?: {
-    /**
-     * The fee to pay for the transaction. Default: BASE_FEE
-     */
-    fee?: number;
-    /**
-     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-     */
-    timeoutInSeconds?: number;
-    /**
-     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-     */
-    simulate?: boolean;
-  }) => Promise<AssembledTransaction<DomainContract>>;
-  /**
-   * Construct and simulate a set_domain_contract_id transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Set the Soroban Domain contract ID.
+   * Construct and simulate a set_domain_contract transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Set the Soroban Domain contract.
    *
    * # Arguments
    * * `env` - The environment object
    * * `admin` - The admin address
    * * `domain_contract` - The new domain contract
    */
-  set_domain_contract_id: (
+  set_domain_contract: (
     {
       admin,
       domain_contract,
     }: {
       admin: string;
-      domain_contract: DomainContract;
+      domain_contract: Contract;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a set_collateral_contract transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Set the Collateral contract.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `admin` - The admin address
+   * * `collateral_contract` - The new collateral contract
+   */
+  set_collateral_contract: (
+    {
+      admin,
+      collateral_contract,
+    }: {
+      admin: string;
+      collateral_contract: Contract;
     },
     options?: {
       /**
@@ -1398,10 +1415,8 @@ export declare class Client extends ContractClient {
     pause: (json: string) => AssembledTransaction<null>;
     require_not_paused: (json: string) => AssembledTransaction<null>;
     get_admins_config: (json: string) => AssembledTransaction<AdminsConfig>;
-    get_domain_contract_id: (
-      json: string,
-    ) => AssembledTransaction<DomainContract>;
-    set_domain_contract_id: (json: string) => AssembledTransaction<null>;
+    set_domain_contract: (json: string) => AssembledTransaction<null>;
+    set_collateral_contract: (json: string) => AssembledTransaction<null>;
     propose_upgrade: (json: string) => AssembledTransaction<null>;
     approve_upgrade: (json: string) => AssembledTransaction<null>;
     finalize_upgrade: (json: string) => AssembledTransaction<null>;
