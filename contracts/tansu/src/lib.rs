@@ -177,7 +177,7 @@ fn auth_maintainers(env: &Env, maintainer: &Address, project_key: &Bytes) -> typ
 /// * If the WASM hash of the contract does not match on-chain data
 fn retrieve_contract(env: &Env, key: types::ContractKey) -> types::Contract {
     let retrieved_contract: types::Contract = env.storage().instance().get(&key).unwrap();
-    validate_contract(&env, &retrieved_contract);
+    validate_contract(env, &retrieved_contract);
     retrieved_contract
 }
 
@@ -192,9 +192,9 @@ fn retrieve_contract(env: &Env, key: types::ContractKey) -> types::Contract {
 fn validate_contract(env: &Env, contract: &types::Contract) {
     let contract_executable = contract.address.executable();
 
-    if let Some(wasm_hash) = contract.clone().wasm_hash {
-        if contract_executable != Some(Executable::Wasm(wasm_hash)) {
-            panic_with_error!(&env, &errors::ContractErrors::ContractValidation)
-        }
+    if let Some(wasm_hash) = contract.clone().wasm_hash
+        && contract_executable != Some(Executable::Wasm(wasm_hash))
+    {
+        panic_with_error!(&env, &errors::ContractErrors::ContractValidation)
     }
 }
