@@ -1,6 +1,6 @@
 use soroban_sdk::{Address, BytesN, Env, contractimpl, panic_with_error, vec};
 
-use crate::{Tansu, TansuArgs, TansuClient, TansuTrait, events, types};
+use crate::{Tansu, TansuArgs, TansuClient, TansuTrait, events, types, validate_contract};
 
 #[contractimpl]
 impl TansuTrait for Tansu {
@@ -84,18 +84,27 @@ impl TansuTrait for Tansu {
             .unwrap()
     }
 
-    /// Get the current Soroban Domain contract ID.
+    /// Set the Soroban Domain contract.
     ///
     /// # Arguments
     /// * `env` - The environment object
-    ///
-    /// # Returns
-    /// * `Address` - The Soroban Domain contract ID
-    fn get_domain_contract_id(env: Env) -> types::DomainContract {
+    /// * `admin` - The admin address
+    /// * `domain_contract` - The new domain contract
+    fn set_domain_contract(env: Env, admin: Address, domain_contract: types::Contract) {
+        auth_admin(&env, &admin);
+
+        validate_contract(&env, &domain_contract);
+
         env.storage()
             .instance()
-            .get(&types::DataKey::DomainContract)
-            .unwrap()
+            .set(&types::ContractKey::DomainContract, &domain_contract);
+
+        events::DomainContractUpdated {
+            admin,
+            address: domain_contract.address,
+            wasm_hash: domain_contract.wasm_hash,
+        }
+        .publish(&env);
     }
 
     /// Set the Soroban Domain contract ID.

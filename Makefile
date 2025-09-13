@@ -171,13 +171,13 @@ contract_domain_init:
 		--min_duration 31536000 \
 		--allowed_tlds '[{"bytes": "786c6d"}]'
 
-contract_set_domain_contract_id:  ## Set the SorobanDomain contract address
+contract_set_domain_contract:  ## Set the SorobanDomain contract address
 	stellar contract invoke \
     	--source-account mando-$(network) \
     	--network $(network) \
     	--id $(shell cat .stellar/tansu_id) \
     	-- \
-    	set_domain_contract_id \
+    	set_domain_contract \
 		--admin $(shell stellar keys address mando-$(network)) \
 		--domain_contract '{"address":"$(domain_contract_id)","wasm_hash":"$(domain_wasm_hash)"}'
 

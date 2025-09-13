@@ -5,14 +5,18 @@ pub const TIMELOCK_DELAY: u64 = 24 * 3600; // 24 hours in seconds
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
-pub struct DomainContract {
+pub struct Contract {
     pub address: Address,
     pub wasm_hash: BytesN<32>,
 }
 
 #[contracttype]
+pub enum ContractKey {
+    DomainContract,     // Address and wasm hash of the SorobanDomain contract
+}
+
+#[contracttype]
 pub enum DataKey {
-    DomainContract,  // Address and wasm hash of the SorobanDomain contract
     Member(Address), // Member of the DAO, address
     Paused,          // Contract pause state
     UpgradeProposal, // Pending upgrade proposal

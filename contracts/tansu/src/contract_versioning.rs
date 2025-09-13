@@ -73,16 +73,8 @@ impl VersioningTrait for Tansu {
                 panic_with_error!(&env, &errors::ContractErrors::UnauthorizedSigner);
             }
 
-            let domain_contract: types::DomainContract = env
-                .storage()
-                .instance()
-                .get(&types::DataKey::DomainContract)
-                .unwrap();
-
-            let contract_executable = domain_contract.address.executable();
-            if contract_executable != Some(Executable::Wasm(domain_contract.wasm_hash)) {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidDomainError)
-            }
+            let domain_contract =
+                crate::retrieve_contract(&env, types::ContractKey::DomainContract);
 
             let node = domain_node(&env, &key);
             let record_keys = domain_contract::RecordKeys::Record(node);

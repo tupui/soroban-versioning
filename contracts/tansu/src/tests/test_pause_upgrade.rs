@@ -357,7 +357,7 @@ fn test_domain_contract_id_update() {
     // Create a new domain contract ID
     let new_domain_id = Address::generate(&setup.env);
     let wasm_hash = BytesN::from_array(&setup.env, &[2u8; 32]);
-    let new_domain = types::DomainContract {
+    let new_domain = types::Contract {
         address: new_domain_id,
         wasm_hash,
     };
@@ -365,7 +365,7 @@ fn test_domain_contract_id_update() {
     // Update the domain contract ID
     setup
         .contract
-        .set_domain_contract_id(&setup.contract_admin, &new_domain);
+        .set_domain_contract(&setup.contract_admin, &new_domain);
 
     // Verify the event
     let events = setup.env.events().all();
@@ -399,6 +399,11 @@ fn test_domain_contract_id_update() {
     );
 
     // Verify the update was successful
-    let retrieved_domain = setup.contract.get_domain_contract_id();
+    let retrieved_domain: types::Contract = setup
+        .env
+        .storage()
+        .instance()
+        .get(&types::ContractKey::DomainContract)
+        .unwrap();
     assert_eq!(retrieved_domain, new_domain);
 }

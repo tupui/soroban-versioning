@@ -62,11 +62,11 @@ pub fn create_test_data() -> TestSetup {
         _ => BytesN::from_array(&env, &[2u8; 32]),
     };
 
-    let new_domain = types::DomainContract {
+    let new_domain = types::Contract {
         address: domain_id.clone(),
         wasm_hash,
     };
-    contract.set_domain_contract_id(&contract_admin, &new_domain);
+    contract.set_domain_contract(&contract_admin, &new_domain);
 
     let grogu = Address::generate(&env);
     let mando = Address::generate(&env);

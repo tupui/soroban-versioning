@@ -1,7 +1,7 @@
 #![no_std]
 
-use soroban_sdk::contractmeta;
 use soroban_sdk::{Address, Bytes, BytesN, Env, String, Vec, contract, panic_with_error};
+use soroban_sdk::{Executable, contractmeta};
 
 mod domain_contract {
     soroban_sdk::contractimport!(file = "../domain_current.wasm");
@@ -31,9 +31,8 @@ pub trait TansuTrait {
 
     fn get_admins_config(env: Env) -> types::AdminsConfig;
 
-    fn get_domain_contract_id(env: Env) -> types::DomainContract;
+    fn set_domain_contract(env: Env, admin: Address, domain_contract: types::Contract);
 
-    fn set_domain_contract_id(env: Env, admin: Address, domain_contract: types::DomainContract);
 
     fn propose_upgrade(
         env: Env,
@@ -160,5 +159,38 @@ fn auth_maintainers(env: &Env, maintainer: &Address, project_key: &Bytes) -> typ
         project
     } else {
         panic_with_error!(&env, &errors::ContractErrors::InvalidKey)
+    }
+}
+
+/// Retrieve a contract address and WASM hash.
+/// 
+/// # Arguments
+/// * `env` - The environment object
+/// * `key` - The contract key
+/// 
+/// # Returns
+/// * `types::Contract` - The contract object
+/// 
+/// # Panics
+/// * If the contract cannot be found
+/// * If the WASM hash of the contract does not match on-chain data
+fn retrieve_contract(env: &Env, key: types::ContractKey) -> types::Contract {
+    let retrieved_contract: types::Contract = env.storage().instance().get(&key).unwrap();
+    validate_contract(&env, &retrieved_contract);
+    retrieved_contract
+}
+
+/// Validate the contract WASM hash match on-chain data.
+///
+/// # Arguments
+/// * `env` - The environment object
+/// * `contract` - The contract to validate
+/// 
+/// # Panics
+/// * If the WASM hash of the contract does not match on-chain data
+fn validate_contract(env: &Env, contract: &types::Contract) {
+    let contract_executable = contract.address.executable();
+    if contract_executable != Some(Executable::Wasm(contract.wasm_hash.clone())) {
+        panic_with_error!(&env, &errors::ContractErrors::ContractValidation)
     }
 }
