@@ -3,9 +3,10 @@ use crate::{
 };
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
-    Address, Bytes, BytesN, Env, String, U256, Vec, contractimpl, panic_with_error, vec,
+    Address, Bytes, BytesN, Env, String, U256, Vec, contractimpl, panic_with_error, token, vec,
 };
 
+const PROPOSAL_COLLATERAL: i128 = 100 * 10_000_000;
 const MAX_TITLE_LENGTH: u32 = 256;
 const MAX_PROPOSALS_PER_PAGE: u32 = 9;
 const MAX_PAGES: u32 = 1000;
@@ -176,8 +177,14 @@ impl DaoTrait for Tansu {
             panic_with_error!(&env, &errors::ContractErrors::ProposalInputValidation);
         }
 
-        // proposers can only be maintainers of existing projects
-        crate::auth_maintainers(&env, &proposer, &project_key);
+        // proposers deposit a collateral
+        let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
+        let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
+        token_stellar.transfer(
+            &proposer.clone(),
+            env.current_contract_address(),
+            &PROPOSAL_COLLATERAL,
+        );
 
         let proposal_id = env
             .storage()
@@ -228,6 +235,7 @@ impl DaoTrait for Tansu {
         let proposal = types::Proposal {
             id: proposal_id,
             title,
+            proposer: proposer.clone(),
             ipfs,
             vote_data,
             status: types::ProposalStatus::Active,
@@ -421,6 +429,15 @@ impl DaoTrait for Tansu {
         if curr_timestamp < proposal.vote_data.voting_ends_at {
             panic_with_error!(&env, &errors::ContractErrors::ProposalVotingTime);
         }
+
+        // proposers get its collateral back
+        let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
+        let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
+        token_stellar.transfer(
+            &env.current_contract_address(),
+            &proposal.proposer,
+            &PROPOSAL_COLLATERAL,
+        );
 
         // tally to results
         proposal.status = match proposal.vote_data.public_voting {

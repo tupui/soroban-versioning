@@ -33,6 +33,7 @@ pub trait TansuTrait {
 
     fn set_domain_contract(env: Env, admin: Address, domain_contract: types::Contract);
 
+    fn set_collateral_contract(env: Env, admin: Address, collateral_contract: types::Contract);
 
     fn propose_upgrade(
         env: Env,

@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, BytesN, Env, contractimpl, panic_with_error, vec};
+use soroban_sdk::{Address, BytesN, Env, String, contractimpl, panic_with_error, vec};
 
 use crate::{Tansu, TansuArgs, TansuClient, TansuTrait, events, types, validate_contract};
 
@@ -99,31 +99,36 @@ impl TansuTrait for Tansu {
             .instance()
             .set(&types::ContractKey::DomainContract, &domain_contract);
 
-        events::DomainContractUpdated {
+        events::ContractUpdated {
             admin,
+            contract_key: String::from_str(&env, "domain"),
             address: domain_contract.address,
             wasm_hash: domain_contract.wasm_hash,
         }
         .publish(&env);
     }
 
-    /// Set the Soroban Domain contract ID.
+    /// Set the Collateral contract.
     ///
     /// # Arguments
     /// * `env` - The environment object
     /// * `admin` - The admin address
-    /// * `domain_contract` - The new domain contract
-    fn set_domain_contract_id(env: Env, admin: Address, domain_contract: types::DomainContract) {
+    /// * `collateral_contract` - The new collateral contract
+    fn set_collateral_contract(env: Env, admin: Address, collateral_contract: types::Contract) {
         auth_admin(&env, &admin);
 
-        env.storage()
-            .instance()
-            .set(&types::DataKey::DomainContract, &domain_contract);
+        validate_contract(&env, &collateral_contract);
 
-        events::DomainContractUpdated {
+        env.storage().instance().set(
+            &types::ContractKey::CollateralContract,
+            &collateral_contract,
+        );
+
+        events::ContractUpdated {
             admin,
-            address: domain_contract.address,
-            wasm_hash: domain_contract.wasm_hash,
+            contract_key: String::from_str(&env, "collateral"),
+            address: collateral_contract.address,
+            wasm_hash: collateral_contract.wasm_hash,
         }
         .publish(&env);
     }

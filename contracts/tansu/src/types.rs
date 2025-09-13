@@ -13,6 +13,7 @@ pub struct Contract {
 #[contracttype]
 pub enum ContractKey {
     DomainContract,     // Address and wasm hash of the SorobanDomain contract
+    CollateralContract, // Collateral asset contract address
 }
 
 #[contracttype]
@@ -135,6 +136,7 @@ pub struct UpgradeProposal {
 pub struct Proposal {
     pub id: u32,
     pub title: String,
+    pub proposer: Address,
     pub ipfs: String,
     pub vote_data: VoteData,
     pub status: ProposalStatus,
