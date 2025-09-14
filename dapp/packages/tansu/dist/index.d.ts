@@ -153,6 +153,10 @@ export type ProposalStatus =
   | {
       tag: "Cancelled";
       values: void;
+    }
+  | {
+      tag: "Malicious";
+      values: void;
     };
 export type Vote =
   | {
@@ -431,6 +435,48 @@ export interface Client {
     },
   ) => Promise<AssembledTransaction<u32>>;
   /**
+   * Construct and simulate a revoke_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Revoke a proposal.
+   *
+   * Useful if there was some spam or bad intent. That will prevent the
+   * collateral to be claimed back.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `maintainer` - Address of the proposal creator
+   * * `project_key` - The project key identifier
+   * * `proposal_id` - The ID of the proposal to vote on
+   *
+   * # Panics
+   * * If the proposal is not active anymore
+   * * If the maintainer is not authorized
+   */
+  revoke_proposal: (
+    {
+      maintainer,
+      project_key,
+      proposal_id,
+    }: {
+      maintainer: string;
+      project_key: Buffer;
+      proposal_id: u32;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
    * Construct and simulate a vote transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Cast a vote on a proposal.
    *
@@ -449,6 +495,7 @@ export interface Client {
    * # Panics
    * * If the voter has already voted
    * * If the voting period has ended
+   * * If the proposal is not active anymore
    * * If the proposal doesn't exist
    * * If the voter's weight exceeds their maximum allowed weight
    * * If the voter is not a member of the project
@@ -503,9 +550,9 @@ export interface Client {
    * # Panics
    * * If the voting period hasn't ended
    * * If the proposal doesn't exist
+   * * If the proposal is not active anymore
    * * If tallies/seeds are missing for anonymous votes
-   * * If commitment validation fails for anonymous votes
-   * *
+   * * If commitment
    */
   execute: (
     {
@@ -1402,6 +1449,7 @@ export declare class Client extends ContractClient {
       json: string,
     ) => AssembledTransaction<Buffer<ArrayBufferLike>[]>;
     create_proposal: (json: string) => AssembledTransaction<number>;
+    revoke_proposal: (json: string) => AssembledTransaction<null>;
     vote: (json: string) => AssembledTransaction<null>;
     execute: (json: string) => AssembledTransaction<ProposalStatus>;
     proof: (json: string) => AssembledTransaction<boolean>;
