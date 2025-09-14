@@ -135,6 +135,11 @@ impl DaoTrait for Tansu {
 
     /// Create a new proposal for a project.
     ///
+    /// The proposer is automatically added to the abstain group.
+    /// By creating a proposal, the proposer incur a collateral which is
+    /// repaid upon execution of the proposal unless the proposal is revoked.
+    /// This is a deterent mechanism.
+    ///
     /// # Arguments
     /// * `env` - The environment object
     /// * `proposer` - Address of the proposal creator
@@ -143,10 +148,9 @@ impl DaoTrait for Tansu {
     /// * `ipfs` - IPFS content identifier describing the proposal
     /// * `voting_ends_at` - UNIX timestamp when voting ends
     /// * `public_voting` - Whether voting is public or anonymous
+    ///
     /// # Returns
     /// * `u32` - The ID of the created proposal.
-    ///
-    /// The proposer is automatically added to the abstain group.
     ///
     /// # Panics
     /// * If the title is too long
