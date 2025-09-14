@@ -166,6 +166,36 @@ fn test_upgrade_flow() {
         .contract
         .finalize_upgrade(&setup.contract_admin, &true);
 
+    let events = setup.env.events().all();
+    assert_eq!(
+        events,
+        vec![
+            &setup.env,
+            (
+                setup.contract_id.clone(),
+                (Symbol::new(&setup.env, "upgrade_status"),).into_val(&setup.env),
+                Map::<Symbol, Val>::from_array(
+                    &setup.env,
+                    [
+                        (
+                            Symbol::new(&setup.env, "admin"),
+                            setup.contract_admin.clone().into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "wasm_hash"),
+                            wasm_hash.into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "status"),
+                            String::from_str(&setup.env, "Upgraded").into_val(&setup.env)
+                        ),
+                    ],
+                )
+                .into_val(&setup.env),
+            ),
+        ]
+    );
+
     // Verify the upgrade was successful by checking that the proposal no longer exists
     let err = setup
         .contract
@@ -200,7 +230,7 @@ fn test_upgrade_cancel() {
             &setup.env,
             (
                 setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "upgrade_cancelled"),).into_val(&setup.env),
+                (Symbol::new(&setup.env, "upgrade_status"),).into_val(&setup.env),
                 Map::<Symbol, Val>::from_array(
                     &setup.env,
                     [
@@ -211,6 +241,10 @@ fn test_upgrade_cancel() {
                         (
                             Symbol::new(&setup.env, "wasm_hash"),
                             wasm_hash.into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "status"),
+                            String::from_str(&setup.env, "Cancelled").into_val(&setup.env)
                         ),
                     ],
                 )
