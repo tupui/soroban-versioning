@@ -64,6 +64,7 @@ pub enum ProposalStatus {
     Approved,
     Rejected,
     Cancelled,
+    Malicious,
 }
 
 #[contracttype]

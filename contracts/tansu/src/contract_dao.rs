@@ -270,6 +270,56 @@ impl DaoTrait for Tansu {
         proposal_id
     }
 
+    /// Revoke a proposal.
+    ///
+    /// Useful if there was some spam or bad intent. That will prevent the
+    /// collateral to be claimed back.
+    ///
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `maintainer` - Address of the proposal creator
+    /// * `project_key` - The project key identifier
+    /// * `proposal_id` - The ID of the proposal to vote on
+    ///
+    /// # Panics
+    /// * If the proposal is not active anymore
+    /// * If the maintainer is not authorized
+    fn revoke_proposal(env: Env, maintainer: Address, project_key: Bytes, proposal_id: u32) {
+        Tansu::require_not_paused(env.clone());
+
+        maintainer.require_auth();
+
+        let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
+        let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
+        let mut dao_page = Self::get_dao(env.clone(), project_key.clone(), page);
+        let mut proposal = match dao_page.proposals.try_get(sub_id) {
+            Ok(Some(proposal)) => proposal,
+            _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
+        };
+
+        // only allow to execute once
+        if proposal.status != types::ProposalStatus::Active {
+            panic_with_error!(&env, &errors::ContractErrors::ProposalActive);
+        }
+
+        proposal.status = types::ProposalStatus::Malicious;
+
+        dao_page.proposals.set(sub_id, proposal.clone());
+
+        env.storage().persistent().set(
+            &types::ProjectKey::Dao(project_key.clone(), page),
+            &dao_page,
+        );
+
+        events::ProposalExecuted {
+            project_key: project_key.clone(),
+            proposal_id,
+            status: String::from_str(&env, "Malicious"),
+            maintainer: maintainer.clone(),
+        }
+        .publish(&env);
+    }
+
     /// Cast a vote on a proposal.
     ///
     /// Allows a member to vote on a proposal.
@@ -287,6 +337,7 @@ impl DaoTrait for Tansu {
     /// # Panics
     /// * If the voter has already voted
     /// * If the voting period has ended
+    /// * If the proposal is not active anymore
     /// * If the proposal doesn't exist
     /// * If the voter's weight exceeds their maximum allowed weight
     /// * If the voter is not a member of the project
@@ -398,6 +449,7 @@ impl DaoTrait for Tansu {
     /// # Panics
     /// * If the voting period hasn't ended
     /// * If the proposal doesn't exist
+    /// * If the proposal is not active anymore
     /// * If tallies/seeds are missing for anonymous votes
     /// * If commitment validation fails for anonymous votes
     /// * If the maintainer is not authorized
@@ -481,6 +533,7 @@ impl DaoTrait for Tansu {
                 types::ProposalStatus::Approved => String::from_str(&env, "Approved"),
                 types::ProposalStatus::Rejected => String::from_str(&env, "Rejected"),
                 types::ProposalStatus::Cancelled => String::from_str(&env, "Cancelled"),
+                types::ProposalStatus::Malicious => String::from_str(&env, "Malicious"),
             },
             maintainer: maintainer.clone(),
         }
