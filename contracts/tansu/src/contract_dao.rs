@@ -3,9 +3,10 @@ use crate::{
 };
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
-    Address, Bytes, BytesN, Env, String, U256, Vec, contractimpl, panic_with_error, vec,
+    Address, Bytes, BytesN, Env, String, U256, Vec, contractimpl, panic_with_error, token, vec,
 };
 
+const PROPOSAL_COLLATERAL: i128 = 100 * 10_000_000;
 const MAX_TITLE_LENGTH: u32 = 256;
 const MAX_PROPOSALS_PER_PAGE: u32 = 9;
 const MAX_PAGES: u32 = 1000;
@@ -134,6 +135,11 @@ impl DaoTrait for Tansu {
 
     /// Create a new proposal for a project.
     ///
+    /// The proposer is automatically added to the abstain group.
+    /// By creating a proposal, the proposer incur a collateral which is
+    /// repaid upon execution of the proposal unless the proposal is revoked.
+    /// This is a deterent mechanism.
+    ///
     /// # Arguments
     /// * `env` - The environment object
     /// * `proposer` - Address of the proposal creator
@@ -142,10 +148,9 @@ impl DaoTrait for Tansu {
     /// * `ipfs` - IPFS content identifier describing the proposal
     /// * `voting_ends_at` - UNIX timestamp when voting ends
     /// * `public_voting` - Whether voting is public or anonymous
+    ///
     /// # Returns
     /// * `u32` - The ID of the created proposal.
-    ///
-    /// The proposer is automatically added to the abstain group.
     ///
     /// # Panics
     /// * If the title is too long
@@ -176,8 +181,15 @@ impl DaoTrait for Tansu {
             panic_with_error!(&env, &errors::ContractErrors::ProposalInputValidation);
         }
 
-        // proposers can only be maintainers of existing projects
-        crate::auth_maintainers(&env, &proposer, &project_key);
+        // proposers deposit a collateral
+        proposer.require_auth();
+        let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
+        let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
+        token_stellar.transfer(
+            &proposer.clone(),
+            env.current_contract_address(),
+            &PROPOSAL_COLLATERAL,
+        );
 
         let proposal_id = env
             .storage()
@@ -228,6 +240,7 @@ impl DaoTrait for Tansu {
         let proposal = types::Proposal {
             id: proposal_id,
             title,
+            proposer: proposer.clone(),
             ipfs,
             vote_data,
             status: types::ProposalStatus::Active,
@@ -261,6 +274,56 @@ impl DaoTrait for Tansu {
         proposal_id
     }
 
+    /// Revoke a proposal.
+    ///
+    /// Useful if there was some spam or bad intent. That will prevent the
+    /// collateral to be claimed back.
+    ///
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `maintainer` - Address of the proposal creator
+    /// * `project_key` - The project key identifier
+    /// * `proposal_id` - The ID of the proposal to vote on
+    ///
+    /// # Panics
+    /// * If the proposal is not active anymore
+    /// * If the maintainer is not authorized
+    fn revoke_proposal(env: Env, maintainer: Address, project_key: Bytes, proposal_id: u32) {
+        Tansu::require_not_paused(env.clone());
+
+        maintainer.require_auth();
+
+        let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
+        let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
+        let mut dao_page = Self::get_dao(env.clone(), project_key.clone(), page);
+        let mut proposal = match dao_page.proposals.try_get(sub_id) {
+            Ok(Some(proposal)) => proposal,
+            _ => panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound),
+        };
+
+        // only allow to execute once
+        if proposal.status != types::ProposalStatus::Active {
+            panic_with_error!(&env, &errors::ContractErrors::ProposalActive);
+        }
+
+        proposal.status = types::ProposalStatus::Malicious;
+
+        dao_page.proposals.set(sub_id, proposal.clone());
+
+        env.storage().persistent().set(
+            &types::ProjectKey::Dao(project_key.clone(), page),
+            &dao_page,
+        );
+
+        events::ProposalExecuted {
+            project_key: project_key.clone(),
+            proposal_id,
+            status: String::from_str(&env, "Malicious"),
+            maintainer: maintainer.clone(),
+        }
+        .publish(&env);
+    }
+
     /// Cast a vote on a proposal.
     ///
     /// Allows a member to vote on a proposal.
@@ -278,6 +341,7 @@ impl DaoTrait for Tansu {
     /// # Panics
     /// * If the voter has already voted
     /// * If the voting period has ended
+    /// * If the proposal is not active anymore
     /// * If the proposal doesn't exist
     /// * If the voter's weight exceeds their maximum allowed weight
     /// * If the voter is not a member of the project
@@ -389,6 +453,7 @@ impl DaoTrait for Tansu {
     /// # Panics
     /// * If the voting period hasn't ended
     /// * If the proposal doesn't exist
+    /// * If the proposal is not active anymore
     /// * If tallies/seeds are missing for anonymous votes
     /// * If commitment validation fails for anonymous votes
     /// * If the maintainer is not authorized
@@ -421,6 +486,15 @@ impl DaoTrait for Tansu {
         if curr_timestamp < proposal.vote_data.voting_ends_at {
             panic_with_error!(&env, &errors::ContractErrors::ProposalVotingTime);
         }
+
+        // proposers get its collateral back
+        let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
+        let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
+        token_stellar.transfer(
+            &env.current_contract_address(),
+            &proposal.proposer,
+            &PROPOSAL_COLLATERAL,
+        );
 
         // tally to results
         proposal.status = match proposal.vote_data.public_voting {
@@ -463,6 +537,7 @@ impl DaoTrait for Tansu {
                 types::ProposalStatus::Approved => String::from_str(&env, "Approved"),
                 types::ProposalStatus::Rejected => String::from_str(&env, "Rejected"),
                 types::ProposalStatus::Cancelled => String::from_str(&env, "Cancelled"),
+                types::ProposalStatus::Malicious => String::from_str(&env, "Malicious"),
             },
             maintainer: maintainer.clone(),
         }

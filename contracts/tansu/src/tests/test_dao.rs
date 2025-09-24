@@ -24,7 +24,8 @@ fn proposal_flow() {
             .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true);
 
     // Verify proposal creation event
-    let all_events = setup.env.events().all();
+    let mut all_events = setup.env.events().all();
+    all_events.pop_front();
     assert_eq!(
         all_events,
         vec![
@@ -106,7 +107,8 @@ fn proposal_flow() {
         .execute(&setup.mando, &id, &proposal_id, &None, &None);
 
     // Verify proposal executed event
-    let all_events = setup.env.events().all();
+    let mut all_events = setup.env.events().all();
+    all_events.pop_front();
     assert_eq!(
         all_events,
         vec![
@@ -587,6 +589,63 @@ fn proposal_execution() {
 
     let proposal = setup.contract.get_proposal(&id, &proposal_id);
     assert_eq!(proposal.status, ProposalStatus::Approved);
+}
+
+#[test]
+fn proposal_revoke() {
+    let setup = create_test_data();
+    let id = init_contract(&setup);
+
+    setup.env.ledger().set_timestamp(1234567890);
+    let voting_ends_at = 1234567890 + 3600 * 24 * 2;
+
+    let title = String::from_str(&setup.env, "Test Proposal");
+    let ipfs = String::from_str(
+        &setup.env,
+        "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
+    );
+
+    let proposal_id =
+        setup
+            .contract
+            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true);
+
+    setup
+        .contract
+        .revoke_proposal(&setup.mando, &id, &proposal_id);
+
+    let all_events = setup.env.events().all();
+    assert_eq!(
+        all_events,
+        vec![
+            &setup.env,
+            (
+                setup.contract_id.clone(),
+                (Symbol::new(&setup.env, "proposal_executed"), id.clone()).into_val(&setup.env),
+                Map::<Symbol, Val>::from_array(
+                    &setup.env,
+                    [
+                        (
+                            Symbol::new(&setup.env, "proposal_id"),
+                            proposal_id.into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "status"),
+                            String::from_str(&setup.env, "Malicious").into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "maintainer"),
+                            setup.mando.clone().into_val(&setup.env)
+                        ),
+                    ],
+                )
+                .into_val(&setup.env),
+            ),
+        ]
+    );
+
+    let proposal = setup.contract.get_proposal(&id, &proposal_id);
+    assert_eq!(proposal.status, ProposalStatus::Malicious);
 }
 
 #[test]

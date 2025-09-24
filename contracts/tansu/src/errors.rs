@@ -31,6 +31,8 @@ pub enum ContractErrors {
     MemberAlreadyExist = 19,
     VoterWeight = 20,
     VoteLimitExceeded = 21,
+    // utils
     ContractPaused = 22,
     UpgradeError = 23,
+    ContractValidation = 24,
 }

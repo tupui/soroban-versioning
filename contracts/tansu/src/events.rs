@@ -91,10 +91,11 @@ pub struct AnonymousVotingSetup {
 
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct DomainContractUpdated {
+pub struct ContractUpdated {
     pub admin: Address,
+    pub contract_key: String,
     pub address: Address,
-    pub wasm_hash: BytesN<32>,
+    pub wasm_hash: Option<BytesN<32>>,
 }
 
 #[contractevent]
@@ -115,7 +116,8 @@ pub struct UpgradeApproved {
 
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct UpgradeCancelled {
+pub struct UpgradeStatus {
     pub admin: Address,
     pub wasm_hash: Bytes,
+    pub status: String,
 }
