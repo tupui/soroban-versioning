@@ -85,6 +85,9 @@ export declare const ContractErrors: {
   24: {
     message: string;
   };
+  25: {
+    message: string;
+  };
 };
 export interface Contract {
   address: string;
@@ -385,6 +388,11 @@ export interface Client {
    * Construct and simulate a create_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Create a new proposal for a project.
    *
+   * The proposer is automatically added to the abstain group.
+   * By creating a proposal, the proposer incur a collateral which is
+   * repaid upon execution of the proposal unless the proposal is revoked.
+   * This is a deterent mechanism.
+   *
    * # Arguments
    * * `env` - The environment object
    * * `proposer` - Address of the proposal creator
@@ -393,10 +401,9 @@ export interface Client {
    * * `ipfs` - IPFS content identifier describing the proposal
    * * `voting_ends_at` - UNIX timestamp when voting ends
    * * `public_voting` - Whether voting is public or anonymous
+   *
    * # Returns
    * * `u32` - The ID of the created proposal.
-   *
-   * The proposer is automatically added to the abstain group.
    *
    * # Panics
    * * If the title is too long
@@ -836,7 +843,7 @@ export interface Client {
    * Get all badges for a specific project, organized by badge type.
    *
    * Returns a structure containing vectors of member addresses for each badge type
-   * (Developer, Triage, Community, Verified, Default).
+   * (Developer, Triage, Community, Verified).
    *
    * # Arguments
    * * `env` - The environment object

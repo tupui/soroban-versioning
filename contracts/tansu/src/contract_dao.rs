@@ -7,6 +7,7 @@ use soroban_sdk::{
 };
 
 const PROPOSAL_COLLATERAL: i128 = 100 * 10_000_000;
+const VOTE_COLLATERAL: i128 = 10 * 10_000_000;
 const MAX_TITLE_LENGTH: u32 = 256;
 const MAX_PROPOSALS_PER_PAGE: u32 = 9;
 const MAX_PAGES: u32 = 1000;
@@ -188,7 +189,7 @@ impl DaoTrait for Tansu {
         token_stellar.transfer(
             &proposer.clone(),
             env.current_contract_address(),
-            &PROPOSAL_COLLATERAL,
+            &(PROPOSAL_COLLATERAL + VOTE_COLLATERAL),
         );
 
         let proposal_id = env
@@ -414,6 +415,12 @@ impl DaoTrait for Tansu {
             panic_with_error!(&env, &errors::ContractErrors::VoterWeight);
         }
 
+        let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
+        let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
+        match token_stellar.try_transfer(&voter, env.current_contract_address(), &VOTE_COLLATERAL) {
+            Ok(..) => (),
+            _ => panic_with_error!(&env, &errors::ContractErrors::CollateralError),
+        }
         // Record the vote
         proposal.vote_data.votes.push_back(vote.clone());
 
@@ -490,11 +497,30 @@ impl DaoTrait for Tansu {
         // proposers get its collateral back
         let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
         let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
-        token_stellar.transfer(
+        match token_stellar.try_transfer(
             &env.current_contract_address(),
             &proposal.proposer,
             &PROPOSAL_COLLATERAL,
-        );
+        ) {
+            Ok(..) => (),
+            _ => panic_with_error!(&env, &errors::ContractErrors::CollateralError),
+        }
+
+        // all voters get their collateral back
+        for vote_ in &proposal.vote_data.votes {
+            let vote_address = match &vote_ {
+                types::Vote::PublicVote(vote_choice) => &vote_choice.address,
+                types::Vote::AnonymousVote(vote_choice) => &vote_choice.address,
+            };
+            match token_stellar.try_transfer(
+                &env.current_contract_address(),
+                vote_address,
+                &VOTE_COLLATERAL,
+            ) {
+                Ok(..) => (),
+                _ => panic_with_error!(&env, &errors::ContractErrors::CollateralError),
+            }
+        }
 
         // tally to results
         proposal.status = match proposal.vote_data.public_voting {

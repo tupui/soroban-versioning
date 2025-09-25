@@ -35,4 +35,5 @@ pub enum ContractErrors {
     ContractPaused = 22,
     UpgradeError = 23,
     ContractValidation = 24,
+    CollateralError = 25,
 }

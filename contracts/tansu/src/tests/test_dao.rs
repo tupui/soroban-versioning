@@ -18,6 +18,9 @@ fn proposal_flow() {
     );
     let voting_ends_at = setup.env.ledger().timestamp() + 3600 * 24 * 2;
 
+    let balance_proposer_init = setup.token_stellar.balance(&setup.grogu);
+    let balance_voter_init = setup.token_stellar.balance(&setup.mando);
+
     let proposal_id =
         setup
             .contract
@@ -63,6 +66,9 @@ fn proposal_flow() {
         ]
     );
 
+    let balance_proposer_ = setup.token_stellar.balance(&setup.grogu);
+    assert!(balance_proposer_init > balance_proposer_);
+
     setup.contract.vote(
         &setup.mando,
         &id,
@@ -75,7 +81,8 @@ fn proposal_flow() {
     );
 
     // Verify vote cast event
-    let all_events = setup.env.events().all();
+    let mut all_events = setup.env.events().all();
+    all_events.pop_front();
     assert_eq!(
         all_events,
         vec![
@@ -101,6 +108,9 @@ fn proposal_flow() {
         ]
     );
 
+    let balance_voter_ = setup.token_stellar.balance(&setup.mando);
+    assert!(balance_voter_init > balance_voter_);
+
     setup.env.ledger().set_timestamp(voting_ends_at + 1);
     let result = setup
         .contract
@@ -108,6 +118,8 @@ fn proposal_flow() {
 
     // Verify proposal executed event
     let mut all_events = setup.env.events().all();
+    all_events.pop_front();
+    all_events.pop_front();
     all_events.pop_front();
     assert_eq!(
         all_events,
@@ -139,6 +151,12 @@ fn proposal_flow() {
     );
 
     assert_eq!(result, ProposalStatus::Cancelled);
+
+    let balance_proposer_ = setup.token_stellar.balance(&setup.grogu);
+    assert_eq!(balance_proposer_init, balance_proposer_);
+
+    let balance_voter_ = setup.token_stellar.balance(&setup.mando);
+    assert_eq!(balance_voter_init, balance_voter_);
 }
 
 #[test]
@@ -239,6 +257,7 @@ fn dao_anonymous() {
 
     // Add a member with elevated rights
     let kuiil = Address::generate(&setup.env);
+    setup.token_stellar.mint(&kuiil, &(10 * 10_000_000));
     let meta = String::from_str(&setup.env, "abcd");
     setup.contract.add_member(&kuiil, &meta);
     let badges = vec![&setup.env, Badge::Community];
@@ -551,6 +570,7 @@ fn proposal_execution() {
 
     // Add member with badge
     let kuiil = Address::generate(&setup.env);
+    setup.token_stellar.mint(&kuiil, &(10 * 10_000_000));
     let meta = String::from_str(&setup.env, "test");
     setup.contract.add_member(&kuiil, &meta);
     let badges = vec![&setup.env, Badge::Community];
@@ -668,6 +688,7 @@ fn voter_weight_validation() {
             .create_proposal(&setup.mando, &id, &title, &ipfs, &voting_ends_at, &true);
 
     let kuiil = Address::generate(&setup.env);
+    setup.token_stellar.mint(&kuiil, &(10 * 10_000_000));
     let meta = String::from_str(&setup.env, "test");
     setup.contract.add_member(&kuiil, &meta);
 
