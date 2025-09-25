@@ -4,7 +4,7 @@ import Modal, { type ModalProps } from "components/utils/Modal";
 import Step from "components/utils/Step";
 import Title from "components/utils/Title";
 import CopyButton from "components/utils/CopyButton";
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   VoteResultType,
   type ProposalOutcome,

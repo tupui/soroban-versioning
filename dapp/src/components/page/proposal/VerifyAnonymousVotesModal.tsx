@@ -3,7 +3,7 @@ import Title from "components/utils/Title";
 import Step from "components/utils/Step";
 import Button from "components/utils/Button";
 import AnonymousTalliesDisplay from "./AnonymousTalliesDisplay";
-import React, { useState } from "react";
+import { useState } from "react";
 import { computeAnonymousVotingData } from "utils/anonymousVoting";
 import type { VoteStatus } from "types/proposal";
 import classNames from "classnames";

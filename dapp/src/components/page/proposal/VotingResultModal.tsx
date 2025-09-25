@@ -1,7 +1,7 @@
 import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import { votedTypeLabelMap } from "constants/constants";
-import React, { useEffect, useMemo, useState, type FC } from "react";
+import { useEffect, useMemo, useState, type FC } from "react";
 import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";
 import { truncateMiddle } from "utils/utils";

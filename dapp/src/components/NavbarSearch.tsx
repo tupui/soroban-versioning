@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import Button from "./utils/Button.tsx";
+import Button from "./utils/Button";
 
-import { loadedPublicKey } from "../service/walletService.ts";
-import { toast } from "../utils/utils.ts";
+import { loadedPublicKey } from "../service/walletService";
+import { toast } from "../utils/utils";
 
 interface NavbarSearchProps {
   _onAddProject: () => void;

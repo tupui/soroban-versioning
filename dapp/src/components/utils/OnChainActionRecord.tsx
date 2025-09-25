@@ -29,7 +29,7 @@ const OnChainActionRecord = ({
   useEffect(() => {
     const checkOverflow = () => {
       if (descriptionRef.current) {
-        setIsOverflowing(
+        _setIsOverflowing(
           descriptionRef.current.scrollHeight >
             descriptionRef.current.clientHeight,
         );

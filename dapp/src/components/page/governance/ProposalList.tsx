@@ -1,6 +1,6 @@
 import { getProposalPages, getProposals } from "@service/ReadContractService";
 import Loading from "components/utils/Loading";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ProposalView } from "types/proposal";
 import { modifyProposalToView, toast } from "utils/utils";
 import Pagination from "../../utils/Pagination";
