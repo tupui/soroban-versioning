@@ -165,7 +165,7 @@ impl MembershipTrait for Tansu {
     /// Get all badges for a specific project, organized by badge type.
     ///
     /// Returns a structure containing vectors of member addresses for each badge type
-    /// (Developer, Triage, Community, Verified, Default).
+    /// (Developer, Triage, Community, Verified).
     ///
     /// # Arguments
     /// * `env` - The environment object

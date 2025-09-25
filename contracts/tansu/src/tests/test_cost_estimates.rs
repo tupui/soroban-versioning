@@ -209,6 +209,8 @@ fn test_cost_comprehensive_dao_workflow() {
     // Step 2: Add additional members
     let member1 = Address::generate(&setup.env);
     let member2 = Address::generate(&setup.env);
+    setup.token_stellar.mint(&member1, &(110 * 10_000_000));
+    setup.token_stellar.mint(&member2, &(110 * 10_000_000));
 
     setup
         .contract
