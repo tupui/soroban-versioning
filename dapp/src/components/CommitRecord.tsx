@@ -99,11 +99,6 @@ const CommitRecord: React.FC<CommitRecordProps> = ({
               verified commit
             </span>
           )}
-          {isMaintainer && (
-            <span className="text-xs font-bold leading-3 bg-lime rounded-sm p-0.5">
-              maintainer
-            </span>
-          )}
         </div>
       )}
 
