@@ -381,12 +381,14 @@ impl DaoTrait for Tansu {
             panic_with_error!(&env, &errors::ContractErrors::WrongVoteType);
         }
 
-        if !is_public_vote && let types::Vote::AnonymousVote(vote_choice) = &vote {
-            if vote_choice.commitments.len() != 3 {
-                panic_with_error!(&env, &errors::ContractErrors::BadCommitment)
-            }
-            for commitment in &vote_choice.commitments {
-                G1Affine::from_bytes(commitment);
+        if !is_public_vote {
+            if let types::Vote::AnonymousVote(vote_choice) = &vote {
+                if vote_choice.commitments.len() != 3 {
+                    panic_with_error!(&env, &errors::ContractErrors::BadCommitment)
+                }
+                for commitment in &vote_choice.commitments {
+                    G1Affine::from_bytes(commitment);
+                }
             }
         }
 
