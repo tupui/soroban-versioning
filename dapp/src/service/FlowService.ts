@@ -318,7 +318,7 @@ export async function createProjectFlow({
   const did = client.agent.did();
 
   // Step 2 – Create & sign register transaction
-  onProgress?.(6); // signing step indicator (offset -4 → shows Sign)
+  onProgress?.(7); // signing step indicator (offset -4 → shows Sign)
 
   const publicKey = loadedPublicKey();
   if (!publicKey) throw new Error("Please connect your wallet first");
@@ -339,7 +339,7 @@ export async function createProjectFlow({
   const signedTxXdr = await signAssembledTransaction(tx);
 
   // Step 3 – Upload to IPFS with delegation
-  onProgress?.(7); // uploading step indicator (offset -4 → shows Uploading)
+  onProgress?.(8); // uploading step indicator (offset -4 → shows Uploading)
 
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
@@ -356,7 +356,7 @@ export async function createProjectFlow({
   }
 
   // Step 5 – Send signed transaction
-  onProgress?.(8); // sending step indicator (offset -4 → shows Sending)
+  onProgress?.(9); // sending step indicator (offset -4 → shows Sending)
   await sendSignedTransactionLocal(signedTxXdr);
 
   return true;
@@ -412,7 +412,7 @@ export async function updateConfigFlow({
   const did = client.agent.did();
 
   // sign tx
-  onProgress?.(6); // UI offset -4 → shows "Sign"
+  onProgress?.(7); // UI offset -4 → shows "Sign"
   const signedTxXdr = await createSignedUpdateConfigTransaction(
     maintainers,
     githubRepoUrl,
@@ -420,7 +420,7 @@ export async function updateConfigFlow({
   );
 
   // upload
-  onProgress?.(7); // UI offset -4 → shows "Uploading"
+  onProgress?.(8); // UI offset -4 → shows "Uploading"
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
     type: "project",
@@ -434,7 +434,7 @@ export async function updateConfigFlow({
     );
   }
 
-  onProgress?.(8); // UI offset -4 → shows "Sending"
+  onProgress?.(9); // UI offset -4 → shows "Sending"
   await sendSignedTransaction(signedTxXdr);
   return true;
 }
