@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { VoteResultType, type ProposalView } from "types/proposal";
 import { capitalizeFirstLetter } from "utils/utils";
 import { calculateDateDifference } from "../../../utils/formatTimeFunctions";

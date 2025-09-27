@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
 import ProgressStep from "./ProgressStep";
 import Button from "./Button";
@@ -29,9 +28,7 @@ const FlowProgressModal: React.FC<FlowProgressModalProps> = ({
   onSuccess,
   step,
   setStep,
-  isLoading,
   setIsLoading,
-  isUploading,
   setIsUploading,
   isSuccessful,
   setIsSuccessful,

@@ -136,7 +136,7 @@ export function validateField<T>(
   try {
     schema.parse(value);
     return null;
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return error.errors[0]?.message || "Validation failed";
     }

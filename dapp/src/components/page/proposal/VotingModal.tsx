@@ -2,7 +2,7 @@ import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Title from "components/utils/Title";
 import { voteTypeDescriptionMap, voteTypeLabelMap } from "constants/constants";
-import React, { useState } from "react";
+import { useState } from "react";
 import { VoteType } from "types/proposal";
 import VoteTypeCheckbox from "./VoteTypeCheckbox";
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { navigate } from "astro:transitions/client";
 import JsonView from "react18-json-view";
 import CopyButton from "components/utils/CopyButton";
-import { loadProjectLatestSha } from "../service/StateService.ts";
+import { loadProjectLatestSha } from "../service/StateService";
 
 interface CommitRecordProps {
   /** Main title line – for on-chain rows this is a concise summary */
