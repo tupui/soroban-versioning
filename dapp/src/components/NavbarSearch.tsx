@@ -80,8 +80,29 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
     }
   };
 
+  const performClearNavigation = () => {
+    setIsSearchFocused(false);
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const fromUrl = searchParams.get("from");
+
+    if (fromUrl) {
+      window.location.href = fromUrl;
+    } else if (originalUrl) {
+      window.location.href = originalUrl;
+    } else if (
+      window.location.pathname === HOME_PATH &&
+      window.location.search
+    ) {
+      window.history.pushState({}, "", HOME_PATH);
+    }
+  };
+
   const handleSearch = async () => {
-    if (!searchTerm) return;
+    if (!searchTerm) {
+      performClearNavigation();
+      return;
+    }
 
     // Save current URL if not on home page
     if (window.location.pathname !== HOME_PATH) {
@@ -97,6 +118,10 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
     if (isStellarAddress) {
       // Member search
       if (isOnHomePage) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("search", searchTerm);
+        url.searchParams.set("member", "true");
+        window.history.pushState({}, "", url.toString());
         window.dispatchEvent(
           new CustomEvent("search-member", { detail: searchTerm }),
         );
@@ -106,6 +131,10 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
     } else {
       // Project search
       if (isOnHomePage) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("search", searchTerm);
+        url.searchParams.delete("member");
+        window.history.pushState({}, "", url.toString());
         window.dispatchEvent(
           new CustomEvent("search-projects", { detail: searchTerm }),
         );
@@ -129,21 +158,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
 
   const handleClearSearch = () => {
     setSearchTerm("");
-    setIsSearchFocused(false);
-
-    const searchParams = new URLSearchParams(window.location.search);
-    const fromUrl = searchParams.get("from");
-
-    if (fromUrl) {
-      window.location.href = fromUrl;
-    } else if (originalUrl) {
-      window.location.href = originalUrl;
-    } else if (
-      window.location.pathname === HOME_PATH &&
-      window.location.search
-    ) {
-      window.location.href = HOME_PATH;
-    }
+    performClearNavigation();
   };
 
   // Use client-side state for button title to ensure consistency between renders
