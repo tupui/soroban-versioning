@@ -195,8 +195,7 @@ fn validate_contract(env: &Env, contract: &types::Contract) {
     let contract_executable = contract.address.executable();
 
     if let Some(wasm_hash) = contract.clone().wasm_hash {
-        if let Some(wasm_hash) = contract.clone().wasm_hash
-        && contract_executable != Some(Executable::Wasm(wasm_hash)) {
+        if contract_executable != Some(Executable::Wasm(wasm_hash)) {
             panic_with_error!(&env, &errors::ContractErrors::ContractValidation)
         }
     }

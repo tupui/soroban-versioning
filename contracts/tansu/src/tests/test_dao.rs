@@ -116,39 +116,39 @@ fn proposal_flow() {
         .contract
         .execute(&setup.mando, &id, &proposal_id, &None, &None);
 
-    // // Verify proposal executed event
-    // let mut all_events = setup.env.events().all();
+    // Verify proposal executed event
+    let mut all_events = setup.env.events().all();
     all_events.pop_front();
     all_events.pop_front();
     all_events.pop_front();
-    // assert_eq!(
-    //     all_events,
-    //     vec![
-    //         &setup.env,
-    //         (
-    //             setup.contract_id.clone(),
-    //             (Symbol::new(&setup.env, "proposal_executed"), id.clone()).into_val(&setup.env),
-    //             Map::<Symbol, Val>::from_array(
-    //                 &setup.env,
-    //                 [
-    //                     (
-    //                         Symbol::new(&setup.env, "proposal_id"),
-    //                         proposal_id.into_val(&setup.env)
-    //                     ),
-    //                     (
-    //                         Symbol::new(&setup.env, "status"),
-    //                         String::from_str(&setup.env, "Cancelled").into_val(&setup.env)
-    //                     ),
-    //                     (
-    //                         Symbol::new(&setup.env, "maintainer"),
-    //                         setup.mando.clone().into_val(&setup.env)
-    //                     ),
-    //                 ],
-    //             )
-    //             .into_val(&setup.env),
-    //         ),
-    //     ]
-    // );
+    assert_eq!(
+        all_events,
+        vec![
+            &setup.env,
+            (
+                setup.contract_id.clone(),
+                (Symbol::new(&setup.env, "proposal_executed"), id.clone()).into_val(&setup.env),
+                Map::<Symbol, Val>::from_array(
+                    &setup.env,
+                    [
+                        (
+                            Symbol::new(&setup.env, "proposal_id"),
+                            proposal_id.into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "status"),
+                            String::from_str(&setup.env, "Cancelled").into_val(&setup.env)
+                        ),
+                        (
+                            Symbol::new(&setup.env, "maintainer"),
+                            setup.mando.clone().into_val(&setup.env)
+                        ),
+                    ],
+                )
+                .into_val(&setup.env),
+            ),
+        ]
+    );
 
     assert_eq!(result, ProposalStatus::Cancelled);
 
@@ -748,3 +748,4 @@ fn voter_weight_validation() {
         assert_eq!(public_vote.vote_choice, VoteChoice::Approve);
     }
 }
+

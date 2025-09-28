@@ -17,12 +17,6 @@ pub enum ContractKey {
 }
 
 #[contracttype]
-pub enum ContractKey {
-    DomainContract,     // Address and wasm hash of the SorobanDomain contract
-    CollateralContract, // Collateral asset contract address
-}
-
-#[contracttype]
 pub enum DataKey {
     Member(Address), // Member of the DAO, address
     Paused,          // Contract pause state

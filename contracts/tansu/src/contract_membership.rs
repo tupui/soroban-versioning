@@ -101,12 +101,13 @@ impl MembershipTrait for Tansu {
         // a project
         'member_projects_badges: {
             for i in 0..member_.projects.len() {
-                if member_.projects.get(i).unwrap().project == key {
-                    let mut project_badges = member_.projects.get(i).unwrap().clone();
-                    project_badges.badges = badges.clone();
-                    member_.projects.set(i, project_badges);
-                    break 'member_projects_badges;
-                }
+                if let Some(project_badge) = member_.projects.get(i)
+                    && project_badge.project == key {
+                        let mut project_badges = project_badge.clone();
+                        project_badges.badges = badges.clone();
+                        member_.projects.set(i, project_badges);
+                        break 'member_projects_badges;
+                    }
             }
             let project_badges = types::ProjectBadges {
                 project: key.clone(),
