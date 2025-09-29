@@ -14,6 +14,7 @@ const HOME_PATH = "/";
 const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [originalUrl, setOriginalUrl] = useState("");
   const [isWalletConnected, setIsWalletConnected] = useState(false);
 
@@ -74,6 +75,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
       const urlSearchTerm = searchParams.get("search");
       if (urlSearchTerm) {
         setSearchTerm(urlSearchTerm);
+        setIsSearchVisible(true); // Show search if there's a search term in URL
       }
     } catch {
       // Silent error handling
@@ -161,18 +163,47 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
     performClearNavigation();
   };
 
+  const toggleSearchVisibility = () => {
+    setIsSearchVisible(!isSearchVisible);
+    if (!isSearchVisible) {
+      // Focus the input after a short delay to ensure it's rendered
+      setTimeout(() => {
+        const input = document.querySelector(
+          ".search-input",
+        ) as HTMLInputElement;
+        input?.focus();
+      }, 100);
+    }
+  };
+
   // Use client-side state for button title to ensure consistency between renders
   const buttonTitle = isWalletConnected
     ? "Add Project"
     : "Connect wallet to add project";
 
   return (
-    <div className="flex items-center gap-6 w-full">
-      {/* Mobile: Expandable search that takes full width when focused */}
+    <div className="flex items-center gap-3 md:gap-6 w-full">
+      {/* Mobile: Search icon toggle button */}
+      <button
+        onClick={toggleSearchVisibility}
+        className="md:hidden flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        aria-label="Toggle search"
+        title="Search"
+      >
+        <img
+          src="/icons/search.svg"
+          width={20}
+          height={20}
+          className="icon-search text-gray-400"
+          alt="Search"
+        />
+      </button>
+
+      {/* Search bar - always visible on desktop, toggleable on mobile */}
       <div
         className={`search-container relative transition-all duration-300 ease-in-out ${
-          isSearchFocused || searchTerm ? "w-full" : "flex-1"
-        }`}
+          isSearchVisible ? "flex" : "hidden"
+        } md:flex ${isSearchFocused || searchTerm ? "flex-1" : "flex-1"}`}
       >
         <div className="flex items-center border border-zinc-800 h-10 md:h-12 bg-white rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all duration-300 w-full">
           <div className="flex-shrink-0 pl-4">
@@ -187,7 +218,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
           <input
             type="text"
             placeholder="Search projects or community..."
-            className="w-full h-full font-firacode text-sm md:text-base leading-6 px-3 border-none outline-none bg-transparent placeholder-gray-500"
+            className="search-input w-full h-full font-firacode text-sm md:text-base leading-6 px-3 border-none outline-none bg-transparent placeholder-gray-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={(e) => {
@@ -223,10 +254,28 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
         </div>
       </div>
 
-      {/* Add Project button - always visible on desktop, conditionally hidden on mobile when searching */}
+      {/* Close search button on mobile when search is visible */}
+      {isSearchVisible && (
+        <button
+          onClick={toggleSearchVisibility}
+          className="md:hidden flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          aria-label="Close search"
+          title="Close search"
+        >
+          <img
+            src="/icons/cancel.svg"
+            width={20}
+            height={20}
+            className="icon-cancel"
+            alt="Close"
+          />
+        </button>
+      )}
+
+      {/* Add Project button */}
       <div
-        className={`ml-6 transition-all duration-300 ease-in-out ${
-          isSearchFocused || searchTerm ? "hidden md:block" : "block"
+        className={`transition-all duration-300 ease-in-out ${
+          isSearchVisible ? "hidden md:block" : "block"
         }`}
       >
         <Button
