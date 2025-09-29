@@ -138,7 +138,7 @@ export function validateField<T>(
     return null;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return error.errors[0]?.message || "Validation failed";
+      return error.issues[0]?.message || "Validation failed";
     }
     return "Validation failed";
   }
@@ -151,10 +151,10 @@ export function validateObject<T>(
   try {
     schema.parse(obj);
     return { isValid: true, errors: {} };
-  } catch {
+  } catch (error) {
     if (error instanceof z.ZodError) {
       const errors: Record<string, string> = {};
-      error.errors.forEach((err) => {
+      error.issues.forEach((err) => {
         const path = err.path.join(".");
         errors[path] = err.message;
       });
