@@ -8,7 +8,7 @@ mod domain_contract {
 }
 
 mod outcomes_contract {
-    soroban_sdk::contractimport!(file = "../../target/wasm32v1-none/release/outcomes.wasm");
+    soroban_sdk::contractimport!(file = "../outcomes.wasm");
 }
 
 mod contract_dao;
