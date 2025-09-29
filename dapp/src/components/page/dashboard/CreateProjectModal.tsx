@@ -555,7 +555,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                 <div className="flex flex-col gap-[18px]">
                   {maintainerAddresses.map((address, i) => (
                     <div key={i} className="flex flex-col gap-2 w-full">
-                      <div className="flex gap-[18px]">
+                      <div className="flex flex-col md:flex-row gap-[18px]">
                         <Input
                           className="flex-1"
                           value={address}
