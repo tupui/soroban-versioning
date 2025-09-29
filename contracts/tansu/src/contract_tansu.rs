@@ -80,7 +80,9 @@ impl TansuTrait for Tansu {
         env.storage()
             .instance()
             .get(&types::DataKey::AdminsConfig)
-            .unwrap()
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &crate::errors::ContractErrors::UnexpectedError);
+            })
     }
 
     /// Set the Soroban Domain contract.
@@ -163,6 +165,11 @@ impl TansuTrait for Tansu {
         let approvals = vec![&env, admin.clone()];
         let admins_config =
             new_admins_config.unwrap_or_else(|| Self::get_admins_config(env.clone()));
+
+        // Validate that threshold is reasonable
+        if admins_config.threshold == 0 || admins_config.threshold > admins_config.admins.len() {
+            panic_with_error!(&env, &crate::errors::ContractErrors::UpgradeError);
+        }
 
         let upgrade_proposal = types::UpgradeProposal {
             wasm_hash: new_wasm_hash.clone(),

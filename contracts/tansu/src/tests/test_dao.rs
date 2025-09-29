@@ -748,3 +748,4 @@ fn voter_weight_validation() {
         assert_eq!(public_vote.vote_choice, VoteChoice::Approve);
     }
 }
+
