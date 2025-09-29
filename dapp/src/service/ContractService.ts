@@ -15,6 +15,7 @@ import { handleFreighterError } from "../utils/errorHandler";
 //
 import type { VoteType } from "types/proposal";
 import { signAndSend } from "./TxService";
+import { isLaunchtubeEnabled } from "./LaunchtubeService";
 
 /**
  * Get configured contract client instance (using proven working Tansu instance)
@@ -47,6 +48,11 @@ async function submitTransaction(assembledTx: any): Promise<any> {
   }
 
   try {
+    // Log transaction method for debugging
+    if (isLaunchtubeEnabled()) {
+      console.log("Submitting contract transaction via Launchtube");
+    }
+    
     return await signAndSend(assembledTx);
   } catch (error: any) {
     // Use enhanced error handling for Freighter-specific issues

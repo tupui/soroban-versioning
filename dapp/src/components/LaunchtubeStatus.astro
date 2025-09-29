@@ -1,0 +1,146 @@
+---
+/**
+ * Launchtube Status Component
+ * Shows Launchtube configuration status and remaining credits
+ */
+---
+
+<div id="launchtube-status" class="launchtube-status hidden">
+  <div class="status-indicator">
+    <span class="status-dot"></span>
+    <span class="status-text">Launchtube</span>
+  </div>
+  <div class="credits-info">
+    <span class="credits-label">Credits:</span>
+    <span class="credits-value">--</span>
+  </div>
+</div>
+
+<style>
+  .launchtube-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444; /* Red by default */
+  }
+
+  .status-dot.healthy {
+    background: #10b981; /* Green when healthy */
+  }
+
+  .status-dot.warning {
+    background: #f59e0b; /* Yellow for warnings */
+  }
+
+  .credits-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .credits-label {
+    color: #6b7280;
+  }
+
+  .credits-value {
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .credits-value.low {
+    color: #ef4444;
+  }
+
+  .credits-value.warning {
+    color: #f59e0b;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+</style>
+
+<script>
+  import { isLaunchtubeEnabled, checkLaunchtubeHealth } from '../service/LaunchtubeService';
+
+  async function updateLaunchtubeStatus() {
+    const statusElement = document.getElementById('launchtube-status');
+    if (!statusElement) return;
+
+    // Only show if Launchtube is enabled
+    if (!isLaunchtubeEnabled()) {
+      statusElement.classList.add('hidden');
+      return;
+    }
+
+    statusElement.classList.remove('hidden');
+
+    const statusDot = statusElement.querySelector('.status-dot');
+    const creditsValue = statusElement.querySelector('.credits-value');
+
+    try {
+      const health = await checkLaunchtubeHealth();
+      
+      if (health.isHealthy && health.credits !== undefined) {
+        statusDot?.classList.add('healthy');
+        statusDot?.classList.remove('warning');
+        
+        if (creditsValue) {
+          creditsValue.textContent = health.credits.toLocaleString();
+          creditsValue.classList.remove('low', 'warning');
+          
+          // Color code based on credit levels
+          if (health.credits < 1000) {
+            creditsValue.classList.add('low');
+          } else if (health.credits < 10000) {
+            creditsValue.classList.add('warning');
+          }
+        }
+      } else {
+        statusDot?.classList.remove('healthy');
+        statusDot?.classList.add('warning');
+        
+        if (creditsValue) {
+          creditsValue.textContent = 'Error';
+          creditsValue.classList.add('low');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check Launchtube status:', error);
+      statusDot?.classList.remove('healthy');
+      statusDot?.classList.add('warning');
+      
+      if (creditsValue) {
+        creditsValue.textContent = 'Error';
+        creditsValue.classList.add('low');
+      }
+    }
+  }
+
+  // Update status on page load
+  document.addEventListener('DOMContentLoaded', updateLaunchtubeStatus);
+
+  // Update status periodically (every 5 minutes)
+  setInterval(updateLaunchtubeStatus, 5 * 60 * 1000);
+
+  // Update status when wallet connects/disconnects
+  document.addEventListener('wallet-connected', updateLaunchtubeStatus);
+  document.addEventListener('wallet-disconnected', updateLaunchtubeStatus);
+</script>

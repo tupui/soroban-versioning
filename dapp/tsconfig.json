@@ -1,12 +1,23 @@
 {
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "node",
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
       "@service/*": ["service/*"]
     },
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
-  "extends": "astro/tsconfigs/strictest",
-  "exclude": ["packages"]
+  "exclude": ["packages", "dist", "node_modules"]
 }
