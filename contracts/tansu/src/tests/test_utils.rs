@@ -56,7 +56,7 @@ pub fn create_test_data() -> TestSetup {
     let token_stellar = token::StellarAssetClient::new(&env, &sac.address());
     let grogu = Address::generate(&env);
     let mando = Address::generate(&env);
-    let genesis_amount: i128 = i128::MAX;
+    let genesis_amount: i128 = 1_000_000 * 10_000_000;
     token_stellar.mint(&grogu, &genesis_amount);
     token_stellar.mint(&mando, &genesis_amount);
 
