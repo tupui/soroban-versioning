@@ -141,6 +141,7 @@ pub struct Proposal {
     pub ipfs: String,
     pub vote_data: VoteData,
     pub status: ProposalStatus,
+    pub outcomes_contract: Address,
 }
 
 #[contracttype]
