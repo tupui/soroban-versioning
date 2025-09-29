@@ -3,7 +3,7 @@ import ConnectWallet from "../ConnectWallet.astro";
 import JoinCommunityButton from "../JoinCommunityButton.tsx";
 import NavbarSearch from "../NavbarSearch.tsx";
 
-const { page } = Astro.props;
+
 ---
 
 <header role="banner">
@@ -33,12 +33,12 @@ const { page } = Astro.props;
           </div>
         </div>
 
-        <!-- Search bar - takes remaining space -->
+        <!-- Search bar -->
         <div class="flex-1 flex justify-start ml-3 md:ml-4">
-          <NavbarSearch client:load onAddProject={() => {}} />
+          <NavbarSearch client:load _onAddProject={() => {}} />
         </div>
 
-        <!-- Wallet connect and community button on right -->
+        <!-- Wallet connect + community button -->
         <div class="flex items-center gap-4 md:gap-6 flex-shrink-0">
           <div class="ml-6">
             <ConnectWallet />
@@ -53,7 +53,9 @@ const { page } = Astro.props;
 </header>
 
 <script>
-  // Toggle Join Community button visibility
+  // same symbol in <script> scope
+  const GLOBAL_KEY = Symbol.for("globalListenersInited");
+
   const updateJoinButtonVisibility = () => {
     const publicKey = localStorage.getItem("publicKey");
     const wrapper = document.getElementById("join-community-wrapper");
@@ -62,14 +64,12 @@ const { page } = Astro.props;
     }
   };
 
-  // Initialize global event listeners once
   const initGlobalListeners = () => {
-    if (window.globalListenersInited) return;
-    window.globalListenersInited = true;
+    if ((window as any)[GLOBAL_KEY]) return; // ✅ safe check
+    (window as any)[GLOBAL_KEY] = true;
 
     const createProjectEvent = new CustomEvent("create-project-global");
 
-    // Handle create project modal trigger
     document.addEventListener("show-create-project-modal", () => {
       if (window.location.pathname !== "/") {
         sessionStorage.setItem("openCreateProjectModal", "true");
@@ -79,18 +79,16 @@ const { page } = Astro.props;
       }
     });
 
-    // Wallet connection events
     window.addEventListener("walletConnected", updateJoinButtonVisibility);
     window.addEventListener("walletDisconnected", updateJoinButtonVisibility);
   };
 
-  // Run visibility & listeners setup on page load
   document.addEventListener("astro:page-load", () => {
     updateJoinButtonVisibility();
     initGlobalListeners();
   });
 
-  // Run immediately for initial load
+  // immediate run on first load
   updateJoinButtonVisibility();
   initGlobalListeners();
 </script>
