@@ -55,7 +55,6 @@ import NetworkPicker from "../page/network/NetworkPicker";
 </header>
 
 <script>
-  // same symbol in <script> scope
   const GLOBAL_KEY = Symbol.for("globalListenersInited");
 
   const updateJoinButtonVisibility = () => {
@@ -67,7 +66,7 @@ import NetworkPicker from "../page/network/NetworkPicker";
   };
 
   const initGlobalListeners = () => {
-    if ((window as any)[GLOBAL_KEY]) return; // ✅ safe check
+    if ((window as any)[GLOBAL_KEY]) return;
     (window as any)[GLOBAL_KEY] = true;
 
     const createProjectEvent = new CustomEvent("create-project-global");

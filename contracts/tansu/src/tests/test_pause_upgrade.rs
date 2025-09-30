@@ -2,7 +2,9 @@ use super::test_utils::create_test_data;
 use crate::errors::ContractErrors;
 use crate::{domain_contract, types};
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
-use soroban_sdk::{Address, BytesN, Executable, IntoVal, Map, String, Symbol, Val, bytesn, vec};
+use soroban_sdk::{
+    Address, Bytes, BytesN, Executable, IntoVal, Map, String, Symbol, Val, bytesn, vec,
+};
 
 #[test]
 fn test_pause_unpause() {
@@ -463,4 +465,52 @@ fn test_domain_contract_update() {
     //     .get(&types::ContractKey::DomainContract)
     //     .unwrap();
     // assert_eq!(retrieved_domain, new_domain);
+}
+
+#[test]
+fn test_upgrade_invalid_threshold() {
+    let setup = create_test_data();
+
+    // Zero threshold is invalid
+    let invalid_config = types::AdminsConfig {
+        threshold: 0,
+        admins: vec![&setup.env, setup.contract_admin.clone()],
+    };
+
+    // Compute a dummy wasm hash
+    let wasm_bytes = Bytes::from_slice(&setup.env, b"new_wasm");
+    let new_wasm_hash: BytesN<32> = setup.env.crypto().keccak256(&wasm_bytes).into();
+
+    // Proposing upgrade with invalid config should fail
+    let err = setup
+        .contract
+        .try_propose_upgrade(&setup.contract_admin, &new_wasm_hash, &Some(invalid_config))
+        .unwrap_err()
+        .unwrap();
+
+    assert_eq!(err, ContractErrors::UpgradeError.into());
+}
+
+#[test]
+fn test_upgrade_threshold_exceeds_admins() {
+    let setup = create_test_data();
+
+    // Threshold greater than admin count is invalid
+    let invalid_config = types::AdminsConfig {
+        threshold: 3, // More than the single admin present
+        admins: vec![&setup.env, setup.contract_admin.clone()],
+    };
+
+    // Compute a dummy wasm hash
+    let wasm_bytes = Bytes::from_slice(&setup.env, b"new_wasm");
+    let new_wasm_hash: BytesN<32> = setup.env.crypto().keccak256(&wasm_bytes).into();
+
+    // Proposing upgrade with invalid threshold should fail
+    let err = setup
+        .contract
+        .try_propose_upgrade(&setup.contract_admin, &new_wasm_hash, &Some(invalid_config))
+        .unwrap_err()
+        .unwrap();
+
+    assert_eq!(err, ContractErrors::UpgradeError.into());
 }

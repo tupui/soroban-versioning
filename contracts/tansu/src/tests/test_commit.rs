@@ -56,3 +56,72 @@ fn commit_unregistered_maintainer_error() {
         .unwrap();
     assert_eq!(err, ContractErrors::UnauthorizedSigner.into());
 }
+
+#[test]
+fn test_anonymous_vote_commitment_validation() {
+    let setup = create_test_data();
+    let id = init_contract(&setup);
+
+    // Setup anonymous voting first
+    setup.contract.anonymous_voting_setup(
+        &setup.grogu,
+        &id,
+        &String::from_str(&setup.env, "test_public_key"),
+    );
+
+    // Test mismatched votes and seeds length
+    let result = setup.contract.try_build_commitments_from_votes(
+        &id,
+        &vec![&setup.env, 1u128, 2u128], // 2 votes
+        &vec![&setup.env, 1u128],        // 1 seed - mismatch!
+    );
+
+    assert_eq!(
+        result,
+        Err(Ok(soroban_sdk::Error::from_contract_error(
+            ContractErrors::TallySeedError as u32
+        )))
+    );
+}
+
+/// Test malformed inputs for build_commitments_from_votes with mismatched lengths
+#[test]
+fn test_malformed_commitments_mismatched_lengths() {
+    let setup = create_test_data();
+    let id = init_contract(&setup);
+
+    // Setup anonymous voting
+    setup.contract.anonymous_voting_setup(
+        &setup.grogu,
+        &id,
+        &String::from_str(&setup.env, "test_public_key"),
+    );
+
+    // Test mismatched votes and seeds length - votes longer
+    let result = setup.contract.try_build_commitments_from_votes(
+        &id,
+        &vec![&setup.env, 1u128, 2u128, 3u128, 4u128], // 4 votes
+        &vec![&setup.env, 1u128, 2u128, 3u128],        // 3 seeds - mismatch!
+    );
+
+    assert_eq!(
+        result,
+        Err(Ok(soroban_sdk::Error::from_contract_error(
+            ContractErrors::TallySeedError as u32
+        )))
+    );
+
+    // Test mismatched votes and seeds length - seeds longer
+    let result2 = setup.contract.try_build_commitments_from_votes(
+        &id,
+        &vec![&setup.env, 1u128, 2u128],        // 2 votes
+        &vec![&setup.env, 1u128, 2u128, 3u128], // 3 seeds - mismatch!
+    );
+
+    assert_eq!(
+        result2,
+        Err(Ok(soroban_sdk::Error::from_contract_error(
+            ContractErrors::TallySeedError as u32
+        )))
+    );
+}
