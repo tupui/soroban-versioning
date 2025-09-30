@@ -246,7 +246,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
           <Button
             type="primary"
             order="secondary"
-            className="h-8 px-3 whitespace-nowrap transition-all duration-200 flex items-center justify-center text-xs font-medium"
+            className="ml-auto h-8 px-3 whitespace-nowrap transition-all duration-200 flex items-center justify-center text-xs font-medium"
             onClick={handleAddProject}
             title={buttonTitle}
             size="sm"
