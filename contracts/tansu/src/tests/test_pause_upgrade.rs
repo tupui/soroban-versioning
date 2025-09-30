@@ -2,7 +2,9 @@ use super::test_utils::create_test_data;
 use crate::errors::ContractErrors;
 use crate::{domain_contract, types};
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
-use soroban_sdk::{Address, Bytes, BytesN, Executable, IntoVal, Map, String, Symbol, Val, bytesn, vec};
+use soroban_sdk::{
+    Address, Bytes, BytesN, Executable, IntoVal, Map, String, Symbol, Val, bytesn, vec,
+};
 
 #[test]
 fn test_pause_unpause() {
