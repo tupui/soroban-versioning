@@ -47,7 +47,7 @@ const CreateProposalModal = () => {
     return d;
   });
   const [proposalId, setProposalId] = useState<number | null>(null);
-  const [ipfsLink, setIpfsLink] = useState("");
+  const [_ipfsLink, setIpfsLink] = useState("");
   const [isAnonymousVoting, setIsAnonymousVoting] = useState(false);
   const [preparedFiles, setPreparedFiles] = useState<File[] | null>(null);
   const [generatedKeys, setGeneratedKeys] = useState<{
