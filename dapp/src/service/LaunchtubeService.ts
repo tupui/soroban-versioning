@@ -5,7 +5,7 @@
 import { retryAsync } from "../utils/retry";
 import { parseContractError } from "../utils/contractErrors";
 
-const LAUNCHTUBE_URL = "https://testnet.launchtube.xyz";
+const LAUNCHTUBE_URL = import.meta.env.LAUNCHTUBE_URL || "https://launchtube.xyz";
 
 /**
  * Check if Launchtube is enabled and configured
