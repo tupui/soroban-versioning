@@ -73,6 +73,18 @@ events_test:
 local-stack:  ## local stack
 	docker compose up
 
+# --------- Contracts snapshot --------- #
+
+snapshot:  ## Create contract snapshots for tests (Soroban Domains, Reflector)
+	  # reflector
+	  # soroban domains
+	  # xlm
+	stellar snapshot create \
+		--address CAFJZQWSED6YAWZU3GWRTOCNPPCGBN32L7QV43XX5LZLFTK6JLN34DLN \
+		--address CATRNPHYKNXAPNLHEYH55REB6YSAJLGCPA4YM6L3WUKSZOPI77M2UMKI \
+		--address CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA \
+		--output json --out network_snapshots/sorobandomains.json --network mainnet
+
 # --------- CONTRACT BUILD/TEST/DEPLOY --------- #
 
 contract_build:

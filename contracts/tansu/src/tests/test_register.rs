@@ -8,7 +8,7 @@ fn register_project() {
     let setup = create_test_data();
     let id = init_contract(&setup);
     let project = setup.contract.get_project(&id);
-    assert_eq!(project.name, String::from_str(&setup.env, "tansu"));
+    assert_eq!(project.name, String::from_str(&setup.env, "tansutest"));
 }
 
 #[test]
