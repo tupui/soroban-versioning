@@ -3,25 +3,86 @@ import { parseContractError } from "../utils/contractErrors";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { toast } from "utils/utils";
 import { loadedPublicKey } from "./walletService";
-import { isLaunchtubeEnabled, submitViaLaunchtube } from "./LaunchtubeService";
+import { isLaunchtubeEnabled, sendViaLaunchtube } from "./LaunchtubeService";
 
 /**
- * Send a signed transaction (Soroban) and decode typical return values.
- * - Uses Launchtube if enabled and configured
+ * Process the response from a transaction submission (Launchtube or soroban-rpc)
+ * - Handles errors and attempts to decode return values
+ * - If PENDING, polls until SUCCESS/FAILED or timeout
+ */
+export async function processTxResponse(response: any, server?: any): Promise<any> {
+  // Handle Launchtube errors
+  if (response.error) {
+    const errorStr = JSON.stringify(response.error);
+    const match = errorStr.match(/Error\(Contract, #(\d+)\)/);
+    if (match) throw new Error(parseContractError({ message: errorStr } as any));
+    throw new Error(`Transaction failed: ${errorStr}`);
+  }
+
+  // Handle RPC ERROR
+  if (response.status === "ERROR") {
+    const errorStr = JSON.stringify(response.errorResult);
+    const match = errorStr.match(/Error\(Contract, #(\d+)\)/);
+    if (match) throw new Error(parseContractError({ message: errorStr } as any));
+    throw new Error(`Transaction failed: ${errorStr}`);
+  }
+
+  if (response.status === "SUCCESS" || response.returnValue !== undefined) {
+    try {
+      const { xdr, scValToNative } = StellarSdk;
+
+      if (typeof response.returnValue === "number" || typeof response.returnValue === "boolean") {
+        return response.returnValue;
+      }
+
+      let decoded: any;
+      if (typeof response.returnValue === "string") {
+        const scVal = xdr.ScVal.fromXDR(response.returnValue, "base64");
+        decoded = scValToNative(scVal);
+      } else if (response.returnValue) {
+        decoded = scValToNative(response.returnValue);
+      }
+
+      if (typeof decoded === "bigint") return Number(decoded);
+      if (typeof decoded === "number") return decoded;
+      if (typeof decoded === "boolean") return decoded;
+
+      const coerced = Number(decoded);
+      return isNaN(coerced) ? decoded : coerced;
+    } catch {
+      return true;
+    }
+  }
+
+  if (response.status === "PENDING" && server) {
+    let getResponse = await server.getTransaction(response.hash);
+    let retries = 0;
+    while (getResponse.status === "NOT_FOUND" && retries < 30) {
+      await new Promise((r) => setTimeout(r, 1000));
+      getResponse = await server.getTransaction(response.hash);
+      retries++;
+    }
+    return processTxResponse(getResponse, server);
+  }
+
+  // Handle RPC error FAILED 
+  if (response.status === "FAILED") {
+    const errorStr = JSON.stringify(response);
+    const match = errorStr.match(/Error\(Contract, #(\d+)\)/);
+    if (match) throw new Error(parseContractError({ message: errorStr } as any));
+    throw new Error(`Transaction failed with status: FAILED`);
+  }
+
+  return response;
+}
+
+/** Send a signed transaction (Soroban) via soroban-rpc
  * - Accepts base64 XDR directly (soroban-rpc supports it)
  * - Falls back to classic Transaction envelope when necessary
  * - Waits for PENDING → SUCCESS/FAILED and attempts returnValue decoding
  */
-export async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
-  // Try Launchtube first if enabled
-  if (isLaunchtubeEnabled()) {
-    try {
-      return await submitViaLaunchtube(signedTxXdr);
-    } catch (error: any) {
-      console.warn("Launchtube failed, falling back to RPC:", error.message);
-    }
-  }
-  const { Transaction, rpc } = await import("@stellar/stellar-sdk");
+export async function sendViaRpc(signedTxXdr: string): Promise<any> {
+  const { Transaction, rpc } = StellarSdk;
   const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
 
   let sendResponse: any;
@@ -37,97 +98,32 @@ export async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
     sendResponse = await retryAsync(() => server.sendTransaction(transaction));
   }
 
-  if (sendResponse.status === "ERROR") {
-    const errorResultStr = JSON.stringify(sendResponse.errorResult);
-    const contractErrorMatch = errorResultStr.match(
-      /Error\(Contract, #(\d+)\)/,
-    );
-    if (contractErrorMatch) {
-      throw new Error(parseContractError({ message: errorResultStr } as any));
+  return await processTxResponse(sendResponse, server);
+}
+
+/**
+ * Send a signed transaction (Soroban) and decode typical return values.
+ * - Uses Launchtube if enabled and configured
+ * - Accepts base64 XDR directly (soroban-rpc supports it)
+ * - Falls back to classic Transaction envelope when necessary
+ * - Waits for PENDING → SUCCESS/FAILED and attempts returnValue decoding
+ */
+export async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
+  let sendResponse: any;
+
+  // Try Launchtube first if enabled, otherwise fall back to RPC
+  if (isLaunchtubeEnabled()) {
+    try {
+      sendResponse = await sendViaLaunchtube(signedTxXdr);
+    } catch (error: any) {
+      console.warn("Launchtube failed, falling back to RPC:", error.message);
+      sendResponse = await sendViaRpc(signedTxXdr);
     }
-    throw new Error(`Transaction failed: ${errorResultStr}`);
+  } else {
+    sendResponse = await sendViaRpc(signedTxXdr);
   }
 
-  if (sendResponse.status === "SUCCESS") {
-    if (sendResponse.returnValue !== undefined) {
-      if (
-        typeof sendResponse.returnValue === "number" ||
-        typeof sendResponse.returnValue === "boolean"
-      ) {
-        return sendResponse.returnValue;
-      }
-      try {
-        const { xdr, scValToNative } = await import("@stellar/stellar-sdk");
-        let decoded: any;
-        if (typeof sendResponse.returnValue === "string") {
-          const scVal = xdr.ScVal.fromXDR(sendResponse.returnValue, "base64");
-          decoded = scValToNative(scVal);
-        } else {
-          decoded = scValToNative(sendResponse.returnValue);
-        }
-        if (typeof decoded === "bigint") return Number(decoded);
-        if (typeof decoded === "number") return decoded;
-        if (typeof decoded === "boolean") return decoded;
-        const coerced = Number(decoded);
-        return isNaN(coerced) ? decoded : coerced;
-      } catch (_) {
-        return true;
-      }
-    }
-    return true;
-  }
-
-  if (sendResponse.status === "PENDING") {
-    let getResponse = await server.getTransaction(sendResponse.hash);
-    let retries = 0;
-    const maxRetries = 30;
-
-    while (getResponse.status === "NOT_FOUND" && retries < maxRetries) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      getResponse = await server.getTransaction(sendResponse.hash);
-      retries++;
-    }
-
-    if (getResponse.status === "SUCCESS") {
-      if (getResponse.returnValue !== undefined) {
-        if (
-          typeof getResponse.returnValue === "number" ||
-          typeof getResponse.returnValue === "boolean"
-        ) {
-          return getResponse.returnValue;
-        }
-        try {
-          const { xdr, scValToNative } = await import("@stellar/stellar-sdk");
-          let decoded: any;
-          if (typeof getResponse.returnValue === "string") {
-            const scVal = xdr.ScVal.fromXDR(getResponse.returnValue, "base64");
-            decoded = scValToNative(scVal);
-          } else {
-            decoded = scValToNative(getResponse.returnValue);
-          }
-          if (typeof decoded === "bigint") return Number(decoded);
-          if (typeof decoded === "number") return decoded;
-          if (typeof decoded === "boolean") return decoded;
-          const coerced = Number(decoded);
-          return isNaN(coerced) ? decoded : coerced;
-        } catch (_) {
-          return true;
-        }
-      }
-      return true;
-    } else if (getResponse.status === "FAILED") {
-      const resultStr = JSON.stringify(getResponse);
-      const contractErrorMatch = resultStr.match(/Error\(Contract, #(\d+)\)/);
-      if (contractErrorMatch) {
-        throw new Error(parseContractError({ message: resultStr } as any));
-      }
-      throw new Error(`Transaction failed with status: ${getResponse.status}`);
-    } else {
-      throw new Error(`Transaction failed with status: ${getResponse.status}`);
-    }
-  }
-
-  return sendResponse;
+  return await processTxResponse(sendResponse);
 }
 
 /**
