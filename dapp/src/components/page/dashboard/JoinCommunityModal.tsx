@@ -26,6 +26,8 @@ const JoinCommunityModal: FC<{
   const [profileImage, setProfileImage] = useState<ProfileImageFile | null>(
     null,
   );
+  // const [isDropped,setIsDropped]=useState(false);
+  const [isDragging,setIsDragging]=useState(false)
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [updateSuccessful, setUpdateSuccessful] = useState(false);
@@ -47,6 +49,7 @@ const JoinCommunityModal: FC<{
     // Reload page if joining was successful to show fresh data
     if (updateSuccessful) {
       window.location.reload();
+      
     }
 
     // Reset all states when closing
@@ -80,16 +83,13 @@ const JoinCommunityModal: FC<{
       setProfileImage({ localUrl: url, source: file });
     }
   };
-
-  const handleDragOver=(e:React.DragEvent)=>{
+    const handleDragOver=(e:React.DragEvent)=>{
      e.preventDefault();
-     e.stopPropagation();
-  }
-  const handleDrop=(e:React.DragEvent)=>{
-    e.preventDefault();
-    e.preventDefault();
+     setIsDragging(true);
+     }
+    const handleDrop=(e:React.DragEvent)=>{
+      e.preventDefault();
 
-  
     setImageError(null);
 
     const file = e.dataTransfer.files?.[0];
@@ -311,7 +311,8 @@ const JoinCommunityModal: FC<{
                   <label
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
-                    className={`flex flex-col items-center justify-center w-full h-32 border-2 ${imageError ? "border-red-500" : "border-dashed border-[#978AA1]"} cursor-pointer bg-zinc-50 hover:bg-zinc-100`}
+                    onDragLeave={()=>setIsDragging(false)}
+                    className={`flex flex-col items-center justify-center w-full h-32 border-2 ${imageError ? "border-red-500" : "border-dashed border-[#978AA1]"} ${ isDragging ? "bg-zinc-500":"bg-white"} cursor-pointer bg-zinc-50 hover:bg-zinc-400`}
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <svg
