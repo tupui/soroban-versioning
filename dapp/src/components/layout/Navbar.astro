@@ -2,8 +2,6 @@
 import ConnectWallet from "../ConnectWallet.astro";
 import JoinCommunityButton from "../JoinCommunityButton.tsx";
 import NavbarSearch from "../NavbarSearch.tsx";
-
-
 ---
 
 <header role="banner">
@@ -53,7 +51,6 @@ import NavbarSearch from "../NavbarSearch.tsx";
 </header>
 
 <script>
-  // same symbol in <script> scope
   const GLOBAL_KEY = Symbol.for("globalListenersInited");
 
   const updateJoinButtonVisibility = () => {
@@ -65,7 +62,7 @@ import NavbarSearch from "../NavbarSearch.tsx";
   };
 
   const initGlobalListeners = () => {
-    if ((window as any)[GLOBAL_KEY]) return; // ✅ safe check
+    if ((window as any)[GLOBAL_KEY]) return;
     (window as any)[GLOBAL_KEY] = true;
 
     const createProjectEvent = new CustomEvent("create-project-global");
