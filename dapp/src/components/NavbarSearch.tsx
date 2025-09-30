@@ -39,13 +39,11 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
 
   // Save the original URL when the component mounts
   const saveOriginalUrl = () => {
-    // If not on homepage, save current path with query params
     if (window.location.pathname !== HOME_PATH) {
       setOriginalUrl(window.location.pathname + window.location.search);
       return;
     }
 
-    // Check if we have a referrer from the same origin
     const referrer = document.referrer;
     if (
       referrer &&
@@ -60,7 +58,6 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
       }
     }
 
-    // Check for 'from' parameter in URL
     const searchParams = new URLSearchParams(window.location.search);
     const fromUrl = searchParams.get("from");
     if (fromUrl) {
@@ -105,7 +102,6 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
       return;
     }
 
-    // Save current URL if not on home page
     if (window.location.pathname !== HOME_PATH) {
       setOriginalUrl(window.location.pathname + window.location.search);
     }
@@ -117,7 +113,6 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
     const currentFullUrl = window.location.pathname + window.location.search;
 
     if (isStellarAddress) {
-      // Member search
       if (isOnHomePage) {
         const url = new URL(window.location.href);
         url.searchParams.set("search", searchTerm);
@@ -127,10 +122,11 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
           new CustomEvent("search-member", { detail: searchTerm }),
         );
       } else {
-        window.location.href = `/?search=${encodeURIComponent(searchTerm)}&member=true&from=${encodeURIComponent(currentFullUrl)}`;
+        window.location.href = `/?search=${encodeURIComponent(
+          searchTerm,
+        )}&member=true&from=${encodeURIComponent(currentFullUrl)}`;
       }
     } else {
-      // Project search
       if (isOnHomePage) {
         const url = new URL(window.location.href);
         url.searchParams.set("search", searchTerm);
@@ -140,7 +136,9 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
           new CustomEvent("search-projects", { detail: searchTerm }),
         );
       } else {
-        window.location.href = `/?search=${encodeURIComponent(searchTerm)}&from=${encodeURIComponent(currentFullUrl)}`;
+        window.location.href = `/?search=${encodeURIComponent(
+          searchTerm,
+        )}&from=${encodeURIComponent(currentFullUrl)}`;
       }
     }
   };
@@ -166,7 +164,6 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
     setIsSearchVisible(!isSearchVisible);
   };
 
-  // Use client-side state for button title to ensure consistency between renders
   const buttonTitle = isWalletConnected
     ? "Add Project"
     : "Connect wallet to add project";
@@ -191,7 +188,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
           />
         </button>
 
-        {/* Mobile: Search bar (toggleable, no search icon inside) */}
+        {/* Mobile: Search bar */}
         {isSearchVisible && (
           <>
             <div className="search-container relative flex-1">
@@ -205,7 +202,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
                 <input
                   type="text"
                   placeholder="Search projects or community..."
-                  className="search-input w-full h-full font-firacode text-sm leading-6 px-4 border-none outline-none bg-transparent placeholder-gray-500"
+                  className="search-input min-w-[70px] w-full h-full font-firacode text-sm leading-6 px-4 border-none outline-none bg-transparent placeholder-gray-500"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => {
@@ -223,13 +220,13 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
               </div>
             </div>
 
-            {/* Close + Clear search button on mobile */}
+            {/* Close search */}
             <button
               onClick={() => {
-                setSearchTerm(""); // clear input
-                toggleSearchVisibility(); // close search
+                setSearchTerm("");
+                toggleSearchVisibility();
               }}
-              className="flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="hidden md:flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Close and clear search"
               title="Close and clear search"
             >
@@ -244,8 +241,8 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
           </>
         )}
 
-        {/* Mobile: Add Project button (hidden when search is visible) */}
-        {!isSearchVisible && (
+        {/* Mobile: Add Project button (ONLY if connected) */}
+        {!isSearchVisible && isWalletConnected && (
           <Button
             type="primary"
             order="secondary"
@@ -261,7 +258,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
 
       {/* DESKTOP VERSION */}
       <div className="hidden md:flex items-center gap-6 w-full">
-        {/* Desktop: Search bar (always visible, with search icon) */}
+        {/* Desktop: Search bar */}
         <div className="search-container relative flex-1">
           <div className="flex items-center border border-zinc-800 h-12 bg-white rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all duration-300 w-full">
             <div className="flex-shrink-0 pl-4">
@@ -311,7 +308,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
           </div>
         </div>
 
-        {/* Desktop: Add Project button (always visible) */}
+        {/* Desktop: Add Project button (always visible, toast guards) */}
         <Button
           type="primary"
           order="secondary"
