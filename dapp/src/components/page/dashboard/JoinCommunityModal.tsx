@@ -81,6 +81,36 @@ const JoinCommunityModal: FC<{
     }
   };
 
+  const handleDragOver=(e:React.DragEvent)=>{
+     e.preventDefault();
+     e.stopPropagation();
+  }
+  const handleDrop=(e:React.DragEvent)=>{
+    e.preventDefault();
+    e.preventDefault();
+
+  
+    setImageError(null);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      
+      const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+      if (!allowedTypes.includes(file.type)) {
+        setImageError("Please upload a PNG or JPG image");
+        return;
+      }
+  
+      if (file.size > 5 * 1024 * 1024) {
+        setImageError("Please upload an image smaller than 5MB");
+        return;
+      }
+  
+      const url = URL.createObjectURL(file);
+      setProfileImage({ localUrl: url, source: file });
+    }
+  }
+
   const handleRemoveImage = () => {
     if (profileImage) {
       URL.revokeObjectURL(profileImage.localUrl);
@@ -279,6 +309,8 @@ const JoinCommunityModal: FC<{
                   </div>
                 ) : (
                   <label
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
                     className={`flex flex-col items-center justify-center w-full h-32 border-2 ${imageError ? "border-red-500" : "border-dashed border-[#978AA1]"} cursor-pointer bg-zinc-50 hover:bg-zinc-100`}
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
