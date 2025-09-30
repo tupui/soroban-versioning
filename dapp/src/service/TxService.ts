@@ -10,12 +10,16 @@ import { isLaunchtubeEnabled, sendViaLaunchtube } from "./LaunchtubeService";
  * - Handles errors and attempts to decode return values
  * - If PENDING, polls until SUCCESS/FAILED or timeout
  */
-export async function processTxResponse(response: any, server?: any): Promise<any> {
+export async function processTxResponse(
+  response: any,
+  server?: any,
+): Promise<any> {
   // Handle Launchtube errors
   if (response.error) {
     const errorStr = JSON.stringify(response.error);
     const match = errorStr.match(/Error\(Contract, #(\d+)\)/);
-    if (match) throw new Error(parseContractError({ message: errorStr } as any));
+    if (match)
+      throw new Error(parseContractError({ message: errorStr } as any));
     throw new Error(`Transaction failed: ${errorStr}`);
   }
 
@@ -23,7 +27,8 @@ export async function processTxResponse(response: any, server?: any): Promise<an
   if (response.status === "ERROR") {
     const errorStr = JSON.stringify(response.errorResult);
     const match = errorStr.match(/Error\(Contract, #(\d+)\)/);
-    if (match) throw new Error(parseContractError({ message: errorStr } as any));
+    if (match)
+      throw new Error(parseContractError({ message: errorStr } as any));
     throw new Error(`Transaction failed: ${errorStr}`);
   }
 
@@ -31,7 +36,10 @@ export async function processTxResponse(response: any, server?: any): Promise<an
     try {
       const { xdr, scValToNative } = StellarSdk;
 
-      if (typeof response.returnValue === "number" || typeof response.returnValue === "boolean") {
+      if (
+        typeof response.returnValue === "number" ||
+        typeof response.returnValue === "boolean"
+      ) {
         return response.returnValue;
       }
 
@@ -65,11 +73,12 @@ export async function processTxResponse(response: any, server?: any): Promise<an
     return processTxResponse(getResponse, server);
   }
 
-  // Handle RPC error FAILED 
+  // Handle RPC error FAILED
   if (response.status === "FAILED") {
     const errorStr = JSON.stringify(response);
     const match = errorStr.match(/Error\(Contract, #(\d+)\)/);
-    if (match) throw new Error(parseContractError({ message: errorStr } as any));
+    if (match)
+      throw new Error(parseContractError({ message: errorStr } as any));
     throw new Error(`Transaction failed with status: FAILED`);
   }
 

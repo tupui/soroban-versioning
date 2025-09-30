@@ -4,7 +4,8 @@
 
 import { retryAsync } from "../utils/retry";
 
-const LAUNCHTUBE_URL = import.meta.env.LAUNCHTUBE_URL || "https://testnet.launchtube.xyz";
+const LAUNCHTUBE_URL =
+  import.meta.env.LAUNCHTUBE_URL || "https://testnet.launchtube.xyz";
 
 /**
  * Check if Launchtube is enabled and configured
