@@ -630,6 +630,14 @@ fn proposal_revoke() {
             .contract
             .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true);
 
+    let kuiil = Address::generate(&setup.env);
+    let err = setup
+        .contract
+        .try_revoke_proposal(&kuiil, &id, &proposal_id)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(err, ContractErrors::UnauthorizedSigner.into());
+
     setup
         .contract
         .revoke_proposal(&setup.mando, &id, &proposal_id);
@@ -665,7 +673,18 @@ fn proposal_revoke() {
     );
 
     let proposal = setup.contract.get_proposal(&id, &proposal_id);
+    assert_eq!(proposal.title, String::from_str(&setup.env, "REDACTED"));
+    assert_eq!(proposal.ipfs, String::from_str(&setup.env, "NONE"));
     assert_eq!(proposal.status, ProposalStatus::Malicious);
+
+    // already revoked and also try to call as an admin should go through the
+    // auth part and fail later
+    let err = setup
+        .contract
+        .try_revoke_proposal(&setup.contract_admin, &id, &proposal_id)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(err, ContractErrors::ProposalActive.into());
 }
 
 #[test]
@@ -748,4 +767,3 @@ fn voter_weight_validation() {
         assert_eq!(public_vote.vote_choice, VoteChoice::Approve);
     }
 }
-

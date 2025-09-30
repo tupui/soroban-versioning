@@ -114,7 +114,7 @@ fn test_malformed_commitments_mismatched_lengths() {
     // Test mismatched votes and seeds length - seeds longer
     let result2 = setup.contract.try_build_commitments_from_votes(
         &id,
-        &vec![&setup.env, 1u128, 2u128], // 2 votes
+        &vec![&setup.env, 1u128, 2u128],        // 2 votes
         &vec![&setup.env, 1u128, 2u128, 3u128], // 3 seeds - mismatch!
     );
 
