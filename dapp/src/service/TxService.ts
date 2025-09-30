@@ -3,14 +3,24 @@ import { parseContractError } from "../utils/contractErrors";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { toast } from "utils/utils";
 import { loadedPublicKey } from "./walletService";
+import { isLaunchtubeEnabled, submitViaLaunchtube } from "./LaunchtubeService";
 
 /**
  * Send a signed transaction (Soroban) and decode typical return values.
+ * - Uses Launchtube if enabled and configured
  * - Accepts base64 XDR directly (soroban-rpc supports it)
  * - Falls back to classic Transaction envelope when necessary
  * - Waits for PENDING → SUCCESS/FAILED and attempts returnValue decoding
  */
 export async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
+  // Try Launchtube first if enabled
+  if (isLaunchtubeEnabled()) {
+    try {
+      return await submitViaLaunchtube(signedTxXdr);
+    } catch (error: any) {
+      console.warn("Launchtube failed, falling back to RPC:", error.message);
+    }
+  }
   const { Transaction, rpc } = await import("@stellar/stellar-sdk");
   const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
 
