@@ -5,8 +5,9 @@
     "paths": {
       "@service/*": ["service/*"]
     },
+    "noEmit": true,
     "allowImportingTsExtensions": true
   },
-  "extends": "astro/tsconfigs/strictest",
+  "extends": "astro/tsconfigs/strict",
   "exclude": ["packages"]
 }

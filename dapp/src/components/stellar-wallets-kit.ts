@@ -4,12 +4,18 @@ import {
   StellarWalletsKit,
 } from "@creit.tech/stellar-wallets-kit";
 import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
+import { getNetworkConfig } from "../utils/networks";
 
-const kit: StellarWalletsKit = new StellarWalletsKit({
-  modules: [...allowAllModules(), new LedgerModule()],
-  // @ts-ignore
-  network: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-  selectedWalletId: FREIGHTER_ID,
-});
+// Create wallet kit based on current network selection
+function createWalletKit() {
+  const config = getNetworkConfig();
+  
+  return new StellarWalletsKit({
+    modules: [...allowAllModules(), new LedgerModule()],
+    // @ts-ignore
+    network: config.passphrase,
+    selectedWalletId: FREIGHTER_ID,
+  });
+}
 
-export { kit };
+export const kit = createWalletKit();

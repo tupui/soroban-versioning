@@ -12,7 +12,9 @@ import { loadedPublicKey } from "./walletService";
  */
 export async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
   const { Transaction, rpc } = await import("@stellar/stellar-sdk");
-  const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
+  const { getNetworkConfig } = await import("../utils/networks");
+  const config = getNetworkConfig();
+  const server = new rpc.Server(config.rpc);
 
   let sendResponse: any;
   try {
@@ -20,10 +22,7 @@ export async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
       (server as any).sendTransaction(signedTxXdr),
     );
   } catch (_error) {
-    const transaction = new Transaction(
-      signedTxXdr,
-      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-    );
+    const transaction = new Transaction(signedTxXdr, config.passphrase);
     sendResponse = await retryAsync(() => server.sendTransaction(transaction));
   }
 
@@ -132,7 +131,9 @@ export async function sendXLM(
 ): Promise<boolean> {
   const senderPublicKey = loadedPublicKey();
 
-  const tansuAddress = import.meta.env.PUBLIC_TANSU_OWNER_ID;
+  const { getNetworkConfig } = await import("../utils/networks");
+  const config = getNetworkConfig();
+  const tansuAddress = "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2"; // From tansu.toml
 
   if (!senderPublicKey) {
     // This is a user action request, not an unexpected error
@@ -142,7 +143,7 @@ export async function sendXLM(
 
   try {
     // Fetch the sender's account details from Horizon (sequence number)
-    const horizonUrl = import.meta.env.PUBLIC_HORIZON_URL;
+    const horizonUrl = config.horizon;
 
     const accountResp = await fetch(
       `${horizonUrl}/accounts/${senderPublicKey}`,
@@ -160,7 +161,7 @@ export async function sendXLM(
     // Create the transaction
     const transactionBuilder = new StellarSdk.TransactionBuilder(account, {
       fee: StellarSdk.BASE_FEE,
-      networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+      networkPassphrase: config.passphrase,
     })
       .addOperation(
         StellarSdk.Operation.payment({
@@ -194,7 +195,7 @@ export async function sendXLM(
     // since sendSignedTransaction is designed for Soroban transactions
     const signedTransaction = new StellarSdk.Transaction(
       signedTxXdr,
-      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+      config.passphrase,
     );
 
     // Submit to Horizon
