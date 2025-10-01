@@ -36,6 +36,8 @@
   </button>
 </div>
 
+<div id="wallet-modal-root"></div>
+
 <script>
   import { connectedPublicKey } from "utils/store";
   import {
@@ -52,7 +54,6 @@
     ) as HTMLButtonElement;
 
     async function setLoggedIn(publicKey: string) {
-      // Safe DOM manipulation instead of innerHTML
       button.textContent = "";
       const textElement = document.createElement("span");
       textElement.className =
@@ -75,7 +76,6 @@
       button.classList.toggle("transition-opacity", true);
       button.classList.toggle("cursor-pointer", true);
 
-      // Change click handler to open profile instead of connect wallet
       button.onclick = () => {
         window.dispatchEvent(new CustomEvent("openProfileModal"));
       };
@@ -86,38 +86,59 @@
       setLoggedIn(publicKey);
     }
 
+    let isModalOpen = false;
+
     async function connectWallet() {
       if (button.title) {
-        // If the button has a title, it means we're logged in
-        // and the button should open the profile modal
         window.dispatchEvent(new CustomEvent("openProfileModal"));
         return;
       }
 
-      try {
-        // Dynamic import to avoid build-time resolution issues
-        const { kit } = await import("./stellar-wallets-kit");
+      if (isModalOpen) return;
+      isModalOpen = true;
+      const { createElement } = await import("react");
+      const { createRoot } = await import("react-dom/client");
+      const { NetworkProvider } = await import("../contexts/NetworkContext");
+      const WalletConnectModal = await import("./WalletConnectModal");
 
-        await kit.openModal({
-          onWalletSelected: async (option: { id: string }) => {
-            try {
-              kit.setWallet(option.id);
-              const { address } = await kit.getAddress();
-              setPublicKey(address);
-              await setLoggedIn(address);
-              window.dispatchEvent(
-                new CustomEvent("walletConnected", { detail: address }),
-              );
-            } catch (e) {
-              // Wallet connection failed - user might have rejected or wallet unavailable
-              // This is expected behavior, no need to log
-            }
-          },
-        });
-      } catch (e) {
-        // Wallet modal opening failed - this is expected behavior for some cases
-        // No need to log as it's handled gracefully by the UI
-      }
+      const modalRoot = document.getElementById("wallet-modal-root");
+      if (!modalRoot) return;
+
+      const root = createRoot(modalRoot);
+
+      const handleConnect = async (network: 'mainnet' | 'testnet', walletId: string) => {
+        try {
+          localStorage.setItem('network', network);
+          const { kit } = await import("./stellar-wallets-kit");
+          
+          kit.setWallet(walletId);
+          const { address } = await kit.getAddress();
+          setPublicKey(address);
+          await setLoggedIn(address);
+          window.dispatchEvent(
+            new CustomEvent("walletConnected", { detail: address }),
+          );
+          
+          window.location.reload();
+        } catch (e) {
+          console.error('Wallet connection failed:', e);
+        }
+      };
+
+      const handleClose = () => {
+        isModalOpen = false;
+        root.unmount();
+      };
+
+      root.render(
+        createElement(NetworkProvider, {},
+          createElement(WalletConnectModal.default, {
+            isOpen: true,
+            onClose: handleClose,
+            onConnect: handleConnect
+          })
+        )
+      );
     }
 
     if (button) {
@@ -131,10 +152,8 @@
       }
     });
 
-    // Handle disconnect event from the profile modal
     window.addEventListener("walletDisconnected", () => {
       disconnect();
-      // Reset button to Connect state using safe DOM manipulation
       button.textContent = "";
       const textElement = document.createElement("span");
       textElement.className =
@@ -144,7 +163,7 @@
       imgElement.src = "/icons/connect.png";
       imgElement.alt = "Connect wallet icon";
       imgElement.className =
-        "w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 flex-shrink-0";
+        "w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:w-5 flex-shrink-0";
       imgElement.setAttribute("width", "20");
       imgElement.setAttribute("height", "20");
       button.appendChild(textElement);

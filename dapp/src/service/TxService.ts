@@ -133,7 +133,7 @@ export async function sendXLM(
 
   const { getNetworkConfig } = await import("../utils/networks");
   const config = getNetworkConfig();
-  const tansuAddress = "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2"; // From tansu.toml
+  const tansuAddress = import.meta.env.PUBLIC_TANSU_OWNER_ID;
 
   if (!senderPublicKey) {
     // This is a user action request, not an unexpected error

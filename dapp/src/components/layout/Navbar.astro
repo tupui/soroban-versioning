@@ -2,8 +2,6 @@
 import ConnectWallet from "../ConnectWallet.astro";
 import JoinCommunityButton from "../JoinCommunityButton.tsx";
 import NavbarSearch from "../NavbarSearch.tsx";
-import NetworkPicker from "../page/network/NetworkPicker";
-
 
 ---
 
@@ -39,12 +37,9 @@ import NetworkPicker from "../page/network/NetworkPicker";
           <NavbarSearch client:load _onAddProject={() => {}} />
         </div>
 
-        <!-- Network picker + Wallet connect + community button -->
+        <!-- Wallet connect + community button -->
         <div class="flex items-center gap-4 md:gap-6 flex-shrink-0">
-          <NetworkPicker client:load />
-          <div class="ml-6">
-            <ConnectWallet />
-          </div>
+          <ConnectWallet />
           <div id="join-community-wrapper" class="hidden sm:block">
             <JoinCommunityButton client:load />
           </div>

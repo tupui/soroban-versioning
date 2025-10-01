@@ -6,16 +6,18 @@ import {
 import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
 import { getNetworkConfig } from "../utils/networks";
 
-// Create wallet kit based on current network selection
 function createWalletKit() {
   const config = getNetworkConfig();
   
   return new StellarWalletsKit({
     modules: [...allowAllModules(), new LedgerModule()],
-    // @ts-ignore
-    network: config.passphrase,
+    network: config.passphrase as any,
     selectedWalletId: FREIGHTER_ID,
   });
 }
 
-export const kit = createWalletKit();
+function getKit() {
+  return createWalletKit();
+}
+
+export const kit = getKit();
