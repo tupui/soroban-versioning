@@ -113,7 +113,7 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
                   >
                     <div
                       className="w-full bg-violet-500 rounded-t-sm transition-all duration-300 hover:bg-violet-600"
-                      style={{ height: `${Math.max(height, 5)}%`, minHeight: '4px' }}
+                      style={{ height: value > 0 ? `${height}%` : '2px', minHeight: value > 0 ? '8px' : '2px' }}
                       title={`${formatMonth(month)}: ${value} ${metric}`}
                     />
 
