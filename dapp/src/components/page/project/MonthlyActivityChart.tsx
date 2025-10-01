@@ -112,8 +112,8 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
                     className="group relative flex flex-col items-center flex-1 max-w-8"
                   >
                     <div
-                      className="w-full bg-blue-500 rounded-t-sm transition-all duration-300 hover:bg-blue-600"
-                      style={{ height: `${height}%` }}
+                      className="w-full bg-violet-500 rounded-t-sm transition-all duration-300 hover:bg-violet-600"
+                      style={{ height: `${Math.max(height, 5)}%`, minHeight: '4px' }}
                       title={`${formatMonth(month)}: ${value} ${metric}`}
                     />
 
