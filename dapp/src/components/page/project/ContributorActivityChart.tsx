@@ -91,7 +91,7 @@ const ContributorActivityChart: React.FC<ContributorActivityChartProps> = ({
           })}
         </div>
 
-        {contributors.length > 10 && (
+        {contributors.length > 5 && (
           <button
             onClick={() => setShowAll(!showAll)}
             className="mt-4 text-sm text-blue-600 hover:underline"

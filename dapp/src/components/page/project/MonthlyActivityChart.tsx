@@ -58,9 +58,9 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200">
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h3 className="text-lg font-semibold text-primary">Monthly Activity</h3>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <select
               value={metric}
               onChange={(e) => setMetric(e.target.value as 'commits' | 'contributors')}
@@ -97,7 +97,7 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
         <div className="relative">
           <div className="flex items-end justify-center gap-1 h-32 px-2">
             {filteredMonths.length === 0 ? (
-              <div className="flex items-center justify-center w-full h-full text-gray-500 text-sm">
+              <div className="flex items-center justify-center w-full h-full text-blue-800 text-sm">
                 No data available
               </div>
             ) : (
