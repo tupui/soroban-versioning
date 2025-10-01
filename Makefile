@@ -1,4 +1,4 @@
-.PHONY: help install prepare rust-lint clean contract_build contract_test contract_deploy contract_help
+.PHONY: help install prepare rust-lint clean contract_build contract_test contract_deploy contract_help pre_push_hook
 .DEFAULT_GOAL := help
 SHELL:=/bin/bash
 
@@ -25,6 +25,8 @@ help:   ## show this help
 	@grep -h "##" $(MAKEFILE_LIST) | grep -v grep | sed -e 's/\(.*\):.*##\(.*\)/    \1: \2/'
 
 install:  ## install Rust and Soroban-CLI
+	# uv for the pre-push hook
+	curl -LsSf https://astral.sh/uv/install.sh | sh
 	# install Rust
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh && \
 	# install Soroban and config
@@ -238,3 +240,10 @@ contract_get_commit:
     	-- \
     	get_commit \
     	--project_key 37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156
+
+# --------- Hook --------- #
+
+pre_push_hook:
+	TANSU_CONTRACT_ID=$(shell cat .stellar/tansu_id) \
+	TANSU_PROJECT_KEY=37ae83c06fde1043724743335ac2f3919307892ee6307cce8c0c63eaa549e156 \
+	uv run --with soroban pre-commit/soroban_versioning_pre_push.py
