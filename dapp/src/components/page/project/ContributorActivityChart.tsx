@@ -19,7 +19,7 @@ const ContributorActivityChart: React.FC<ContributorActivityChartProps> = ({
     }
   });
 
-  const displayedContributors = showAll ? sortedContributors : sortedContributors.slice(0, 10);
+  const displayedContributors = showAll ? sortedContributors : sortedContributors.slice(0, 5);
   const maxCommits = Math.max(...contributors.map(c => c.commitCount), 1);
 
   const formatDate = (dateString: string) => {
