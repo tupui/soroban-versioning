@@ -218,15 +218,6 @@ import { toast } from "utils/utils";
 
     // Initial render
     renderModals();
-
-    // Render contribution metrics immediately with fallback data
-    contributionMetricsRoot.render(
-      React.createElement(ContributionMetrics, {
-        projectName: "Demo Project",
-        repoUrl: "https://github.com/tupui/soroban-versioning",
-      }),
-    );
-
     const updateConfigButton = document.querySelector("[data-update-config]");
     const udpateConfigModal = document.getElementById(
       "update-config-modal",
@@ -576,13 +567,15 @@ import { toast } from "utils/utils";
           }
         }
 
-        // Render contribution metrics
-        contributionMetricsRoot.render(
-          React.createElement(ContributionMetrics, {
-            projectName: projectInfo?.name || "Demo Project",
-            repoUrl: projectInfo?.config?.url || "https://github.com/tupui/soroban-versioning",
-          }),
-        );
+        if (projectInfo?.name && projectRepoInfo?.author && projectRepoInfo?.repository) {
+          contributionMetricsRoot.render(
+            React.createElement(ContributionMetrics, {
+              projectName: projectInfo.name,
+              owner: projectRepoInfo.author,
+              repo: projectRepoInfo.repository,
+            }),
+          );
+        }
 
         // Re-render modals with the updated data
         renderModals();

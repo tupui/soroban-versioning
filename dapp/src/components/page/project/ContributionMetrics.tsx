@@ -7,12 +7,14 @@ import MonthlyActivityChart from "./MonthlyActivityChart";
 
 interface ContributionMetricsProps {
   projectName: string;
-  repoUrl: string;
+  owner: string;
+  repo: string;
 }
 
 const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
   projectName,
-  repoUrl,
+  owner,
+  repo,
 }) => {
   const [metrics, setMetrics] = useState<ContributionMetrics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
         setLoading(true);
         setError(null);
 
-        const metrics = await ContributionMetricsService.fetchMetrics(repoUrl);
+        const metrics = await ContributionMetricsService.fetchMetrics(owner, repo);
         setMetrics(metrics);
       } catch (err) {
         console.error('Error fetching contribution metrics:', err);
@@ -34,10 +36,10 @@ const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
       }
     };
 
-    if (projectName && repoUrl) {
+    if (projectName && owner && repo) {
       fetchMetrics();
     }
-  }, [projectName, repoUrl]);
+  }, [projectName, owner, repo]);
 
   if (loading) {
     return (

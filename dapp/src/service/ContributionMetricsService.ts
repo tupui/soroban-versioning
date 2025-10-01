@@ -1,75 +1,59 @@
+import { GitLogService } from "./GitLogService";
+import { getCommitHistory } from "./GithubService";
 import type { ContributionMetrics } from "../types/contributionMetrics";
+import type { FormattedCommit } from "../types/github";
 
+/**
+ * Service for calculating contribution metrics from GitHub API commit data
+ * Reuses the same data that CommitHistory component fetches (client-side only)
+ */
 export class ContributionMetricsService {
   /**
-   * Fetch contribution metrics for a project by analyzing Git log
-   * This calls the backend API which executes Git commands on the repository
+   * Fetch contribution metrics by analyzing GitHub API commit data
+   * Uses the same getCommitHistory() function as CommitHistory component
    */
-  static async fetchMetrics(repoUrl: string): Promise<ContributionMetrics> {
+  static async fetchMetrics(owner: string, repo: string): Promise<ContributionMetrics> {
     try {
-      const repoInfo = this.parseRepoInfo(repoUrl);
-      if (!repoInfo) {
-        throw new Error('Invalid repository URL');
+      const allCommits: FormattedCommit[] = [];
+      const maxPages = 34;
+
+      for (let page = 1; page <= maxPages; page++) {
+        const history = await getCommitHistory(owner, repo, page, 30);
+        if (!history || history.length === 0) break;
+
+        for (const dayGroup of history) {
+          allCommits.push(...dayGroup.commits);
+        }
+
+        const totalInPage = history.reduce((sum, day) => sum + day.commits.length, 0);
+        if (totalInPage < 30) break;
       }
 
-      // Call the backend API to fetch real Git log data
-      const response = await fetch('/api/git-metrics', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ repoUrl }),
-      });
+      const gitLog = this.convertToGitLogFormat(allCommits);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to fetch Git metrics');
-      }
+      const result = GitLogService.parseAndAnalyze(gitLog);
 
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to fetch Git metrics');
-      }
-
-      return result.data;
+      return result.metrics;
     } catch (error) {
       console.error('Failed to fetch contribution metrics:', error);
       throw new Error('Failed to load contribution metrics');
     }
   }
 
-  /**
-   * Parse repository URL to extract owner and repo name
-   * Supports both HTTPS and SSH URL formats from any Git hosting platform
-   */
-  static parseRepoInfo(repoUrl: string): { owner: string; repo: string } | null {
-    try {
-      // Handle SSH URLs like git@github.com:owner/repo.git
-      if (repoUrl.startsWith('git@')) {
-        const sshMatch = repoUrl.match(/git@[^:]+:([^\/]+)\/(.+?)(?:\.git)?$/);
-        if (sshMatch && sshMatch[1] && sshMatch[2]) {
-          return {
-            owner: sshMatch[1],
-            repo: sshMatch[2],
-          };
-        }
-      }
+  private static convertToGitLogFormat(commits: FormattedCommit[]): string {
+    let gitLog = '';
 
-      // Handle HTTPS URLs like https://github.com/owner/repo.git
-      const url = new URL(repoUrl);
-      const pathParts = url.pathname.split('/').filter(Boolean);
-
-      if (pathParts.length >= 2 && pathParts[0] && pathParts[1]) {
-        return {
-          owner: pathParts[0],
-          repo: pathParts[1].replace('.git', ''),
-        };
-      }
-    } catch {
-      // Invalid URL format
+    for (const commit of commits) {
+      gitLog += `commit ${commit.sha}\n`;
+      gitLog += `Author: ${commit.author.name} <unknown@email>\n`;
+      gitLog += `AuthorDate: ${commit.commit_date}\n`;
+      gitLog += `Commit: ${commit.author.name} <unknown@email>\n`;
+      gitLog += `CommitDate: ${commit.commit_date}\n`;
+      gitLog += `\n`;
+      gitLog += `    ${commit.message}\n`;
+      gitLog += `\n`;
     }
 
-    return null;
+    return gitLog;
   }
 }

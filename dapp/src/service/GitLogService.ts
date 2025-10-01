@@ -1,6 +1,5 @@
 import type {
   GitCommit,
-  GitLogOptions,
   GitLogParseResult,
   ContributionMetrics,
   ContributorActivity,
@@ -9,14 +8,24 @@ import type {
   Author,
 } from "../types/contributionMetrics";
 
-/**
- * GitLogService - Handles parsing Git log data and calculating contribution metrics
- * This service replaces GitHub API calls to provide platform-agnostic Git analysis
- */
 export class GitLogService {
-  /**
-   * Parse raw Git log output into structured commit data
-   */
+  private static readonly BOT_PATTERNS = [
+    /dependabot/i,
+    /renovate/i,
+    /bot$/i,
+    /\[bot\]/i,
+    /greenkeeper/i,
+    /snyk-bot/i,
+    /github-actions/i,
+    /codecov/i,
+  ];
+
+
+  private static isBot(name: string, email: string): boolean {
+    const combined = `${name} ${email}`.toLowerCase();
+    return this.BOT_PATTERNS.some(pattern => pattern.test(combined));
+  }
+
   static parseGitLog(rawGitLog: string): GitCommit[] {
     const commits: GitCommit[] = [];
     const commitBlocks = rawGitLog.split(/(?=^commit [a-f0-9]{40}$)/m).filter(Boolean);
@@ -31,9 +40,7 @@ export class GitLogService {
     return commits;
   }
 
-  /**
-   * Parse a single commit block from git log output
-   */
+
   private static parseCommitBlock(block: string): GitCommit | null {
     const lines = block.split('\n');
     const commitMatch = lines[0]?.match(/^commit ([a-f0-9]{40})$/);
@@ -86,9 +93,6 @@ export class GitLogService {
     };
   }
 
-  /**
-   * Parse commit message for metadata like Co-authored-by, Reviewed-by, etc.
-   */
   private static parseCommitMetadata(message: string): CommitMetadata {
     const metadata: CommitMetadata = {
       coAuthoredBy: [],
@@ -97,8 +101,8 @@ export class GitLogService {
       approvedBy: [],
     };
 
-    // Pattern to match various metadata formats: (.*)-by: (.+) <(.+)>
-    const metadataPattern = /^[\s]*(.*)-by:\s*(.+?)\s*<(.+?)>$/gim;
+    // Pattern to match metadata: xxx-by: Name <email>
+    const metadataPattern = /^[\s]*(.*?)-by:\s*(.+?)\s*<(.+?)>$/gim;
     let match;
 
     while ((match = metadataPattern.exec(message)) !== null) {
@@ -108,32 +112,32 @@ export class GitLogService {
 
       if (!type || !name || !email) continue;
 
-      let normalizedType = type.toLowerCase().replace(/[^a-z]/g, '') + 'By';
-
-      // Handle special cases for consistent naming
-      if (normalizedType === 'coauthoredBy') {
-        normalizedType = 'coAuthoredBy';
-      }
+      const normalizedType = type
+        .toLowerCase()
+        .replace(/[^a-z]+(.)/g, (_, char) => char.toUpperCase()) + 'By';
 
       const author: Author = { name: name.trim(), email: email.trim() };
 
-      if (!metadata[normalizedType as keyof CommitMetadata]) {
+      if (!metadata[normalizedType]) {
         (metadata as any)[normalizedType] = [];
       }
-      (metadata[normalizedType as keyof CommitMetadata] as Author[]).push(author);
+
+      (metadata[normalizedType] as Author[]).push(author);
     }
 
     return metadata;
   }
 
-  /**
-   * Calculate contribution metrics from parsed commits
-   */
   static calculateMetrics(commits: GitCommit[]): ContributionMetrics {
     const contributorMap = new Map<string, ContributorActivity>();
     const monthlyStats: { [month: string]: { commits: number; contributors: number; linesChanged: number } } = {};
 
     for (const commit of commits) {
+      // Skip bots
+      if (this.isBot(commit.author.name, commit.author.email || '')) {
+        continue;
+      }
+
       const authorKey = `${commit.author.name}<${commit.author.email}>`;
       const commitDate = new Date(commit.author.date);
       const monthKey = `${commitDate.getFullYear()}-${String(commitDate.getMonth() + 1).padStart(2, '0')}`;
@@ -248,30 +252,6 @@ export class GitLogService {
       totalContributors: contributors.length,
       explanation,
     };
-  }
-
-  /**
-   * Generate Git log command for fetching commit data
-   */
-  static generateGitLogCommand(options: GitLogOptions = {}): string {
-    const {
-      maxCount = 1000,
-      since,
-      until,
-      author,
-    } = options;
-
-    let command = 'git log';
-
-    if (maxCount) command += ` --max-count=${maxCount}`;
-    if (since) command += ` --since="${since}"`;
-    if (until) command += ` --until="${until}"`;
-    if (author) command += ` --author="${author}"`;
-
-    // Use fuller format to get all metadata
-    command += ' --pretty=fuller --date=iso';
-
-    return command;
   }
 
   /**

@@ -71,15 +71,6 @@ export interface ContributionMetrics {
   };
 }
 
-export interface GitLogOptions {
-  maxCount?: number;
-  since?: string;
-  until?: string;
-  author?: string;
-  format?: 'full' | 'short' | 'oneline';
-  stat?: boolean; // Include file change statistics
-}
-
 export interface GitLogParseResult {
   commits: GitCommit[];
   metrics: ContributionMetrics;
