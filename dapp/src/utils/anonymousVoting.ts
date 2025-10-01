@@ -142,10 +142,10 @@ export async function computeAnonymousVotingData(
         seedsArr[i] !== undefined &&
         voteCounts[i] !== undefined
       ) {
-        talliesArr[i] += vDec * weight;
-        seedsArr[i] += sDec * weight;
+        talliesArr[i]! += vDec * weight;
+        seedsArr[i]! += sDec * weight;
         if (vDec > 0) {
-          voteCounts[i] += 1;
+          voteCounts[i]! += 1;
         }
       }
     }
@@ -158,7 +158,9 @@ export async function computeAnonymousVotingData(
         project_key,
         member_address: memberAddr,
       });
-      maxWeight = Number((maxRes as any).result) || 1;
+      if (maxRes && typeof maxRes === "object" && "result" in maxRes) {
+        maxWeight = Number(maxRes.result) || 1;
+      }
     } catch (_) {
       /* ignore – default 1 */
     }
