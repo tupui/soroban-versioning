@@ -33,6 +33,12 @@ interface JoinCommunityFlowParams {
   memberAddress: string;
   profileFiles: File[];
   onProgress?: (step: number) => void;
+  gitBindingData?: {
+    gitIdentity: string;
+    gitPubkey: Uint8Array;
+    message: Uint8Array;
+    signature: Uint8Array;
+  } | null;
 }
 
 interface CreateProjectFlowParams {
@@ -159,6 +165,47 @@ async function createSignedAddMemberTransaction(
 }
 
 /**
+ * Create and sign an add member with git transaction
+ */
+async function createSignedAddMemberWithGitTransaction(
+  memberAddress: string,
+  meta: string,
+  gitIdentity: string,
+  gitPubkey: Uint8Array,
+  message: Uint8Array,
+  signature: Uint8Array,
+): Promise<string> {
+  const address = memberAddress || loadedPublicKey();
+  if (!address) throw new Error("Please connect your wallet first");
+
+  // Validate meta parameter - ensure it's not just whitespace
+  if (meta.trim() === "") {
+    meta = ""; // Use empty string instead of whitespace
+  }
+
+  Tansu.options.publicKey = address;
+
+  // Convert Uint8Arrays to the format expected by the contract
+  const gitPubkeyBuffer = Buffer.from(gitPubkey);
+  const messageBuffer = Buffer.from(message);
+  const signatureBuffer = Buffer.from(signature);
+
+  const tx = await (Tansu as any).add_member_with_git({
+    member_address: address,
+    meta: meta,
+    git_identity: gitIdentity,
+    git_pubkey: gitPubkeyBuffer,
+    msg: messageBuffer,
+    sig: signatureBuffer,
+  });
+
+  // Check for simulation errors (contract errors) before signing
+  checkSimulationError(tx as any);
+
+  return await signAssembledTransaction(tx);
+}
+
+/**
  * Send a signed transaction to the network
  */
 async function sendSignedTransactionLocal(signedTxXdr: string): Promise<any> {
@@ -248,6 +295,7 @@ export async function createProposalFlow({
 export async function joinCommunityFlow({
   memberAddress,
   profileFiles,
+  gitBindingData,
   onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
   let cid = ""; // Default for no profile - use empty string instead of single space
@@ -263,10 +311,25 @@ export async function joinCommunityFlow({
 
   // Step 2: Create and sign the smart contract transaction with the CID
   onProgress?.(7); // signing step indicator (offset -5 → shows Sign)
-  const signedTxXdr = await createSignedAddMemberTransaction(
-    memberAddress,
-    cid,
-  );
+  
+  let signedTxXdr: string;
+  if (gitBindingData) {
+    // Use the Git binding transaction
+    signedTxXdr = await createSignedAddMemberWithGitTransaction(
+      memberAddress,
+      cid,
+      gitBindingData.gitIdentity,
+      gitBindingData.gitPubkey,
+      gitBindingData.message,
+      gitBindingData.signature,
+    );
+  } else {
+    // Use the regular add member transaction
+    signedTxXdr = await createSignedAddMemberTransaction(
+      memberAddress,
+      cid,
+    );
+  }
 
   if (profileFiles.length > 0) {
     // Step 3: Upload to IPFS using the signed transaction as authentication

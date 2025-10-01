@@ -6,6 +6,7 @@ import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
 import { validateStellarAddress, validateUrl } from "utils/validations";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
+import GitIdentityBinding, { type GitBindingData } from "./GitIdentityBinding";
 
 interface ProfileImageFile {
   localUrl: string;
@@ -33,6 +34,7 @@ const JoinCommunityModal: FC<{
   const [updateSuccessful, setUpdateSuccessful] = useState(false);
   const [step, setStep] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
+  const [gitBindingData, setGitBindingData] = useState<GitBindingData | null>(null);
 
   // Validation errors
   const [addressError, setAddressError] = useState<string | null>(null);
@@ -157,6 +159,7 @@ const JoinCommunityModal: FC<{
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: [],
+          gitBindingData,
           onProgress: setStep,
         });
 
@@ -203,6 +206,7 @@ const JoinCommunityModal: FC<{
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: files,
+          gitBindingData,
           onProgress: setStep,
         });
 
@@ -364,6 +368,13 @@ const JoinCommunityModal: FC<{
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="pt-2 md:pt-4">
+            <GitIdentityBinding 
+              onGitDataChange={setGitBindingData}
+              disabled={isLoading || isUploading}
+            />
           </div>
 
           <div className="flex justify-end gap-[18px]">

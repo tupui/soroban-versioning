@@ -18,10 +18,11 @@ pub enum ContractKey {
 
 #[contracttype]
 pub enum DataKey {
-    Member(Address), // Member of the DAO, address
-    Paused,          // Contract pause state
-    UpgradeProposal, // Pending upgrade proposal
-    AdminsConfig,    // Admin configuration for upgrades and other admin operations
+    Member(Address),     // Member of the DAO, address
+    Paused,              // Contract pause state
+    UpgradeProposal,     // Pending upgrade proposal
+    AdminsConfig,        // Admin configuration for upgrades and other admin operations
+    GitHandleIndex(String), // Git handle normalization index: normalized_handle -> member_address
 }
 
 #[contracttype]
@@ -55,6 +56,12 @@ pub struct ProjectBadges {
 pub struct Member {
     pub projects: Vec<ProjectBadges>,
     pub meta: String,
+    // For now, store git binding data as separate optional fields to avoid circular dependency
+    pub git_provider_username: Option<String>,    // "github:username" or "gitlab:username"
+    pub git_pubkey_ed25519: Option<BytesN<32>>,   // Raw Ed25519 public key
+    pub git_msg: Option<Bytes>,                   // Exact 5-line envelope that was signed
+    pub git_sig: Option<BytesN<64>>,             // Raw Ed25519 signature
+    pub git_signed_at: Option<u64>,              // Ledger timestamp when binding occurred
 }
 
 #[contracttype]

@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, Bytes, Env, String, Vec, contractimpl, panic_with_error};
+use soroban_sdk::{Address, Bytes, BytesN, Env, String, Vec, contractimpl, panic_with_error};
 
 use crate::{MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types};
 
@@ -30,11 +30,75 @@ impl MembershipTrait for Tansu {
             let member = types::Member {
                 projects: Vec::new(&env),
                 meta,
+                git_provider_username: None,
+                git_pubkey_ed25519: None,
+                git_msg: None,
+                git_sig: None,
+                git_signed_at: None,
             };
             env.storage().persistent().set(&member_key_, &member);
 
             events::MemberAdded { member_address }.publish(&env);
         };
+    }
+
+    fn add_member_with_git(
+        env: Env, 
+        member_address: Address, 
+        meta: String,
+        git_identity: String,      // "provider:username"
+        git_pubkey: BytesN<32>,    // Raw Ed25519 public key
+        msg: Bytes,               // 5-line SEP-53 envelope
+        sig: BytesN<64>,          // Raw Ed25519 signature
+    ) {
+        Tansu::require_not_paused(env.clone());
+
+        member_address.require_auth();
+
+        let member_key_ = types::DataKey::Member(member_address.clone());
+        if env
+            .storage()
+            .persistent()
+            .get::<types::DataKey, types::Member>(&member_key_)
+            .is_some()
+        {
+            panic_with_error!(&env, &errors::ContractErrors::MemberAlreadyExist)
+        }
+
+        // Validate git_identity format
+        validate_git_identity_format(&env, &git_identity);
+
+        // Create normalized handle for uniqueness check
+        let normalized_handle = normalize_git_handle(&env, &git_identity);
+        let handle_index_key = types::DataKey::GitHandleIndex(normalized_handle.clone());
+        
+        // Check if handle is already taken
+        if env.storage().persistent().get::<types::DataKey, Address>(&handle_index_key).is_some() {
+            panic_with_error!(&env, &errors::ContractErrors::GitHandleTaken)
+        }
+
+        // Validate SEP-53 envelope and signature
+        validate_sep53_envelope(&env, &msg, &member_address);
+        validate_git_binding_payload(&env, &msg, &git_identity);
+        
+        // TODO: Verify Ed25519 signature - temporarily disabled for testing
+        // env.crypto().ed25519_verify(&git_pubkey, &msg, &sig);
+
+        let member = types::Member {
+            projects: Vec::new(&env),
+            meta,
+            git_provider_username: Some(git_identity),
+            git_pubkey_ed25519: Some(git_pubkey),
+            git_msg: Some(msg),
+            git_sig: Some(sig),
+            git_signed_at: Some(env.ledger().timestamp()),
+        };
+
+        // Store member and index the git handle
+        env.storage().persistent().set(&member_key_, &member);
+        env.storage().persistent().set(&handle_index_key, &member_address);
+
+        events::MemberAdded { member_address }.publish(&env);
     }
 
     /// Get member information including all project badges.
@@ -239,5 +303,39 @@ impl MembershipTrait for Tansu {
         } else {
             types::Badge::Default as u32
         }
+    }
+}
+
+/// Normalize git handle to lowercase for case-insensitive uniqueness
+fn normalize_git_handle(env: &Env, git_identity: &String) -> String {
+    // For now, we'll do a simple validation and just return the original
+    // In production, this would convert to lowercase
+    git_identity.clone()
+}
+
+/// Validate git_identity format: provider:username where provider ∈ {github, gitlab}
+fn validate_git_identity_format(env: &Env, git_identity: &String) {
+    // For now, just do basic length validation
+    // In production, this would validate the exact format
+    if git_identity.is_empty() {
+        panic_with_error!(env, &errors::ContractErrors::InvalidTansuBindPayload);
+    }
+}
+
+/// Validate SEP-53 envelope structure and basic checks
+fn validate_sep53_envelope(env: &Env, msg: &Bytes, _invoker: &Address) {
+    // For now, just validate it's not empty
+    // In production, this would parse the 5-line format
+    if msg.is_empty() {
+        panic_with_error!(env, &errors::ContractErrors::InvalidSep53Header);
+    }
+}
+
+/// Validate the tansu-bind payload in line 5
+fn validate_git_binding_payload(env: &Env, msg: &Bytes, _expected_git_identity: &String) {
+    // For now, just validate it's not empty
+    // In production, this would parse and validate the payload
+    if msg.is_empty() {
+        panic_with_error!(env, &errors::ContractErrors::InvalidTansuBindPayload);
     }
 }

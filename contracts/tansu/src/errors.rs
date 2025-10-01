@@ -31,9 +31,17 @@ pub enum ContractErrors {
     MemberAlreadyExist = 19,
     VoterWeight = 20,
     VoteLimitExceeded = 21,
+    // Git Identity Binding
+    GitHandleTaken = 22,
+    InvalidSep53Header = 23,
+    InvalidNetworkPassphrase = 24,
+    InvalidInvokerAccount = 25,
+    InvalidNonce = 26,
+    InvalidTansuBindPayload = 27,
+    InvalidEd25519Signature = 28,
     // utils
-    ContractPaused = 22,
-    UpgradeError = 23,
-    ContractValidation = 24,
-    CollateralError = 25,
+    ContractPaused = 29,
+    UpgradeError = 30,
+    ContractValidation = 31,
+    CollateralError = 32,
 }

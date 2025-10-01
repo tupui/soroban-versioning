@@ -53,6 +53,16 @@ pub trait TansuTrait {
 
 pub trait MembershipTrait {
     fn add_member(env: Env, member_address: Address, meta: String);
+    
+    fn add_member_with_git(
+        env: Env, 
+        member_address: Address, 
+        meta: String,
+        git_identity: String,      // "provider:username"
+        git_pubkey: BytesN<32>,    // Raw Ed25519 public key
+        msg: Bytes,               // 5-line SEP-53 envelope
+        sig: BytesN<64>,          // Raw Ed25519 signature
+    );
 
     fn get_member(env: Env, member_address: Address) -> types::Member;
 
