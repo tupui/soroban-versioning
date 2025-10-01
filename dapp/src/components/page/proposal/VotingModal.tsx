@@ -61,14 +61,31 @@ const VotingModal: React.FC<VotersModalProps> = ({
         proposalId!,
         selectedOption as VoteType,
       );
-      setIsLoading(false);
       setIsVoted?.(true);
+      setStep(2);
     } catch (error: any) {
+      // Handle error safely
       setIsLoading(false);
-      setVoteError(error.message || "Failed to cast vote");
+
+      let errorMessage = "Failed to cast vote";
+
+      if (typeof error === "string") {
+        errorMessage = error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.code === 4001) {
+        // MetaMask user rejected the transaction
+        errorMessage = "You canceled the transaction";
+      } else {
+        // Fallback: stringify unknown error objects
+        errorMessage = JSON.stringify(error);
+      }
+
+      setVoteError(errorMessage);
       return;
+    } finally {
+      setIsLoading(false);
     }
-    setStep(2);
   };
 
   return (
