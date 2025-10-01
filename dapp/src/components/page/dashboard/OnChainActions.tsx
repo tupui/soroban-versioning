@@ -69,7 +69,7 @@ const OnChainActions: React.FC<Props> = ({ address, projectCache }) => {
   }
 
   return (
-    <div className="flex flex-col gap-6 pl-6 max-h-96 overflow-auto overflow-visible">
+    <div className="flex flex-col gap-6 pl-6 max-h-96 overflow-visible">
       {Object.entries(grouped)
         // Sort day groups by ISO date key descending (latest first)
         .sort(([d1], [d2]) => (d1 < d2 ? 1 : -1))

@@ -1,16 +1,17 @@
 import { getProjectFromName } from "@service/ReadContractService";
+import { loadedPublicKey } from "@service/walletService";
 import {
   setConfigData,
   setProject,
   setProjectRepoInfo,
 } from "@service/StateService";
 import { navigate } from "astro:transitions/client";
-import Button from "components/utils/Button";
-import Input from "components/utils/Input";
-import Label from "components/utils/Label";
-import FlowProgressModal from "components/utils/FlowProgressModal";
-import Step from "components/utils/Step";
-import Title from "components/utils/Title";
+import Button from "components/utils/Button.tsx";
+import Input from "components/utils/Input.tsx";
+import Label from "components/utils/Label.tsx";
+import FlowProgressModal from "components/utils/FlowProgressModal.tsx";
+import Step from "components/utils/Step.tsx";
+import Title from "components/utils/Title.tsx";
 import { useState, type FC, useCallback, useEffect } from "react";
 import { getAuthorRepo } from "utils/editLinkFunctions";
 import { extractConfigData, toast } from "utils/utils";
@@ -18,21 +19,27 @@ import {
   validateProjectName as validateProjectNameUtil,
   validateGithubUrl,
   validateMaintainerAddress,
-} from "utils/validations";
-import Textarea from "components/utils/Textarea";
-import Spinner from "components/utils/Spinner";
+} from "utils/validations.ts";
+import Textarea from "components/utils/Textarea.tsx";
+import Spinner from "components/utils/Spinner.tsx";
 
 // Get domain contract ID from environment with fallback
 const SOROBAN_DOMAIN_CONTRACT_ID =
   import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID ||
   "CAQWEZNN5X7LFD6PZBQXALVH4LSJW2KGNDMFJBQ3DWHXUVQ2JIZ6AQU6"; // Fallback value
 
+// Define ModalProps type for the modal component
+type ModalProps = {
+  onClose: () => void;
+};
+
 const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [projectName, setProjectName] = useState("");
   const [maintainerAddresses, setMaintainerAddresses] = useState<string[]>([
-    "",
+    loadedPublicKey() || "",
   ]);
+
   const [maintainerGithubs, setMaintainerGithubs] = useState<string[]>([""]);
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -548,11 +555,13 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                 <div className="flex flex-col gap-[18px]">
                   {maintainerAddresses.map((address, i) => (
                     <div key={i} className="flex flex-col gap-2 w-full">
-                      <div className="flex gap-[18px]">
+                      <div className="flex flex-col md:flex-row gap-[18px]">
                         <Input
                           className="flex-1"
                           value={address}
-                          {...(i == 0 && { label: "Maintainer Address" })}
+                          {...(i == 0 && {
+                            label: "Maintainer Wallet Address",
+                          })}
                           placeholder="G..."
                           onChange={(e) => {
                             setMaintainerAddresses(

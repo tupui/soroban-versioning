@@ -1,5 +1,4 @@
 import VotingResult from "./VotingResult";
-import React from "react";
 import type { VoteStatus } from "types/proposal";
 
 interface Props {

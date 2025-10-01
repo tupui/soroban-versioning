@@ -1,5 +1,4 @@
 import Button from "components/utils/Button";
-import React from "react";
 import type { ProposalView } from "types/proposal";
 import ProposalStatusSection from "../proposal/ProposalStatusSection";
 

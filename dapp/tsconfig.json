@@ -4,7 +4,8 @@
     "baseUrl": "src",
     "paths": {
       "@service/*": ["service/*"]
-    }
+    },
+    "allowImportingTsExtensions": true
   },
   "extends": "astro/tsconfigs/strictest",
   "exclude": ["packages"]

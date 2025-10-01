@@ -1,5 +1,3 @@
-import React from "react";
-
 interface VoteStatusBarProps {
   approve: number;
   reject: number;

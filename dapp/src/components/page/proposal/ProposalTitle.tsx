@@ -1,6 +1,6 @@
 import { useStore } from "@nanostores/react";
 import Button from "components/utils/Button";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ProposalView } from "types/proposal";
 import { connectedPublicKey } from "utils/store";
 import { toast } from "utils/utils";
