@@ -1,10 +1,10 @@
 ---
-import CommitHistory from "./CommitHistory";
-import DonateModal from "./DonateModal";
-import LatestCommit from "./LatestCommit";
-import Button from "components/utils/Button";
-import { getMember } from "@service/ReadContractService";
-import { toast } from "utils/utils";
+import { useState, useEffect } from 'react';
+import CommitHistory from './CommitHistory';
+import DonateModal from './DonateModal';
+import LatestCommit from './LatestCommit';
+import Button from 'components/utils/Button';
+import ContributionMetrics from 'components/ContributionMetrics'; // Importing the ContributionMetrics component
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
@@ -25,16 +25,19 @@ import { toast } from "utils/utils";
                   id="project-organization-name"
                   class="text-base sm:text-lg text-secondary"
                 >
+                  {/* Project Organization */}
                 </p>
                 <div class="flex gap-[18px]">
                   <p id="project-name" class="text-2xl text-primary"></p>
                   <div id="official-links" class="flex items-center gap-3">
+                    {/* Official Links */}
                   </div>
                 </div>
                 <p
                   id="project-description"
                   class="text-base sm:text-lg text-secondary"
                 >
+                  {/* Project Description */}
                 </p>
               </div>
               <LatestCommit client:only />
@@ -83,14 +86,17 @@ import { toast } from "utils/utils";
         </Button>
       </div>
     </div>
+
+    {/* Insert Contribution Metrics Component */}
+    <ContributionMetrics projectName="tansu" />  {/* Use dynamic project name if necessary */}
+
     <div
       id="project-maintainers"
       class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
     >
       <p class="leading-4 text-base text-secondary">Maintainers</p>
-      <ul
-        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9 p-4"
-      >
+      <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9 p-4">
+        {/* Maintainers */}
       </ul>
       <div class="flex view-all"></div>
     </div>
@@ -109,28 +115,28 @@ import { toast } from "utils/utils";
 <div id="read-more-modal-container"></div>
 
 <script>
-  import { getLatestCommitData } from "@service/GithubService";
-  import { getIpfsBasicLink } from "utils/ipfsFunctions";
-  import { navigate } from "astro:transitions/client";
-  import type { ConfigData } from "types/projectConfig";
-  import { formatDateTime } from "utils/formatTimeFunctions";
+  import { getLatestCommitData } from '@service/GithubService';
+  import { getIpfsBasicLink } from 'utils/ipfsFunctions';
+  import { navigate } from 'astro:transitions/client';
+  import type { ConfigData } from 'types/projectConfig';
+  import { formatDateTime } from 'utils/formatTimeFunctions';
   import {
     loadConfigData,
     loadProjectInfo,
     loadProjectLatestSha,
     loadProjectName,
-  } from "../../../service/StateService";
-  import { convertGitHubLink } from "../../../utils/editLinkFunctions";
-  import { projectInfoLoaded } from "../../../utils/store";
-  import { getBadges, getMember } from "@service/ReadContractService";
+  } from '../../../service/StateService';
+  import { convertGitHubLink } from '../../../utils/editLinkFunctions';
+  import { projectInfoLoaded } from '../../../utils/store';
+  import { getBadges, getMember } from '@service/ReadContractService';
 
-  document.addEventListener("astro:page-load", async () => {
+  document.addEventListener('astro:page-load', async () => {
     // Wait for DOM to be fully ready
     await new Promise((resolve) => {
-      if (document.readyState === "complete") {
+      if (document.readyState === 'complete') {
         resolve(null);
       } else {
-        window.addEventListener("load", () => resolve(null));
+        window.addEventListener('load', () => resolve(null));
       }
     });
 
@@ -141,30 +147,26 @@ import { toast } from "utils/utils";
       { default: LastHashModal },
       { default: ReadMoreModal },
     ] = await Promise.all([
-      import("react"),
-      import("react-dom/client"),
-      import("./LastHashModal"),
-      import("./ReadMoreModal"),
+      import('react'),
+      import('react-dom/client'),
+      import('./LastHashModal'),
+      import('./ReadMoreModal'),
     ]);
 
     // Create React roots for modals with retry logic
-    let lastHashContainer = document.getElementById(
-      "last-hash-modal-container",
-    );
-    let readMoreContainer = document.getElementById(
-      "read-more-modal-container",
-    );
+    let lastHashContainer = document.getElementById('last-hash-modal-container');
+    let readMoreContainer = document.getElementById('read-more-modal-container');
 
     // Retry finding containers if not immediately available
     if (!lastHashContainer || !readMoreContainer) {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      lastHashContainer = document.getElementById("last-hash-modal-container");
-      readMoreContainer = document.getElementById("read-more-modal-container");
+      lastHashContainer = document.getElementById('last-hash-modal-container');
+      readMoreContainer = document.getElementById('read-more-modal-container');
     }
 
     if (!lastHashContainer || !readMoreContainer) {
       if (import.meta.env.DEV) {
-        console.error("Modal containers not found", {
+        console.error('Modal containers not found', {
           lastHashContainer: !!lastHashContainer,
           readMoreContainer: !!readMoreContainer,
           documentReady: document.readyState,
@@ -179,8 +181,8 @@ import { toast } from "utils/utils";
     // Modal state
     let isLastHashModalOpen = false;
     let isReadMoreModalOpen = false;
-    let commitData = null;
-    let projectData = null;
+    let commitData: { sha: any; html_url: any; date: string; author: any; } | null = null;
+    let projectData: { name: any; description: string; organization: string; logoImageLink: string; githubUrl: any; websiteUrl: string | undefined; } | null = null;
 
     // Render function for modals
     const renderModals = () => {
@@ -667,7 +669,7 @@ import { toast } from "utils/utils";
     });
 
     // Helper to open member profile modal; attached globally for click handlers
-    async function openProfileModal(address) {
+    async function openProfileModal(address: string) {
       try {
         const memberData = await getMember(address);
 
