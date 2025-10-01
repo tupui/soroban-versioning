@@ -19,6 +19,7 @@ import { generateRSAKeyPair } from "utils/crypto";
 import { setupAnonymousVoting } from "@service/ContractService";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
+import Textarea from "components/utils/Textarea";
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -37,7 +38,9 @@ const CreateProposalModal = () => {
   const [approveDescription, setApproveDescription] = useState("");
   const [rejectDescription, setRejectDescription] = useState("");
   const [cancelledDescription, setCancelledDescription] = useState("");
-  const [approveXdr, setApproveXdr] = useState("");
+  // const [approveXdr, setApproveXdr] = useState("");
+  const [approveXdr, setApproveXdr] = useState<string | null>(null);
+
   const [rejectXdr, setRejectXdr] = useState<string | null>(null);
   const [cancelledXdr, setCancelledXdr] = useState<string | null>(null);
   // Default to 2 days in the future to comfortably exceed the 24h minimum
@@ -71,6 +74,11 @@ const CreateProposalModal = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Manages contract interaction state: 
+const [contractAddress, setContractAddress] = useState<string | null>(null);
+const [useContract, setUseContract] = useState(false);
+const [contractAddressError, setContractAddressError] = useState<string | null>(null);
 
   const checkSubmitAvailability = () => {
     if (!connectedAddress) throw new Error("Please connect your wallet first");
@@ -125,42 +133,59 @@ const CreateProposalModal = () => {
     }
   }, [projectName]);
 
-  const prepareProposalFiles = (): File[] => {
-    const proposalOutcome: ProposalOutcome = {
-      approved: {
-        description: approveDescription,
-        xdr: approveXdr,
-      },
-      rejected: {
-        description: rejectDescription,
-        xdr: rejectXdr || "",
-      },
-      cancelled: {
-        description: cancelledDescription,
-        xdr: cancelledXdr || "",
-      },
-    };
-
-    const outcome = new Blob([JSON.stringify(proposalOutcome)], {
-      type: "application/json",
-    });
-
-    let files: File[] = [new File([outcome], "outcomes.json")];
-    let description = mdText;
-
-    imageFiles.forEach((image) => {
-      if (description.includes(image.localUrl)) {
-        description = description.replace(
-          new RegExp(image.localUrl, "g"),
-          image.publicUrl,
-        );
-        files.push(new File([image.source], image.publicUrl));
+const prepareProposalFiles = (): File[] => {
+  const proposalOutcome: ProposalOutcome = useContract
+    ? {
+        // When using contract, store contract address in the approved outcome
+        approved: {
+          description: approveDescription,
+          contract: contractAddress || "",
+        },
+        rejected: {
+          description: rejectDescription,
+          contract: contractAddress || "", 
+        },
+        cancelled: {
+          description: cancelledDescription,
+          contract: contractAddress || "", 
+        },
       }
-    });
+    : {
+        // Traditional XDR-based outcomes
+        approved: {
+          description: approveDescription,
+          ...(approveXdr && { xdr: approveXdr }),
+        },
+        rejected: {
+          description: rejectDescription,
+          ...(rejectXdr && { xdr: rejectXdr }),
+        },
+        cancelled: {
+          description: cancelledDescription,
+          ...(cancelledXdr && { xdr: cancelledXdr }),
+        },
+      };
 
-    files.push(new File([description], "proposal.md"));
-    return files;
-  };
+  const outcome = new Blob([JSON.stringify(proposalOutcome)], {
+    type: "application/json",
+  });
+
+  let files: File[] = [new File([outcome], "outcomes.json")];
+  let description = mdText;
+
+  imageFiles.forEach((image) => {
+    if (description.includes(image.localUrl)) {
+      description = description.replace(
+        new RegExp(image.localUrl, "g"),
+        image.publicUrl,
+      );
+      files.push(new File([image.source], image.publicUrl));
+    }
+  });
+
+  files.push(new File([description], "proposal.md"));
+  return files;
+};
 
   const startProposalCreation = async (files: File[]) => {
     try {
@@ -567,67 +592,200 @@ const CreateProposalModal = () => {
           </div>
         </div>
       ) : step == 2 ? (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex flex-col gap-[30px]">
-            <div className="flex gap-[18px]">
-              <img src="/images/cards.svg" />
-              <div className="flex-grow flex flex-col justify-center gap-[30px]">
-                <Step step={step} totalSteps={4} />
-                <Title
-                  title="Outcome Details"
-                  description="Provide descriptions and XDRs for approved, rejected, and canceled outcomes."
-                />
-              </div>
+  <div className="flex flex-col gap-[42px]">
+    <div className="flex flex-col gap-[30px]">
+      <div className="flex gap-[18px]">
+        <img src="/images/cards.svg" />
+        <div className="flex-grow flex flex-col justify-center gap-[30px]">
+          <Step step={step} totalSteps={4} />
+          <Title
+            title="Outcome Details"
+            description="Provide descriptions and XDRs or a contract call for approved, rejected, and canceled outcomes."
+          />
+        </div>
+      </div>
+      
+      {/* Contract Address Input - shown when using contract */}
+      {useContract && (
+        <div className="w-full p-4 border border-zinc-700 rounded-lg bg-zinc-900/50">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+              <p className="text-base font-semibold text-primary">
+                Outcome Contract Address
+              </p>
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-blue-500 underline"
+              >
+                Documentation
+              </a>
             </div>
-            <OutcomeInput
-              type="approved"
-              description={approveDescription}
-              setDescription={setApproveDescription}
-              xdr={approveXdr}
-              setXdr={setApproveXdr}
-              descriptionError={approveDescriptionError}
-              xdrError={approveXdrError}
-              onDescriptionChange={() => setApproveDescriptionError(null)}
-              onXdrChange={() => setApproveXdrError(null)}
+            <Input
+              placeholder="Enter contract address (e.g., CA...)"
+              value={contractAddress || ""}
+              onChange={(e) => setContractAddress(e.target.value)}
+              error={contractAddressError}
             />
-            <OutcomeInput
-              type="rejected"
-              description={rejectDescription}
-              setDescription={setRejectDescription}
-              xdr={rejectXdr}
-              setXdr={setRejectXdr}
-            />
-            <OutcomeInput
-              type="cancelled"
-              description={cancelledDescription}
-              setDescription={setCancelledDescription}
-              xdr={cancelledXdr}
-              setXdr={setCancelledXdr}
-            />
-          </div>
-          <div className="flex justify-end gap-[18px]">
-            <Button type="secondary" onClick={() => setStep(step - 1)}>
-              Back
-            </Button>
-            <Button
-              data-testid="proposal-next"
-              onClick={() => {
-                try {
-                  if (!validateApproveOutcome())
-                    throw new Error("Invalid approved outcome");
-
-                  setStep(step + 1);
-                } catch (err: any) {
-                  console.error(err.message);
-                  toast.error("Submit proposal", err.message);
-                }
-              }}
-            >
-              Next
-            </Button>
+            {contractAddress && contractAddress.length === 56 && (
+              <div className="flex items-center gap-3">
+                <a
+                  href={`https://stellar.expert/explorer/public/contract/${contractAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-500 underline flex items-center gap-1"
+                >
+                  View on Explorer
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </a>
+                <span className="text-sm text-green-500">✓ Valid address format</span>
+              </div>
+            )}
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+              <p className="text-sm text-secondary mb-2">
+                <strong>Note:</strong> This single contract will handle all three outcomes (approved, rejected, cancelled).
+                The contract must implement the standard outcome interface.
+              </p>
+              <details className="cursor-pointer">
+                <summary className="text-sm text-blue-500">Download Contract Templates</summary>
+                <div className="flex flex-col gap-2 mt-2 ml-4">
+                  <a
+                    href="/"
+                    download
+                    className="text-sm text-blue-500 underline flex items-center gap-1"
+                  >
+                    📄 Basic Template - Simple outcome execution
+                  </a>
+                  <a
+                    href="/"
+                    download
+                    className="text-sm text-blue-500 underline flex items-center gap-1"
+                  >
+                    💰 Treasury Distribution - Fund allocation logic
+                  </a>
+                  <a
+                    href="/"
+                    download
+                    className="text-sm text-blue-500 underline flex items-center gap-1"
+                  >
+                   Contract Upgrade - Upgrade other contracts
+                  </a>
+                  <a
+                    href="/"
+                    download
+                    className="text-sm text-blue-500 underline flex items-center gap-1"
+                  >
+                    🔐 Multi-Signature - Requires additional signers
+                  </a>
+                </div>
+              </details>
+            </div>
           </div>
         </div>
-      ) : step == 3 ? (
+      )}
+      
+      <OutcomeInput
+        type="approved"
+        description={approveDescription}
+        setDescription={setApproveDescription}
+        xdr={approveXdr}
+        setXdr={setApproveXdr}
+        descriptionError={approveDescriptionError}
+        xdrError={approveXdrError}
+        onDescriptionChange={() => setApproveDescriptionError(null)}
+        onXdrChange={() => setApproveXdrError(null)}
+        contractAddress={contractAddress}
+        setContractAddress={setContractAddress}
+        useContract={useContract}
+        setUseContract={setUseContract}
+      />
+      
+      {/* Only show other outcomes if not using contract */}
+      {!useContract && (
+        <>
+          <OutcomeInput
+            type="rejected"
+            description={rejectDescription}
+            setDescription={setRejectDescription}
+            xdr={rejectXdr}
+            setXdr={setRejectXdr}
+          />
+          <OutcomeInput
+            type="cancelled"
+            description={cancelledDescription}
+            setDescription={setCancelledDescription}
+            xdr={cancelledXdr}
+            setXdr={setCancelledXdr}
+          />
+        </>
+      )}
+      
+      {/* When using contract, still need descriptions for other outcomes */}
+      {useContract && (
+        <div className="flex flex-col gap-6 p-4 border border-zinc-600 rounded-lg">
+          <p className="text-sm text-secondary">
+            Provide descriptions for rejected and cancelled outcomes (handled by the contract):
+          </p>
+          <div className="flex flex-col gap-4">
+            <Label label="Rejected Outcome Description">
+              <Textarea
+                placeholder="Describe what happens when rejected"
+                value={rejectDescription}
+                onChange={(e) => setRejectDescription(e.target.value)}
+              />
+            </Label>
+            <Label label="Cancelled Outcome Description">
+              <Textarea
+                placeholder="Describe what happens when cancelled"
+                value={cancelledDescription}
+                onChange={(e) => setCancelledDescription(e.target.value)}
+              />
+            </Label>
+          </div>
+        </div>
+      )}
+    </div>
+    <div className="flex justify-end gap-[18px]">
+      <Button type="secondary" onClick={() => setStep(step - 1)}>
+        Back
+      </Button>
+      <Button
+        data-testid="proposal-next"
+        onClick={() => {
+          try {
+            if (!validateApproveOutcome())
+              throw new Error("Invalid approved outcome");
+            
+            // Additional validation for contract mode
+            if (useContract) {
+              if (!contractAddress || contractAddress.length !== 56) {
+                throw new Error("Please enter a valid contract address");
+              }
+              if (!rejectDescription || rejectDescription.length < 3) {
+                throw new Error("Please provide a description for rejected outcome");
+              }
+              if (!cancelledDescription || cancelledDescription.length < 3) {
+                throw new Error("Please provide a description for cancelled outcome");
+              }
+            }
+
+            setStep(step + 1);
+          } catch (err: any) {
+            console.error(err.message);
+            toast.error("Submit proposal", err.message);
+          }
+        }}
+      >
+        Next
+      </Button>
+    </div>
+  </div>
+) : step == 3 ? (
         <div className="flex flex-col gap-[42px]">
           <div className="flex gap-[18px]">
             <img src="/images/clock.svg" />
@@ -742,43 +900,89 @@ const CreateProposalModal = () => {
             </div>
             <div className="h-[1px] bg-[#ECE3F4]" />
             <div className="flex flex-col gap-6">
-              <div className="flex gap-6">
-                <p className="leading-6 text-xl font-medium text-primary">
-                  Second Step
-                </p>
-                <Button
-                  type="secondary"
-                  size="sm"
-                  className="p-[2px_10px]"
-                  onClick={() => setStep(2)}
-                >
-                  Back to the Second Step
-                </Button>
-              </div>
-              {[
-                { type: "approved", desc: approveDescription, xdr: approveXdr },
-                { type: "rejected", desc: rejectDescription, xdr: rejectXdr },
-                {
-                  type: "cancelled",
-                  desc: cancelledDescription,
-                  xdr: cancelledXdr,
-                },
-              ].map(({ type, desc, xdr }, index) => (
-                <div key={index} className="flex flex-col gap-6">
-                  <p className={`leading-5 text-xl text-${type}`}>
-                    {capitalizeFirstLetter(type)} Outcome
-                  </p>
-                  <Label label="description">
-                    <ExpandableText>{desc}</ExpandableText>
-                  </Label>
-                  <Label label="XDR">
-                    <p className="leading-6 text-xl text-primary">
-                      {xdr ? xdr : "-"}
-                    </p>
-                  </Label>
-                </div>
-              ))}
-            </div>
+  <div className="flex gap-6">
+    <p className="leading-6 text-xl font-medium text-primary">
+      Second Step
+    </p>
+    <Button
+      type="secondary"
+      size="sm"
+      className="p-[2px_10px]"
+      onClick={() => setStep(2)}
+    >
+      Back to the Second Step
+    </Button>
+  </div>
+  
+  {useContract ? (
+    // Contract-based outcomes display
+    <div className="flex flex-col gap-6">
+      <div className="p-4 border border-zinc-700 rounded-lg bg-zinc-900/50">
+        <Label label="Outcome Contract">
+          <div className="flex flex-col gap-2">
+            <p className="leading-6 text-xl text-primary font-mono">
+              {contractAddress}
+            </p>
+            <a
+              href={`https://stellar.expert/explorer/public/contract/${contractAddress}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-500 underline flex items-center gap-1"
+            >
+              View on Explorer
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+        </Label>
+      </div>
+      
+      {[
+        { type: "approved", desc: approveDescription },
+        { type: "rejected", desc: rejectDescription },
+        { type: "cancelled", desc: cancelledDescription },
+      ].map(({ type, desc }, index) => (
+        <div key={index} className="flex flex-col gap-6">
+          <p className={`leading-5 text-xl text-${type}`}>
+            {capitalizeFirstLetter(type)} Outcome
+          </p>
+          <Label label="description">
+            <ExpandableText>{desc}</ExpandableText>
+          </Label>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <>
+      {[
+        { type: "approved", desc: approveDescription, xdr: approveXdr },
+        { type: "rejected", desc: rejectDescription, xdr: rejectXdr },
+        {
+          type: "cancelled",
+          desc: cancelledDescription,
+          xdr: cancelledXdr,
+        },
+      ].map(({ type, desc, xdr }, index) => (
+        <div key={index} className="flex flex-col gap-6">
+          <p className={`leading-5 text-xl text-${type}`}>
+            {capitalizeFirstLetter(type)} Outcome
+          </p>
+          <Label label="description">
+            <ExpandableText>{desc}</ExpandableText>
+          </Label>
+          <Label label="XDR">
+            <p className="leading-6 text-xl text-primary">
+              {xdr ? xdr : "-"}
+            </p>
+          </Label>
+        </div>
+      ))}
+    </>
+  )}
+</div>
             <div className="h-[1px] bg-[#ECE3F4]" />
             <div className="flex flex-col gap-6">
               <div className="flex gap-6">

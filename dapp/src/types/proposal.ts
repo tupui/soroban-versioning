@@ -59,17 +59,21 @@ export interface Voter {
   github: string;
 }
 
+// Updated ProposalOutcome interface to support both XDR and contract addresses
 export interface ProposalOutcome {
   approved: {
     description: string;
-    xdr: string;
+    xdr?: string;        
+    contract?: string;  
   };
   rejected: {
     description: string;
-    xdr: string;
+    xdr?: string;       
+    contract?: string;   
   };
   cancelled: {
     description: string;
-    xdr: string;
+    xdr?: string;        
+    contract?: string;   
   };
 }
