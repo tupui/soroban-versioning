@@ -89,7 +89,7 @@ const CreateProposalModal = () => {
   }, [connectedAddress, projectName, maintainers]);
 
   useEffect(() => {
-    connectedPublicKey.subscribe((publicKey) => setConnectedAddress(publicKey));
+    const unsubscribe = connectedPublicKey.subscribe((publicKey) => setConnectedAddress(publicKey));
     const name = new URLSearchParams(window.location.search).get("name");
     setProjectName(name);
     const showModalButton = document.querySelector("#create-proposal-button");
@@ -103,11 +103,15 @@ const CreateProposalModal = () => {
     if (showModalButton) {
       setStep(1);
       showModalButton.addEventListener("click", handleSubmmitProposal);
-      return () =>
+      return () => {
+        unsubscribe();
         showModalButton.removeEventListener("click", handleSubmmitProposal);
+      };
     }
 
-    return;
+    return () => {
+      unsubscribe();
+    };
   }, [handleSubmmitProposal]);
 
   useEffect(() => {
