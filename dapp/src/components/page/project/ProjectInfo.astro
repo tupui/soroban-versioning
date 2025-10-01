@@ -121,7 +121,7 @@ import { toast } from "utils/utils";
     loadProjectLatestSha,
     loadProjectName,
   } from "../../../service/StateService";
-  import { convertGitHubLink } from "../../../utils/editLinkFunctions";
+  import { convertGitHubLink, getAuthorRepo } from "../../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../../utils/store";
   import { getBadges, getMember } from "@service/ReadContractService";
 
@@ -567,14 +567,17 @@ import { toast } from "utils/utils";
           }
         }
 
-        if (projectInfo?.name && projectRepoInfo?.author && projectRepoInfo?.repository) {
-          contributionMetricsRoot.render(
-            React.createElement(ContributionMetrics, {
-              projectName: projectInfo.name,
-              owner: projectRepoInfo.author,
-              repo: projectRepoInfo.repository,
-            }),
-          );
+        if (projectInfo?.name && projectInfo?.config?.url) {
+          const { username, repoName } = getAuthorRepo(projectInfo.config.url);
+          if (username && repoName) {
+            contributionMetricsRoot.render(
+              React.createElement(ContributionMetrics, {
+                projectName: projectInfo.name,
+                owner: username,
+                repo: repoName,
+              }),
+            );
+          }
         }
 
         // Re-render modals with the updated data
