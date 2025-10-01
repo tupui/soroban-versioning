@@ -109,7 +109,7 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
       .join('');
 
     // Get current network passphrase from environment
-    const networkPassphrase = import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE;
+    const networkPassphrase = import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE || "Test SDF Network ; September 2015";
     
     // Get current user's stellar address from wallet
     const stellarAddress = loadedPublicKey();
@@ -120,6 +120,10 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
 
     // Get contract ID from environment
     const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
+    if (!contractId) {
+      setError("Contract ID not configured");
+      return;
+    }
 
     const gitIdentity = `${provider}:${username}`;
 
@@ -210,16 +214,45 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
       return;
     }
 
+    // Validate envelope structure
+    const envelopeLines = envelope.split('\n');
+    if (envelopeLines.length !== 5) {
+      setError("Invalid envelope: must have exactly 5 lines");
+      return;
+    }
+
+    if (envelopeLines[0] !== "Stellar Signed Message") {
+      setError("Invalid envelope: missing proper SEP-53 header");
+      return;
+    }
+
+    const expectedGitIdentity = `${provider}:${username}`;
+    const payloadLine = envelopeLines[4];
+    if (!payloadLine || !payloadLine.includes(expectedGitIdentity)) {
+      setError(`Invalid envelope: missing git identity ${expectedGitIdentity}`);
+      return;
+    }
+
     const parsedSignature = parseSignature(signature);
     const parsedPubkey = parsePublicKey(selectedKey.key);
 
     if (!parsedSignature) {
-      setError("Invalid signature format");
+      setError("Invalid signature format. Please provide a valid Ed25519 signature.");
+      return;
+    }
+
+    if (parsedSignature.length !== 64) {
+      setError("Invalid signature: Ed25519 signatures must be exactly 64 bytes");
       return;
     }
 
     if (!parsedPubkey) {
-      setError("Invalid public key format");
+      setError("Invalid public key format. Please ensure you've selected a valid Ed25519 key.");
+      return;
+    }
+
+    if (parsedPubkey.length !== 32) {
+      setError("Invalid public key: Ed25519 keys must be exactly 32 bytes");
       return;
     }
 
@@ -229,7 +262,7 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
       const isValid = await ed25519.verify(parsedSignature, messageBytes, parsedPubkey);
       
       if (!isValid) {
-        setError("Invalid signature: signature verification failed");
+        setError("Invalid signature: signature verification failed. Please ensure you signed the exact envelope text.");
         return;
       }
     } catch (err) {
@@ -238,7 +271,7 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
     }
 
     const gitBindingData: GitBindingData = {
-      gitIdentity: `${provider}:${username}`,
+      gitIdentity: expectedGitIdentity,
       gitPubkey: parsedPubkey,
       message: new TextEncoder().encode(envelope),
       signature: parsedSignature,
@@ -365,14 +398,20 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
       {envelope && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Message to Sign
+            Message to Sign (SEP-53 Envelope)
           </label>
+          <div className="mb-2 text-xs text-gray-600">
+            Network: {import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE || "Test SDF Network ; September 2015"}
+          </div>
           <textarea
             value={envelope}
             readOnly
             className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 font-mono text-sm"
             rows={5}
           />
+          <div className="mt-1 text-xs text-gray-500">
+            This envelope follows the SEP-53 standard for Stellar message signing.
+          </div>
         </div>
       )}
 

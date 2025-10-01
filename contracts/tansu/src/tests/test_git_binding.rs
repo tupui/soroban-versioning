@@ -48,7 +48,7 @@ fn test_add_member_with_git_handle_conflict() {
     let meta = String::from_str(&setup.env, "test member");
     let git_identity = String::from_str(&setup.env, "github:testuser");
     let git_pubkey = BytesN::from_array(&setup.env, &[1u8; 32]);
-    let msg = Bytes::from_array(&setup.env, b"test message");
+    let msg = create_basic_valid_envelope(&setup.env);  // Use proper SEP-53 envelope
     let sig = BytesN::from_array(&setup.env, &[2u8; 64]);
 
     // First member registers successfully
@@ -153,6 +153,16 @@ fn test_add_member_without_git_still_works() {
 // Helper function to create a basic valid envelope for testing
 fn create_basic_valid_envelope(env: &soroban_sdk::Env) -> Bytes {
     Bytes::from_slice(env, b"Stellar Signed Message\nTest SDF Network ; September 2015\nGABC123456789012345678901234567890123456789012345678\n1234567890abcdef1234567890abcdef\ntansu-bind|CONTRACT123|github:testuser")
+}
+
+// Helper function to create a valid envelope for github:testuser1
+fn create_github_testuser1_envelope(env: &soroban_sdk::Env) -> Bytes {
+    Bytes::from_slice(env, b"Stellar Signed Message\nTest SDF Network ; September 2015\nGABC123456789012345678901234567890123456789012345678\n1234567890abcdef1234567890abcdef\ntansu-bind|CONTRACT123|github:testuser1")
+}
+
+// Helper function to create a valid envelope for gitlab:testuser2  
+fn create_gitlab_testuser2_envelope(env: &soroban_sdk::Env) -> Bytes {
+    Bytes::from_slice(env, b"Stellar Signed Message\nTest SDF Network ; September 2015\nGABC123456789012345678901234567890123456789012345678\n1234567890abcdef1234567890abcdef\ntansu-bind|CONTRACT123|gitlab:testuser2")
 }
 
 #[test]
@@ -318,13 +328,13 @@ fn test_both_providers_accepted() {
 
     // Test GitHub
     let github_identity = String::from_str(&setup.env, "github:testuser1");
-    let github_msg = create_basic_valid_envelope(&setup.env);
+    let github_msg = create_github_testuser1_envelope(&setup.env);
     
     setup.contract.add_member_with_git(&member1, &meta, &github_identity, &git_pubkey, &github_msg, &sig);
 
     // Test GitLab
     let gitlab_identity = String::from_str(&setup.env, "gitlab:testuser2");
-    let gitlab_msg = create_basic_valid_envelope(&setup.env);
+    let gitlab_msg = create_gitlab_testuser2_envelope(&setup.env);
     
     setup.contract.add_member_with_git(&member2, &meta, &gitlab_identity, &git_pubkey, &gitlab_msg, &sig);
 

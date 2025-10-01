@@ -2,11 +2,20 @@ import type { FC } from "react";
 import { useState, useEffect } from "react";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Button from "components/utils/Button";
-import type { Member, Badge } from "../../../../packages/tansu";
+import type { Member as BaseMember, Badge } from "../../../../packages/tansu";
 import { getIpfsBasicLink, fetchJSONFromIPFS } from "utils/ipfsFunctions";
 import Markdown from "markdown-to-jsx";
 import { truncateMiddle } from "../../../utils/utils";
 import { connectedPublicKey } from "../../../utils/store";
+
+// Extended Member type with git identity fields
+interface Member extends BaseMember {
+  git_provider_username?: string | null;
+  git_pubkey_ed25519?: Buffer | null;
+  git_msg?: Buffer | null;
+  git_sig?: Buffer | null;
+  git_signed_at?: number | null;
+}
 
 import { getProjectFromId } from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
@@ -333,6 +342,29 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 >
                   {profileData.social.replace(/^https?:\/\//, "")}
                 </a>
+              )}
+
+              {/* Git Identity - Show verified badge when git binding exists */}
+              {member?.git_provider_username && member?.git_sig && (
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <div className="flex items-center gap-1 px-2 py-1 bg-green-50 border border-green-200 rounded-full">
+                    <svg
+                      className="w-4 h-4 text-green-600"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-green-700">
+                      {member.git_provider_username}
+                    </span>
+                    <span className="text-xs text-green-600">✓ Verified</span>
+                  </div>
+                </div>
               )}
 
               {/* IPFS metadata link */}

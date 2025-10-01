@@ -99,6 +99,11 @@ export interface ProjectBadges {
 export interface Member {
   meta: string;
   projects: Array<ProjectBadges>;
+  git_provider_username: string | null;
+  git_pubkey_ed25519: Buffer | null;
+  git_msg: Buffer | null;
+  git_sig: Buffer | null;
+  git_signed_at: u64 | null;
 }
 
 export type ProposalStatus =

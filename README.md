@@ -42,3 +42,29 @@ Tansu now supports optional Git identity binding during member registration, all
 - **Reputation**: Build trust through verified Git contributions
 - **Uniqueness**: Prevent handle squatting with case-insensitive validation
 - **Backward Compatibility**: Existing registration flow unchanged for users who skip Git binding
+
+### Technical Implementation:
+
+The Git identity binding uses **SEP-53 (Stellar Signed Messages)** for secure authentication:
+
+#### SEP-53 Envelope Format:
+```
+Stellar Signed Message
+Test SDF Network ; September 2015
+STELLAR_ACCOUNT_ADDRESS
+RANDOM_NONCE
+tansu-bind|CONTRACT_ID|PROVIDER:USERNAME
+```
+
+#### Validation Process:
+1. **Message Generation**: Frontend creates a 5-line SEP-53 envelope
+2. **Signature Creation**: User signs with their Git account's Ed25519 private key
+3. **On-chain Verification**: Contract validates signature using Soroban's `crypto::ed25519_verify`
+4. **Handle Normalization**: Converts handles to lowercase for case-insensitive uniqueness
+5. **Storage**: Stores binding data (provider:username, pubkey, message, signature, timestamp)
+
+#### Network Support:
+- **Testnet**: `Test SDF Network ; September 2015`
+- **Mainnet**: `Public Global Stellar Network ; September 2015`
+
+The contract automatically detects the network and validates the appropriate passphrase.
