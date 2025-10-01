@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import Input from "components/utils/Input";
 import Button from "components/utils/Button";
 import Spinner from "components/utils/Spinner";
+import { loadedPublicKey } from "@service/walletService";
+import * as ed25519 from "noble-ed25519";
 
 interface GitKey {
   id: number;
@@ -36,6 +38,7 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
   const [envelope, setEnvelope] = useState("");
   const [signature, setSignature] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isValidated, setIsValidated] = useState(false);
 
   // Generate SEP-53 envelope when git identity or selected key changes
   useEffect(() => {
@@ -43,6 +46,11 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
       generateEnvelope();
     }
   }, [username, provider, selectedKey]);
+
+  // Reset validation when signature changes
+  useEffect(() => {
+    setIsValidated(false);
+  }, [signature]);
 
   const fetchGitKeys = async () => {
     if (!username.trim()) {
@@ -100,14 +108,18 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
       .map(b => b.toString(16).padStart(2, '0'))
       .join('');
 
-    // Get current network passphrase (would need to be determined from environment)
-    const networkPassphrase = "Test SDF Network ; September 2015"; // or "Public Global Stellar Network ; September 2015"
+    // Get current network passphrase from environment
+    const networkPassphrase = import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE;
     
-    // Get current user's stellar address (would need to be passed in)
-    const stellarAddress = "GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"; // placeholder
+    // Get current user's stellar address from wallet
+    const stellarAddress = loadedPublicKey();
+    if (!stellarAddress) {
+      setError("Please connect your wallet first");
+      return;
+    }
 
-    // Generate contract ID (would need to be from environment)
-    const contractId = "CXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"; // placeholder
+    // Get contract ID from environment
+    const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
 
     const gitIdentity = `${provider}:${username}`;
 
@@ -133,9 +145,38 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
 
   const parseSignature = (sigText: string): Uint8Array | null => {
     try {
-      // For now, assume the user provides a base64-encoded raw signature
-      // In production, this would parse SSH or GPG signature formats
-      const decoded = atob(sigText.trim());
+      const trimmed = sigText.trim();
+      
+      // Handle SSH signature format
+      if (trimmed.startsWith('-----BEGIN SSH SIGNATURE-----')) {
+        // Basic SSHSIG parsing - extract the base64 content
+        const lines = trimmed.split('\n');
+        const base64Lines = lines.slice(1, -1).filter(line => !line.includes('-----'));
+        const base64Content = base64Lines.join('');
+        
+        try {
+          const decoded = atob(base64Content);
+          // For MVP, we'll assume the user provides the raw 64-byte signature
+          // In production, this would properly parse the SSH signature format
+          if (decoded.length >= 64) {
+            const rawSig = decoded.slice(-64);
+            return new Uint8Array(Array.from(rawSig).map(c => c.charCodeAt(0)));
+          }
+        } catch {
+          // Fall through to try raw base64
+        }
+      }
+      
+      // Handle raw base64-encoded signature (64 bytes for Ed25519)
+      if (trimmed.length === 88) { // 64 bytes * 4/3 base64 encoding
+        const decoded = atob(trimmed);
+        if (decoded.length === 64) {
+          return new Uint8Array(Array.from(decoded).map(c => c.charCodeAt(0)));
+        }
+      }
+      
+      // Fallback: try to decode as base64
+      const decoded = atob(trimmed);
       return new Uint8Array(Array.from(decoded).map(c => c.charCodeAt(0)));
     } catch {
       return null;
@@ -148,10 +189,14 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
       const parts = keyString.trim().split(' ');
       if (parts.length >= 2 && parts[0] === 'ssh-ed25519' && parts[1]) {
         const keyData = atob(parts[1]);
-        // SSH Ed25519 public key format has some headers, extract the raw 32-byte key
-        // This is a simplified extraction - production would need proper SSH key parsing
-        const rawKey = keyData.slice(-32);
-        return new Uint8Array(Array.from(rawKey).map(c => c.charCodeAt(0)));
+        
+        // SSH key format: [length][type][length][key-data]
+        // For ssh-ed25519, we need to skip the SSH wire format headers
+        // The actual Ed25519 public key is the last 32 bytes
+        if (keyData.length >= 32) {
+          const rawKey = keyData.slice(-32);
+          return new Uint8Array(Array.from(rawKey).map(c => c.charCodeAt(0)));
+        }
       }
       return null;
     } catch {
@@ -159,7 +204,7 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
     }
   };
 
-  const validateAndSubmit = () => {
+    const validateAndSubmit = async () => {
     if (!username || !selectedKey || !envelope || !signature) {
       setError("Please complete all fields");
       return;
@@ -178,6 +223,20 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
       return;
     }
 
+    // Verify the signature before proceeding
+    try {
+      const messageBytes = new TextEncoder().encode(envelope);
+      const isValid = await ed25519.verify(parsedSignature, messageBytes, parsedPubkey);
+      
+      if (!isValid) {
+        setError("Invalid signature: signature verification failed");
+        return;
+      }
+    } catch (err) {
+      setError("Signature verification error: " + (err instanceof Error ? err.message : "Unknown error"));
+      return;
+    }
+
     const gitBindingData: GitBindingData = {
       gitIdentity: `${provider}:${username}`,
       gitPubkey: parsedPubkey,
@@ -185,6 +244,7 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
       signature: parsedSignature,
     };
 
+    setIsValidated(true);
     onGitDataChange(gitBindingData);
     setError(null);
   };
@@ -197,6 +257,7 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
     setEnvelope("");
     setSignature("");
     setError(null);
+    setIsValidated(false);
     onGitDataChange(null);
   };
 
@@ -344,6 +405,14 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
           value={signature}
           onChange={(e) => setSignature(e.target.value)}
         />
+        {isValidated && (
+          <div className="mt-2 text-sm text-green-600 flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            Signature verified successfully
+          </div>
+        )}
       </div>
 
       <Button
@@ -351,7 +420,7 @@ const GitIdentityBinding: React.FC<GitIdentityBindingProps> = ({
         disabled={!signature.trim() || disabled}
         className="w-full"
       >
-        Verify & Link Git Identity
+        {isValidated ? 'Git Identity Linked ✓' : 'Verify & Link Git Identity'}
       </Button>
     </div>
   );

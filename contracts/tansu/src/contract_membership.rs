@@ -81,8 +81,8 @@ impl MembershipTrait for Tansu {
         validate_sep53_envelope(&env, &msg, &member_address);
         validate_git_binding_payload(&env, &msg, &git_identity);
         
-        // TODO: Verify Ed25519 signature - temporarily disabled for testing
-        // env.crypto().ed25519_verify(&git_pubkey, &msg, &sig);
+        // Verify Ed25519 signature
+        env.crypto().ed25519_verify(&git_pubkey, &msg, &sig);
 
         let member = types::Member {
             projects: Vec::new(&env),
@@ -307,35 +307,52 @@ impl MembershipTrait for Tansu {
 }
 
 /// Normalize git handle to lowercase for case-insensitive uniqueness
-fn normalize_git_handle(env: &Env, git_identity: &String) -> String {
-    // For now, we'll do a simple validation and just return the original
-    // In production, this would convert to lowercase
+fn normalize_git_handle(_env: &Env, git_identity: &String) -> String {
+    // For MVP, we'll store the original case but check for conflicts
+    // TODO: Implement proper case-insensitive normalization when Soroban String supports it
     git_identity.clone()
 }
 
 /// Validate git_identity format: provider:username where provider ∈ {github, gitlab}
 fn validate_git_identity_format(env: &Env, git_identity: &String) {
-    // For now, just do basic length validation
-    // In production, this would validate the exact format
     if git_identity.is_empty() {
+        panic_with_error!(env, &errors::ContractErrors::InvalidTansuBindPayload);
+    }
+    
+    // Validate length constraints  
+    if git_identity.len() < 8 || git_identity.len() > 50 {  // github:a to gitlab:username39chars
         panic_with_error!(env, &errors::ContractErrors::InvalidTansuBindPayload);
     }
 }
 
 /// Validate SEP-53 envelope structure and basic checks
 fn validate_sep53_envelope(env: &Env, msg: &Bytes, _invoker: &Address) {
-    // For now, just validate it's not empty
-    // In production, this would parse the 5-line format
     if msg.is_empty() {
         panic_with_error!(env, &errors::ContractErrors::InvalidSep53Header);
     }
+    
+    // Basic length validation
+    if msg.len() < 100 {  // Rough minimum for all required fields
+        panic_with_error!(env, &errors::ContractErrors::InvalidSep53Header);
+    }
+    
+    // For now, we'll do basic validation. In a full implementation,
+    // we'd need to parse each line properly with Soroban-compatible string handling
+    // TODO: Implement full line-by-line validation
 }
 
 /// Validate the tansu-bind payload in line 5
 fn validate_git_binding_payload(env: &Env, msg: &Bytes, _expected_git_identity: &String) {
-    // For now, just validate it's not empty
-    // In production, this would parse and validate the payload
     if msg.is_empty() {
         panic_with_error!(env, &errors::ContractErrors::InvalidTansuBindPayload);
     }
+    
+    // Basic length validation
+    if msg.len() < 50 {  // Minimum for meaningful payload
+        panic_with_error!(env, &errors::ContractErrors::InvalidTansuBindPayload);
+    }
+    
+    // For now, we'll do basic validation. In a full implementation,
+    // we'd need to parse the payload properly with Soroban-compatible string handling
+    // TODO: Implement full payload validation including git identity matching
 }

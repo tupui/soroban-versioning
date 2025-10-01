@@ -3,6 +3,10 @@ use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
 // Constants
 pub const TIMELOCK_DELAY: u64 = 24 * 3600; // 24 hours in seconds
 
+// Stellar network passphrases for SEP-53 validation
+pub const PUBNET_PASSPHRASE: &str = "Public Global Stellar Network ; September 2015";
+pub const TESTNET_PASSPHRASE: &str = "Test SDF Network ; September 2015";
+
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Contract {
