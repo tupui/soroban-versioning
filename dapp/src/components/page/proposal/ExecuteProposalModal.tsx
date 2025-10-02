@@ -49,7 +49,12 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   >(voteStatus);
 
   const computedResult = useMemo(() => {
-    if (!displayVoteStatus || !displayVoteStatus.approve || !displayVoteStatus.abstain || !displayVoteStatus.reject) {
+    if (
+      !displayVoteStatus ||
+      !displayVoteStatus.approve ||
+      !displayVoteStatus.abstain ||
+      !displayVoteStatus.reject
+    ) {
       return null;
     }
     const { approve, abstain, reject } = displayVoteStatus;
