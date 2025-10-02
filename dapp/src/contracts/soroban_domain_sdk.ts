@@ -7,8 +7,8 @@ function createDomainSDK() {
   const config = getNetworkConfig();
   const defaultFee = "100";
   const defaultTimeout = 30;
-  const simulationAccount = "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2"; // From tansu.toml
-  
+  const simulationAccount = import.meta.env.PUBLIC_TANSU_OWNER_ID;
+
   return new SorobanDomainsSDK({
     stellarSDK: SDK,
     rpc: new SDK.rpc.Server(config.rpc),

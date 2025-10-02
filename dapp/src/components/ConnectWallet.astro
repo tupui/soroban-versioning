@@ -106,11 +106,15 @@
 
       const root = createRoot(modalRoot);
 
-      const handleConnect = async (network: 'mainnet' | 'testnet', walletId: string) => {
+      const handleConnect = async (
+        network: "mainnet" | "testnet",
+        walletId: string,
+      ) => {
         try {
-          localStorage.setItem('network', network);
-          const { kit } = await import("./stellar-wallets-kit");
-          
+          localStorage.setItem("network", network);
+          const { getKit } = await import("./stellar-wallets-kit");
+
+          const kit = getKit();
           kit.setWallet(walletId);
           const { address } = await kit.getAddress();
           setPublicKey(address);
@@ -118,10 +122,10 @@
           window.dispatchEvent(
             new CustomEvent("walletConnected", { detail: address }),
           );
-          
+
           window.location.reload();
         } catch (e) {
-          console.error('Wallet connection failed:', e);
+          console.error("Wallet connection failed:", e);
         }
       };
 
@@ -131,13 +135,15 @@
       };
 
       root.render(
-        createElement(NetworkProvider, {},
+        createElement(
+          NetworkProvider,
+          {},
           createElement(WalletConnectModal.default, {
             isOpen: true,
             onClose: handleClose,
-            onConnect: handleConnect
-          })
-        )
+            onConnect: handleConnect,
+          }),
+        ),
       );
     }
 

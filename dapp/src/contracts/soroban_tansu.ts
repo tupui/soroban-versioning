@@ -4,7 +4,7 @@ import { getNetworkConfig } from "../utils/networks";
 // Create client based on current network selection
 function createTansuClient() {
   const config = getNetworkConfig();
-  
+
   return new Client.Client({
     networkPassphrase: config.passphrase,
     contractId: config.tansu_contract,

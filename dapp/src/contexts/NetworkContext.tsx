@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
 
-type Network = 'mainnet' | 'testnet';
+type Network = "mainnet" | "testnet";
 
 interface NetworkContextType {
   network: Network;
@@ -14,7 +14,7 @@ const NetworkContext = createContext<NetworkContextType | undefined>(undefined);
 export const useNetwork = () => {
   const context = useContext(NetworkContext);
   if (context === undefined) {
-    throw new Error('useNetwork must be used within a NetworkProvider');
+    throw new Error("useNetwork must be used within a NetworkProvider");
   }
   return context;
 };
@@ -24,13 +24,13 @@ interface NetworkProviderProps {
 }
 
 export const NetworkProvider = ({ children }: NetworkProviderProps) => {
-  const [network, setNetworkState] = useState<Network>('testnet');
+  const [network, setNetworkState] = useState<Network>("testnet");
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('network');
-      if (saved === 'testnet' || saved === 'mainnet') {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("network");
+      if (saved === "testnet" || saved === "mainnet") {
         setNetworkState(saved);
       }
       setIsHydrated(true);
@@ -39,14 +39,14 @@ export const NetworkProvider = ({ children }: NetworkProviderProps) => {
 
   const setNetwork = (newNetwork: Network) => {
     setNetworkState(newNetwork);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('network', newNetwork);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("network", newNetwork);
     }
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('network', network);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("network", network);
     }
   }, [network]);
 

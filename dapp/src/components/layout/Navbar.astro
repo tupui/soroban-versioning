@@ -2,7 +2,6 @@
 import ConnectWallet from "../ConnectWallet.astro";
 import JoinCommunityButton from "../JoinCommunityButton.tsx";
 import NavbarSearch from "../NavbarSearch.tsx";
-
 ---
 
 <header role="banner">
@@ -38,7 +37,9 @@ import NavbarSearch from "../NavbarSearch.tsx";
         </div>
 
         <!-- Wallet connect + community button -->
-        <div class="flex items-center gap-4 md:gap-6 flex-shrink-0">
+        <div
+          class="flex items-center gap-4 md:gap-8 lg:gap-10 flex-shrink-0 ml-4 md:ml-6 lg:ml-8"
+        >
           <ConnectWallet />
           <div id="join-community-wrapper" class="hidden sm:block">
             <JoinCommunityButton client:load />
