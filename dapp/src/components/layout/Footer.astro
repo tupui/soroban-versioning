@@ -1,8 +1,11 @@
 ---
+import { getNetworkConfig } from "../../utils/networks";
+
 const year = new Date().getFullYear();
-const horizonUrl = import.meta.env.PUBLIC_HORIZON_URL;
-const network = horizonUrl.includes("testnet") ? "testnet" : "public";
-const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
+const config = getNetworkConfig();
+// Stellar Expert uses "public" for mainnet, "testnet" for testnet
+const network = config.name.toLowerCase() === "mainnet" ? "public" : "testnet";
+const contractId = config.tansu_contract;
 ---
 
 <footer class="bg-pink bg-fixed bg-bottom text-white">

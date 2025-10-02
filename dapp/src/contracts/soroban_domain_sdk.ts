@@ -1,20 +1,23 @@
 import * as SDK from "@stellar/stellar-sdk";
 import { SorobanDomainsSDK } from "@creit.tech/sorobandomains-sdk";
+import { getNetworkConfig } from "../utils/networks";
 
-const vaultsContractId = import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID;
-const defaultFee = import.meta.env.PUBLIC_DEFAULT_FEE ?? "100";
-const defaultTimeout = import.meta.env.PUBLIC_DEFAULT_TIMEOUT ?? 30;
-const simulationAccount = import.meta.env.PUBLIC_TANSU_OWNER_ID;
-const networkPassphrase = import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE;
+// Create domain SDK based on current network selection
+function createDomainSDK() {
+  const config = getNetworkConfig();
+  const defaultFee = "100";
+  const defaultTimeout = 30;
+  const simulationAccount = import.meta.env.PUBLIC_TANSU_OWNER_ID;
 
-const sdk = new SorobanDomainsSDK({
-  stellarSDK: SDK,
-  rpc: new SDK.rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL),
-  network: networkPassphrase as SDK.Networks,
-  vaultsContractId: vaultsContractId,
-  defaultFee: defaultFee,
-  defaultTimeout: defaultTimeout,
-  simulationAccount: simulationAccount,
-});
+  return new SorobanDomainsSDK({
+    stellarSDK: SDK,
+    rpc: new SDK.rpc.Server(config.rpc),
+    network: config.passphrase as SDK.Networks,
+    vaultsContractId: config.domain_contract,
+    defaultFee: defaultFee,
+    defaultTimeout: defaultTimeout,
+    simulationAccount: simulationAccount,
+  });
+}
 
-export default sdk;
+export default createDomainSDK();
