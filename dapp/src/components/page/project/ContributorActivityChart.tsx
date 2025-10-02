@@ -3,10 +3,12 @@ import type { ContributorActivity } from "../../../types/contributionMetrics";
 
 interface ContributorActivityChartProps {
   contributors: ContributorActivity[];
+  maintainers?: string[];
 }
 
 const ContributorActivityChart: React.FC<ContributorActivityChartProps> = ({
-  contributors
+  contributors,
+  maintainers = []
 }) => {
   const [showAll, setShowAll] = useState(false);
   const [sortBy, setSortBy] = useState<'commits' | 'recent'>('commits');
@@ -58,18 +60,25 @@ const ContributorActivityChart: React.FC<ContributorActivityChartProps> = ({
         </div>
 
         <div className="space-y-3">
-          {displayedContributors.map((contributor, index) => {
+          {displayedContributors.map((contributor) => {
             const percentage = (contributor.commitCount / maxCommits) * 100;
             const activity = getActivityStatus(contributor.lastCommit);
+            const isMaintainer = maintainers.includes(contributor.author.name.toLowerCase());
+            const contributorKey = `${contributor.author.name}-${contributor.author.email || 'no-email'}`;
 
             return (
-              <div key={`${contributor.author.name}-${index}`} className="flex items-center gap-3">
+              <div key={contributorKey} className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <div className={`w-2 h-2 rounded-full ${activity.color}`} title={activity.status} />
                     <span className="text-sm font-medium text-primary truncate">
                       {contributor.author.name}
                     </span>
+                    {isMaintainer && (
+                      <span className="px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded">
+                        maintainer
+                      </span>
+                    )}
                     <span className="text-xs text-secondary">{contributor.commitCount} commits</span>
                   </div>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ContributionMetrics } from "../../../types/contributionMetrics";
 import { ContributionMetricsService } from "../../../service/ContributionMetricsService";
+import { loadConfigData } from "../../../service/StateService";
 import PonyFactorCard from "./PonyFactorCard";
 import ContributorActivityChart from "./ContributorActivityChart";
 import MonthlyActivityChart from "./MonthlyActivityChart";
@@ -19,6 +20,7 @@ const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
   const [metrics, setMetrics] = useState<ContributionMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [maintainers, setMaintainers] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -28,6 +30,14 @@ const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
 
         const metrics = await ContributionMetricsService.fetchMetrics(owner, repo);
         setMetrics(metrics);
+
+        const configData = loadConfigData();
+        if (configData?.authorGithubNames && Array.isArray(configData.authorGithubNames)) {
+          const maintainerNames = configData.authorGithubNames
+            .map((name) => (name && typeof name === "string" ? name.toLowerCase() : ""))
+            .filter(Boolean);
+          setMaintainers(maintainerNames);
+        }
       } catch (err) {
         console.error('Error fetching contribution metrics:', err);
         setError("Failed to load contribution metrics");
@@ -76,7 +86,7 @@ const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
   }
 
   return (
-    <div className="px-[16px] lg:px-[72px] flex flex-col gap-6">
+    <div className="px-[16px] lg:px-[72px] py-12 flex flex-col gap-6">
       <div className="flex flex-col gap-[18px]">
         <p className="leading-6 text-2xl font-medium text-primary">
           Contribution Metrics
@@ -104,10 +114,10 @@ const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
         </div>
       </div>
 
-      <PonyFactorCard ponyFactor={metrics.ponyFactor} />
+      <PonyFactorCard ponyFactor={metrics.ponyFactor} totalCommits={metrics.totalCommits} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ContributorActivityChart contributors={metrics.contributorActivity} />
+        <ContributorActivityChart contributors={metrics.contributorActivity} maintainers={maintainers} />
         <MonthlyActivityChart monthlyStats={metrics.monthlyStats} />
       </div>
     </div>

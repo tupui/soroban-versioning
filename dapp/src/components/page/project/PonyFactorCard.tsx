@@ -2,9 +2,10 @@ import type { PonyFactorResult } from "../../../types/contributionMetrics";
 
 interface PonyFactorCardProps {
   ponyFactor: PonyFactorResult;
+  totalCommits: number;
 }
 
-const PonyFactorCard: React.FC<PonyFactorCardProps> = ({ ponyFactor }) => {
+const PonyFactorCard: React.FC<PonyFactorCardProps> = ({ ponyFactor, totalCommits }) => {
   const getRiskLevel = (factor: number): { level: string; color: string; description: string } => {
     if (factor <= 2) {
       return {
@@ -51,9 +52,10 @@ const PonyFactorCard: React.FC<PonyFactorCardProps> = ({ ponyFactor }) => {
           <div className="text-sm font-medium text-secondary mb-2">Top Contributors (50% of commits)</div>
           <div className="space-y-2">
             {ponyFactor.topContributors.slice(0, 5).map((contributor, index) => {
-              const percentage = ((contributor.commitCount / ponyFactor.topContributors.reduce((sum, c) => sum + c.commitCount, 0)) * 100);
+              const percentage = totalCommits > 0 ? ((contributor.commitCount / totalCommits) * 100) : 0;
+              const contributorKey = `${contributor.author.name}-${contributor.author.email || 'no-email'}`;
               return (
-                <div key={`${contributor.author.name}-${index}`} className="flex items-center justify-between">
+                <div key={contributorKey} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-xs font-medium text-blue-600">
                       {index + 1}

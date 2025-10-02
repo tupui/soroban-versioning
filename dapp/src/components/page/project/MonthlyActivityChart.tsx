@@ -95,37 +95,54 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
 
         {/* Chart */}
         <div className="relative">
-          <div className="flex items-end justify-center gap-1 h-32 px-2">
+          <div className="relative h-32 px-2">
             {filteredMonths.length === 0 ? (
               <div className="flex items-center justify-center w-full h-full text-blue-800 text-sm">
                 No data available
               </div>
             ) : (
-              filteredMonths.map((month) => {
-                if (!month) return null;
-                const value = monthlyStats[month]?.[metric] || 0;
-                const height = getBarHeight(value);
+              <svg className="w-full h-full" preserveAspectRatio="none">
+                {/* Draw curve */}
+                <path
+                  d={filteredMonths
+                    .filter(Boolean)
+                    .map((month, index, arr) => {
+                      const value = monthlyStats[month]?.[metric] || 0;
+                      const height = getBarHeight(value);
+                      const x = arr.length > 1 ? (index / (arr.length - 1)) * 100 : 50;
+                      const y = 100 - height;
+                      return `${index === 0 ? 'M' : 'L'} ${x}% ${y}%`;
+                    })
+                    .join(' ')}
+                  fill="none"
+                  stroke="rgb(139, 92, 246)"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
 
-                return (
-                  <div
-                    key={month}
-                    className="group relative flex flex-col items-center flex-1 max-w-8"
-                  >
-                    <div
-                      className="w-full bg-violet-500 rounded-t-sm transition-all duration-300 hover:bg-violet-600"
-                      style={{ height: value > 0 ? `${height}%` : '2px', minHeight: value > 0 ? '8px' : '2px' }}
-                      title={`${formatMonth(month)}: ${value} ${metric}`}
-                    />
+                {/* Draw points with hover tooltips */}
+                {filteredMonths.map((month, index) => {
+                  if (!month) return null;
+                  const value = monthlyStats[month]?.[metric] || 0;
+                  const height = getBarHeight(value);
+                  const x = filteredMonths.length > 1 ? (index / (filteredMonths.length - 1)) * 100 : 50;
+                  const y = 100 - height;
 
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full mb-2 hidden group-hover:block z-10">
-                      <div className="bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                        {formatMonth(month)}: {value} {metric}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
+                  return (
+                    <g key={month} className="group">
+                      <circle
+                        cx={`${x}%`}
+                        cy={`${y}%`}
+                        r="4"
+                        fill="rgb(139, 92, 246)"
+                        className="cursor-pointer transition-all group-hover:r-[6]"
+                      />
+                      <title>{formatMonth(month)}: {value} {metric}</title>
+                    </g>
+                  );
+                })}
+              </svg>
             )}
           </div>
 
@@ -166,6 +183,11 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
       sum + (monthlyStats[month]?.[metric] || 0), 0) / recentMonths.length;
     const earlierAvg = earlierMonths.reduce((sum, month) =>
       sum + (monthlyStats[month]?.[metric] || 0), 0) / earlierMonths.length;
+
+    if (earlierAvg === 0) {
+      if (recentAvg > 0) return `Activity is trending up from zero`;
+      return "Activity levels are stable";
+    }
 
     const change = ((recentAvg - earlierAvg) / earlierAvg) * 100;
 
