@@ -64,21 +64,20 @@ const VotingModal: React.FC<VotersModalProps> = ({
       setIsVoted?.(true);
       setStep(2);
     } catch (error: any) {
-      // Handle error safely
       setIsLoading(false);
 
       let errorMessage = "Failed to cast vote";
 
       if (typeof error === "string") {
-        errorMessage = error;
+        errorMessage += `: ${error}`;
       } else if (error?.message) {
-        errorMessage = error.message;
+        errorMessage += `: ${error.message}`;
       } else if (error?.code === 4001) {
-        // MetaMask user rejected the transaction
-        errorMessage = "You canceled the transaction";
+        // Wallet rejected the transaction
+        errorMessage += ": The transaction was cancelled by the user";
       } else {
         // Fallback: stringify unknown error objects
-        errorMessage = JSON.stringify(error);
+        errorMessage += `: ${JSON.stringify(error)}`;
       }
 
       setVoteError(errorMessage);
