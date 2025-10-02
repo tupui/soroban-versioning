@@ -89,7 +89,9 @@ const CreateProposalModal = () => {
   }, [connectedAddress, projectName, maintainers]);
 
   useEffect(() => {
-    const unsubscribe = connectedPublicKey.subscribe((publicKey) => setConnectedAddress(publicKey));
+    const unsubscribe = connectedPublicKey.subscribe((publicKey) =>
+      setConnectedAddress(publicKey),
+    );
     const name = new URLSearchParams(window.location.search).get("name");
     setProjectName(name);
     const showModalButton = document.querySelector("#create-proposal-button");
