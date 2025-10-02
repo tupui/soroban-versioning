@@ -11,6 +11,7 @@ export interface Proposal {
   id: number;
   title: string;
   ipfs: string;
+  proposer: string;
   status: ProposalStatus;
   voting_ends_at: number;
   voteStatus: VoteStatus;
@@ -19,6 +20,7 @@ export interface Proposal {
 export interface ProposalView {
   id: number;
   title: string;
+  proposer: string;
   projectName: string;
   ipfsLink: string;
   status: ProposalViewStatus;
