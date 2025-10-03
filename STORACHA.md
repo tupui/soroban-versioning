@@ -1,0 +1,143 @@
+# Storacha IPFS Setup and AES-256 Proof Encryption
+
+This guide explains how to set up IPFS uploads via Storacha for the dApp, how to generate and encrypt your Storacha proof with AES-256, and how to configure the required environment variables.
+
+The dApp server route `dapp/src/pages/api/w3up-delegation.js` expects:
+- `STORACHA_SING_PRIVATE_KEY` (required): your W3UP/Storacha ED25519 principal private key.
+- `STORACHA_PROOF` (required): either the plain proof string or a 64-hex key used to decrypt a local `encrypted_proof.bin`.
+
+If `STORACHA_PROOF` is exactly 64 characters, the app treats it as an AES key (hex) and decrypts a local `encrypted_proof.bin` using `dapp/src/utils/decryptAES256.ts`.
+
+---
+
+## 1) Prerequisites
+- Bun installed for dApp development.
+- A Storacha (Web3.Storage W3UP) account and a created Space/Proof.
+- This repository cloned locally.
+
+References in the codebase:
+- Encryption tool: `tools/AES256-encrypt.js`
+- Decryption helper: `dapp/src/utils/decryptAES256.ts`
+- Env typings: `dapp/src/env.d.ts`
+- API usage: `dapp/src/pages/api/w3up-delegation.js`
+
+---
+
+## 2) Create a Storacha Proof
+
+Follow Storacha/W3UP docs to create a Space and obtain its Proof (a UCAN proof string). You will end up with a proof string you can paste into an environment variable or encrypt locally.
+
+Keep this string safe; it grants the app permission to delegate for uploads.
+
+---
+
+## 3) Choose Your Storage Mode for the Proof
+
+You have two supported options.
+
+- Plain mode (simplest): store the proof directly in the `STORACHA_PROOF` environment variable.
+- Encrypted mode (recommended): encrypt the proof locally into `encrypted_proof.bin` and store only the AES key (hex) in the environment.
+
+The runtime logic in `w3up-delegation.js`:
+- If `STORACHA_PROOF.length === 64` → treat it as AES key hex and decrypt `encrypted_proof.bin` at runtime.
+- Otherwise, treat `STORACHA_PROOF` as the plain proof string.
+
+---
+
+## 4) Encrypted Mode: Generate AES key and encrypted_proof.bin
+
+The repository provides `tools/AES256-encrypt.js` that encrypts arbitrary data using AES-GCM and writes an `encrypted_proof.bin` JSON payload with:
+- `nonce` (base64)
+- `header` (base64, AAD)
+- `ciphertext` (base64)
+- `tag` (base64)
+
+Steps:
+
+1. Open `tools/AES256-encrypt.js` and replace the placeholder data with your actual proof string:
+   - Locate:
+     ```js
+     const data = new TextEncoder().encode("This is some secret data...");
+     const header = new TextEncoder().encode("storachaProof");
+     ```
+   - Replace the `data` line with your proof string, e.g.:
+     ```js
+     const data = new TextEncoder().encode("<PASTE_YOUR_STORACHA_PROOF_STRING>");
+     ```
+     You can keep the `header` as `"storachaProof"` (it is used as AES-GCM additional authenticated data and must match during decryption).
+
+2. From the repository root, run the script with Node 20+:
+   ```bash
+   node tools/AES256-encrypt.js
+   ```
+
+3. The script will output a line like:
+   ```
+   This is our key in hex: <64-hex-key>
+   Encrypted data written to encrypted_proof.bin
+   ```
+   Copy the 64-hex key and keep it safe.
+
+4. Move the generated `encrypted_proof.bin` to the dApp root so the server route can find it at runtime (it reads `process.cwd()`):
+   ```bash
+   mv encrypted_proof.bin dapp/
+   ```
+
+Notes:
+- The decryption code (`dapp/src/utils/decryptAES256.ts`) expects the same header value (default `storachaProof`). If you change the header in the encryption script, you must update it in both places to match.
+- Do not commit your `encrypted_proof.bin` or keys to version control.
+
+---
+
+## 5) Configure Environment Variables
+
+Create your dApp environment file from the template and populate required values:
+
+```bash
+cp dapp/.env.example dapp/.env
+```
+
+Open `dapp/.env` and set:
+
+- `STORACHA_SING_PRIVATE_KEY`: Your W3UP ED25519 principal private key (compatible with `@web3-storage/w3up-client/principal/ed25519` `Signer.parse(...)`).
+- `STORACHA_PROOF`:
+  - Encrypted mode: set this to the 64-hex key printed by the encryption script. Ensure `dapp/encrypted_proof.bin` exists.
+  - Plain mode: set this to the entire proof string.
+
+Example (`dapp/.env`):
+
+```dotenv
+# ... other PUBLIC_ variables omitted for brevity
+STORACHA_SING_PRIVATE_KEY="<YOUR_ED25519_PRIVATE_KEY>"
+# Encrypted mode: 64-hex key from the encryption step; requires dapp/encrypted_proof.bin
+STORACHA_PROOF="<64-HEX-AES-KEY>"
+```
+
+If you prefer plain mode:
+
+```dotenv
+STORACHA_SING_PRIVATE_KEY="<YOUR_ED25519_PRIVATE_KEY>"
+STORACHA_PROOF="<YOUR_PLAIN_STORACHA_PROOF_STRING>"
+```
+
+---
+
+## 6) Verify Your Setup
+
+- Development server:
+  ```bash
+  cd dapp
+  bun install
+  bun run dev
+  ```
+
+- Trigger the delegation API in the app flow that requests delegation (proposal/member/project). The server route `POST /src/pages/api/w3up-delegation.js` will:
+  - Validate inputs and environment.
+  - If `STORACHA_PROOF` is 64 hex, call `decryptAES256` to read `encrypted_proof.bin` and decrypt your proof.
+  - Initialize a W3UP client and return a delegation archive.
+
+If misconfigured, you may see:
+- `Storacha credentials not configured. Please set STORACHA_SING_PRIVATE_KEY and STORACHA_PROOF` (missing env vars)
+- Decryption errors (mismatched key/header or missing `dapp/encrypted_proof.bin`).
+
+---
