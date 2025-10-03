@@ -32,6 +32,7 @@ impl MembershipTrait for Tansu {
                 meta,
             };
             env.storage().persistent().set(&member_key_, &member);
+            crate::extend_persistent_ttl(&env, &member_key_);
 
             events::MemberAdded { member_address }.publish(&env);
         };
@@ -151,7 +152,9 @@ impl MembershipTrait for Tansu {
         }
 
         env.storage().persistent().set(&badges_key_, &badges_);
+        crate::extend_persistent_ttl(&env, &badges_key_);
         env.storage().persistent().set(&member_key_, &member_);
+        crate::extend_persistent_ttl(&env, &member_key_);
 
         events::BadgesUpdated {
             project_key: key,

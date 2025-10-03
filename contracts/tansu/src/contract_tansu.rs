@@ -21,6 +21,7 @@ impl TansuTrait for Tansu {
         env.storage()
             .instance()
             .set(&types::DataKey::AdminsConfig, &admins_config);
+        crate::extend_instance_ttl(&env);
 
         Self::pause(env, admin, true);
     }
@@ -49,6 +50,7 @@ impl TansuTrait for Tansu {
         env.storage()
             .instance()
             .set(&types::DataKey::Paused, &paused);
+        crate::extend_instance_ttl(&env);
 
         events::ContractPaused { paused, admin }.publish(&env);
     }
@@ -97,6 +99,7 @@ impl TansuTrait for Tansu {
         env.storage()
             .instance()
             .set(&types::ContractKey::DomainContract, &domain_contract);
+        crate::extend_instance_ttl(&env);
 
         events::ContractUpdated {
             admin,
@@ -122,6 +125,7 @@ impl TansuTrait for Tansu {
             &types::ContractKey::CollateralContract,
             &collateral_contract,
         );
+        crate::extend_instance_ttl(&env);
 
         events::ContractUpdated {
             admin,
@@ -267,6 +271,7 @@ impl TansuTrait for Tansu {
                 &types::DataKey::AdminsConfig,
                 &upgrade_proposal.admins_config,
             );
+            crate::extend_instance_ttl(&env);
 
             // Delete the proposal entirely
             env.storage()

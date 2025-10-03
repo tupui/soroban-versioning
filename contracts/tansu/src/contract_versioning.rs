@@ -92,6 +92,7 @@ impl VersioningTrait for Tansu {
                 _ => panic_with_error!(&env, &errors::ContractErrors::InvalidDomainError),
             }
             env.storage().persistent().set(&key_, &project);
+            crate::extend_persistent_ttl(&env, &key_);
 
             events::ProjectRegistered {
                 project_key: key.clone(),
@@ -136,6 +137,7 @@ impl VersioningTrait for Tansu {
         project.config = config;
         project.maintainers = maintainers;
         env.storage().persistent().set(&key_, &project);
+        crate::extend_persistent_ttl(&env, &key_);
 
         events::ProjectConfigUpdated {
             project_key: key,
@@ -161,9 +163,9 @@ impl VersioningTrait for Tansu {
         Tansu::require_not_paused(env.clone());
 
         crate::auth_maintainers(&env, &maintainer, &project_key);
-        env.storage()
-            .persistent()
-            .set(&types::ProjectKey::LastHash(project_key.clone()), &hash);
+        let hash_key = types::ProjectKey::LastHash(project_key.clone());
+        env.storage().persistent().set(&hash_key, &hash);
+        crate::extend_persistent_ttl(&env, &hash_key);
 
         events::Commit { project_key, hash }.publish(&env);
     }

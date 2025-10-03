@@ -54,10 +54,9 @@ impl DaoTrait for Tansu {
             public_key: public_key.clone(),
         };
 
-        env.storage().instance().set(
-            &types::ProjectKey::AnonymousVoteConfig(project_key.clone()),
-            &vote_config,
-        );
+        let vote_config_key = types::ProjectKey::AnonymousVoteConfig(project_key.clone());
+        env.storage().persistent().set(&vote_config_key, &vote_config);
+        crate::extend_persistent_ttl(&env, &vote_config_key);
 
         // Emit event for anonymous voting setup
         events::AnonymousVotingSetup {
@@ -80,14 +79,18 @@ impl DaoTrait for Tansu {
     /// # Panics
     /// * If no anonymous voting configuration exists for the project
     fn get_anonymous_voting_config(env: Env, project_key: Bytes) -> types::AnonymousVoteConfig {
-        env.storage()
-            .instance()
-            .get::<types::ProjectKey, types::AnonymousVoteConfig>(
-                &types::ProjectKey::AnonymousVoteConfig(project_key),
-            )
+        let vote_config_key = types::ProjectKey::AnonymousVoteConfig(project_key);
+        let config = env.storage()
+            .persistent()
+            .get::<types::ProjectKey, types::AnonymousVoteConfig>(&vote_config_key)
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &errors::ContractErrors::NoAnonymousVotingConfig);
-            })
+            });
+
+        // Extend TTL when accessing this config
+        crate::extend_persistent_ttl(&env, &vote_config_key);
+
+        config
     }
 
     /// Build vote commitments from votes and seeds for anonymous voting.
@@ -248,19 +251,17 @@ impl DaoTrait for Tansu {
         };
 
         let next_id = proposal_id + 1;
-        env.storage().persistent().set(
-            &types::ProjectKey::DaoTotalProposals(project_key.clone()),
-            &next_id,
-        );
+        let total_proposals_key = types::ProjectKey::DaoTotalProposals(project_key.clone());
+        env.storage().persistent().set(&total_proposals_key, &next_id);
+        crate::extend_persistent_ttl(&env, &total_proposals_key);
 
         let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
         let mut dao_page = Self::get_dao(env.clone(), project_key.clone(), page);
         dao_page.proposals.push_back(proposal.clone());
 
-        env.storage().persistent().set(
-            &types::ProjectKey::Dao(project_key.clone(), page),
-            &dao_page,
-        );
+        let dao_page_key = types::ProjectKey::Dao(project_key.clone(), page);
+        env.storage().persistent().set(&dao_page_key, &dao_page);
+        crate::extend_persistent_ttl(&env, &dao_page_key);
 
         events::ProposalCreated {
             project_key,
@@ -311,10 +312,9 @@ impl DaoTrait for Tansu {
 
         dao_page.proposals.set(sub_id, proposal.clone());
 
-        env.storage().persistent().set(
-            &types::ProjectKey::Dao(project_key.clone(), page),
-            &dao_page,
-        );
+        let dao_page_key = types::ProjectKey::Dao(project_key.clone(), page);
+        env.storage().persistent().set(&dao_page_key, &dao_page);
+        crate::extend_persistent_ttl(&env, &dao_page_key);
 
         events::ProposalExecuted {
             project_key: project_key.clone(),
@@ -428,10 +428,9 @@ impl DaoTrait for Tansu {
 
         dao_page.proposals.set(sub_id, proposal);
 
-        env.storage().persistent().set(
-            &types::ProjectKey::Dao(project_key.clone(), page),
-            &dao_page,
-        );
+        let dao_page_key = types::ProjectKey::Dao(project_key.clone(), page);
+        env.storage().persistent().set(&dao_page_key, &dao_page);
+        crate::extend_persistent_ttl(&env, &dao_page_key);
 
         events::VoteCast {
             project_key,
@@ -552,10 +551,9 @@ impl DaoTrait for Tansu {
 
         dao_page.proposals.set(sub_id, proposal.clone());
 
-        env.storage().persistent().set(
-            &types::ProjectKey::Dao(project_key.clone(), page),
-            &dao_page,
-        );
+        let dao_page_key = types::ProjectKey::Dao(project_key.clone(), page);
+        env.storage().persistent().set(&dao_page_key, &dao_page);
+        crate::extend_persistent_ttl(&env, &dao_page_key);
 
         events::ProposalExecuted {
             project_key: project_key.clone(),
@@ -618,10 +616,12 @@ impl DaoTrait for Tansu {
 
         let bls12_381 = env.crypto().bls12_381();
 
+        // Get config without extending TTL (proof is read-only validation)
+        let vote_config_key = types::ProjectKey::AnonymousVoteConfig(project_key);
         let vote_config: types::AnonymousVoteConfig = env
             .storage()
-            .instance()
-            .get(&types::ProjectKey::AnonymousVoteConfig(project_key))
+            .persistent()
+            .get(&vote_config_key)
             .unwrap();
 
         let seed_generator_point = G1Affine::from_bytes(vote_config.seed_generator_point);

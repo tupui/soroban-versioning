@@ -200,3 +200,25 @@ fn validate_contract(env: &Env, contract: &types::Contract) {
         }
     }
 }
+
+/// Extend TTL for persistent storage entries to prevent expiration
+///
+fn extend_persistent_ttl<K>(env: &Env, key: &K)
+where
+    K: soroban_sdk::IntoVal<Env, soroban_sdk::Val>
+{
+    env.storage().persistent().extend_ttl(
+        key,
+        types::PERSISTENT_TTL_THRESHOLD,
+        types::PERSISTENT_TTL_BUMP,
+    );
+}
+
+/// Extend TTL for instance storage to prevent expiration
+///
+fn extend_instance_ttl(env: &Env) {
+    env.storage().instance().extend_ttl(
+        types::INSTANCE_TTL_THRESHOLD,
+        types::INSTANCE_TTL_BUMP,
+    );
+}
