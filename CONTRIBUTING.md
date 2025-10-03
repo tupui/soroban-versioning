@@ -22,6 +22,8 @@ Welcome to our community! Thank you for taking the time to read the following.
 
 After cloning the repository, see the various Makefiles.
 
+For IPFS/Storacha setup instructions, see [Storacha Setup Guide](./website/docs/developers/storacha-setup.md).
+
 ### Testing
 
 Testing your code is paramount. Without continuous integration, we **cannot**
