@@ -2,7 +2,11 @@ import { retryAsync } from "../utils/retry";
 import { parseContractError } from "../utils/contractErrors";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { toast } from "utils/utils";
-import { loadedPublicKey } from "./walletService";
+import {
+  loadedPublicKey,
+  loadedProvider,
+  setConnection,
+} from "./walletService";
 
 /**
  * Send a signed transaction (Soroban) and decode typical return values.
@@ -186,8 +190,26 @@ export async function sendXLM(
       .setTimeout(StellarSdk.TimeoutInfinite)
       .build();
 
-    // Sign the transaction using the wallet kit
+    // --- Ensure kit is set to the persisted provider and refresh xBull address if needed ---
+    const provider = loadedProvider();
     const { kit } = await import("../components/stellar-wallets-kit");
+    if (provider) {
+      kit.setWallet(provider);
+      if (provider === "xbull") {
+        try {
+          const { address } = await kit.getAddress();
+          const stored = loadedPublicKey();
+          if (address && address !== stored) {
+            // Keep persisted state in sync with the wallet extension
+            setConnection(address, provider);
+          }
+        } catch {
+          // ignore - failing to refresh shouldn't block signing attempt
+        }
+      }
+    }
+
+    // Sign the transaction using the wallet kit
     const { signedTxXdr } = await kit.signTransaction(transaction.toXDR());
 
     // For classic Stellar transactions, we need to submit to Horizon directly
@@ -274,7 +296,24 @@ export async function signAssembledTransaction(
 
   const preparedXdr = assembledTx.toXDR();
 
+  // Ensure kit uses the persisted provider and keep xBull address in sync
+  const provider = loadedProvider();
   const { kit } = await import("../components/stellar-wallets-kit");
+  if (provider) {
+    kit.setWallet(provider);
+    if (provider === "xbull") {
+      try {
+        const { address } = await kit.getAddress();
+        const stored = loadedPublicKey();
+        if (address && address !== stored) {
+          setConnection(address, provider);
+        }
+      } catch {
+        // ignore - signing can still be attempted
+      }
+    }
+  }
+
   const { signedTxXdr } = await kit.signTransaction(preparedXdr);
 
   return signedTxXdr;
