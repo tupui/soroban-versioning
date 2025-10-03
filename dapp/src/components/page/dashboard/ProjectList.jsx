@@ -14,7 +14,6 @@ import CreateProjectModal from "./CreateProjectModal.tsx";
 import ProjectCard from "./ProjectCard";
 import ProjectInfoModal from "./ProjectInfoModal.jsx";
 import MemberProfileModal from "./MemberProfileModal.tsx";
-import Modal from "components/utils/Modal.tsx";
 import Spinner from "components/utils/Spinner.tsx";
 
 const ProjectList = () => {

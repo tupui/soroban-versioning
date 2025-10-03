@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Markdown from "markdown-to-jsx";
 import DOMPurify from "dompurify";
 import "github-markdown-css";

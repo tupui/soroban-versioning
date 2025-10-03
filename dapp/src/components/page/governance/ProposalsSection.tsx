@@ -1,4 +1,3 @@
-import React from "react";
 import ProposalList from "./ProposalList";
 
 const ProposalsSection: React.FC = () => {

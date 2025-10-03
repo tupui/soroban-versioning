@@ -4,7 +4,7 @@ import Modal, { type ModalProps } from "components/utils/Modal";
 import Step from "components/utils/Step";
 import Title from "components/utils/Title";
 import CopyButton from "components/utils/CopyButton";
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   VoteResultType,
   type ProposalOutcome,
@@ -49,7 +49,14 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   >(voteStatus);
 
   const computedResult = useMemo(() => {
-    if (!displayVoteStatus) return null;
+    if (
+      !displayVoteStatus ||
+      !displayVoteStatus.approve ||
+      !displayVoteStatus.abstain ||
+      !displayVoteStatus.reject
+    ) {
+      return null;
+    }
     const { approve, abstain, reject } = displayVoteStatus;
     if (approve.score > abstain.score + reject.score) {
       return VoteResultType.APPROVE;

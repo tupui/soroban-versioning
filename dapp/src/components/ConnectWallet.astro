@@ -44,7 +44,6 @@
     setPublicKey,
     disconnect,
   } from "../service/walletService";
-  import { truncateMiddle } from "../utils/utils";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
@@ -53,7 +52,6 @@
     ) as HTMLButtonElement;
 
     async function setLoggedIn(publicKey: string) {
-      const truncatedKey = truncateMiddle(publicKey, 13);
       // Safe DOM manipulation instead of innerHTML
       button.textContent = "";
       const textElement = document.createElement("span");
