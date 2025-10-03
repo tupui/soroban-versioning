@@ -156,7 +156,10 @@ export class GitLogService {
 
       const contributor = contributorMap.get(authorKey)!;
       contributor.commitCount++;
-      contributor.lastCommit = commit.author.date;
+
+      if (new Date(commit.author.date) > new Date(contributor.lastCommit)) {
+        contributor.lastCommit = commit.author.date;
+      }
 
       if (new Date(commit.author.date) < new Date(contributor.firstCommit)) {
         contributor.firstCommit = commit.author.date;
