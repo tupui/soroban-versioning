@@ -32,6 +32,7 @@ interface CreateProposalFlowParams {
 interface JoinCommunityFlowParams {
   memberAddress: string;
   profileFiles: File[];
+  gitVerificationData?: GitVerificationData | null;
   onProgress?: (step: number) => void;
 }
 
@@ -248,6 +249,7 @@ export async function createProposalFlow({
 export async function joinCommunityFlow({
   memberAddress,
   profileFiles,
+  gitVerificationData,
   onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
   let cid = ""; // Default for no profile - use empty string instead of single space

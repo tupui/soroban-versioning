@@ -364,6 +364,13 @@ const JoinCommunityModal: FC<{
             </div>
           </div>
 
+          <GitVerification
+            onVerificationComplete={setGitVerificationData}
+            networkPassphrase={import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE}
+            signingAccount={address}
+            contractId={import.meta.env.PUBLIC_SOROBAN_CONTRACT_ID}
+          />
+
           <div className="flex justify-end gap-[18px]">
             <Button type="secondary" onClick={onClose}>
               Cancel
