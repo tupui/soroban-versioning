@@ -34,11 +34,12 @@ const ContributorActivityChart: React.FC<ContributorActivityChartProps> = ({
   const getActivityStatus = (lastCommit: string) => {
     const lastCommitDate = new Date(lastCommit);
     const now = new Date();
-    const diffMonths = (now.getFullYear() - lastCommitDate.getFullYear()) * 12 +
-                      (now.getMonth() - lastCommitDate.getMonth());
 
-    if (diffMonths <= 1) return { status: 'Active', color: 'bg-green-500' };
-    if (diffMonths <= 3) return { status: 'Recent', color: 'bg-yellow-500' };
+    // Calculate difference in days for more accuracy
+    const diffDays = Math.floor((now.getTime() - lastCommitDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 30) return { status: 'Active', color: 'bg-green-500' };
+    if (diffDays <= 90) return { status: 'Recent', color: 'bg-yellow-500' };
     return { status: 'Inactive', color: 'bg-gray-400' };
   };
 

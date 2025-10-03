@@ -95,14 +95,14 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
 
         {/* Chart */}
         <div className="relative">
-          <div className="relative h-32 px-2">
+          <div className="relative h-32 px-2 overflow-hidden">
             {filteredMonths.length === 0 ? (
               <div className="flex items-center justify-center w-full h-full text-blue-800 text-sm">
                 No data available
               </div>
             ) : (
-              <svg className="w-full h-full" preserveAspectRatio="none">
-                {/* Draw curve */}
+              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {/* Draw curve line */}
                 <path
                   d={filteredMonths
                     .filter(Boolean)
@@ -111,37 +111,16 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
                       const height = getBarHeight(value);
                       const x = arr.length > 1 ? (index / (arr.length - 1)) * 100 : 50;
                       const y = 100 - height;
-                      return `${index === 0 ? 'M' : 'L'} ${x}% ${y}%`;
+                      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
                     })
                     .join(' ')}
                   fill="none"
-                  stroke="rgb(139, 92, 246)"
-                  strokeWidth="3"
+                  stroke="#8b5cf6"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
                 />
-
-                {/* Draw points with hover tooltips */}
-                {filteredMonths.map((month, index) => {
-                  if (!month) return null;
-                  const value = monthlyStats[month]?.[metric] || 0;
-                  const height = getBarHeight(value);
-                  const x = filteredMonths.length > 1 ? (index / (filteredMonths.length - 1)) * 100 : 50;
-                  const y = 100 - height;
-
-                  return (
-                    <g key={month} className="group">
-                      <circle
-                        cx={`${x}%`}
-                        cy={`${y}%`}
-                        r="4"
-                        fill="rgb(139, 92, 246)"
-                        className="cursor-pointer transition-all group-hover:r-[6]"
-                      />
-                      <title>{formatMonth(month)}: {value} {metric}</title>
-                    </g>
-                  );
-                })}
               </svg>
             )}
           </div>
@@ -160,41 +139,9 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
             })}
           </div>
         </div>
-
-        {/* Trend Analysis */}
-        {filteredMonths.length >= 3 && (
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <div className="text-xs text-blue-800">
-              <strong>Trend:</strong> {getTrendAnalysis()}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
-
-  function getTrendAnalysis() {
-    if (filteredMonths.length < 3) return "Not enough data for trend analysis";
-
-    const recentMonths = filteredMonths.slice(-3);
-    const earlierMonths = filteredMonths.slice(0, 3);
-
-    const recentAvg = recentMonths.reduce((sum, month) =>
-      sum + (monthlyStats[month]?.[metric] || 0), 0) / recentMonths.length;
-    const earlierAvg = earlierMonths.reduce((sum, month) =>
-      sum + (monthlyStats[month]?.[metric] || 0), 0) / earlierMonths.length;
-
-    if (earlierAvg === 0) {
-      if (recentAvg > 0) return `Activity is trending up from zero`;
-      return "Activity levels are stable";
-    }
-
-    const change = ((recentAvg - earlierAvg) / earlierAvg) * 100;
-
-    if (Math.abs(change) < 10) return "Activity levels are stable";
-    if (change > 0) return `Activity is trending up by ${Math.round(change)}%`;
-    return `Activity is trending down by ${Math.round(Math.abs(change))}%`;
-  }
 };
 
 export default MonthlyActivityChart;
