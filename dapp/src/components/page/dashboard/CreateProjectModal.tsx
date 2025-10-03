@@ -1,45 +1,49 @@
 import { getProjectFromName } from "@service/ReadContractService";
+import { loadedPublicKey } from "@service/walletService";
 import {
   setConfigData,
   setProject,
   setProjectRepoInfo,
 } from "@service/StateService";
 import { navigate } from "astro:transitions/client";
-import Button from "components/utils/Button";
-import Input from "components/utils/Input";
-import Label from "components/utils/Label";
-import Modal, { type ModalProps } from "components/utils/Modal";
-import Step from "components/utils/Step";
-import Title from "components/utils/Title";
+import Button from "components/utils/Button.tsx";
+import Input from "components/utils/Input.tsx";
+import Label from "components/utils/Label.tsx";
+import FlowProgressModal from "components/utils/FlowProgressModal.tsx";
+import Step from "components/utils/Step.tsx";
+import Title from "components/utils/Title.tsx";
 import { useState, type FC, useCallback, useEffect } from "react";
 import { getAuthorRepo } from "utils/editLinkFunctions";
 import { extractConfigData, toast } from "utils/utils";
 import {
-  validateStellarAddress,
   validateProjectName as validateProjectNameUtil,
   validateGithubUrl,
   validateMaintainerAddress,
-} from "utils/validations";
-import Textarea from "components/utils/Textarea";
-import ProgressStep from "components/utils/ProgressStep";
+} from "utils/validations.ts";
+import Textarea from "components/utils/Textarea.tsx";
+import Spinner from "components/utils/Spinner.tsx";
 
 // Get domain contract ID from environment with fallback
 const SOROBAN_DOMAIN_CONTRACT_ID =
   import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID ||
-  "CDVEWMU4UFI7MXKYZAATXROJRZZKQHZWRCR443STHMPE3MOTM6HAB7R7"; // Fallback value
+  "CAQWEZNN5X7LFD6PZBQXALVH4LSJW2KGNDMFJBQ3DWHXUVQ2JIZ6AQU6"; // Fallback value
+
+// Define ModalProps type for the modal component
+type ModalProps = {
+  onClose: () => void;
+};
 
 const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [projectName, setProjectName] = useState("");
   const [maintainerAddresses, setMaintainerAddresses] = useState<string[]>([
-    "",
+    loadedPublicKey() || "",
   ]);
+
   const [maintainerGithubs, setMaintainerGithubs] = useState<string[]>([""]);
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [domainContractId, setDomainContractId] = useState(
-    SOROBAN_DOMAIN_CONTRACT_ID,
-  );
+  const [domainContractId] = useState(SOROBAN_DOMAIN_CONTRACT_ID);
   const [domainStatus, setDomainStatus] = useState<
     "checking" | "available" | "unavailable" | null
   >(null);
@@ -68,6 +72,11 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [orgDescriptionError, setOrgDescriptionError] = useState<string | null>(
     null,
   );
+
+  // Flow state management
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Verify domain contract ID on mount
   useEffect(() => {
@@ -164,6 +173,15 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
     setMaintainersErrors(maintainerAddresses.map(() => null));
     setGithubHandleErrors(maintainerGithubs.map(() => null));
   }, [maintainerAddresses.length]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (domainCheckTimeout) {
+        clearTimeout(domainCheckTimeout);
+      }
+    };
+  }, [domainCheckTimeout]);
 
   // Check domain availability with debounce
   useEffect(() => {
@@ -277,14 +295,10 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const handleRegisterProject = async () => {
     setIsLoading(true);
     // Dynamic imports for heavy libs
-    const [{ calculateDirectoryCid, fetchTomlFromCid }] = await Promise.all([
+    const [{ fetchTomlFromCid }] = await Promise.all([
       import("utils/ipfsFunctions"),
     ]);
-    const { kit } = await import("../../stellar-wallets-kit");
-    const { default: Tansu } = await import("../../../contracts/soroban_tansu");
     const { loadedPublicKey } = await import("@service/walletService");
-    const { create } = await import("@web3-storage/w3up-client");
-    const { extract } = await import("@web3-storage/w3up-client/delegation");
 
     try {
       const publicKey = loadedPublicKey();
@@ -323,7 +337,6 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
         tomlFile,
         githubRepoUrl,
         maintainers: maintainerAddresses,
-        domainContractId,
         onProgress: setStep,
       });
 
@@ -337,7 +350,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
           setProjectRepoInfo(username, repoName);
         }
 
-        const tomlData = await fetchTomlFromCid(project.config.hash);
+        const tomlData = await fetchTomlFromCid(project.config.ipfs);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigData(configData);
@@ -398,7 +411,27 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
   >([null]);
 
   return (
-    <Modal onClose={onClose}>
+    <FlowProgressModal
+      isOpen={true}
+      onClose={onClose}
+      onSuccess={() => {
+        onClose();
+        navigate(`/project?name=${projectName}`);
+      }}
+      step={step}
+      setStep={setStep}
+      isLoading={isLoading}
+      setIsLoading={setIsLoading}
+      isUploading={isUploading}
+      setIsUploading={setIsUploading}
+      isSuccessful={isSuccessful}
+      setIsSuccessful={setIsSuccessful}
+      error={error}
+      setError={setError}
+      signLabel="project registration"
+      successTitle="Your Project Is Live!"
+      successMessage="Congratulations! You've successfully created your project. Let's get the ball rolling!"
+    >
       {step == 1 ? (
         <div
           key={step}
@@ -441,7 +474,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                   {domainStatus && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/3 flex items-center">
                       {domainStatus === "checking" ? (
-                        <div className="animate-spin h-5 w-5 border-2 border-gray-500 rounded-full border-t-transparent"></div>
+                        <Spinner />
                       ) : domainStatus === "available" ? (
                         <div className="flex items-center text-green-600">
                           <img
@@ -522,11 +555,13 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                 <div className="flex flex-col gap-[18px]">
                   {maintainerAddresses.map((address, i) => (
                     <div key={i} className="flex flex-col gap-2 w-full">
-                      <div className="flex gap-[18px]">
+                      <div className="flex flex-col md:flex-row gap-[18px]">
                         <Input
                           className="flex-1"
                           value={address}
-                          {...(i == 0 && { label: "Maintainer Address" })}
+                          {...(i == 0 && {
+                            label: "Maintainer Wallet Address",
+                          })}
                           placeholder="G..."
                           onChange={(e) => {
                             setMaintainerAddresses(
@@ -817,31 +852,8 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
             </Label>
           </div>
         </div>
-      ) : step >= 5 && step <= 9 ? (
-        <ProgressStep step={step - 4} />
-      ) : (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex items-start gap-[18px]">
-            <img className="flex-none w-[360px]" src="/images/flower.svg" />
-            <div className="flex-grow flex flex-col gap-[30px]">
-              <Step step={step} totalSteps={5} />
-              <Title
-                title="Your Project Is Live!"
-                description="Congratulations! You've successfully created your project. Let's get the ball rolling!"
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-[18px]">
-            <Button onClick={() => navigate(`/project?name=${projectName}`)}>
-              View Project
-            </Button>
-            <Button type="secondary" onClick={onClose}>
-              Close
-            </Button>
-          </div>
-        </div>
-      )}
-    </Modal>
+      ) : null}
+    </FlowProgressModal>
   );
 };
 

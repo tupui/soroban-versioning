@@ -1,4 +1,4 @@
-import { TransactionBuilder } from "@stellar/stellar-sdk";
+import * as StellarSdk from "@stellar/stellar-sdk";
 import type {
   Proposal as ContractProposal,
   Project,
@@ -12,10 +12,6 @@ import {
   type ProposalViewStatus,
 } from "types/proposal";
 // Import the extracted IPFS functions have been moved to ipfsFunctions.ts
-
-export function isValidGithubUrl(url: string) {
-  return /^https:\/\/github\.com\/[^\/]+\/[^\/]+$/.test(url);
-}
 
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
@@ -65,11 +61,11 @@ export function capitalizeFirstLetter(str: string): string {
 
 export const processDecodedData = (xdrData: string): any => {
   try {
-    return TransactionBuilder.fromXDR(
+    return StellarSdk.TransactionBuilder.fromXDR(
       xdrData,
       import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
     );
-  } catch (error) {
+  } catch {
     // Don't log to console, just return null to indicate failure
     return null;
   }
@@ -219,19 +215,15 @@ export const toast = {
   success: (title: string, description: string) => {
     import("./toastHelper")
       .then(({ renderToastModal }) => {
-        renderToastModal("/images/flower.svg", title, description);
+        renderToastModal("/images/flower.svg", title, description, true);
       })
-      .catch((err) => {
-        console.error("Failed to show success toast:", err);
-      });
+      .catch((_err) => {});
   },
   error: (title: string, description: string) => {
     import("./toastHelper")
       .then(({ renderToastModal }) => {
-        renderToastModal("/images/wrong.svg", title, description);
+        renderToastModal("/images/wrong.svg", title, description, false);
       })
-      .catch((err) => {
-        console.error("Failed to show error toast:", err);
-      });
+      .catch((_err) => {});
   },
 };

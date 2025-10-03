@@ -88,15 +88,18 @@ import { toast } from "utils/utils";
       class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
     >
       <p class="leading-4 text-base text-secondary">Maintainers</p>
-      <ul class="grid grid-cols-3 gap-9"></ul>
+      <ul
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9 p-4"
+      >
+      </ul>
       <div class="flex view-all"></div>
     </div>
     <div
       id="project-community"
       class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
     >
-      <p class="leading-4 text-base text-secondary">Community</p>
-      <div class="community-content flex flex-col gap-4"></div>
+      <p class="leading-4 text-base text-secondary">Community badges</p>
+      <div class="community-content flex flex-col gap-4 p-4"></div>
     </div>
     <CommitHistory client:load />
   </div>
@@ -122,6 +125,15 @@ import { toast } from "utils/utils";
   import { getBadges, getMember } from "@service/ReadContractService";
 
   document.addEventListener("astro:page-load", async () => {
+    // Wait for DOM to be fully ready
+    await new Promise((resolve) => {
+      if (document.readyState === "complete") {
+        resolve(null);
+      } else {
+        window.addEventListener("load", () => resolve(null));
+      }
+    });
+
     // Dynamically import React components
     const [
       { default: React },
@@ -135,16 +147,29 @@ import { toast } from "utils/utils";
       import("./ReadMoreModal"),
     ]);
 
-    // Create React roots for modals
-    const lastHashContainer = document.getElementById(
+    // Create React roots for modals with retry logic
+    let lastHashContainer = document.getElementById(
       "last-hash-modal-container",
     );
-    const readMoreContainer = document.getElementById(
+    let readMoreContainer = document.getElementById(
       "read-more-modal-container",
     );
 
+    // Retry finding containers if not immediately available
     if (!lastHashContainer || !readMoreContainer) {
-      console.error("Modal containers not found");
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      lastHashContainer = document.getElementById("last-hash-modal-container");
+      readMoreContainer = document.getElementById("read-more-modal-container");
+    }
+
+    if (!lastHashContainer || !readMoreContainer) {
+      if (import.meta.env.DEV) {
+        console.error("Modal containers not found", {
+          lastHashContainer: !!lastHashContainer,
+          readMoreContainer: !!readMoreContainer,
+          documentReady: document.readyState,
+        });
+      }
       return;
     }
 
@@ -235,26 +260,33 @@ import { toast } from "utils/utils";
         if (ul) {
           ul.innerHTML = "";
           // Prefer the order straight from tansu.toml (guaranteed 1-1)
-          const useToml =
+          const hasMapping =
             configData &&
             Array.isArray(configData.maintainersAddresses) &&
             Array.isArray(configData.authorGithubNames) &&
             configData.maintainersAddresses.length ===
               configData.authorGithubNames.length;
 
-          const addrArr = useToml
-            ? configData.maintainersAddresses
-            : projectInfo.maintainers;
-          const handleArr = useToml ? configData.authorGithubNames : [];
+          // Build address→handle map (order-independent)
+          let addrToHandle: Record<string, string> = {};
+          if (hasMapping) {
+            for (let i = 0; i < configData.maintainersAddresses.length; i++) {
+              addrToHandle[configData.maintainersAddresses[i]] =
+                configData.authorGithubNames[i] || "";
+            }
+          }
+
+          // Use on-chain list for authoritative membership
+          const addrArr = projectInfo.maintainers;
 
           for (let idx = 0; idx < addrArr.length; idx++) {
             if (!viewAll && idx > 5) continue;
             const maintainer = addrArr[idx];
 
             const li = document.createElement("li");
-            li.className = "flex flex-col gap-2";
+            li.className = "flex flex-col gap-2 mb-4 p-3 bg-gray-50 rounded-md";
 
-            const displayName = handleArr[idx] || "";
+            const displayName = addrToHandle[maintainer] || "";
 
             if (displayName) {
               const nameP = document.createElement("p");
@@ -269,8 +301,10 @@ import { toast } from "utils/utils";
               ? "leading-[14px] text-sm text-secondary cursor-pointer underline"
               : "leading-6 text-xl text-primary truncate cursor-pointer underline";
             addrP.textContent = displayName
-              ? `(${maintainer.slice(0, 28)}...)`
-              : maintainer;
+              ? `(${maintainer.length > 16 ? maintainer.slice(0, 16) + "..." : maintainer})`
+              : maintainer.length > 20
+                ? maintainer.slice(0, 20) + "..."
+                : maintainer;
             li.appendChild(addrP);
 
             if (!displayName) {
@@ -384,7 +418,16 @@ import { toast } from "utils/utils";
         if (loadedName) {
           const projectNameSpan = document.getElementById("contribute-text");
           if (projectNameSpan) {
-            projectNameSpan.innerHTML = `Contribute to <span id="project-name">${loadedName}</span>.xlm`;
+            // Safe DOM manipulation instead of innerHTML
+            projectNameSpan.textContent = "";
+            projectNameSpan.appendChild(
+              document.createTextNode("Contribute to "),
+            );
+            const nameSpan = document.createElement("span");
+            nameSpan.id = "project-name";
+            nameSpan.textContent = loadedName;
+            projectNameSpan.appendChild(nameSpan);
+            projectNameSpan.appendChild(document.createTextNode(".xlm"));
           }
 
           const donateTipPopup = document.getElementById("donate-tip-popup");
@@ -401,7 +444,7 @@ import { toast } from "utils/utils";
           syncStatusContainer.innerHTML = "";
 
           // Replace configuration badge with direct link to tansu.toml on IPFS
-          const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.hash)}/tansu.toml`;
+          const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.ipfs)}/tansu.toml`;
 
           const link = document.createElement("a");
           link.href = ipfsUrl;
@@ -510,7 +553,9 @@ import { toast } from "utils/utils";
               };
             }
           } catch (error) {
-            console.error("Error loading commit data:", error);
+            if (import.meta.env.DEV) {
+              console.error("Error loading commit data:", error);
+            }
           }
         }
 
@@ -559,6 +604,7 @@ import { toast } from "utils/utils";
       try {
         const badgeData = await getBadges();
         if (!badgeData) return;
+
         const communityContainer = document.getElementById("project-community");
         if (!communityContainer) return;
         const contentDiv =
@@ -570,8 +616,6 @@ import { toast } from "utils/utils";
           { key: "developer", label: "Developer", list: badgeData.developer },
           { key: "triage", label: "Triage", list: badgeData.triage },
           { key: "community", label: "Community", list: badgeData.community },
-          { key: "verified", label: "Verified", list: badgeData.verified },
-          { key: "default", label: "Default", list: badgeData.default },
         ];
 
         sections.forEach((sec) => {
@@ -583,10 +627,12 @@ import { toast } from "utils/utils";
             secDiv.appendChild(title);
 
             const ul = document.createElement("ul");
-            ul.className = "grid grid-cols-3 gap-9";
+            ul.className =
+              "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9";
             sec.list.forEach((addr) => {
               const li = document.createElement("li");
-              li.className = "relative cursor-pointer";
+              li.className =
+                "relative cursor-pointer p-3 bg-gray-50 rounded-md";
               li.onclick = (e) => {
                 e.stopPropagation();
                 openProfileModal(addr);
@@ -594,7 +640,8 @@ import { toast } from "utils/utils";
               const addrP = document.createElement("p");
               addrP.className =
                 "leading-[14px] text-sm text-primary truncate underline";
-              addrP.textContent = addr;
+              addrP.textContent =
+                addr.length > 20 ? addr.slice(0, 20) + "..." : addr;
               li.appendChild(addrP);
               ul.appendChild(li);
             });
@@ -603,7 +650,9 @@ import { toast } from "utils/utils";
           }
         });
       } catch (e) {
-        console.error("Error fetching badges", e);
+        if (import.meta.env.DEV) {
+          console.error("Error fetching badges", e);
+        }
       }
     };
 

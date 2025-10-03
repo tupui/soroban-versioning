@@ -12,7 +12,7 @@ import AddBadgeModal from "./AddBadgeModal";
     <img src="/icons/back.svg" alt="Back" />
     <p class="leading-5 text-base sm:text-xl text-primary">Back to Home Page</p>
   </a>
-  <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+  <div class="flex flex-row gap-3 md:gap-4 w-full sm:w-auto overflow-x-auto">
     <UpdateConfigModal client:only />
     <AddBadgeModal client:only />
     <UpdateHashModal client:only />

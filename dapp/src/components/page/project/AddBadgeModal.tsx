@@ -1,7 +1,7 @@
 import { useStore } from "@nanostores/react";
 import { loadProjectInfo } from "@service/StateService";
 import { loadedPublicKey } from "@service/walletService";
-import { addBadges } from "@service/WriteContractService";
+import { setBadges } from "@service/ContractService";
 import Button from "components/utils/Button";
 import Modal from "components/utils/Modal";
 import type { Badge } from "../../../../packages/tansu";
@@ -13,8 +13,6 @@ const badgeOptions: { label: string; value: Badge }[] = [
   { label: "Developer", value: 10000000 },
   { label: "Triage", value: 5000000 },
   { label: "Community", value: 1000000 },
-  { label: "Verified", value: 500000 },
-  { label: "Default", value: 1 },
 ];
 
 const AddBadgeModal = () => {
@@ -38,6 +36,11 @@ const AddBadgeModal = () => {
     }
   }, [isProjectInfoLoaded]);
 
+  const handleClose = () => {
+    setIsOpen(false);
+    // Note: Page reload for successful operations is now handled by toast.success()
+  };
+
   const handleToggleBadge = (badge: Badge) => {
     setSelectedBadges((prev) =>
       prev.includes(badge) ? prev.filter((b) => b !== badge) : [...prev, badge],
@@ -51,10 +54,9 @@ const AddBadgeModal = () => {
     }
     setIsLoading(true);
     try {
-      await addBadges(memberAddress, selectedBadges);
+      await setBadges(memberAddress, selectedBadges);
       toast.success("Add badge", "Badges added successfully");
-      window.dispatchEvent(new CustomEvent("badgesUpdated"));
-      setIsOpen(false);
+      // Note: Modal will be closed and page refreshed automatically by toast.success()
     } catch (err: any) {
       toast.error("Add badge", err.message);
     } finally {
@@ -67,20 +69,17 @@ const AddBadgeModal = () => {
       {showButton && (
         <button
           id="badge-button"
-          className="p-[12px_16px] sm:p-[18px_30px] flex gap-2 sm:gap-3 bg-white cursor-pointer w-full sm:w-auto text-left"
+          className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
           onClick={() => setIsOpen(true)}
         >
-          <img
-            src="/icons/plus-fill.svg"
-            className="w-5 h-5 sm:w-auto sm:h-auto"
-          />
-          <p className="leading-5 text-base sm:text-xl text-primary whitespace-nowrap">
+          <img src="/icons/plus-fill.svg" className="w-5 h-5 flex-shrink-0" />
+          <span className="text-sm sm:text-base text-primary font-medium">
             Add badge
-          </p>
+          </span>
         </button>
       )}
       {isOpen && (
-        <Modal onClose={() => setIsOpen(false)}>
+        <Modal onClose={handleClose}>
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
             <img
               src="/images/scan.svg"

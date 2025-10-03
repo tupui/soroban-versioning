@@ -1,43 +1,22 @@
 import { useState, type FC, useEffect } from "react";
 import Input from "components/utils/Input";
 import Button from "components/utils/Button";
-import Modal, { type ModalProps } from "components/utils/Modal";
-import GitVerification from "components/utils/GitVerification";
+import FlowProgressModal from "components/utils/FlowProgressModal";
 import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
 import { validateStellarAddress, validateUrl } from "utils/validations";
-import type { GitVerificationData } from "../../utils/gitVerification";
-import {
-  MDXEditor,
-  headingsPlugin,
-  listsPlugin,
-  quotePlugin,
-  thematicBreakPlugin,
-  linkPlugin,
-  linkDialogPlugin,
-  markdownShortcutPlugin,
-  toolbarPlugin,
-  UndoRedo,
-  BoldItalicUnderlineToggles,
-  BlockTypeSelect,
-  CodeToggle,
-  CreateLink,
-  ListsToggle,
-  Separator,
-} from "@mdxeditor/editor";
-import "@mdxeditor/editor/style.css";
+import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 
 interface ProfileImageFile {
   localUrl: string;
   source: File;
 }
 
-const JoinCommunityModal: FC<
-  ModalProps & {
-    onJoined?: () => void;
-    prefillAddress?: string;
-  }
-> = ({ onClose, onJoined, prefillAddress = "" }) => {
+const JoinCommunityModal: FC<{
+  onClose: () => void;
+  onJoined?: () => void;
+  prefillAddress?: string;
+}> = ({ onClose, onJoined, prefillAddress = "" }) => {
   const [address, setAddress] = useState<string>(
     prefillAddress || loadedPublicKey() || "",
   );
@@ -47,9 +26,13 @@ const JoinCommunityModal: FC<
   const [profileImage, setProfileImage] = useState<ProfileImageFile | null>(
     null,
   );
-  const [gitVerificationData, setGitVerificationData] = useState<GitVerificationData | null>(null);
+  // const [isDropped,setIsDropped]=useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [updateSuccessful, setUpdateSuccessful] = useState(false);
+  const [step, setStep] = useState<number>(1);
+  const [error, setError] = useState<string | null>(null);
 
   // Validation errors
   const [addressError, setAddressError] = useState<string | null>(null);
@@ -61,6 +44,21 @@ const JoinCommunityModal: FC<
       setAddress(prefillAddress);
     }
   }, [prefillAddress]);
+
+  const handleClose = () => {
+    // Reload page if joining was successful to show fresh data
+    if (updateSuccessful) {
+      window.location.reload();
+    }
+
+    // Reset all states when closing
+    setUpdateSuccessful(false);
+    setStep(0);
+    setIsLoading(false);
+    setIsUploading(false);
+
+    onClose?.();
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     setImageError(null);
@@ -75,6 +73,32 @@ const JoinCommunityModal: FC<
       }
 
       // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setImageError("Please upload an image smaller than 5MB");
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      setProfileImage({ localUrl: url, source: file });
+    }
+  };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+
+    setImageError(null);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+      if (!allowedTypes.includes(file.type)) {
+        setImageError("Please upload a PNG or JPG image");
+        return;
+      }
+
       if (file.size > 5 * 1024 * 1024) {
         setImageError("Please upload an image smaller than 5MB");
         return;
@@ -122,6 +146,7 @@ const JoinCommunityModal: FC<
 
     try {
       setIsLoading(true);
+      setStep(6);
 
       // Check if user has provided any profile data
       if (!hasProfileData()) {
@@ -130,12 +155,16 @@ const JoinCommunityModal: FC<
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: [],
-          gitVerificationData,
+          onProgress: setStep,
         });
 
         toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
-        onClose?.();
+        setUpdateSuccessful(true);
+        setIsLoading(false);
+        setIsUploading(false);
+        setStep(0); // Reset step to show success screen
+        // Don't close modal immediately - let user close it manually
         return;
       }
 
@@ -172,19 +201,25 @@ const JoinCommunityModal: FC<
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: files,
-          gitVerificationData,
+          onProgress: setStep,
         });
 
         toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
-        onClose?.();
+        setUpdateSuccessful(true);
+        setIsLoading(false);
+        setIsUploading(false);
+        setStep(0); // Reset step to show success screen
+        // Don't close modal immediately - let user close it manually
       } catch (ipfsError: any) {
         console.error("IPFS upload error:", ipfsError);
         setIsUploading(false);
         throw ipfsError;
       }
     } catch (err: any) {
-      toast.error("Something Went Wrong!", err.message);
+      console.error("Join community error:", err);
+      setError(err.message || "Something went wrong");
+      setStep(0); // Reset step on error
     } finally {
       setIsLoading(false);
       setIsUploading(false);
@@ -192,7 +227,24 @@ const JoinCommunityModal: FC<
   };
 
   return (
-    <Modal onClose={onClose}>
+    <FlowProgressModal
+      isOpen={true}
+      onClose={handleClose}
+      onSuccess={onJoined}
+      step={step}
+      setStep={setStep}
+      isLoading={isLoading}
+      setIsLoading={setIsLoading}
+      isUploading={isUploading}
+      setIsUploading={setIsUploading}
+      isSuccessful={updateSuccessful}
+      setIsSuccessful={setUpdateSuccessful}
+      error={error}
+      setError={setError}
+      signLabel="membership"
+      successTitle="Welcome aboard!"
+      successMessage="You've successfully joined the community."
+    >
       <div className="flex flex-col md:flex-row items-center gap-6 md:gap-[18px]">
         <img
           className="flex-none w-[200px] md:w-[360px]"
@@ -255,7 +307,10 @@ const JoinCommunityModal: FC<
                   </div>
                 ) : (
                   <label
-                    className={`flex flex-col items-center justify-center w-full h-32 border-2 ${imageError ? "border-red-500" : "border-dashed border-[#978AA1]"} cursor-pointer bg-zinc-50 hover:bg-zinc-100`}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onDragLeave={() => setIsDragging(false)}
+                    className={`flex flex-col items-center justify-center w-full h-32 border-2 ${imageError ? "border-red-500" : "border-dashed border-[#978AA1]"} ${isDragging ? "bg-zinc-500" : "bg-white"} cursor-pointer bg-zinc-50 hover:bg-zinc-400`}
                   >
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <svg
@@ -299,34 +354,9 @@ const JoinCommunityModal: FC<
               <div className="flex flex-col gap-[18px]">
                 <p className="text-base font-[600] text-primary">Description</p>
                 <div className="rounded-md border border-zinc-400 overflow-hidden min-h-[150px]">
-                  <MDXEditor
-                    plugins={[
-                      markdownShortcutPlugin(),
-                      headingsPlugin(),
-                      listsPlugin(),
-                      quotePlugin(),
-                      thematicBreakPlugin(),
-                      linkPlugin(),
-                      linkDialogPlugin(),
-                      toolbarPlugin({
-                        toolbarClassName: "my-classname",
-                        toolbarContents: () => (
-                          <>
-                            <UndoRedo />
-                            <Separator />
-                            <BoldItalicUnderlineToggles />
-                            <CodeToggle />
-                            <BlockTypeSelect />
-                            <Separator />
-                            <ListsToggle />
-                            <Separator />
-                            <CreateLink />
-                          </>
-                        ),
-                      }),
-                    ]}
-                    markdown={description}
-                    onChange={(value) => setDescription(value || "")}
+                  <SimpleMarkdownEditor
+                    value={description}
+                    onChange={(value) => setDescription(value)}
                     placeholder="Tell us about yourself..."
                   />
                 </div>
@@ -345,13 +375,13 @@ const JoinCommunityModal: FC<
             <Button type="secondary" onClick={onClose}>
               Cancel
             </Button>
-            <Button isLoading={isLoading} onClick={handleJoin}>
-              {isUploading ? "Uploading to IPFS..." : "Join"}
+            <Button isLoading={isLoading || isUploading} onClick={handleJoin}>
+              Join
             </Button>
           </div>
         </div>
       </div>
-    </Modal>
+    </FlowProgressModal>
   );
 };
 

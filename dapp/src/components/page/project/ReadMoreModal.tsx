@@ -4,7 +4,7 @@ import Modal from "components/utils/Modal";
 import { fetchReadmeContentFromConfigUrl } from "../../../service/GithubService";
 import Markdown from "markdown-to-jsx";
 import "github-markdown-css";
-import Button from "components/utils/Button";
+
 import CopyButton from "components/utils/CopyButton";
 
 interface ReadMoreModalProps {
@@ -70,7 +70,7 @@ const ReadMoreModal: FC<ReadMoreModalProps> = ({
           if (content) {
             setReadmeContent(content);
           }
-        } catch (error) {
+        } catch {
           console.error("Failed to load README:", error);
           setReadmeContent(
             "Failed to load README content. Please check the repository directly.",
@@ -89,13 +89,13 @@ const ReadMoreModal: FC<ReadMoreModalProps> = ({
     };
   }, [isOpen, projectData?.githubUrl]);
 
-  if (!isOpen) return null;
-
   const handleGoToReleases = useCallback(() => {
     if (projectData?.githubUrl) {
       window.open(`${projectData.githubUrl}/releases`, "_blank");
     }
   }, [projectData?.githubUrl]);
+
+  if (!isOpen) return null;
 
   return (
     <Modal onClose={onClose}>

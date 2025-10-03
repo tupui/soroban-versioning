@@ -1,0 +1,312 @@
+---
+sidebar_position: 2
+---
+
+# User Flows
+
+This document provides detailed technical documentation of all user flows in the Tansu protocol, including the architecture components involved and security considerations.
+
+## System Architecture Overview
+
+```mermaid
+flowchart TD
+  subgraph Client
+    A["User Browser"]
+    B["Wallet Extension / Kit"]
+  end
+  subgraph Frontend
+    C["Astro / React UI Components"]
+    D["StateService"]
+    E["ReadContractService"]
+    F["WriteContractService"]
+    G["FlowService"]
+  end
+  subgraph Backend_API
+    H["Events FastAPI"]
+    I["Database"]
+  end
+  subgraph Blockchain
+    J["Soroban Smart Contracts"]
+    K["Horizon / RPC"]
+  end
+  subgraph External
+    L["GitHub Raw Content"]
+    M["IPFS"]
+  end
+
+  A--"Connect Wallet"-->B
+  A--"UI Interactions"-->C
+  B--"Signed Tx / Address"-->D
+  C-->D
+  C--"Reads"-->E
+  D--"Invoke"-->F
+  F--"Transactions"-->K
+  E--"RPC Calls"-->K
+  K--"Calls"-->J
+  J--"Events"-->H
+  H--"Store"-->I
+  C--"Fetch README / TOML"-->L
+  C--"Fetch Assets"-->M
+  H--"Webhooks"-->C
+```
+
+## 1. Project Registration Flow
+
+### Overview
+
+The project registration flow allows maintainers to register new projects on the Tansu protocol with proper domain verification and metadata storage.
+
+### Flow Diagram
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant W as Wallet
+  participant D as dApp
+  participant SD as SorobanDomains
+  participant IPFS as IPFS
+  participant SC as SorobanContract
+  participant DB as Database
+
+  U->>W: Connect Wallet
+  W->>D: Provide Address
+  U->>D: Fill Project Form
+  D->>SD: Check Domain Availability
+  SD-->>D: Domain Status
+  U->>D: Submit Registration
+  D->>IPFS: Upload tansu.toml
+  IPFS-->>D: Return CID
+  D->>W: Sign register() Transaction
+  W-->>D: Signed Transaction
+  D->>SC: Submit Transaction
+  SC->>SD: Verify Domain Ownership
+  SC-->>D: Registration Success
+  SC->>DB: Emit Registration Event
+  D->>U: Show Success
+```
+
+### Technical Components
+
+#### Frontend Components
+
+- **CreateProjectModal**: Multi-step form with validation
+- **FlowService.createProjectFlow()**: Orchestrates the registration process
+- **Domain Validation**: Real-time domain availability checking
+
+#### Validation Steps
+
+1. **Project Name**: 4-15 lowercase letters, unique check via contract
+2. **Maintainers**: Valid Stellar addresses (G...) and GitHub handles
+3. **GitHub Repository**: Valid GitHub URL format validation
+4. **Organization Info**: Required fields with URL format validation
+
+#### Security Features
+
+- **Domain Squatting Prevention**: Integration with Soroban Domains
+- **Input Sanitization**: All user inputs sanitized against XSS
+- **Transaction Simulation**: All contract calls simulated before signing
+- **IPFS Integrity**: CID verification ensures uploaded content matches
+
+### Error Handling
+
+- **Network Failures**: Graceful retry mechanisms with exponential backoff
+- **Domain Conflicts**: Clear error messages with alternative suggestions
+- **Transaction Failures**: Detailed error parsing from contract responses
+- **IPFS Failures**: Automatic retries with fallback error states
+
+---
+
+## 2. Governance Flow
+
+### Overview
+
+The governance system enables decentralized decision-making through proposals and voting, with optional anonymous voting capabilities.
+
+### Flow Diagram
+
+```mermaid
+sequenceDiagram
+  participant M as Maintainer
+  participant V as Voter
+  participant D as dApp
+  participant BLS as BLS12-381
+  participant IPFS as IPFS
+  participant SC as SorobanContract
+
+  M->>D: Create Proposal
+  opt Anonymous Voting
+    D->>SC: Call anonymous_voting_setup()
+    SC-->>D: Store generator points & ECDH pubkey
+    D->>M: Download ECDH private key
+  end
+  D->>IPFS: Upload Proposal Content
+  IPFS-->>D: Return CID
+  M->>SC: Submit create_proposal()
+  SC-->>D: Proposal Created
+
+  V->>D: View Proposal
+  V->>D: Cast Vote
+  alt Public Vote
+    D->>SC: Submit vote() with PublicVote
+  else Anonymous Vote
+    D->>BLS: Generate commitments C = G(v) + H(r)
+    D->>D: Encrypt votes & seeds with ECDH
+    D->>SC: Submit AnonymousVote with commitments
+  end
+  SC-->>D: Vote Recorded
+
+  M->>D: Execute Proposal
+  alt Anonymous Proposal
+    M->>D: Upload ECDH private key
+    D->>D: Decrypt votes & compute tallies
+    D->>SC: Submit execute() with tallies & seeds
+    SC->>SC: Verify commitments match tallies
+  else Public Proposal
+    D->>SC: Submit execute() without tallies
+  end
+  SC-->>D: Proposal Executed
+```
+
+### Anonymous Voting Technical Details
+
+#### Key Generation
+
+- **ECDH key pairs** generated client-side using Web Crypto API
+- **Private key download** required before proposal submission
+- **Public key storage** in smart contract for vote encryption
+
+#### Vote Encryption
+
+- **BLS12-381 commitment scheme**: Votes committed as C = G(v) + H(r) where G, H are generator points
+- **ECDH encryption**: Votes and seeds encrypted with ECDH public key
+- **Commitment verification**: Contract verifies commitments match revealed tallies and seeds
+
+#### Execution Phase
+
+- **Private key upload**: Required to decrypt and tally anonymous votes
+- **Verification**: Contract verifies commitments match decrypted votes using BLS12-381
+- **Privacy preservation**: Only final tallies revealed, individual votes remain private
+
+### Security Considerations
+
+- **Proposal immutability**: Content stored on IPFS cannot be modified
+- **Vote integrity**: Cryptographic commitments prevent vote manipulation
+- **Execution authorization**: Only maintainers can execute proposals
+- **Time-bounded voting**: Proposals have fixed voting periods (24h minimum, 30d maximum)
+
+---
+
+## 3. Membership Flow
+
+### Overview
+
+Community members can join projects and receive role-based badges from maintainers.
+
+### Flow Diagram
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant D as dApp
+  participant IPFS as IPFS
+  participant SC as SorobanContract
+  participant M as Maintainer
+
+  U->>D: Join Community
+  U->>D: Fill Profile (Optional)
+  opt Profile Data Provided
+    D->>IPFS: Upload profile.json + image
+    IPFS-->>D: Return CID
+  end
+  D->>SC: Submit add_member() with meta
+  SC-->>D: Member Added
+
+  M->>D: Assign Badges
+  M->>SC: Submit set_badges() with badge list
+  SC->>SC: Replace existing badges for project
+  SC-->>D: Badges Assigned
+  D->>U: Show Updated Profile
+```
+
+### Profile Data Structure
+
+```json
+{
+  "name": "User Display Name",
+  "description": "User bio in markdown",
+  "social": "https://twitter.com/handle",
+  "image": "profile-image.jpg"
+}
+```
+
+### Badge System
+
+- **Role Badges**: Developer, Designer, Auditor, Community Manager
+- **Achievement Badges**: Contributor, Reviewer, Bug Hunter
+- **Custom Badges**: Project-specific roles and achievements
+
+---
+
+## 4. Version Control Flow
+
+### Overview
+
+Maintainers can update project commit hashes to track code versions on-chain.
+
+### Flow Diagram
+
+```mermaid
+sequenceDiagram
+  participant M as Maintainer
+  participant D as dApp
+  participant GH as GitHub
+  participant SC as SorobanContract
+  participant DB as Database
+
+  M->>D: Update Commit Hash
+  D->>GH: Verify Commit Exists
+  GH-->>D: Commit Verification
+  M->>SC: Submit commit()
+  SC-->>D: Commit Updated
+  SC->>DB: Emit Commit Event
+  D->>M: Show Success
+```
+
+### Commit Verification
+
+- **GitHub API Integration**: Verify commit hashes exist in specified repository
+- **Hash Format Validation**: Ensure 40-character hexadecimal format
+- **Authorization Check**: Only project maintainers can update commits
+
+### Historical Tracking
+
+- **Immutable History**: All commits stored permanently on-chain
+- **Event Indexing**: Backend indexes all commit events for efficient querying
+- **Timestamp Accuracy**: Ledger timestamps provide precise commit timing
+
+---
+
+## 5. Donation Flow
+
+### Overview
+
+Community members can donate XLM to support projects and their maintainers.
+
+### Flow Diagram
+
+```mermaid
+sequenceDiagram
+  participant D as Donor
+  participant dApp as dApp
+  participant W as Wallet
+  participant H as Horizon
+  participant R as Recipient
+
+  D->>dApp: Enter Donation Amount
+  dApp->>W: Create Payment Transaction
+  W-->>dApp: Signed Transaction
+  dApp->>H: Submit Payment
+  H-->>R: Transfer XLM
+  H-->>dApp: Transaction Success
+  dApp->>D: Show Confirmation
+```

@@ -21,11 +21,11 @@ const projectState: {
 const projectInfo: {
   project_maintainers: string[] | undefined;
   project_config_url: string | undefined;
-  project_config_hash: string | undefined;
+  project_config_ipfs: string | undefined;
 } = {
   project_maintainers: undefined,
   project_config_url: undefined,
-  project_config_hash: undefined,
+  project_config_ipfs: undefined,
 };
 
 const projectRepoInfo: {
@@ -53,7 +53,7 @@ function refreshLocalStorage(): void {
     projectState.project_id = undefined;
     projectInfo.project_maintainers = undefined;
     projectInfo.project_config_url = undefined;
-    projectInfo.project_config_hash = undefined;
+    projectInfo.project_config_ipfs = undefined;
     projectRepoInfo.project_author = undefined;
     projectRepoInfo.project_repository = undefined;
     projectLatestSha.sha = undefined;
@@ -81,7 +81,7 @@ function setProjectId(project_name: string): void {
 function setProject(project: Project): void {
   projectInfo.project_maintainers = project.maintainers;
   projectInfo.project_config_url = project.config.url;
-  projectInfo.project_config_hash = project.config.hash;
+  projectInfo.project_config_ipfs = project.config.ipfs;
   if (typeof window !== "undefined") {
     projectInfoStore.set(projectInfo);
   }
@@ -128,7 +128,7 @@ function loadProjectInfo(): Project | undefined {
   if (
     !projectInfo.project_maintainers ||
     !projectInfo.project_config_url ||
-    !projectInfo.project_config_hash ||
+    !projectInfo.project_config_ipfs ||
     !projectState.project_name
   ) {
     return undefined;
@@ -138,7 +138,7 @@ function loadProjectInfo(): Project | undefined {
     name: projectState.project_name,
     config: {
       url: projectInfo.project_config_url,
-      hash: projectInfo.project_config_hash,
+      ipfs: projectInfo.project_config_ipfs,
     },
   };
 }

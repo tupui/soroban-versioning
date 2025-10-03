@@ -2,39 +2,46 @@
 import ConnectWallet from "../ConnectWallet.astro";
 import JoinCommunityButton from "../JoinCommunityButton.tsx";
 import NavbarSearch from "../NavbarSearch.tsx";
-
-const { page } = Astro.props;
 ---
 
-<header>
-  <nav class="w-full px-[24px] md:px-[60px] lg:px-[120px]">
+<header role="banner">
+  <nav
+    class="w-full px-[24px] md:px-[60px] lg:px-[120px]"
+    role="navigation"
+    aria-label="Main navigation"
+  >
     <div class="max-w-[1920px] mx-auto">
       <div class="pt-[40px] md:pt-[60px] flex items-center h-16">
         <!-- Logo and text on left -->
-        <div class="flex-shrink-0 flex items-center gap-[12px] mr-2">
-          <a href="/" class="flex-shrink-0">
-            <img alt="logo" src="/logo.svg" class="h-10 md:h-12" />
+        <div class="flex items-center gap-2 md:gap-3 flex-shrink-0">
+          <a href="/" class="flex-shrink-0" aria-label="Tansu homepage">
+            <img
+              alt="Tansu logo"
+              src="/logo.svg"
+              class="h-8 md:h-10 lg:h-12"
+              width="48"
+              height="48"
+            />
           </a>
-          <div class="hidden sm:flex gap-[12px] whitespace-nowrap">
-            <p class="text-lg font-bold text-primary">Tansu</p>
-            <p class="text-lg font-bold text-secondary">- alpha</p>
+          <div class="hidden lg:flex items-center gap-2 whitespace-nowrap">
+            <p class="text-base md:text-lg font-bold text-primary leading-none">
+              Tansu
+            </p>
+            <p class="text-sm font-bold text-secondary leading-none">- alpha</p>
           </div>
         </div>
 
-        <!-- Search bar in middle -->
-        <div class="flex-grow flex justify-center mx-2">
-          <NavbarSearch client:load onAddProject={() => {}} />
+        <!-- Search bar -->
+        <div class="flex-1 flex justify-start ml-3 md:ml-4">
+          <NavbarSearch client:load _onAddProject={() => {}} />
         </div>
 
-        <!-- Wallet connect and community button on right -->
-        <div
-          class="flex-shrink-0 flex gap-[8px] md:gap-[12px] items-center ml-auto"
-        >
-          <ConnectWallet />
-          <div
-            id="join-community-wrapper"
-            class="w-[130px] sm:w-[162px] md:w-[180px]"
-          >
+        <!-- Wallet connect + community button -->
+        <div class="flex items-center gap-4 md:gap-6 flex-shrink-0">
+          <div class="ml-6">
+            <ConnectWallet />
+          </div>
+          <div id="join-community-wrapper" class="hidden sm:block">
             <JoinCommunityButton client:load />
           </div>
         </div>
@@ -44,42 +51,41 @@ const { page } = Astro.props;
 </header>
 
 <script>
-  // Ensure global event listeners are set up on all pages
-  document.addEventListener("astro:page-load", () => {
-    // Create a global event listener for creating a project
+  const GLOBAL_KEY = Symbol.for("globalListenersInited");
+
+  const updateJoinButtonVisibility = () => {
+    const publicKey = localStorage.getItem("publicKey");
+    const wrapper = document.getElementById("join-community-wrapper");
+    if (wrapper) {
+      wrapper.style.display = publicKey ? "none" : "block";
+    }
+  };
+
+  const initGlobalListeners = () => {
+    if ((window as any)[GLOBAL_KEY]) return;
+    (window as any)[GLOBAL_KEY] = true;
+
     const createProjectEvent = new CustomEvent("create-project-global");
 
-    // Listen for create project events from NavbarSearch
     document.addEventListener("show-create-project-modal", () => {
-      // On project pages, redirect to homepage with a flag
-      if (!window.location.pathname.includes("/")) {
+      if (window.location.pathname !== "/") {
         sessionStorage.setItem("openCreateProjectModal", "true");
         window.location.href = "/";
       } else {
-        // On home page, dispatch the event to open modal
         document.dispatchEvent(createProjectEvent);
       }
     });
 
-    // Hide join community button when logged in
-    const updateJoinButtonVisibility = () => {
-      const publicKey = localStorage.getItem("publicKey");
-      const wrapper = document.getElementById("join-community-wrapper");
-      if (wrapper) {
-        wrapper.style.display = publicKey ? "none" : "block";
-      }
-    };
+    window.addEventListener("walletConnected", updateJoinButtonVisibility);
+    window.addEventListener("walletDisconnected", updateJoinButtonVisibility);
+  };
 
-    // Run immediately and on every page load
+  document.addEventListener("astro:page-load", () => {
     updateJoinButtonVisibility();
-
-    // Listen for wallet connection/disconnection events
-    window.addEventListener("walletConnected", () => {
-      updateJoinButtonVisibility();
-    });
-
-    window.addEventListener("walletDisconnected", () => {
-      updateJoinButtonVisibility();
-    });
+    initGlobalListeners();
   });
+
+  // immediate run on first load
+  updateJoinButtonVisibility();
+  initGlobalListeners();
 </script>

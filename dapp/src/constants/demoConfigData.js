@@ -3,7 +3,7 @@ export const demoConfigData = [
     projectName: "tansu",
     logoImageLink:
       "https://github.com/tupui/soroban-versioning/blob/main/website/static/img/logo.svg",
-    description: "Bringing Git hashes onto Stellar’s blockchain",
+    description: "Bringing Git hashes onto Stellar's blockchain",
     organizationName: "Consulting Manao GmbH",
     officials: {
       websiteLink: "https://tansu.dev",
@@ -11,9 +11,7 @@ export const demoConfigData = [
     },
     socialLinks: {},
     authorGithubNames: ["tupui"],
-    maintainersAddresses: [
-      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
-    ],
+    maintainersAddresses: [import.meta.env.PUBLIC_TANSU_OWNER_ID],
   },
   {
     projectName: "SALib",
@@ -27,9 +25,7 @@ export const demoConfigData = [
     },
     socialLinks: {},
     authorGithubNames: ["tupui"],
-    maintainersAddresses: [
-      "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2",
-    ],
+    maintainersAddresses: [import.meta.env.PUBLIC_TANSU_OWNER_ID],
   },
 ];
 

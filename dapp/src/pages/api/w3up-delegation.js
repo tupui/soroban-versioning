@@ -5,6 +5,7 @@ import pkg from "js-sha3";
 import decryptProof from "../../utils/decryptAES256";
 const { keccak256 } = pkg;
 
+// This must be a server-side endpoint to handle POST requests
 export const prerender = false;
 
 /**
@@ -31,7 +32,7 @@ async function validateRequest(type, signedTxXdr, projectName) {
       }
 
       const projectId = Buffer.from(
-        keccak256.create().update(projectName).digest(),
+        keccak256.create().update(projectName.toLowerCase()).digest(),
       );
 
       try {
@@ -54,8 +55,10 @@ async function validateRequest(type, signedTxXdr, projectName) {
 
         return projectInfo.maintainers;
       } catch (error) {
-        console.error("Error validating proposal request:", error);
-        throw error;
+        if (import.meta.env.DEV) {
+          console.error("Error validating proposal request:", error);
+        }
+        throw new Error("Invalid request format");
       }
 
     case "member":
@@ -69,7 +72,9 @@ async function validateRequest(type, signedTxXdr, projectName) {
 
         return [];
       } catch (error) {
-        console.error("Error validating member request:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error validating member request:", error);
+        }
         throw error;
       }
 
@@ -86,7 +91,9 @@ async function validateRequest(type, signedTxXdr, projectName) {
 
         return [];
       } catch (error) {
-        console.error("Error validating project request:", error);
+        if (import.meta.env.DEV) {
+          console.error("Error validating project request:", error);
+        }
         throw error;
       }
 
@@ -118,11 +125,22 @@ export const POST = async ({ request }) => {
     console.error("Error creating delegation:", err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: err.message.includes("not found") ? 404 : 500,
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
 
 async function generateDelegation(did) {
+  // Validate environment variables first
+  const key = import.meta.env.STORACHA_SING_PRIVATE_KEY;
+  let storachaProof = import.meta.env.STORACHA_PROOF;
+
+  if (!key || !storachaProof) {
+    throw new Error(
+      "Storacha credentials not configured. Please set STORACHA_SING_PRIVATE_KEY and STORACHA_PROOF environment variables.",
+    );
+  }
+
   // Dynamic imports to avoid initialization issues
   const { create } = await import("@web3-storage/w3up-client");
   const { Signer } = await import(
@@ -133,8 +151,6 @@ async function generateDelegation(did) {
     "@web3-storage/w3up-client/stores/memory"
   );
 
-  const key = import.meta.env.STORACHA_SING_PRIVATE_KEY;
-  let storachaProof = import.meta.env.STORACHA_PROOF;
   if (storachaProof.length === 64) {
     storachaProof = await decryptProof(storachaProof);
   }
@@ -157,7 +173,10 @@ async function generateDelegation(did) {
   ];
   const expiration = Math.floor(Date.now() / 1000) + 60;
   const expirationDate = new Date(expiration * 1000);
-  console.log("expiration time:", expirationDate.toUTCString());
+  if (import.meta.env.DEV) {
+    // Log expiration only in development
+    console.log("expiration time:", expirationDate.toUTCString());
+  }
 
   const delegation = await client.createDelegation(audience, abilities, {
     expiration,

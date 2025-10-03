@@ -1,12 +1,10 @@
-// @ts-nocheck
 // Utility helpers to handle Soroban Tansu anonymous voting flows
 // Centralizes and deduplicates logic that was previously embedded in several UI components.
 //
 // All heavy lifting (fetching proposal, decrypting votes, computing tallies/seeds and optional proof)
 // is done in this single module so UI components can remain lean.
 
-import { Buffer } from "buffer";
-import { keccak256 } from "js-sha3";
+import { deriveProjectKey } from "./projectKey";
 import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";
 import { decryptWithPrivateKey } from "utils/crypto";
@@ -18,8 +16,35 @@ async function getTansu() {
 }
 
 // Helper to derive the project_key (32-byte buffer)
-function deriveProjectKey(projectName: string): Buffer {
-  return Buffer.from(keccak256.create().update(projectName).digest());
+// re-export local helper for consistency
+export { deriveProjectKey };
+
+/**
+ * Validate that an uploaded key-file (optionally containing a publicKey)
+ * matches the project's anonymous voting configuration. Throws a helpful
+ * error if the project's config is missing or the key mismatches.
+ */
+export async function validateAnonymousKeyForProject(
+  projectName: string,
+  uploadedPublicKey?: string,
+): Promise<void> {
+  const Tansu = await getTansu();
+  const project_key = deriveProjectKey(projectName);
+  try {
+    const { result: cfg } = await Tansu.get_anonymous_voting_config({
+      project_key,
+    });
+    if (uploadedPublicKey && uploadedPublicKey !== cfg.public_key) {
+      throw new Error(
+        "Key file does not match this project's anonymous voting key",
+      );
+    }
+  } catch (e: any) {
+    if (e?.message?.includes("NoAnonymousVotingConfig")) {
+      throw new Error("Anonymous voting is not configured for this project");
+    }
+    // Swallow transient/network errors here so callers can proceed to decryption
+  }
 }
 
 export interface DecodedVote {
@@ -31,8 +56,8 @@ export interface DecodedVote {
 }
 
 export interface AnonymousVotingData {
-  tallies: number[]; // length 3: approve/reject/abstain – weighted
-  seeds: number[]; // length 3 – sum of seeds per choice
+  tallies: bigint[]; // length 3: approve/reject/abstain – weighted
+  seeds: bigint[]; // length 3 – sum of seeds per choice
   voteCounts: number[]; // length 3 – un-weighted counts (needed for proof)
   voteStatus: VoteStatus;
   decodedVotes: DecodedVote[];
@@ -82,6 +107,7 @@ export async function computeAnonymousVotingData(
       (data as { encrypted_seeds?: string[] }).encrypted_seeds ?? [];
 
     let voteChoiceIdx = -1;
+    let selectedSeedRaw = 0;
     for (let i = 0; i < 3; i++) {
       if (i >= encryptedVotes.length || i >= encryptedSeeds.length) continue;
       const vCipher = encryptedVotes[i] as string | undefined;
@@ -89,17 +115,39 @@ export async function computeAnonymousVotingData(
       if (!vCipher || !sCipher) continue;
 
       // Decrypt (or parse plain numbers for default votes)
-      const vDec = isPlainNumber(vCipher)
-        ? parseInt(vCipher)
-        : parseInt(await decryptWithPrivateKey(vCipher!, privateKey));
-      const sDec = isPlainNumber(sCipher)
-        ? parseInt(sCipher)
-        : parseInt(await decryptWithPrivateKey(sCipher!, privateKey));
+      let vDec: number;
+      if (isPlainNumber(vCipher)) {
+        vDec = parseInt(vCipher);
+      } else {
+        const decStr = await decryptWithPrivateKey(vCipher!, privateKey);
+        const numStr = decStr.includes(":") ? decStr.split(":").pop()! : decStr;
+        vDec = parseInt(numStr);
+      }
+      let sDec: number;
+      if (isPlainNumber(sCipher)) {
+        sDec = parseInt(sCipher);
+      } else {
+        const decStr = await decryptWithPrivateKey(sCipher!, privateKey);
+        const numStr = decStr.includes(":") ? decStr.split(":").pop()! : decStr;
+        sDec = parseInt(numStr);
+      }
 
-      if (vDec === 1) voteChoiceIdx = i;
-      talliesArr[i] += vDec * weight;
-      seedsArr[i] += sDec;
-      voteCounts[i] += vDec;
+      if (vDec > 0) {
+        voteChoiceIdx = i;
+        selectedSeedRaw = sDec; // capture per-voter unweighted seed for display
+      }
+      // Apply voting weight to both vote value and seed
+      if (
+        talliesArr[i] !== undefined &&
+        seedsArr[i] !== undefined &&
+        voteCounts[i] !== undefined
+      ) {
+        talliesArr[i]! += vDec * weight;
+        seedsArr[i]! += sDec * weight;
+        if (vDec > 0) {
+          voteCounts[i]! += 1;
+        }
+      }
     }
 
     // Retrieve max weight for voter
@@ -110,7 +158,9 @@ export async function computeAnonymousVotingData(
         project_key,
         member_address: memberAddr,
       });
-      maxWeight = Number((maxRes as any).result) || 1;
+      if (maxRes && typeof maxRes === "object" && "result" in maxRes) {
+        maxWeight = Number(maxRes.result) || 1;
+      }
     } catch (_) {
       /* ignore – default 1 */
     }
@@ -123,7 +173,9 @@ export async function computeAnonymousVotingData(
           : voteChoiceIdx === 1
             ? "reject"
             : "abstain",
-      seed: seedsArr[voteChoiceIdx >= 0 ? voteChoiceIdx : 0] ?? 0,
+      // Show the voter's own seed (unweighted) to avoid confusion with
+      // aggregated, weighted seed tallies used for on-chain proof
+      seed: selectedSeedRaw,
       weight,
       maxWeight,
     });
@@ -158,8 +210,8 @@ export async function computeAnonymousVotingData(
       const proofRes = await Tansu.proof({
         project_key,
         proposal: rawProposal,
-        tallies: voteCounts as unknown as number[],
-        seeds: seedsArr as unknown as number[],
+        tallies: talliesArr.map((n) => BigInt(n)),
+        seeds: seedsArr.map((n) => BigInt(n)),
       });
       proofOk = !!proofRes.result;
     } catch (_) {
@@ -168,8 +220,8 @@ export async function computeAnonymousVotingData(
   }
 
   return {
-    tallies: talliesArr,
-    seeds: seedsArr,
+    tallies: talliesArr.map((n) => BigInt(n)),
+    seeds: seedsArr.map((n) => BigInt(n)),
     voteCounts,
     voteStatus,
     decodedVotes: decodedPerVoter,

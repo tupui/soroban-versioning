@@ -39,7 +39,11 @@ const CopyButton = ({
       // Most modern browsers support the Clipboard API,
       // so we'll just log the error if it doesn't work
       // instead of using the deprecated execCommand
-      console.error("Failed to copy text:", error);
+      if (error instanceof Error) {
+        console.error("Failed to copy text:", error.message);
+      } else {
+        console.error("Failed to copy text:", error);
+      }
     }
   }, [textToCopy]);
 

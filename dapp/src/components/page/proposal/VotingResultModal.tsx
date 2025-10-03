@@ -1,7 +1,7 @@
 import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import { votedTypeLabelMap } from "constants/constants";
-import React, { useEffect, useMemo, useState, type FC } from "react";
+import { useEffect, useMemo, useState, type FC } from "react";
 import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";
 import { truncateMiddle } from "utils/utils";
@@ -122,7 +122,7 @@ const Voters: FC<VotersProps> = ({
                 <p className="leading-6 text-xl text-primary">@{voter.name}</p>
               )}
               <p className="leading-[14px] text-sm text-secondary">
-                ({truncateMiddle(voter.address, 24)})
+                ({truncateMiddle(voter.address, 16)})
               </p>
             </div>
           ))}

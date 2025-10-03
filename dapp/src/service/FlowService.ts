@@ -1,14 +1,16 @@
 import { calculateDirectoryCid } from "../utils/ipfsFunctions";
 import { create } from "@web3-storage/w3up-client";
 import { extract } from "@web3-storage/w3up-client/delegation";
-import { kit } from "../components/stellar-wallets-kit";
+//
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
-import * as pkg from "js-sha3";
-import { parseContractError } from "utils/contractErrors";
-import type { GitVerificationData } from "../utils/gitVerification";
-const { keccak256 } = pkg;
+import { deriveProjectKey } from "../utils/projectKey";
+//
+
+//
+import { sendSignedTransaction, signAssembledTransaction } from "./TxService";
+import { checkSimulationError } from "../utils/contractErrors";
 
 interface UploadWithDelegationParams {
   files: File[];
@@ -39,7 +41,6 @@ interface CreateProjectFlowParams {
   tomlFile: File;
   githubRepoUrl: string;
   maintainers: string[];
-  domainContractId: string;
   onProgress?: (step: number) => void;
 }
 
@@ -54,6 +55,7 @@ async function uploadWithDelegation({
   did,
 }: UploadWithDelegationParams): Promise<string> {
   const apiUrl = `/api/w3up-delegation`;
+
   const response = await fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -61,11 +63,26 @@ async function uploadWithDelegation({
   });
 
   if (!response.ok) {
-    const data = await response.json();
-    throw new Error(data.error);
+    const contentType = response.headers.get("content-type");
+
+    let errorMessage = "Unknown error";
+    try {
+      if (contentType?.includes("application/json")) {
+        const data = await response.json();
+        errorMessage = data.error || errorMessage;
+      } else {
+        const text = await response.text();
+        errorMessage = text || errorMessage;
+      }
+    } catch (parseError) {
+      console.error("Failed to parse error response:", parseError);
+    }
+
+    throw new Error(errorMessage);
   }
 
   const data = await response.arrayBuffer();
+
   const delegation = await extract(new Uint8Array(data));
   if (!delegation.ok) {
     throw new Error("Failed to extract delegation", {
@@ -97,9 +114,7 @@ async function createSignedProposalTransaction(
   if (!publicKey) throw new Error("Please connect your wallet first");
 
   Tansu.options.publicKey = publicKey;
-  const project_key = Buffer.from(
-    keccak256.create().update(projectName).digest(),
-  );
+  const project_key = deriveProjectKey(projectName);
 
   const tx = await Tansu.create_proposal({
     proposer: publicKey,
@@ -110,22 +125,10 @@ async function createSignedProposalTransaction(
     public_voting: publicVoting,
   });
 
-  let sim;
-  try {
-    sim = await tx.simulate();
-  } catch (error: any) {
-    throw new Error(parseContractError(error));
-  }
+  // Check for simulation errors (contract errors) before signing
+  checkSimulationError(tx as any);
 
-  if ((tx as any).prepare) {
-    await (tx as any).prepare(sim);
-  }
-
-  const preparedXdr = tx.toXDR();
-
-  // Sign the transaction
-  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
-  return signedTxXdr;
+  return await signAssembledTransaction(tx);
 }
 
 /**
@@ -138,6 +141,11 @@ async function createSignedAddMemberTransaction(
   const address = memberAddress || loadedPublicKey();
   if (!address) throw new Error("Please connect your wallet first");
 
+  // Validate meta parameter - ensure it's not just whitespace
+  if (meta.trim() === "") {
+    meta = ""; // Use empty string instead of whitespace
+  }
+
   Tansu.options.publicKey = address;
 
   const tx = await Tansu.add_member({
@@ -145,122 +153,17 @@ async function createSignedAddMemberTransaction(
     meta: meta,
   });
 
-  // Simulate the transaction to prepare it with Soroban data
-  try {
-    await tx.simulate();
-  } catch (error: any) {
-    // If simulation fails, parse and throw a user-friendly error
-    throw new Error(parseContractError(error));
-  }
+  // Check for simulation errors (contract errors) before signing
+  checkSimulationError(tx as any);
 
-  // Get the transaction XDR after simulation
-  const preparedXdr = tx.toXDR();
-
-  // Sign the transaction
-  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
-  return signedTxXdr;
+  return await signAssembledTransaction(tx);
 }
 
 /**
  * Send a signed transaction to the network
  */
-async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
-  const { Transaction, rpc } = await import("@stellar/stellar-sdk");
-  const server = new rpc.Server(import.meta.env.PUBLIC_SOROBAN_RPC_URL);
-
-  // The JS SDK Transaction class can only parse classic envelopes; Soroban
-  // contract transactions include additional SorobanTransactionData and may
-  // therefore be rejected as MALFORMED when re-encoded. The Soroban RPC
-  // server happily accepts a base64-encoded envelope string though, so we
-  // short-circuit and post the raw XDR if we already have it signed.
-
-  let sendResponse;
-  try {
-    // Cast to any because typings accept only Transaction, but Soroban RPC
-    // supports base64 envelope; the runtime call is valid.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendResponse = await (server as any).sendTransaction(signedTxXdr);
-  } catch (_) {
-    // Fallback to legacy path for classic txs
-    const transaction = new Transaction(
-      signedTxXdr,
-      import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-    );
-    sendResponse = await server.sendTransaction(transaction);
-  }
-
-  if (sendResponse.status === "ERROR") {
-    // Try to parse contract error from the response
-    const errorResultStr = JSON.stringify(sendResponse.errorResult);
-    const contractErrorMatch = errorResultStr.match(
-      /Error\(Contract, #(\d+)\)/,
-    );
-    if (contractErrorMatch) {
-      throw new Error(parseContractError({ message: errorResultStr }));
-    }
-    throw new Error(`Transaction failed: ${errorResultStr}`);
-  }
-
-  // For successful transactions, we need to wait for confirmation
-  if (sendResponse.status === "PENDING") {
-    // Wait for transaction confirmation
-    let getResponse = await server.getTransaction(sendResponse.hash);
-    let retries = 0;
-    const maxRetries = 30;
-
-    while (getResponse.status === "NOT_FOUND" && retries < maxRetries) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      getResponse = await server.getTransaction(sendResponse.hash);
-      retries++;
-    }
-
-    if (getResponse.status === "SUCCESS") {
-      // Extract the result from the transaction meta
-      if (getResponse.returnValue) {
-        try {
-          // Lazy-load decoder utilities from stellar-sdk
-          const { xdr, scValToNative } = await import("@stellar/stellar-sdk");
-
-          let decoded: any;
-          if (typeof getResponse.returnValue === "string") {
-            // Base64-encoded XDR string
-            const scVal = xdr.ScVal.fromXDR(getResponse.returnValue, "base64");
-            decoded = scValToNative(scVal);
-          } else {
-            // Already a ScVal object
-            decoded = scValToNative(getResponse.returnValue);
-          }
-
-          // For the create_proposal call we expect an integer ID
-          if (typeof decoded === "bigint") return Number(decoded);
-          if (typeof decoded === "number") return decoded;
-
-          // If the contract returns a boolean (other flows) just pass it through
-          if (typeof decoded === "boolean") return decoded;
-
-          // Fallback: attempt numeric coercion
-          const coerced = Number(decoded);
-          return isNaN(coerced) ? decoded : coerced;
-        } catch (_) {
-          // On any failure, indicate generic success so the outer flow can continue
-          return true;
-        }
-      }
-      return true;
-    } else if (getResponse.status === "FAILED") {
-      // Try to extract contract error from failed transaction
-      const resultStr = JSON.stringify(getResponse);
-      const contractErrorMatch = resultStr.match(/Error\(Contract, #(\d+)\)/);
-      if (contractErrorMatch) {
-        throw new Error(parseContractError({ message: resultStr }));
-      }
-      throw new Error(`Transaction failed with status: ${getResponse.status}`);
-    } else {
-      throw new Error(`Transaction failed with status: ${getResponse.status}`);
-    }
-  }
-
-  return sendResponse;
+async function sendSignedTransactionLocal(signedTxXdr: string): Promise<any> {
+  return sendSignedTransaction(signedTxXdr);
 }
 
 /**
@@ -293,7 +196,7 @@ export async function createProposalFlow({
   const did = client.agent.did();
 
   // Step 2: Create and sign the smart contract transaction with the CID
-  onProgress?.(7); // Signing step
+  onProgress?.(7); // Signing proposal transaction (UI index 2)
   const signedTxXdr = await createSignedProposalTransaction(
     projectName,
     proposalName,
@@ -303,7 +206,7 @@ export async function createProposalFlow({
   );
 
   // Step 3: Upload to IPFS using the signed transaction as authentication
-  onProgress?.(8); // Uploading step
+  onProgress?.(8); // Uploading to IPFS (UI index 3)
   const uploadedCid = await uploadWithDelegation({
     files: proposalFiles,
     type: "proposal",
@@ -320,11 +223,14 @@ export async function createProposalFlow({
   }
 
   // Step 5: Send the signed transaction
-  onProgress?.(9); // Sending step
-  const result = await sendSignedTransaction(signedTxXdr);
+  onProgress?.(9); // Sending transaction (align with ProgressStep step 4)
+  const result = await sendSignedTransactionLocal(signedTxXdr);
 
   // The result should be the proposal ID
-  return typeof result === "number" ? result : parseInt(result.toString());
+  if (typeof result === "number") return result;
+  const parsed = Number(result);
+  if (!Number.isNaN(parsed)) return parsed;
+  throw new Error("Unexpected contract response: missing proposal id");
 }
 
 /**
@@ -346,7 +252,7 @@ export async function joinCommunityFlow({
   gitVerificationData,
   onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
-  let cid = " "; // Default for no profile
+  let cid = ""; // Default for no profile - use empty string instead of single space
 
   if (profileFiles.length > 0) {
     // Step 1: Calculate the CID
@@ -358,6 +264,7 @@ export async function joinCommunityFlow({
   const did = client.agent.did();
 
   // Step 2: Create and sign the smart contract transaction with the CID
+  onProgress?.(7); // signing step indicator (offset -5 → shows Sign)
   const signedTxXdr = await createSignedAddMemberTransaction(
     memberAddress,
     cid,
@@ -365,21 +272,28 @@ export async function joinCommunityFlow({
 
   if (profileFiles.length > 0) {
     // Step 3: Upload to IPFS using the signed transaction as authentication
-    const uploadedCid = await uploadWithDelegation({
-      files: profileFiles,
-      type: "member",
-      signedTxXdr,
-      did,
-    });
+    onProgress?.(8); // uploading step indicator (offset -5 → shows Uploading)
+    try {
+      const uploadedCid = await uploadWithDelegation({
+        files: profileFiles,
+        type: "member",
+        signedTxXdr,
+        did,
+      });
 
-    // Step 4: Verify CID matches
-    if (uploadedCid !== cid) {
-      throw new Error(`CID mismatch: expected ${cid}, got ${uploadedCid}`);
+      // Step 4: Verify CID matches
+      if (uploadedCid !== cid) {
+        throw new Error(`CID mismatch: expected ${cid}, got ${uploadedCid}`);
+      }
+    } catch (error) {
+      console.error("IPFS upload error:", error);
+      throw error;
     }
   }
 
   // Step 5: Send the signed transaction
-  await sendSignedTransaction(signedTxXdr);
+  onProgress?.(9); // sending step indicator (offset -5 → shows Sending)
+  await sendSignedTransactionLocal(signedTxXdr);
   return true;
 }
 
@@ -396,7 +310,6 @@ export async function createProjectFlow({
   tomlFile,
   githubRepoUrl,
   maintainers,
-  domainContractId,
   onProgress,
 }: CreateProjectFlowParams): Promise<boolean> {
   // Step 1 – Calculate CID
@@ -407,7 +320,7 @@ export async function createProjectFlow({
   const did = client.agent.did();
 
   // Step 2 – Create & sign register transaction
-  onProgress?.(7); // signing step indicator
+  onProgress?.(7); // signing step indicator (offset -4 → shows Sign)
 
   const publicKey = loadedPublicKey();
   if (!publicKey) throw new Error("Please connect your wallet first");
@@ -415,31 +328,20 @@ export async function createProjectFlow({
   Tansu.options.publicKey = publicKey;
 
   const tx = await Tansu.register({
-    name: projectName,
     maintainer: publicKey,
+    name: projectName,
     maintainers,
     url: githubRepoUrl,
-    hash: expectedCid,
-    domain_contract_id: domainContractId,
+    ipfs: expectedCid,
   });
 
-  let sim;
-  try {
-    sim = await tx.simulate();
-  } catch (error: any) {
-    throw new Error(parseContractError(error));
-  }
+  // Check for simulation errors (contract errors) before signing
+  checkSimulationError(tx as any);
 
-  // Prepare transaction with simulation data when supported
-  if ((tx as any).prepare) {
-    await (tx as any).prepare(sim);
-  }
-
-  const preparedXdr = tx.toXDR();
-  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
+  const signedTxXdr = await signAssembledTransaction(tx);
 
   // Step 3 – Upload to IPFS with delegation
-  onProgress?.(8); // uploading step indicator
+  onProgress?.(8); // uploading step indicator (offset -4 → shows Uploading)
 
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
@@ -456,8 +358,8 @@ export async function createProjectFlow({
   }
 
   // Step 5 – Send signed transaction
-  onProgress?.(9); // sending step indicator
-  await sendSignedTransaction(signedTxXdr);
+  onProgress?.(9); // sending step indicator (offset -4 → shows Sending)
+  await sendSignedTransactionLocal(signedTxXdr);
 
   return true;
 }
@@ -473,28 +375,26 @@ async function createSignedUpdateConfigTransaction(
 
   Tansu.options.publicKey = publicKey;
 
+  const projectId = loadedProjectId();
+  if (!projectId) throw new Error("No project defined");
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   const tx = await Tansu.update_config({
     maintainer: publicKey,
-    key: loadedProjectId()!, // assume project already selected
+    key: projectKey,
     maintainers: maintainers,
     url: configUrl,
-    hash: cid,
+    ipfs: cid,
   });
 
-  // Simulate & prepare
-  let sim;
-  try {
-    sim = await tx.simulate();
-  } catch (e: any) {
-    throw new Error(parseContractError(e));
-  }
-  if ((tx as any).prepare) {
-    await (tx as any).prepare(sim);
-  }
+  // Check for simulation errors (contract errors) before signing
+  checkSimulationError(tx as any);
 
-  const preparedXdr = tx.toXDR();
-  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
-  return signedTxXdr;
+  return await signAssembledTransaction(tx);
 }
 
 export async function updateConfigFlow({
@@ -514,7 +414,7 @@ export async function updateConfigFlow({
   const did = client.agent.did();
 
   // sign tx
-  onProgress?.(7);
+  onProgress?.(7); // UI offset -4 → shows "Sign"
   const signedTxXdr = await createSignedUpdateConfigTransaction(
     maintainers,
     githubRepoUrl,
@@ -522,7 +422,7 @@ export async function updateConfigFlow({
   );
 
   // upload
-  onProgress?.(8);
+  onProgress?.(8); // UI offset -4 → shows "Uploading"
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
     type: "project",
@@ -536,7 +436,7 @@ export async function updateConfigFlow({
     );
   }
 
-  onProgress?.(9);
+  onProgress?.(9); // UI offset -4 → shows "Sending"
   await sendSignedTransaction(signedTxXdr);
   return true;
 }

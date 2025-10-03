@@ -21,10 +21,10 @@ jobs:
       name: publish-python
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           architecture: "x64"
@@ -36,4 +36,4 @@ jobs:
         run: cd tansu && hatch build && mv dist ../.
 
       - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e

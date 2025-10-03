@@ -203,7 +203,7 @@ export const fetchJSONFromIPFS = async (
       return null;
     }
     return await response.json();
-  } catch (error) {
+  } catch {
     // Network errors or parsing errors are expected cases, silently return null
     return null;
   }

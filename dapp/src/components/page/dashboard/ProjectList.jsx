@@ -11,10 +11,10 @@ import { convertGitHubLink } from "../../../utils/editLinkFunctions";
 import { projectCardModalOpen } from "../../../utils/store.ts";
 import { extractConfigData } from "../../../utils/utils";
 import CreateProjectModal from "./CreateProjectModal.tsx";
-import ProjectCard from "./ProjectCard.jsx";
+import ProjectCard from "./ProjectCard";
 import ProjectInfoModal from "./ProjectInfoModal.jsx";
 import MemberProfileModal from "./MemberProfileModal.tsx";
-import Modal from "components/utils/Modal.tsx";
+import Spinner from "components/utils/Spinner.tsx";
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);
@@ -83,7 +83,9 @@ const ProjectList = () => {
         setShowMemberProfileModal(true);
         sessionStorage.removeItem("pendingMemberProfile");
       } catch (e) {
-        console.error("Error loading pending member profile", e);
+        if (import.meta.env.DEV) {
+          console.error("Error loading pending member profile", e);
+        }
       }
     }
 
@@ -201,7 +203,7 @@ const ProjectList = () => {
     try {
       const project = await getProjectFromName(projectName);
       if (project && project.name && project.config && project.maintainers) {
-        const tomlData = await fetchTomlFromCid(project.config.hash);
+        const tomlData = await fetchTomlFromCid(project.config.ipfs);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigInfo(configData);
@@ -285,9 +287,7 @@ const ProjectList = () => {
 
       {isLoading ? (
         <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
-          <p className="px-3 py-1 text-base sm:text-lg font-medium border-2 border-zinc-700 rounded-lg">
-            looking for results...
-          </p>
+          <Spinner />
         </div>
       ) : memberNotFound ? (
         <div className="flex flex-col items-center justify-center py-12">

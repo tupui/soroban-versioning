@@ -1,9 +1,27 @@
 use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
 
+// Constants
+pub const TIMELOCK_DELAY: u64 = 24 * 3600; // 24 hours in seconds
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Contract {
+    pub address: Address,
+    pub wasm_hash: Option<BytesN<32>>,
+}
+
+#[contracttype]
+pub enum ContractKey {
+    DomainContract,     // Address and wasm hash of the SorobanDomain contract
+    CollateralContract, // Collateral asset contract address
+}
+
 #[contracttype]
 pub enum DataKey {
-    Admin,           // Contract administrator
     Member(Address), // Member of the DAO, address
+    Paused,          // Contract pause state
+    UpgradeProposal, // Pending upgrade proposal
+    AdminsConfig,    // Admin configuration for upgrades and other admin operations
 }
 
 #[contracttype]
@@ -13,7 +31,6 @@ pub struct Badges {
     pub triage: Vec<Address>,
     pub community: Vec<Address>,
     pub verified: Vec<Address>,
-    pub default: Vec<Address>,
 }
 
 #[contracttype]
@@ -47,6 +64,7 @@ pub enum ProposalStatus {
     Approved,
     Rejected,
     Cancelled,
+    Malicious,
 }
 
 #[contracttype]
@@ -99,10 +117,27 @@ pub struct AnonymousVoteConfig {
 }
 
 #[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct AdminsConfig {
+    pub threshold: u32,       // M-of-N threshold (e.g., 2 for 2-of-3)
+    pub admins: Vec<Address>, // List of authorized admins
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct UpgradeProposal {
+    pub wasm_hash: BytesN<32>,
+    pub executable_at: u64,
+    pub approvals: Vec<Address>,
+    pub admins_config: AdminsConfig,
+}
+
+#[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Proposal {
     pub id: u32,
     pub title: String,
+    pub proposer: Address,
     pub ipfs: String,
     pub vote_data: VoteData,
     pub status: ProposalStatus,
@@ -128,8 +163,8 @@ pub enum ProjectKey {
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Config {
-    pub url: String,  // link to toml file with project metadata
-    pub hash: String, // hash of the file found at the URL
+    pub url: String,  // link to VCS
+    pub ipfs: String, // CID of the tansu.toml file with metadata
 }
 
 #[contracttype]

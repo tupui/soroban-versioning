@@ -4,6 +4,7 @@ contract/target
 contracts/tansu/test_snapshots
 .stellar/identity
 .stellar/network
+mutants*
 
 # Misc
 .idea

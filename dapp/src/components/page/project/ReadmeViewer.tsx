@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchReadmeContentFromConfigUrl } from "../../../service/GithubService";
 import { loadProjectInfo } from "../../../service/StateService";
 import { projectInfoLoaded } from "../../../utils/store";
+import DOMPurify from "dompurify";
 
 import "github-markdown-css";
 
@@ -69,7 +70,7 @@ const ReadmeViewer = () => {
           },
         }}
       >
-        {readmeContent}
+        {DOMPurify.sanitize(readmeContent)}
       </Markdown>
     </div>
   );

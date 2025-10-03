@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Button from "components/utils/Button";
 import JoinCommunityModal from "components/page/dashboard/JoinCommunityModal";
-import MemberProfileModal from "./page/dashboard/MemberProfileModal";
+
 import { getMember } from "@service/ReadContractService";
 import type { Member } from "../../packages/tansu";
 import { useStore } from "@nanostores/react";
@@ -10,9 +10,9 @@ import { connectedPublicKey } from "utils/store";
 const JoinCommunityButton = () => {
   const publicKey = useStore(connectedPublicKey);
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [isMember, setIsMember] = useState(false);
-  const [memberData, setMemberData] = useState<Member | null>(null);
+  const [_showProfileModal, _setShowProfileModal] = useState(false);
+  const [_isMember, setIsMember] = useState(false);
+  const [_memberData, setMemberData] = useState<Member | null>(null);
 
   const fetchMember = async (address: string) => {
     try {
@@ -20,9 +20,9 @@ const JoinCommunityButton = () => {
       // If getMember succeeds, they are a member regardless of metadata content
       setIsMember(true);
       setMemberData(member);
-    } catch (e: any) {
+    } catch {
       // If getMember fails for any reason, treat as not a member
-      console.log("getMember error:", e);
+      // This is expected behavior for non-members
       setIsMember(false);
       setMemberData(null);
     }
@@ -32,14 +32,14 @@ const JoinCommunityButton = () => {
     // Reset state first to avoid showing stale profile
     setIsMember(false);
     setMemberData(null);
-    setShowProfileModal(false);
+    _setShowProfileModal(false);
 
     if (publicKey) {
       fetchMember(publicKey);
     }
   }, [publicKey]);
 
-  const handleJoined = () => {
+  const _handleJoined = () => {
     if (publicKey) fetchMember(publicKey);
   };
 
@@ -52,13 +52,14 @@ const JoinCommunityButton = () => {
     <>
       <Button
         type="secondary"
-        className="w-[130px] sm:w-[162px] md:w-[180px] h-10 md:h-12 flex justify-center items-center gap-2 md:gap-3"
+        className="h-8 md:h-10 lg:h-12 px-3 md:px-4 lg:px-6 flex justify-center items-center gap-1 md:gap-2 shadow-button focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200"
         onClick={() => setShowJoinModal(true)}
       >
-        <p className="text-sm sm:text-base md:text-xl leading-4 md:leading-5 text-primary truncate">
+        <p className="text-xs md:text-sm lg:text-base font-medium text-primary truncate">
           Join
         </p>
       </Button>
+
       {showJoinModal && (
         <JoinCommunityModal
           onClose={() => setShowJoinModal(false)}

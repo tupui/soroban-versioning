@@ -17,8 +17,8 @@ jobs:
   pre-commit-linters:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: "pip"
@@ -43,18 +43,38 @@ jobs:
       # Default Soroban network configuration for static build & linting
       PUBLIC_SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org:443"
       PUBLIC_SOROBAN_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+      PUBLIC_HORIZON_URL: "https://horizon-testnet.stellar.org"
       PUBLIC_TANSU_CONTRACT_ID: "CTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-      PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CDVEWMU4UFI7MXKYZAATXROJRZZKQHZWRCR443STHMPE3MOTM6HAB7R7"
+      PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CAQWEZNN5X7LFD6PZBQXALVH4LSJW2KGNDMFJBQ3DWHXUVQ2JIZ6AQU6"
       PUBLIC_TANSU_OWNER_ID: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
       PUBLIC_DEFAULT_FEE: "100"
       PUBLIC_DEFAULT_TIMEOUT: "30"
-      SOROBAN_NETWORK: "testnet"
+      STORACHA_SING_PRIVATE_KEY: ""
+      STORACHA_PROOF: ""
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Get Bun cache directory
+        id: bun-cache-dir
+        run: echo "dir=$(bun pm cache)" >> ${GITHUB_OUTPUT}
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ steps.bun-cache-dir.outputs.dir }}
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-lint-${{ hashFiles('**/bun.lockb', '**/package.json', '**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-lint-
+            ${{ runner.os }}-bun-
 
       - name: Install website dependencies
-        run: cd website && bun install
+        run: cd website && bun install --frozen-lockfile
 
       - name: Check MDX
         run: cd website && bun linter
@@ -63,10 +83,10 @@ jobs:
         run: cd website && bun run build
 
       - name: Install App dependencies
-        run: cd dapp && bun install
+        run: cd dapp && bun install --frozen-lockfile
 
-      - name: Linter
-        run: cd dapp && bun linter
+      - name: Lint dApp
+        run: cd dapp && bun run lint
 
-      - name: Build app
-        run: cd dapp && bun run build
+      - name: Build app (static for lighthouse)
+        run: cd dapp && bun run build:lighthouse

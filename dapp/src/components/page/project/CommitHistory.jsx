@@ -8,7 +8,7 @@ import {
 import { formatDate } from "../../../utils/formatTimeFunctions.ts";
 import { latestCommit, projectInfoLoaded } from "../../../utils/store.ts";
 import CommitPeriod from "./CommitPeriod.jsx";
-import CommitRecord from "./CommitRecord.jsx";
+import CommitRecord from "../../CommitRecord";
 
 const CommitHistory = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
@@ -35,17 +35,24 @@ const CommitHistory = () => {
   };
 
   const addMaintainerBadge = () => {
-    const configData = loadConfigData();
-    if (
-      configData.authorGithubNames &&
-      configData.authorGithubNames.length > 0
-    ) {
-      const authors = configData.authorGithubNames.map((name) =>
-        name.toLowerCase(),
-      );
-      setAuthors(authors);
-    } else {
-      console.log("Cannot read config data.");
+    try {
+      const configData = loadConfigData();
+      if (
+        configData &&
+        configData.authorGithubNames &&
+        Array.isArray(configData.authorGithubNames) &&
+        configData.authorGithubNames.length > 0
+      ) {
+        const authors = configData.authorGithubNames
+          .map((name) =>
+            name && typeof name === "string" ? name.toLowerCase() : "",
+          )
+          .filter(Boolean);
+        setAuthors(authors);
+      }
+    } catch (error) {
+      // Config data not available - this is expected for some projects
+      setAuthors([]);
     }
   };
 

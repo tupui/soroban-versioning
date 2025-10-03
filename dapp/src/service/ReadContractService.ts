@@ -1,64 +1,11 @@
 import Tansu from "../contracts/soroban_tansu";
-import * as pkg from "js-sha3";
-const { keccak256 } = pkg;
+import { deriveProjectKey } from "../utils/projectKey";
 import { Buffer } from "buffer";
 import { loadedProjectId } from "./StateService";
-import { modifyProposalFromContract, toast } from "utils/utils";
+import { modifyProposalFromContract } from "utils/utils";
 import type { Project, Proposal, Member, Badges } from "../../packages/tansu";
 import type { Proposal as ModifiedProposal } from "types/proposal";
-import {
-  contractErrorMessages,
-  type ContractErrorMessageKey,
-} from "constants/contractErrorMessages";
 import { checkSimulationError } from "utils/contractErrors";
-import { extractContractError } from "../utils/errorHandler";
-
-// Expected error codes that shouldn't show toast errors
-const EXPECTED_ERROR_CODES = [
-  18, // Unknown member
-  4, // Unknown project
-  14, // Unknown proposal
-  0, // Generic errors, often for not found conditions
-];
-
-// Expected error messages that shouldn't show toast errors
-const EXPECTED_ERROR_MESSAGES = [
-  "No project defined",
-  "Unknown member",
-  "Unknown project",
-  "Project not found",
-  "Member not found",
-  "Proposal not found",
-];
-
-function isExpectedError(error: any): boolean {
-  if (!error || !error.message) return false;
-
-  // Check for expected error messages
-  if (EXPECTED_ERROR_MESSAGES.some((msg) => error.message.includes(msg))) {
-    return true;
-  }
-
-  // Check for expected error codes
-  const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
-  if (errorCodeMatch && errorCodeMatch[1]) {
-    const errorCode = parseInt(errorCodeMatch[1], 10);
-    return EXPECTED_ERROR_CODES.includes(errorCode);
-  }
-  return false;
-}
-
-function fetchErrorCode(error: any): {
-  errorCode: ContractErrorMessageKey;
-  errorMessage: string;
-} {
-  const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
-  let errorCode: ContractErrorMessageKey = 0;
-  if (errorCodeMatch && errorCodeMatch[1]) {
-    errorCode = parseInt(errorCodeMatch[1], 10) as ContractErrorMessageKey;
-  }
-  return { errorCode, errorMessage: contractErrorMessages[errorCode] };
-}
 
 async function getProjectHash(): Promise<string | null> {
   const projectId = loadedProjectId();
@@ -67,16 +14,22 @@ async function getProjectHash(): Promise<string | null> {
     // This is an expected condition when no project is selected
     return null;
   }
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   try {
     const res = await Tansu.get_commit({
-      project_key: projectId,
+      project_key: projectKey,
     });
 
     // Check for simulation errors
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for project hash not found
     return null;
   }
@@ -89,16 +42,22 @@ async function getProject(): Promise<Project | null> {
     // This is an expected condition when no project is selected
     return null;
   }
+
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   try {
     const res = await Tansu.get_project({
-      project_key: projectId,
+      project_key: projectKey,
     });
 
     // Check for simulation errors
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for project not found
     return null;
   }
@@ -112,9 +71,7 @@ async function getProjectFromName(
     return null;
   }
 
-  const projectId = Buffer.from(
-    keccak256.create().update(projectName.toLowerCase()).digest(),
-  );
+  const projectId = deriveProjectKey(projectName);
 
   try {
     const res = await Tansu.get_project({
@@ -125,7 +82,7 @@ async function getProjectFromName(
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for project not found - this is always an expected condition
     // when searching for projects
     return null;
@@ -142,16 +99,14 @@ async function getProjectFromId(projectId: Buffer): Promise<Project | null> {
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for project not found
     return null;
   }
 }
 
 async function getProposalPages(project_name: string): Promise<number | null> {
-  const project_key = Buffer.from(
-    keccak256.create().update(project_name).digest(),
-  );
+  const project_key = deriveProjectKey(project_name);
 
   try {
     const checkPageExist = async (page: number) => {
@@ -165,7 +120,7 @@ async function getProposalPages(project_name: string): Promise<number | null> {
         checkSimulationError(res);
 
         return res.result.proposals.length > 0;
-      } catch (e) {
+      } catch {
         // Silently handle errors for this internal function
         return false;
       }
@@ -185,7 +140,7 @@ async function getProposalPages(project_name: string): Promise<number | null> {
       }
       return f;
     }
-  } catch (e: any) {
+  } catch {
     // Never show toast error for proposal pages not found
     return null;
   }
@@ -195,9 +150,7 @@ async function getProposals(
   project_name: string,
   page: number,
 ): Promise<ModifiedProposal[] | null> {
-  const project_key = Buffer.from(
-    keccak256.create().update(project_name).digest(),
-  );
+  const project_key = deriveProjectKey(project_name);
   try {
     const res = await Tansu.get_dao({
       project_key: project_key,
@@ -213,7 +166,7 @@ async function getProposals(
       },
     );
     return proposals;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for proposals not found
     return null;
   }
@@ -223,9 +176,7 @@ async function getProposal(
   projectName: string,
   proposalId: number,
 ): Promise<ModifiedProposal | null> {
-  const project_key = Buffer.from(
-    keccak256.create().update(projectName).digest(),
-  );
+  const project_key = deriveProjectKey(projectName);
   try {
     const res = await Tansu.get_proposal({
       project_key: project_key,
@@ -237,7 +188,7 @@ async function getProposal(
 
     const proposal: Proposal = res.result;
     return modifyProposalFromContract(proposal);
-  } catch (e: any) {
+  } catch {
     // Never show toast error for proposal not found
     return null;
   }
@@ -258,7 +209,7 @@ async function getMember(memberAddress: string): Promise<Member | null> {
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for member not found - this is always an expected condition
     // when searching for members
     return null;
@@ -272,16 +223,20 @@ async function getBadges(): Promise<Badges | null> {
     return null;
   }
 
+  // Ensure projectId is a proper Buffer
+  const projectKey = Buffer.isBuffer(projectId)
+    ? projectId
+    : Buffer.from(projectId, "hex");
+
   try {
-    const res = await Tansu.get_badges({
-      key: projectId,
-    });
+    // Use current bindings spec
+    const res: any = await (Tansu as any).get_badges({ key: projectKey });
 
     // Check for simulation errors
     checkSimulationError(res);
 
     return res.result;
-  } catch (e: any) {
+  } catch {
     // Never show toast error for badges not found
     return null;
   }
@@ -298,3 +253,26 @@ export {
   getMember,
   getBadges,
 };
+
+/**
+ * Check whether anonymous voting is configured for a given project name.
+ * Returns true when configuration exists, false otherwise.
+ */
+export async function hasAnonymousVotingConfig(
+  projectName: string,
+): Promise<boolean> {
+  try {
+    const project_key = deriveProjectKey(projectName);
+    const tx = await (Tansu as any).get_anonymous_voting_config({
+      project_key,
+    });
+    try {
+      checkSimulationError(tx);
+      return !!tx.result;
+    } catch (_) {
+      return false;
+    }
+  } catch (_) {
+    return false;
+  }
+}

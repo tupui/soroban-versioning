@@ -4,18 +4,18 @@ import Modal, { type ModalProps } from "components/utils/Modal";
 import Step from "components/utils/Step";
 import Title from "components/utils/Title";
 import CopyButton from "components/utils/CopyButton";
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   VoteResultType,
   type ProposalOutcome,
   type VoteStatus,
-  VoteType,
 } from "types/proposal";
 import { toast } from "utils/utils";
 import VotingResult from "./VotingResult";
 import { computeAnonymousVotingData } from "utils/anonymousVoting";
-import { loadProjectInfo } from "@service/StateService";
 import { loadedPublicKey } from "@service/walletService";
+import classNames from "classnames";
+import AnonymousTalliesDisplay from "./AnonymousTalliesDisplay";
 
 interface ExecuteProposalModalProps extends ModalProps {
   projectName: string;
@@ -33,35 +33,14 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 }) => {
   const [step, setStep] = useState(1);
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [privateKey, setPrivateKey] = useState<string | null>(null);
-  const [tallies, setTallies] = useState<number[] | null>(null);
-  const [seeds, setSeeds] = useState<number[] | null>(null);
+
+  const [seeds, setSeeds] = useState<bigint[] | null>(null);
+  const [tallies, setTallies] = useState<bigint[] | null>(null);
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [isMaintainer, setIsMaintainer] = useState(false);
-
-  const voteResultAndXdr: {
-    voteResult: VoteResultType | null;
-    xdr: string | null;
-  } = useMemo(() => {
-    if (voteStatus && outcome) {
-      const { approve, abstain, reject } = voteStatus;
-      let voteResult: VoteResultType | null = null;
-      let xdr: string | null = null;
-      if (approve.score > abstain.score + reject.score) {
-        voteResult = VoteResultType.APPROVE;
-        xdr = outcome?.approved?.xdr || null;
-      } else if (reject.score > approve.score + abstain.score) {
-        voteResult = VoteResultType.REJECT;
-        xdr = outcome?.rejected?.xdr || null;
-      } else {
-        voteResult = VoteResultType.CANCEL;
-        xdr = outcome?.cancelled?.xdr || null;
-      }
-      return { voteResult, xdr };
-    } else {
-      return { voteResult: null, xdr: null };
-    }
-  }, [voteStatus, outcome]);
+  const [decodedVotes, setDecodedVotes] = useState<any[]>([]);
+  const [proofOk, setProofOk] = useState<boolean | null>(null);
+  const [_privateKey, setPrivateKey] = useState<string>("");
 
   // Local vote status that may be updated once we compute tallies for
   // anonymous proposals.
@@ -69,10 +48,37 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
     VoteStatus | undefined
   >(voteStatus);
 
-  // recompute vote result once displayVoteStatus changes (used later)
-  const [computedResult, setComputedResult] = useState<VoteResultType | null>(
-    null,
-  );
+  const computedResult = useMemo(() => {
+    if (
+      !displayVoteStatus ||
+      !displayVoteStatus.approve ||
+      !displayVoteStatus.abstain ||
+      !displayVoteStatus.reject
+    ) {
+      return null;
+    }
+    const { approve, abstain, reject } = displayVoteStatus;
+    if (approve.score > abstain.score + reject.score) {
+      return VoteResultType.APPROVE;
+    } else if (reject.score > approve.score + abstain.score) {
+      return VoteResultType.REJECT;
+    }
+    return VoteResultType.CANCEL;
+  }, [displayVoteStatus]);
+
+  const executionXdr = useMemo(() => {
+    if (!outcome || !computedResult) return null;
+    switch (computedResult) {
+      case VoteResultType.APPROVE:
+        return outcome.approved?.xdr || null;
+      case VoteResultType.REJECT:
+        return outcome.rejected?.xdr || null;
+      case VoteResultType.CANCEL:
+        return outcome.cancelled?.xdr || null;
+      default:
+        return null;
+    }
+  }, [outcome, computedResult]);
 
   useEffect(() => {
     if (
@@ -87,12 +93,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 
   useEffect(() => {
     if (!displayVoteStatus) return;
-    const { approve, abstain, reject } = displayVoteStatus;
-    if (approve.score > abstain.score + reject.score)
-      setComputedResult(VoteResultType.APPROVE);
-    else if (reject.score > approve.score + abstain.score)
-      setComputedResult(VoteResultType.REJECT);
-    else setComputedResult(VoteResultType.CANCEL);
+    // computedResult is derived via useMemo; no state updates needed here
   }, [displayVoteStatus]);
 
   useEffect(() => {
@@ -125,10 +126,16 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       const parsed = JSON.parse(text);
       if (!parsed.privateKey)
         throw new Error("Invalid key-file – missing privateKey field");
+      // Validate uploaded key against on-chain config (centralized helper)
+      const { validateAnonymousKeyForProject } = await import(
+        "utils/anonymousVoting"
+      );
+      await validateAnonymousKeyForProject(projectName!, parsed.publicKey);
       setPrivateKey(parsed.privateKey);
       await computeTallies(parsed.privateKey);
     } catch (err: any) {
-      console.error(err);
+      // Silent in prod, log only in dev
+      if (import.meta.env.DEV) console.error(err);
       setProcessingError(err.message || "Failed to process key-file");
     }
   };
@@ -140,12 +147,15 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
         projectName,
         proposalId!,
         privKey,
-        false,
+        true,
       );
       setTallies(data.tallies);
       setSeeds(data.seeds);
       setDisplayVoteStatus(data.voteStatus);
+      setDecodedVotes(data.decodedVotes);
+      setProofOk(data.proofOk ?? null);
       setProcessingError(null);
+      if (isAnonymous) setStep(2);
     } catch (err: any) {
       setProcessingError(err.message);
     }
@@ -168,11 +178,10 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
     }
 
     try {
-      const { executeProposal } = await import("@service/WriteContractService");
+      const { executeProposal } = await import("@service/ContractService");
       await executeProposal(
         projectName,
         proposalId,
-        voteResultAndXdr.xdr,
         tallies ?? undefined,
         seeds ?? undefined,
       );
@@ -184,6 +193,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
     }
   };
 
+  const totalSteps = isAnonymous ? 4 : 3;
+
   return (
     <Modal onClose={onClose}>
       {/* ───────────────────────── step 1 ───────────────────────── */}
@@ -192,16 +203,35 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
           <div className="flex items-start gap-[18px]">
             <img src="/images/scan.svg" />
             <div className="flex-grow flex flex-col gap-[30px]">
-              <Step step={step} totalSteps={3} />
+              <Step step={step} totalSteps={totalSteps} />
               <Title
                 title="Provide the anonymous voting key-file"
-                description="Upload the private key you downloaded when the proposal was created. It will be used **locally** to decrypt the vote commitments and compute the tallies. The key never leaves your browser."
+                description={
+                  <>
+                    Upload the private key you downloaded when the proposal was
+                    created. It will be used <strong>locally</strong> to decrypt
+                    the vote commitments and compute the tallies. The key never
+                    leaves your browser.
+                  </>
+                }
               />
-              <input
-                type="file"
-                accept="application/json"
-                onChange={handleKeyFileUpload}
-              />
+              <div
+                className={classNames(
+                  "border",
+                  processingError ? "border-red-500" : "border-zinc-700",
+                  "p-3 w-full",
+                )}
+              >
+                <label className="cursor-pointer text-primary underline">
+                  Choose key file
+                  <input
+                    type="file"
+                    accept="application/json"
+                    className="hidden"
+                    onChange={handleKeyFileUpload}
+                  />
+                </label>
+              </div>
               {processingError && (
                 <p className="text-red-500 text-sm">{processingError}</p>
               )}
@@ -218,15 +248,39 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
             <Button type="secondary" onClick={onClose}>
               Cancel
             </Button>
-            <Button onClick={() => tallies && seeds && setStep(2)}>Next</Button>
           </div>
         </div>
-      ) : step == 1 ? (
+      ) : step === 2 && isAnonymous ? (
+        /* ────────────── step 2 (anonymous) – decrypted tallies ───────────── */
+        <div className="flex flex-col gap-[42px]">
+          <div className="flex items-start gap-[18px]">
+            <img src="/images/box-with-coin-inside.svg" />
+            <div className="flex-grow flex flex-col gap-[30px]">
+              <Step step={step} totalSteps={totalSteps} />
+              <Title
+                title="Decrypted tallies"
+                description="Below are the tallies computed from decrypted votes."
+              />
+              <AnonymousTalliesDisplay
+                voteStatus={displayVoteStatus}
+                decodedVotes={decodedVotes}
+                proofOk={proofOk}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-[18px]">
+            <Button type="secondary" onClick={() => setStep(step - 1)}>
+              Back
+            </Button>
+            <Button onClick={() => setStep(3)}>Next</Button>
+          </div>
+        </div>
+      ) : step === 1 ? (
         <div className="flex flex-col gap-[42px]">
           <div className="flex items-start gap-6">
             <img src="/images/lock-in-box.svg" />
             <div className="flex-grow flex flex-col gap-[30px]">
-              <Step step={step} totalSteps={3} />
+              <Step step={step} totalSteps={totalSteps} />
               <Title
                 title="Finalizing the Vote"
                 description="The voting period has ended. Now, we need to count the votes and determine the final outcome."
@@ -254,29 +308,28 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
             </Button>
           </div>
         </div>
-      ) : step == 2 ? (
+      ) : step === (isAnonymous ? 3 : 2) ? (
         <div className="flex flex-col gap-[42px]">
           <div className="flex items-start gap-[18px]">
             <img src="/images/scan.svg" />
             <div className="flex-grow flex flex-col gap-[30px]">
-              <Step step={step} totalSteps={3} />
+              <Step step={step} totalSteps={totalSteps} />
               <Title
                 title="Finalize the Vote Execution"
                 description="Review the transaction details before execution. You can verify the XDR and proceed with the final step."
               />
               <VotingResult voteStatus={displayVoteStatus} />
-              <div className="flex flex-col items-start gap-[18px]">
-                <p className="leading-4 text-base text-secondary">XDR</p>
-                <div className="p-[8px_18px] bg-[#FFEFA8] flex items-center gap-[18px]">
-                  <p className="leading-[18px] text-lg text-primary">
-                    {(voteResultAndXdr.xdr || "").slice(0, 24) + "..."}
-                  </p>
-                  <CopyButton
-                    textToCopy={voteResultAndXdr.xdr || ""}
-                    size="sm"
-                  />
+              {executionXdr && (
+                <div className="flex flex-col items-start gap-[18px]">
+                  <p className="leading-4 text-base text-secondary">XDR</p>
+                  <div className="p-[8px_18px] bg-[#FFEFA8] flex items-center gap-[18px]">
+                    <p className="leading-[18px] text-lg text-primary">
+                      {executionXdr.slice(0, 24) + "..."}
+                    </p>
+                    <CopyButton textToCopy={executionXdr} size="sm" />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <div className="flex justify-end gap-[18px]">
@@ -304,7 +357,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
           <div className="flex items-start gap-[18px]">
             <img src="/images/flower.svg" />
             <div className="flex-grow flex flex-col gap-[30px]">
-              <Step step={step} totalSteps={3} />
+              <Step step={step} totalSteps={totalSteps} />
               <Title
                 title="Your Vote Is Officially Executed!"
                 description="Congratulations! You've successfully executed your vote, and the final status has been updated."

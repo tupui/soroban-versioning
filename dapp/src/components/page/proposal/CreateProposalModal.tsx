@@ -1,43 +1,10 @@
-import {
-  BlockTypeSelect,
-  BoldItalicUnderlineToggles,
-  CodeToggle,
-  CreateLink,
-  DiffSourceToggleWrapper,
-  InsertAdmonition,
-  InsertCodeBlock,
-  InsertFrontmatter,
-  InsertImage,
-  InsertTable,
-  InsertThematicBreak,
-  ListsToggle,
-  MDXEditor,
-  Separator,
-  UndoRedo,
-  codeBlockPlugin,
-  codeMirrorPlugin,
-  diffSourcePlugin,
-  frontmatterPlugin,
-  headingsPlugin,
-  imagePlugin,
-  linkDialogPlugin,
-  linkPlugin,
-  listsPlugin,
-  markdownShortcutPlugin,
-  quotePlugin,
-  tablePlugin,
-  thematicBreakPlugin,
-  toolbarPlugin,
-  useCodeBlockEditorContext,
-  type CodeBlockEditorDescriptor,
-} from "@mdxeditor/editor";
 import { getProjectFromName } from "@service/ReadContractService";
 import Button from "components/utils/Button";
 import { DatePicker } from "components/utils/DatePicker";
 import { ExpandableText } from "components/utils/ExpandableText";
 import Input from "components/utils/Input";
 import Label from "components/utils/Label";
-import Modal from "components/utils/Modal";
+import FlowProgressModal from "components/utils/FlowProgressModal";
 import Step from "components/utils/Step";
 import Title from "components/utils/Title";
 import { useCallback, useEffect, useState } from "react";
@@ -46,25 +13,12 @@ import { formatDate } from "utils/formatTimeFunctions";
 import { connectedPublicKey } from "utils/store";
 import { capitalizeFirstLetter, toast } from "utils/utils";
 import { getIpfsBasicLink } from "utils/ipfsFunctions";
-import {
-  validateProposalName,
-  validateTextContent,
-  isContentValid,
-} from "utils/validations";
+import { validateProposalName, validateTextContent } from "utils/validations";
 import OutcomeInput from "./OutcomeInput";
 import { generateRSAKeyPair } from "utils/crypto";
-import { setupAnonymousVoting } from "@service/WriteContractService";
-import { Buffer } from "buffer";
-import ProgressStep from "components/utils/ProgressStep";
-
-import "@mdxeditor/editor/style.css";
+import { setupAnonymousVoting } from "@service/ContractService";
+import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
-
-interface IImageFile {
-  localUrl: string;
-  publicUrl: string;
-  source: File;
-}
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -74,24 +28,35 @@ const CreateProposalModal = () => {
   const [step, setStep] = useState(1);
   const [proposalName, setProposalName] = useState("");
   const [mdText, setMdText] = useState("");
-  const [imageFiles, setImageFiles] = useState<IImageFile[]>([]);
+
+  // Local image handling for Markdown content
+  type ProposalImage = { localUrl: string; publicUrl: string; source: File };
+  const [imageFiles, setImageFiles] = useState<ProposalImage[]>([]);
+  const [imageError, setImageError] = useState<string | null>(null);
+
   const [approveDescription, setApproveDescription] = useState("");
   const [rejectDescription, setRejectDescription] = useState("");
   const [cancelledDescription, setCancelledDescription] = useState("");
   const [approveXdr, setApproveXdr] = useState("");
   const [rejectXdr, setRejectXdr] = useState<string | null>(null);
   const [cancelledXdr, setCancelledXdr] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  // Default to 2 days in the future to comfortably exceed the 24h minimum
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return d;
+  });
   const [proposalId, setProposalId] = useState<number | null>(null);
-  const [ipfsLink, setIpfsLink] = useState("");
+  const [_ipfsLink, setIpfsLink] = useState("");
   const [isAnonymousVoting, setIsAnonymousVoting] = useState(false);
+  const [preparedFiles, setPreparedFiles] = useState<File[] | null>(null);
   const [generatedKeys, setGeneratedKeys] = useState<{
     publicKey: string;
     privateKey: string;
   } | null>(null);
   const [existingAnonConfig, setExistingAnonConfig] = useState<boolean>(false);
   const [resetAnonKeys, setResetAnonKeys] = useState<boolean>(false);
-  const [keysDownloaded, setKeysDownloaded] = useState<boolean>(false);
+  const [_, setKeysDownloaded] = useState<boolean>(false);
   const [proposalNameError, setProposalNameError] = useState<string | null>(
     null,
   );
@@ -100,6 +65,12 @@ const CreateProposalModal = () => {
     string | null
   >(null);
   const [approveXdrError, setApproveXdrError] = useState<string | null>(null);
+
+  // Flow state management
+  const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSuccessful, setIsSuccessful] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const checkSubmitAvailability = () => {
     if (!connectedAddress) throw new Error("Please connect your wallet first");
@@ -118,7 +89,9 @@ const CreateProposalModal = () => {
   }, [connectedAddress, projectName, maintainers]);
 
   useEffect(() => {
-    connectedPublicKey.subscribe((publicKey) => setConnectedAddress(publicKey));
+    const unsubscribe = connectedPublicKey.subscribe((publicKey) =>
+      setConnectedAddress(publicKey),
+    );
     const name = new URLSearchParams(window.location.search).get("name");
     setProjectName(name);
     const showModalButton = document.querySelector("#create-proposal-button");
@@ -132,11 +105,15 @@ const CreateProposalModal = () => {
     if (showModalButton) {
       setStep(1);
       showModalButton.addEventListener("click", handleSubmmitProposal);
-      return () =>
+      return () => {
+        unsubscribe();
         showModalButton.removeEventListener("click", handleSubmmitProposal);
+      };
     }
 
-    return;
+    return () => {
+      unsubscribe();
+    };
   }, [handleSubmmitProposal]);
 
   useEffect(() => {
@@ -154,103 +131,64 @@ const CreateProposalModal = () => {
     }
   }, [projectName]);
 
-  const imageUploadHandler = async (image: File) => {
-    const url = URL.createObjectURL(image);
-    setImageFiles([
-      ...imageFiles,
-      { localUrl: url, publicUrl: image.name, source: image },
-    ]);
-    return url;
+  const prepareProposalFiles = (): File[] => {
+    const proposalOutcome: ProposalOutcome = {
+      approved: {
+        description: approveDescription,
+        xdr: approveXdr,
+      },
+      rejected: {
+        description: rejectDescription,
+        xdr: rejectXdr || "",
+      },
+      cancelled: {
+        description: cancelledDescription,
+        xdr: cancelledXdr || "",
+      },
+    };
+
+    const outcome = new Blob([JSON.stringify(proposalOutcome)], {
+      type: "application/json",
+    });
+
+    let files: File[] = [new File([outcome], "outcomes.json")];
+    let description = mdText;
+
+    imageFiles.forEach((image) => {
+      if (description.includes(image.localUrl)) {
+        description = description.replace(
+          new RegExp(image.localUrl, "g"),
+          image.publicUrl,
+        );
+        files.push(new File([image.source], image.publicUrl));
+      }
+    });
+
+    files.push(new File([description], "proposal.md"));
+    return files;
   };
 
-  const PlainTextCodeEditorDescriptor: CodeBlockEditorDescriptor = {
-    match: (_language, _meta) => true,
-    priority: 0,
-    Editor: (props) => {
-      const cb = useCodeBlockEditorContext();
-      return (
-        <div onKeyDown={(e) => e.nativeEvent.stopImmediatePropagation()}>
-          <textarea
-            rows={5}
-            cols={20}
-            defaultValue={props.code}
-            onChange={(e) => cb.setCode(e.target.value)}
-          />
-        </div>
-      );
-    },
-  };
-
-  const getDeltaDays = (selectedDate: string | Date): number => {
-    const now = new Date();
-    const targetDate = new Date(selectedDate);
-
-    now.setHours(0, 0, 0, 0);
-    targetDate.setHours(0, 0, 0, 0);
-
-    const diffInMs = targetDate.getTime() - now.getTime();
-    return diffInMs / (1000 * 60 * 60 * 24);
-  };
-
-  const handleRegisterProposal = async () => {
+  const startProposalCreation = async (files: File[]) => {
     try {
-      setStep(5);
-
-      checkSubmitAvailability();
-
-      // Prepare the proposal files
-      const proposalOutcome: ProposalOutcome = {
-        approved: {
-          description: approveDescription,
-          xdr: approveXdr,
-        },
-        rejected: {
-          description: rejectDescription,
-          xdr: rejectXdr || "",
-        },
-        cancelled: {
-          description: cancelledDescription,
-          xdr: cancelledXdr || "",
-        },
-      };
-
-      const outcome = new Blob([JSON.stringify(proposalOutcome)], {
-        type: "application/json",
-      });
-
-      let files = [new File([outcome], "outcomes.json")];
-      let description = mdText;
-
-      imageFiles.forEach((image) => {
-        if (description.includes(image.localUrl)) {
-          description = description.replace(
-            new RegExp(image.localUrl, "g"),
-            image.publicUrl,
-          );
-          files.push(new File([image.source], image.publicUrl));
-        }
-      });
-
-      files.push(new File([description], "proposal.md"));
-      if (!files) throw new Error("Failed to create proposal files");
-
+      setIsLoading(true);
+      // Step progression handled by FlowService onProgress: 7-sign, 8-upload, 9-send
       setStep(6);
 
-      // 1️⃣ Anonymous voting setup if needed
-      if (isAnonymousVoting) {
-        if (!existingAnonConfig || resetAnonKeys) {
-          if (!generatedKeys) throw new Error("Anonymous keys missing");
-          await setupAnonymousVoting(
-            projectName!,
-            generatedKeys.publicKey,
-            resetAnonKeys,
-          );
-        }
+      // 2️⃣  Calculate voting end timestamp & build proposal transaction
+      // Ensure at least 25h window between now and voting end
+      let targetTs = new Date(selectedDate).getTime();
+      const min25hMs = Date.now() + 25 * 60 * 60 * 1000;
+      if (targetTs < min25hMs) {
+        targetTs = min25hMs;
       }
 
-      // 2️⃣  Calculate voting end timestamp & build proposal transaction
-      const votingDays = getDeltaDays(selectedDate);
-      const votingEndsAt = Math.floor(Date.now() / 1000) + 86400 * votingDays;
+      // Cap to 30 days max by using existing validation but double-check here as well
+      const max30dMs = Date.now() + 30 * 24 * 60 * 60 * 1000;
+      if (targetTs > max30dMs) {
+        targetTs = max30dMs;
+      }
+
+      const votingEndsAt = Math.floor(targetTs / 1000);
 
       const { createProposalFlow } = await import("@service/FlowService");
 
@@ -258,8 +196,8 @@ const CreateProposalModal = () => {
         projectName: projectName!,
         proposalName,
         proposalFiles: files,
-        votingEndsAt,
-        publicVoting: !isAnonymousVoting,
+        votingEndsAt: votingEndsAt,
+        publicVoting: !isAnonymousVoting ? true : false,
         onProgress: setStep,
       });
 
@@ -270,10 +208,38 @@ const CreateProposalModal = () => {
       const cid = await calculateDirectoryCid(files);
       setIpfsLink(getIpfsBasicLink(cid));
 
-      setStep(10);
+      // Success
+      setIsSuccessful(true);
+      setStep(0);
     } catch (err: any) {
       console.error(err.message);
-      toast.error("Submit proposal", err.message);
+      setError(err.message);
+      setStep(0);
+    } finally {
+      setIsLoading(false);
+      setIsUploading(false);
+    }
+  };
+
+  const handleRegisterProposal = async () => {
+    try {
+      checkSubmitAvailability();
+
+      // Prepare files once and reuse across steps to ensure consistent CID
+      const files = prepareProposalFiles();
+      setPreparedFiles(files);
+
+      if (isAnonymousVoting && (!existingAnonConfig || resetAnonKeys)) {
+        // Show explicit config step
+        setStep(5);
+        return;
+      }
+
+      await startProposalCreation(files);
+    } catch (err: any) {
+      console.error(err.message);
+      setError(err.message);
+      setStep(0);
     }
   };
 
@@ -302,49 +268,34 @@ const CreateProposalModal = () => {
     return descError === null;
   };
 
-  // Check if we can proceed with form submission based on validations
-  const canProceed = (): boolean => {
-    if (step === 1) {
-      return proposalName.trim() !== "" && isContentValid(mdText, 10);
-    }
-
-    if (step === 2) {
-      return isContentValid(approveDescription);
-    }
-
-    return true;
-  };
-
   const handleToggleAnonymous = async (checked: boolean) => {
     setIsAnonymousVoting(checked);
     if (!checked) return;
-
     if (!projectName) {
-      toast.error(
-        "Anonymous voting",
-        "Project name is required to check configuration",
-      );
       return;
     }
 
-    // compute project key & check config
-    const { default: Tansu } = await import("../../../contracts/soroban_tansu");
-    const pkg = await import("js-sha3");
-    const { keccak256 } = pkg;
-    const project_key = Buffer.from(
-      keccak256.create().update(projectName).digest(),
-    );
     try {
-      await Tansu.get_anonymous_voting_config({ project_key });
-      // config exists
-      setExistingAnonConfig(true);
-      setResetAnonKeys(false);
-      setGeneratedKeys(null);
+      const { hasAnonymousVotingConfig } = await import(
+        "@service/ReadContractService"
+      );
+      const exists = await hasAnonymousVotingConfig(projectName);
+      if (exists) {
+        setExistingAnonConfig(true);
+        setResetAnonKeys(false);
+        setGeneratedKeys(null);
+      } else {
+        setExistingAnonConfig(false);
+        const keys = await generateRSAKeyPair();
+        setGeneratedKeys(keys);
+        setResetAnonKeys(false);
+      }
     } catch (_) {
-      // no config → generate keys immediately
+      // Network or unexpected – treat as missing config but do not log/toast
       setExistingAnonConfig(false);
       const keys = await generateRSAKeyPair();
       setGeneratedKeys(keys);
+      setResetAnonKeys(false);
     }
   };
 
@@ -362,10 +313,37 @@ const CreateProposalModal = () => {
     setKeysDownloaded(true);
   };
 
+  const handleCloseModal = () => {
+    setShowModal(false);
+    if (step >= 10) {
+      window.location.reload();
+    }
+  };
+
   if (!showModal) return <></>;
 
   return (
-    <Modal onClose={() => setShowModal(false)}>
+    <FlowProgressModal
+      isOpen={showModal}
+      onClose={handleCloseModal}
+      onSuccess={() => {
+        setShowModal(false);
+        navigate(`/proposal?id=${proposalId}&name=${projectName}`);
+      }}
+      step={step}
+      setStep={setStep}
+      isLoading={isLoading}
+      setIsLoading={setIsLoading}
+      isUploading={isUploading}
+      setIsUploading={setIsUploading}
+      isSuccessful={isSuccessful}
+      setIsSuccessful={setIsSuccessful}
+      error={error}
+      setError={setError}
+      signLabel="proposal"
+      successTitle="Your Proposal Is Live!"
+      successMessage="Congratulations! You've successfully submitted your proposal. Let's move forward and make it a success!"
+    >
       {step == 1 ? (
         <div className="flex flex-col gap-[42px]">
           <div className="flex flex-col gap-[30px]">
@@ -440,74 +418,117 @@ const CreateProposalModal = () => {
               <div
                 className={`rounded-md border ${descriptionError ? "border-red-500" : "border-zinc-700"} overflow-hidden`}
               >
-                <MDXEditor
-                  plugins={[
-                    markdownShortcutPlugin(),
-                    headingsPlugin(),
-                    listsPlugin(),
-                    quotePlugin(),
-                    thematicBreakPlugin(),
-                    linkPlugin(),
-                    linkDialogPlugin(),
-                    imagePlugin({
-                      imageUploadHandler,
-                    }),
-                    tablePlugin(),
-                    codeBlockPlugin({
-                      defaultCodeBlockLanguage: "ts",
-                      codeBlockEditorDescriptors: [
-                        PlainTextCodeEditorDescriptor,
-                      ],
-                    }),
-                    codeMirrorPlugin({
-                      codeBlockLanguages: {
-                        js: "JavaScript",
-                        css: "CSS",
-                        rust: "Rust",
-                        html: "HTML",
-                        json: "JSON",
-                        ts: "TypeScript",
-                      },
-                    }),
-                    diffSourcePlugin({
-                      diffMarkdown: "boo",
-                    }),
-                    frontmatterPlugin(),
-                    toolbarPlugin({
-                      toolbarClassName: "my-classname",
-                      toolbarContents: () => (
-                        <>
-                          <UndoRedo />
-                          <Separator />
-                          <BoldItalicUnderlineToggles />
-                          <CodeToggle />
-                          <BlockTypeSelect />
-                          <Separator />
-                          <ListsToggle />
-                          <Separator />
-                          <CreateLink />
-                          <InsertImage />
-                          <InsertTable />
-                          <Separator />
-                          <InsertAdmonition />
-                          <InsertThematicBreak />
-                          <InsertCodeBlock />
-                          <Separator />
-                          <InsertFrontmatter />
-                          <DiffSourceToggleWrapper>
-                            <></>
-                          </DiffSourceToggleWrapper>
-                        </>
-                      ),
-                    }),
-                  ]}
-                  markdown={mdText}
+                <SimpleMarkdownEditor
+                  value={mdText}
                   onChange={(value) => {
-                    setMdText(value || "");
+                    setMdText(value);
                     setDescriptionError(null);
                   }}
                   placeholder="Input your proposal description here..."
                 />
+              </div>
+              {/* Image upload controls */}
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-secondary">
+                    Optionally attach images and insert them into your Markdown.
+                  </p>
+                  <label className="cursor-pointer text-primary underline text-sm">
+                    Add image
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/gif"
+                      className="hidden"
+                      data-testid="proposal-image-input"
+                      onChange={(e) => {
+                        setImageError(null);
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const allowedTypes = [
+                          "image/png",
+                          "image/jpeg",
+                          "image/jpg",
+                          "image/svg+xml",
+                          "image/gif",
+                        ];
+                        if (!allowedTypes.includes(file.type)) {
+                          setImageError(
+                            "Unsupported image type. Allowed: png, jpg, jpeg, svg, gif",
+                          );
+                          return;
+                        }
+                        const maxBytes = 5 * 1024 * 1024; // 5MB
+                        if (file.size > maxBytes) {
+                          setImageError(
+                            "Please upload an image smaller than 5MB",
+                          );
+                          return;
+                        }
+                        const localUrl = URL.createObjectURL(file);
+                        const publicUrl = `images/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+                        setImageFiles((prev) => [
+                          ...prev,
+                          { localUrl, publicUrl, source: file },
+                        ]);
+                        setMdText(
+                          (prev) =>
+                            `${prev}${prev && !prev.endsWith("\n") ? "\n\n" : ""}![](${localUrl})\n`,
+                        );
+                      }}
+                    />
+                  </label>
+                </div>
+                {imageError && (
+                  <p className="text-red-500 text-sm">{imageError}</p>
+                )}
+                {imageFiles.length > 0 && (
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-secondary">Attached images</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {imageFiles.map((img, idx) => (
+                        <div
+                          key={idx}
+                          className="border p-2 flex flex-col gap-2"
+                        >
+                          <img
+                            src={img.localUrl}
+                            alt={`attachment-${idx}`}
+                            className="w-full h-24 object-contain"
+                          />
+                          <div className="flex justify-between items-center text-xs">
+                            <button
+                              type="button"
+                              className="text-blue-600 underline"
+                              onClick={() =>
+                                setMdText(
+                                  (prev) =>
+                                    `${prev}${prev && !prev.endsWith("\n") ? "\n\n" : ""}![](${img.localUrl})\n`,
+                                )
+                              }
+                            >
+                              Insert
+                            </button>
+                            <button
+                              type="button"
+                              className="text-red-600 underline"
+                              onClick={() => {
+                                URL.revokeObjectURL(img.localUrl);
+                                setImageFiles((prev) =>
+                                  prev.filter((_, i) => i !== idx),
+                                );
+                                setMdText((prev) =>
+                                  prev.replaceAll(img.localUrl, ""),
+                                );
+                              }}
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               {descriptionError && (
                 <p className="text-red-500 text-sm">{descriptionError}</p>
@@ -519,6 +540,7 @@ const CreateProposalModal = () => {
               Cancel
             </Button>
             <Button
+              data-testid="proposal-next"
               onClick={() => {
                 try {
                   if (
@@ -530,9 +552,10 @@ const CreateProposalModal = () => {
                   // additional anonymous voting validation
                   if (isAnonymousVoting) {
                     if (!existingAnonConfig || resetAnonKeys) {
-                      if (!generatedKeys || !keysDownloaded) {
+                      // Only require keys to be generated; downloading is encouraged but not blocking
+                      if (!generatedKeys) {
                         throw new Error(
-                          "You must generate and download anonymous voting keys before proceeding.",
+                          "Anonymous voting keys have not been generated yet.",
                         );
                       }
                     }
@@ -593,6 +616,7 @@ const CreateProposalModal = () => {
               Back
             </Button>
             <Button
+              data-testid="proposal-next"
               onClick={() => {
                 try {
                   if (!validateApproveOutcome())
@@ -645,15 +669,26 @@ const CreateProposalModal = () => {
               Back
             </Button>
             <Button
+              data-testid="proposal-next"
               onClick={() => {
                 try {
-                  const diffMs = new Date(selectedDate).getTime() - Date.now();
-                  const diffHours = diffMs / (1000 * 60 * 60);
+                  // Compute hour difference between now and the picked calendar date
+                  let diffMs = new Date(selectedDate).getTime() - Date.now();
+                  let diffHours = diffMs / (1000 * 60 * 60);
 
-                  if (diffHours < 24 || diffHours > 30 * 24)
-                    throw new Error(
-                      "Voting duration must be at least 24 hours and no more than 30 days",
+                  // If the user picked the next day (or any day) but the time
+                  // component would make the window < 25h, bump it to 25h.
+                  if (diffHours < 25) {
+                    const corrected = new Date(
+                      Date.now() + 25 * 60 * 60 * 1000,
                     );
+                    setSelectedDate(corrected);
+                    diffMs = corrected.getTime() - Date.now();
+                    diffHours = diffMs / (1000 * 60 * 60);
+                  }
+
+                  if (diffHours > 30 * 24)
+                    throw new Error("Voting duration cannot exceed 30 days");
 
                   setStep(step + 1);
                 } catch (err: any) {
@@ -681,7 +716,10 @@ const CreateProposalModal = () => {
                   <Button type="secondary" onClick={() => setStep(step - 1)}>
                     Back
                   </Button>
-                  <Button onClick={handleRegisterProposal}>
+                  <Button
+                    onClick={handleRegisterProposal}
+                    data-testid="proposal-register"
+                  >
                     Register Proposal
                   </Button>
                 </div>
@@ -773,42 +811,64 @@ const CreateProposalModal = () => {
             <Button type="secondary" onClick={() => setStep(step - 1)}>
               Back
             </Button>
-            <Button onClick={handleRegisterProposal}>Register Proposal</Button>
+            <Button
+              onClick={handleRegisterProposal}
+              data-testid="proposal-register"
+            >
+              Register Proposal
+            </Button>
           </div>
         </div>
-      ) : step >= 5 && step <= 9 ? (
-        <ProgressStep step={step - 4} />
-      ) : (
-        <div className="flex items-center gap-[18px]">
-          <img src="/images/flower.svg" />
-          <div className="flex-grow flex flex-col gap-[30px]">
-            <Title
-              title="Your Proposal Is Live!"
-              description="Congratulations! You've successfully submitted your proposal. Let's move forward and make it a success!"
-            />
-            <div className="flex justify-end gap-[18px]">
-              <Button type="secondary" onClick={() => setShowModal(false)}>
-                Close
-              </Button>
-              <Button
-                type="secondary"
-                icon="/icons/share.svg"
-                onClick={() => window.open(ipfsLink, "_blank")}
-              >
-                Share
-              </Button>
-              <Button
-                onClick={() =>
-                  navigate(`/proposal?id=${proposalId}&name=${projectName}`)
-                }
-              >
-                View Proposal
-              </Button>
+      ) : step === 5 &&
+        isAnonymousVoting &&
+        (!existingAnonConfig || resetAnonKeys) ? (
+        <div className="flex flex-col gap-[42px]" data-testid="anon-setup-step">
+          <div className="flex items-start gap-[18px]">
+            <img src="/images/scan.svg" />
+            <div className="flex-grow flex flex-col gap-[18px]">
+              <Step step={1} totalSteps={5} />
+              <Title
+                title="Configure anonymous voting"
+                description="Generate keys and sign the setup transaction. This enables anonymous voting for this project."
+              />
+              {generatedKeys ? (
+                <div className="text-sm text-secondary">
+                  Keys are generated. Proceed to sign the setup transaction.
+                </div>
+              ) : (
+                <div className="text-sm text-secondary">Generating keys…</div>
+              )}
+              <div className="flex justify-end gap-[18px]">
+                <Button
+                  data-testid="sign-setup"
+                  onClick={async () => {
+                    try {
+                      if (!projectName) throw new Error("Project name missing");
+                      if (!generatedKeys)
+                        throw new Error("Anonymous keys missing");
+                      await setupAnonymousVoting(
+                        projectName,
+                        generatedKeys.publicKey,
+                        true,
+                      );
+                      setExistingAnonConfig(true);
+                      setResetAnonKeys(false);
+                      // proceed to proposal creation
+                      const files = preparedFiles || prepareProposalFiles();
+                      await startProposalCreation(files);
+                    } catch (e: any) {
+                      setError(e.message);
+                    }
+                  }}
+                >
+                  Sign setup
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      )}
-    </Modal>
+      ) : null}
+    </FlowProgressModal>
   );
 };
 

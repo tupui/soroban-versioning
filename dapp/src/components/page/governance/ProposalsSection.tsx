@@ -1,11 +1,6 @@
-import React, { useState } from "react";
-import IdeaList from "./IdeaList";
 import ProposalList from "./ProposalList";
-import ProposalTypeButton from "./ProposalTypeButton";
 
 const ProposalsSection: React.FC = () => {
-  const [proposalType, setProposalType] = useState("proposal");
-
   return (
     <div className="flex flex-col gap-9 bg-[#FFFFFFB8]">
       <div className="py-6 sm:py-8 md:py-12 px-4 sm:px-6 md:px-[72px] flex flex-col gap-6 sm:gap-8 md:gap-12">
@@ -22,29 +17,10 @@ const ProposalsSection: React.FC = () => {
               Empowering projects with transparency, trust, and governance.
             </p>
             <div className="h-[1px] bg-[#EEEEEE]" />
-            <div className="flex">
-              <ProposalTypeButton
-                proposalTypeStatus={proposalType}
-                proposalType="proposal"
-                title="Proposals"
-                onClick={(proposalType: string) =>
-                  setProposalType(proposalType)
-                }
-              />
-              <ProposalTypeButton
-                proposalTypeStatus={proposalType}
-                proposalType="idea"
-                title="Ideas"
-                onClick={(proposalType: string) =>
-                  setProposalType(proposalType)
-                }
-              />
-            </div>
           </div>
         </div>
         <div>
-          {proposalType === "proposal" && <ProposalList />}
-          {proposalType === "idea" && <IdeaList />}
+          <ProposalList />
         </div>
       </div>
     </div>

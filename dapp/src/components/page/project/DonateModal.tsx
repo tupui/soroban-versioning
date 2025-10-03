@@ -12,6 +12,10 @@ import Tooltip from "components/utils/Tooltip";
 import { toast } from "utils/utils";
 import Button from "components/utils/Button";
 
+import { sendXLM } from "service/TxService";
+import { getAddressFromDomain } from "service/SorobanDomainContractService";
+import { StrKey } from "@stellar/stellar-sdk";
+
 interface Props {
   children: ReactNode;
   onBeforeOpen?: () => void;
@@ -22,9 +26,19 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
   const [amount, setAmount] = useState<number>(10);
   const [tipAmount, setTipAmount] = useState<string>("");
   const [donateMessage, setDonateMessage] = useState<string>("");
+  const [updateSuccessful, setUpdateSuccessful] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const amountInputRef = useRef<HTMLInputElement>(null);
   const tipAmountInputRef = useRef<HTMLInputElement>(null);
-  const onClose = () => setIsOpen(false);
+
+  const onClose = () => {
+    setIsOpen(false);
+    setUpdateSuccessful(false);
+    // Reload page if donation was successful to show fresh data
+    if (updateSuccessful) {
+      window.location.reload();
+    }
+  };
 
   const amountOptions = [10, 100, 1000];
 
@@ -42,42 +56,58 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
   };
 
   const handleContribute = async () => {
-    const { sendXLM } = await import("service/PaymentService");
-    const { getAddressFromDomain } = await import(
-      "service/SorobanDomainContractService"
-    );
-
     if (amount < 1) {
       toast.error("Support", "Minimum donation is 1 XLM.");
       return;
     }
 
+    setIsLoading(true);
     try {
       const domainInfo = await getAddressFromDomain("tansu");
 
-      if ("owner" in domainInfo.value) {
-        const domainOwnerAddress = domainInfo.value.owner;
+      if (domainInfo && domainInfo.owner) {
+        // Prefer explicit address field if present; otherwise fall back to owner
+        let dest = (domainInfo as any).address || domainInfo.owner;
+        try {
+          if (!StrKey.isValidEd25519PublicKey(dest)) {
+            throw new Error("Invalid owner address in domain record");
+          }
+        } catch (_) {
+          toast.error(
+            "Cannot read domain information.",
+            "Invalid owner address in domain record.",
+          );
+          return;
+        }
+        const domainOwnerAddress = dest as string;
+
         const payment = await sendXLM(
           amount.toString(),
-          domainOwnerAddress as string,
+          domainOwnerAddress,
           tipAmount.toString(),
           donateMessage,
         );
 
         if (payment) {
           toast.success("Congratulation!", "You successfully donated.");
-          onClose(); // Close modal after success
+          setUpdateSuccessful(true);
+          // Don't close modal immediately - let user close it manually
         } else {
           toast.error("Support", "Donation failed.");
         }
       } else {
         toast.error("Support", "Cannot read domain information.");
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (import.meta.env.DEV) {
+        console.error("Error during donation:", error);
+      }
       toast.error(
         "Support",
-        "An error occurred during the contribution process.",
+        error.message || "An error occurred during the contribution process.",
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -110,7 +140,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
               alt="Heart"
               className="w-16 h-16 sm:w-auto sm:h-auto mx-auto sm:mx-0 mb-2 sm:mb-0"
             />
-            <div className="flex-grow flex flex-col gap-6 sm:gap-9 w-full">
+            <div className="flex-grow flex flex-col gap-4 sm:gap-6 w-full">
               <div className="flex flex-col gap-2 sm:gap-3">
                 <h6 className="text-xl sm:text-2xl font-medium text-primary text-center sm:text-left">
                   Support
@@ -121,7 +151,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
               </div>
 
               {/* Amount Input */}
-              <div className="flex flex-col gap-3 sm:gap-[18px]">
+              <div className="flex flex-col gap-2 sm:gap-3">
                 <p className="text-sm sm:text-base font-[600] text-primary">
                   Contribute
                 </p>
@@ -163,7 +193,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
               </div>
 
               {/* Message Input */}
-              <div className="flex flex-col gap-2 sm:gap-3">
+              <div className="flex flex-col gap-2">
                 <p className="text-sm sm:text-base font-[600] text-primary">
                   Say Something to Support the Project (optional)
                 </p>
@@ -172,12 +202,12 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
                   placeholder="Write your message here"
                   value={donateMessage}
                   onChange={(e) => setDonateMessage(e.target.value)}
-                  rows={3}
+                  rows={2}
                 />
               </div>
 
               {/* Platform Tip */}
-              <div className="flex flex-col gap-2 sm:gap-3">
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <p className="text-sm sm:text-base font-[600] text-primary">
                     Platform tip (optional)
@@ -209,6 +239,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
                 <Button
                   className="w-full sm:w-[220px] h-[48px] sm:h-[56px]"
                   onClick={handleContribute}
+                  isLoading={isLoading}
                 >
                   Contribute
                 </Button>

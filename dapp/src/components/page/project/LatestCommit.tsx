@@ -17,7 +17,7 @@ enum Status {
 
 const LatestCommit = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
-  const [commitData, setCommitData] = useState<any>();
+  const [commitData, setCommitData] = useState<any>(null);
   const [latestCommitStatus, setLatestCommitStatus] = useState<Status>(
     Status.NotFound,
   );
@@ -25,16 +25,28 @@ const LatestCommit = () => {
   const loadLatestCommitData = async () => {
     const projectInfo = loadProjectInfo();
     const latestSha = await getProjectHash();
-    if (projectInfo && latestSha) {
-      const latestCommit = await getLatestCommitData(
-        projectInfo.config.url,
-        latestSha,
-      );
-      setCommitData(latestCommit);
-      if (latestCommit.sha === latestSha) {
-        setLatestCommitStatus(Status.Match);
-      } else {
-        setLatestCommitStatus(Status.NotMatch);
+    if (
+      projectInfo &&
+      projectInfo.config &&
+      projectInfo.config.url &&
+      latestSha
+    ) {
+      try {
+        const latestCommit = await getLatestCommitData(
+          projectInfo.config.url,
+          latestSha,
+        );
+        if (latestCommit) {
+          setCommitData(latestCommit);
+          if (latestCommit.sha === latestSha) {
+            setLatestCommitStatus(Status.Match);
+          } else {
+            setLatestCommitStatus(Status.NotMatch);
+          }
+        }
+      } catch {
+        // Failed to load commit data - keep status as NotFound
+        setLatestCommitStatus(Status.NotFound);
       }
     }
   };
@@ -87,8 +99,8 @@ const LatestCommit = () => {
             <Tooltip
               text={
                 latestCommitStatus == Status.Match
-                  ? "Latest SHA on-chain exists on GitHub"
-                  : "Latest SHA on-chain cannot be found on GitHub"
+                  ? "Latest SHA on-chain exists in Git history"
+                  : "Latest SHA on-chain cannot be found in Git history"
               }
             >
               <img src="/icons/info.svg" />
@@ -110,7 +122,7 @@ const LatestCommit = () => {
       {/* Configuration link */}
       {isProjectInfoLoaded && (
         <a
-          href={`${getIpfsBasicLink(loadProjectInfo()?.config.hash || "")}/tansu.toml`}
+          href={`${getIpfsBasicLink(loadProjectInfo()?.config.ipfs || "")}/tansu.toml`}
           target="_blank"
           className="flex items-center gap-1 text-[#07711E] hover:underline"
         >

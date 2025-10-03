@@ -1,21 +1,22 @@
 import { useState, useEffect } from "react";
-import Button from "./utils/Button.tsx";
-import { getMember } from "../service/ReadContractService.ts";
-import { loadedPublicKey } from "../service/walletService.ts";
-import { toast } from "../utils/utils.ts";
+import Button from "./utils/Button";
+
+import { loadedPublicKey } from "../service/walletService";
+import { toast } from "../utils/utils";
 
 interface NavbarSearchProps {
-  onAddProject: () => void;
+  _onAddProject: () => void;
 }
 
 // Constants for URL handling
 const HOME_PATH = "/";
 
-const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
+const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [originalUrl, setOriginalUrl] = useState("");
   const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
 
   useEffect(() => {
     saveOriginalUrl();
@@ -38,13 +39,11 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
 
   // Save the original URL when the component mounts
   const saveOriginalUrl = () => {
-    // If not on homepage, save current path with query params
     if (window.location.pathname !== HOME_PATH) {
       setOriginalUrl(window.location.pathname + window.location.search);
       return;
     }
 
-    // Check if we have a referrer from the same origin
     const referrer = document.referrer;
     if (
       referrer &&
@@ -54,12 +53,11 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
       try {
         const referrerUrl = new URL(referrer);
         setOriginalUrl(referrerUrl.pathname + referrerUrl.search);
-      } catch (e) {
+      } catch {
         // Silent error handling
       }
     }
 
-    // Check for 'from' parameter in URL
     const searchParams = new URLSearchParams(window.location.search);
     const fromUrl = searchParams.get("from");
     if (fromUrl) {
@@ -75,15 +73,35 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
       if (urlSearchTerm) {
         setSearchTerm(urlSearchTerm);
       }
-    } catch (error) {
+    } catch {
       // Silent error handling
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchTerm) return;
+  const performClearNavigation = () => {
+    setIsSearchFocused(false);
 
-    // Save current URL if not on home page
+    const searchParams = new URLSearchParams(window.location.search);
+    const fromUrl = searchParams.get("from");
+
+    if (fromUrl) {
+      window.location.href = fromUrl;
+    } else if (originalUrl) {
+      window.location.href = originalUrl;
+    } else if (
+      window.location.pathname === HOME_PATH &&
+      window.location.search
+    ) {
+      window.history.pushState({}, "", HOME_PATH);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchTerm) {
+      performClearNavigation();
+      return;
+    }
+
     if (window.location.pathname !== HOME_PATH) {
       setOriginalUrl(window.location.pathname + window.location.search);
     }
@@ -95,33 +113,34 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
     const currentFullUrl = window.location.pathname + window.location.search;
 
     if (isStellarAddress) {
-      // Member search
       if (isOnHomePage) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("search", searchTerm);
+        url.searchParams.set("member", "true");
+        window.history.pushState({}, "", url.toString());
         window.dispatchEvent(
           new CustomEvent("search-member", { detail: searchTerm }),
         );
       } else {
-        window.location.href = `/?search=${encodeURIComponent(searchTerm)}&member=true&from=${encodeURIComponent(currentFullUrl)}`;
+        window.location.href = `/?search=${encodeURIComponent(
+          searchTerm,
+        )}&member=true&from=${encodeURIComponent(currentFullUrl)}`;
       }
     } else {
-      // Project search
       if (isOnHomePage) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("search", searchTerm);
+        url.searchParams.delete("member");
+        window.history.pushState({}, "", url.toString());
         window.dispatchEvent(
           new CustomEvent("search-projects", { detail: searchTerm }),
         );
       } else {
-        window.location.href = `/?search=${encodeURIComponent(searchTerm)}&from=${encodeURIComponent(currentFullUrl)}`;
+        window.location.href = `/?search=${encodeURIComponent(
+          searchTerm,
+        )}&from=${encodeURIComponent(currentFullUrl)}`;
       }
     }
-
-    // Reset the input after search on mobile
-    if (isExpanded) {
-      setTimeout(() => setIsExpanded(false), 500);
-    }
-  };
-
-  const toggleSearch = () => {
-    setIsExpanded(!isExpanded);
   };
 
   const handleAddProject = () => {
@@ -138,99 +157,171 @@ const NavbarSearch = ({ onAddProject }: NavbarSearchProps) => {
 
   const handleClearSearch = () => {
     setSearchTerm("");
-
-    const searchParams = new URLSearchParams(window.location.search);
-    const fromUrl = searchParams.get("from");
-
-    if (fromUrl) {
-      window.location.href = fromUrl;
-    } else if (originalUrl) {
-      window.location.href = originalUrl;
-    } else if (
-      window.location.pathname === HOME_PATH &&
-      window.location.search
-    ) {
-      window.location.href = HOME_PATH;
-    }
+    performClearNavigation();
   };
 
-  // Use client-side state for button title to ensure consistency between renders
+  const toggleSearchVisibility = () => {
+    setIsSearchVisible(!isSearchVisible);
+  };
+
   const buttonTitle = isWalletConnected
     ? "Add Project"
     : "Connect wallet to add project";
 
   return (
-    <div className="flex items-center gap-2 w-full max-w-[500px]">
-      <div
-        className={`search-container relative flex-grow transition-all duration-200 ${isExpanded ? "w-full" : "w-0 md:w-full"}`}
-      >
-        <div
-          className={`flex items-center border border-zinc-800 h-10 md:h-12 transition-all duration-200 ${isExpanded ? "w-full" : "w-0 md:w-full overflow-hidden"}`}
+    <div className="flex items-center gap-3 md:gap-6 w-full">
+      {/* MOBILE VERSION */}
+      <div className="md:hidden flex items-center gap-3 w-full">
+        {/* Mobile: Search icon toggle button */}
+        <button
+          onClick={toggleSearchVisibility}
+          className="flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          aria-label="Toggle search"
+          title="Search"
         >
-          <div className="flex-shrink-0 pl-2">
-            <img
-              src="/icons/search.svg"
-              width={16}
-              height={16}
-              className="icon-search"
-            />
-          </div>
-          <input
-            type="text"
-            placeholder="Search projects or community..."
-            className="w-full h-full font-firacode text-base leading-5 px-2 border-none outline-none"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSearch();
-              }
-            }}
+          <img
+            src="/icons/search.svg"
+            width={20}
+            height={20}
+            className="icon-search text-gray-400"
+            alt="Search"
           />
-          {searchTerm && (
+        </button>
+
+        {/* Mobile: Search bar */}
+        {isSearchVisible && (
+          <>
+            <div className="search-container relative flex-1">
+              <div
+                className={`flex items-center border ${
+                  isSearchFocused
+                    ? "border-primary ring-2 ring-primary"
+                    : "border-zinc-800"
+                } h-10 bg-white rounded-lg shadow-sm transition-all duration-300 w-full`}
+              >
+                <input
+                  type="text"
+                  placeholder="Search projects or community..."
+                  className="search-input min-w-[70px] w-full h-full font-firacode text-sm leading-6 px-4 border-none outline-none bg-transparent placeholder-gray-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSearch();
+                    }
+                  }}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => {
+                    if (!searchTerm) {
+                      setIsSearchFocused(false);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Close search */}
             <button
-              className="absolute right-[10px] top-1/2 transform -translate-y-1/2 cursor-pointer p-1"
-              onClick={handleClearSearch}
-              type="button"
-              title="Clear search"
-              aria-label="Clear search"
+              onClick={() => {
+                setSearchTerm("");
+                toggleSearchVisibility();
+              }}
+              className="hidden md:flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Close and clear search"
+              title="Close and clear search"
             >
               <img
                 src="/icons/cancel.svg"
-                width={16}
-                height={16}
+                width={20}
+                height={20}
                 className="icon-cancel"
-                alt="Clear"
+                alt="Close and clear"
               />
             </button>
-          )}
+          </>
+        )}
+
+        {/* Mobile: Add Project button (ONLY if connected) */}
+        {!isSearchVisible && isWalletConnected && (
+          <Button
+            type="primary"
+            order="secondary"
+            className="ml-auto h-8 px-3 whitespace-nowrap transition-all duration-200 flex items-center justify-center text-xs font-medium"
+            onClick={handleAddProject}
+            title={buttonTitle}
+            size="sm"
+          >
+            <span className="text-xs font-medium">+ Add Project</span>
+          </Button>
+        )}
+      </div>
+
+      {/* DESKTOP VERSION */}
+      <div className="hidden md:flex items-center gap-6 w-full">
+        {/* Desktop: Search bar */}
+        <div className="search-container relative flex-1">
+          <div className="flex items-center border border-zinc-800 h-12 bg-white rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all duration-300 w-full">
+            <div className="flex-shrink-0 pl-4">
+              <img
+                src="/icons/search.svg"
+                width={16}
+                height={16}
+                className="icon-search text-gray-400"
+                alt="Search"
+              />
+            </div>
+            <input
+              type="text"
+              placeholder="Search projects or community..."
+              className="search-input w-full h-full font-firacode text-base leading-6 px-3 border-none outline-none bg-transparent placeholder-gray-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
+                }
+              }}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => {
+                if (!searchTerm) {
+                  setIsSearchFocused(false);
+                }
+              }}
+            />
+            {searchTerm && (
+              <button
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer p-2 hover:bg-gray-100 rounded transition-colors"
+                onClick={handleClearSearch}
+                type="button"
+                title="Clear search"
+                aria-label="Clear search"
+              >
+                <img
+                  src="/icons/cancel.svg"
+                  width={16}
+                  height={16}
+                  className="icon-cancel"
+                  alt="Clear"
+                />
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Mobile search icon */}
-      <div
-        className={`md:hidden flex-shrink-0 cursor-pointer ${isExpanded ? "hidden" : "block"}`}
-        onClick={toggleSearch}
-      >
-        <img
-          src="/icons/search.svg"
-          width={20}
-          height={20}
-          className="icon-search"
-        />
+        {/* Desktop: Add Project button (always visible, toast guards) */}
+        <Button
+          type="primary"
+          order="secondary"
+          className="h-10 lg:h-12 px-4 lg:px-6 whitespace-nowrap transition-all duration-200 flex items-center justify-center text-sm lg:text-base font-medium"
+          onClick={handleAddProject}
+          title={buttonTitle}
+          size="sm"
+        >
+          <span className="text-sm lg:text-base font-medium">
+            + Add Project
+          </span>
+        </Button>
       </div>
-
-      <Button
-        type="primary"
-        order="secondary"
-        icon="/icons/plus-fill.svg"
-        className={`h-10 md:h-12 px-2 sm:px-[15px] whitespace-nowrap transition-all duration-200 flex items-center justify-center ${isExpanded ? "hidden md:flex" : "flex"}`}
-        onClick={handleAddProject}
-        title={buttonTitle}
-        size="xs"
-      >
-        <span className="hidden sm:inline-block">Add Project</span>
-      </Button>
     </div>
   );
 };

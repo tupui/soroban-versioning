@@ -3,7 +3,7 @@ import { getLatestCommitHash } from "@service/GithubService";
 import { getProject } from "@service/ReadContractService";
 import { loadProjectInfo, setProject } from "@service/StateService";
 import { loadedPublicKey } from "@service/walletService";
-import { commitHash } from "@service/WriteContractService";
+import { commitHash } from "@service/ContractService";
 import Button from "components/utils/Button";
 import Modal from "components/utils/Modal";
 import { useEffect, useState } from "react";
@@ -16,21 +16,19 @@ const UpdateHashModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [lastestHash, setLatestHash] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [updateSuccessful, setUpdateSuccessful] = useState(false);
   useEffect(() => {
     if (isProjectInfoLoaded) {
       const projectInfo = loadProjectInfo();
 
       if (projectInfo) {
-        try {
-          getLatestCommitHash(projectInfo?.config.url || "").then(
-            (latestSha) => {
-              setLatestHash(latestSha || "");
-            },
-          );
-        } catch (error: any) {
-          toast.error("Something Went Wrong!", error.message);
-        }
+        getLatestCommitHash(projectInfo?.config.url || "")
+          .then((latestSha) => {
+            setLatestHash(latestSha || "");
+          })
+          .catch((_error: any) => {
+            // Silently handle errors
+          });
         const connectedPublicKey = loadedPublicKey();
         const isMaintainer = connectedPublicKey
           ? projectInfo.maintainers.includes(connectedPublicKey)
@@ -40,26 +38,45 @@ const UpdateHashModal = () => {
     }
   }, [isProjectInfoLoaded]);
 
+  const handleClose = () => {
+    setIsOpen(false);
+    setUpdateSuccessful(false);
+    // Reload page if update was successful to show fresh data
+    if (updateSuccessful) {
+      window.location.reload();
+    }
+  };
+
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
       await commitHash(lastestHash);
+
+      // Successfully updated - refresh project data and reload the page
       try {
         const project = await getProject();
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
         }
-        setIsOpen(false);
-      } catch (error) {
-        console.error("Error updating Commit Hash:", error);
-        toast.error(
-          "Update Commit Hash",
-          "An error occurred while updating the project Commit Hash. Please try again.",
-        );
+      } catch (refreshError) {
+        if (import.meta.env.DEV)
+          console.error("Error refreshing project data:", refreshError);
+        // Don't show error to user as the update was successful
       }
+
+      toast.success(
+        "Commit Hash Updated",
+        "Project commit hash has been successfully updated.",
+      );
+      setUpdateSuccessful(true);
+      // Don't close modal immediately - let user close it manually
     } catch (error: any) {
-      console.error("Error updating Commit Hash:", error);
-      toast.error("Update Commit Hash", error.message);
+      if (import.meta.env.DEV)
+        console.error("Error updating Commit Hash:", error);
+      toast.error(
+        "Update Commit Hash",
+        error.message || "Failed to update commit hash. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -70,17 +87,17 @@ const UpdateHashModal = () => {
       {showButton && (
         <button
           id="commit-button"
-          className="p-[12px_16px] sm:p-[18px_30px] flex gap-2 sm:gap-3 bg-white cursor-pointer w-full sm:w-auto text-left"
+          className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
           onClick={() => setIsOpen(true)}
         >
-          <img src="/icons/gear.svg" className="w-5 h-5 sm:w-auto sm:h-auto" />
-          <p className="leading-5 text-base sm:text-xl text-primary whitespace-nowrap">
+          <img src="/icons/git.svg" className="w-5 h-5 flex-shrink-0" />
+          <span className="text-sm sm:text-base text-primary font-medium">
             Update Hash
-          </p>
+          </span>
         </button>
       )}
       {isOpen && (
-        <Modal onClose={() => setIsOpen(false)}>
+        <Modal onClose={handleClose}>
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
             <img
               src="/images/scan.svg"

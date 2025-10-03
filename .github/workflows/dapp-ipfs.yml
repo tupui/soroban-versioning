@@ -29,7 +29,7 @@ jobs:
         working-directory: ./dapp
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
 
       - name: Install App dependencies
@@ -39,7 +39,7 @@ jobs:
         run: bun run build
 
       - name: Generate artifact attestation for dist
-        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
         with:
           subject-path: "./dapp/dist/*"
 

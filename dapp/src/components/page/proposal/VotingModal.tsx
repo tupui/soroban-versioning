@@ -2,7 +2,7 @@ import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Title from "components/utils/Title";
 import { voteTypeDescriptionMap, voteTypeLabelMap } from "constants/constants";
-import React, { useState } from "react";
+import { useState } from "react";
 import { VoteType } from "types/proposal";
 import VoteTypeCheckbox from "./VoteTypeCheckbox";
 
@@ -50,12 +50,10 @@ const VotingModal: React.FC<VotersModalProps> = ({
   };
 
   const handleVote = async () => {
-    if (!validateVote()) {
-      return;
-    }
+    if (!validateVote()) return;
 
     setIsLoading(true);
-    const { voteToProposal } = await import("@service/WriteContractService");
+    const { voteToProposal } = await import("@service/ContractService");
 
     try {
       await voteToProposal(
@@ -63,39 +61,59 @@ const VotingModal: React.FC<VotersModalProps> = ({
         proposalId!,
         selectedOption as VoteType,
       );
-      setIsLoading(false);
       setIsVoted?.(true);
+      setStep(2);
     } catch (error: any) {
       setIsLoading(false);
-      setVoteError(error.message || "Failed to cast vote");
+
+      let errorMessage = "Failed to cast vote";
+
+      if (typeof error === "string") {
+        errorMessage += `: ${error}`;
+      } else if (error?.message) {
+        errorMessage += `: ${error.message}`;
+      } else if (error?.code === 4001) {
+        // Wallet rejected the transaction
+        errorMessage += ": The transaction was cancelled by the user";
+      } else {
+        // Fallback: stringify unknown error objects
+        errorMessage += `: ${JSON.stringify(error)}`;
+      }
+
+      setVoteError(errorMessage);
       return;
+    } finally {
+      setIsLoading(false);
     }
-    setStep(2);
   };
 
   return (
     <Modal onClose={onClose}>
-      {step == 1 ? (
-        <div className="flex items-start gap-6">
+      {step === 1 ? (
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-9">
+          {/* Image */}
           <img
             src="/images/box-with-coin-outside.svg"
-            className="w-[360px] h-[360px]"
+            className="w-40 sm:w-60 md:w-80 lg:w-[360px] h-auto"
           />
-          <div className="flex-grow flex flex-col gap-9">
+
+          {/* Content */}
+          <div className="flex-grow flex flex-col gap-6 sm:gap-9 w-full">
             <Title
               title="Cast Your Vote"
               description={
-                <div className="flex gap-1.5">
+                <div className="flex flex-wrap gap-1.5">
                   <p>Vote on the proposal:</p>
                   <p className="font-bold text-primary">{proposalTitle}</p>
                 </div>
               }
             />
+
             {[VoteType.APPROVE, VoteType.REJECT, VoteType.CANCEL].map(
               (voteType, index) => (
                 <div
                   key={index}
-                  className="flex gap-3"
+                  className="flex gap-3 cursor-pointer"
                   onClick={() => {
                     setSelectedOption(voteType);
                     setVoteError(null);
@@ -105,46 +123,57 @@ const VotingModal: React.FC<VotersModalProps> = ({
                     voteType={voteType}
                     currentVoteType={selectedOption}
                   />
-                  <div className="flex flex-col justify-center gap-3">
+                  <div className="flex flex-col justify-center gap-2">
                     <p
-                      className={`leading-5 text-xl font-medium text-${voteType}`}
+                      className={`leading-5 text-lg sm:text-xl font-medium text-${voteType}`}
                     >
                       {voteTypeLabelMap[voteType]}
                     </p>
-                    <p className="leading-4 text-base font-semibold text-primary">
+                    <p className="leading-4 text-sm sm:text-base font-semibold text-primary">
                       {voteTypeDescriptionMap[voteType]}
                     </p>
                   </div>
                 </div>
               ),
             )}
+
             {voteError && (
               <div className="bg-red-50 border border-red-200 text-red-500 px-4 py-2 rounded">
                 {voteError}
               </div>
             )}
-            <div className="flex flex-col items-end gap-[18px]">
-              <div className="flex gap-[18px]">
+
+            <div className="flex flex-col items-end gap-4">
+              <div className="flex gap-3">
                 <Button type="secondary" onClick={onClose}>
                   Close
                 </Button>
-                <Button onClick={() => !isLoading && handleVote()}>
-                  {isLoading ? "Voting..." : "Vote"}
+                <Button
+                  isLoading={isLoading}
+                  onClick={() => !isLoading && handleVote()}
+                >
+                  Vote
                 </Button>
               </div>
-              <p className="text-base text-secondary">
+              <p className="text-sm sm:text-base text-secondary text-right">
                 Once submitted, your vote cannot be changed.
               </p>
             </div>
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-[18px]">
-          <img src="/images/box.svg" className="w-[360px] h-[360px]" />
-          <div className="flex-grow flex flex-col gap-[30px]">
+        <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px]">
+          {/* Image */}
+          <img
+            src="/images/box.svg"
+            className="w-40 sm:w-60 md:w-80 lg:w-[360px] h-auto"
+          />
+
+          {/* Content */}
+          <div className="flex-grow flex flex-col gap-6 sm:gap-[30px] w-full">
             <Title
               title={
-                <div className="flex gap-3">
+                <div className="flex gap-3 items-center">
                   <VoteTypeCheckbox size="sm" voteType={selectedOption!} />
                   <span>
                     Your {voteTypeLabelMap[selectedOption!]} Vote Has Been
@@ -158,12 +187,11 @@ const VotingModal: React.FC<VotersModalProps> = ({
                   <span className={`text-${selectedOption}`}>
                     {voteTypeLabelMap[selectedOption!]}!
                   </span>{" "}
-                  Your positive feedback helps this proposal move closer to
-                  realization.
+                  Your feedback helps this proposal move closer to execution.
                 </>
               }
             />
-            <div className="flex justify-end gap-[18px]">
+            <div className="flex justify-end gap-3">
               <Button type="secondary" onClick={onClose}>
                 Close
               </Button>

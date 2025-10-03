@@ -13,11 +13,14 @@ Below is a mermaid diagram illustrating the proposal lifecycle:
 ```mermaid
 graph LR;
     A[Create Proposal] --> B[Active];
-    B -->|Vote period elapsed| C{Tallies};
-    C -->|Approved| D[Approved];
-    C -->|Rejected| E[Rejected];
-    C -->|Cancelled| F[Cancelled];
-    D -->|execute| G[(on-chain / off-chain action)];
+    B -->|Vote period elapsed| C{Execute};
+    C -->|Public Voting| D[Direct Tally];
+    C -->|Anonymous Voting| E[Upload Tallies & Seeds];
+    D --> F[Approved/Rejected/Cancelled];
+    E --> G[Verify Commitments];
+    G --> H[Approved/Rejected/Cancelled];
+    F -->|If Approved| I[(Execute XDR Action)];
+    H -->|If Approved| I;
 ```
 
 1. **create_proposal** – a maintainer submits a new proposal (title, ipfs, voting_ends_at, public_voting).
@@ -25,6 +28,15 @@ graph LR;
 3. **Tallies** – once voting ends, a maintainer can tally (using execute) – if anonymous, tallies & seeds are supplied.
 4. The proposal status becomes **Approved**, **Rejected** or **Cancelled** (see `_types.ProposalStatus_`).
 5. In case of **Approved**, a follow‑up XDR transaction (embedded in the proposal) is submitted automatically.
+
+### Voting Timeline
+
+The contract enforces strict voting deadlines:
+
+- Votes can only be cast **before** the `voting_ends_at` timestamp
+- Attempts to vote after the deadline will be rejected
+- Only maintainers can execute proposals **after** the voting period ends
+- Voting periods must be between 1 day and 30 days from creation
 
 ## Public vs. Anonymous voting
 
@@ -39,8 +51,7 @@ Anonymous voting requires a one-time configuration (`anonymous_voting_setup`). T
 
 The helper `build_commitments_from_votes` can be called in simulation to reproduce the exact commitments client-side.
 
-- Each vote is committed as:  
-  $C = G(v) \cdot H(r)$ where `G`, `H` are generator points, `v` is the vote, and `r` is a random seed.
+- Each vote is committed as: $C = G(v) \cdot H(r)$ where `G`, `H` are generator points, `v` is the vote, and `r` is a random seed.
 - Only commitments are stored on-chain. The actual votes and seeds are encrypted off-chain and revealed at tally time.
 - At tally, the contract checks that the sum of commitments matches the commitments derived from the revealed tallies and seeds.
 
@@ -53,13 +64,39 @@ The helper `build_commitments_from_votes` can be called in simulation to reprodu
 
 ## Weights & quorum
 
-The effective weight of a vote is given by [`get_max_weight`](./membership.mdx). The contract does **not** impose a fixed quorum rule – instead it considers the raw tallies:
+The effective weight of a vote is given by [`get_max_weight`](./membership.mdx). The contract implements a **supermajority governance model** that requires broad consensus before approving any proposal.
 
-- `approve > reject` → **Approved**
-- `reject ≥ approve` → **Rejected**
-- Any exceptional path (e.g. maintainer forcing a stop) → **Cancelled**
+### Voting Decision Logic
+
+The contract considers the weighted tallies using supermajority rules:
+
+- `approve > (abstain + reject)` → **Approved**
+- `reject > (abstain + approve)` → **Rejected**
+- Otherwise → **Cancelled** (including when approve = reject)
+
+This means that to approve a proposal, the approve votes must exceed the combined weight of all reject and abstain votes. Similarly, to reject a proposal, the reject votes must exceed the combined weight of all approve and abstain votes.
+
+### Why Supermajority?
+
+This supermajority approach ensures that:
+
+- **Broad consensus** is required before making changes
+- **Abstain votes matter** - they represent active participation but uncertainty
+- **Conservative governance** - proposals need clear support to pass
+- **Protection against hasty decisions** - changes require overwhelming support
 
 Custom quorum logic (percentage, thresholds…) can be built off-chain before deciding whether to call `execute`.
+
+### Voting Eligibility
+
+To cast a vote on a proposal, users must:
+
+- Be registered as a member using `add_member`
+- Have one or more badges assigned for the project (see [Membership & Badges](./membership.mdx))
+- Vote with a weight not exceeding their maximum allowed weight
+- Vote before the proposal's deadline
+
+Members with zero voting weight (no badges) cannot participate in voting.
 
 ## Pagination helpers
 

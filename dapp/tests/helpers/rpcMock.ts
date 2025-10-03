@@ -25,7 +25,7 @@ const expectations: Record<string, Expectation> = {
     func: "update_config",
     result: true,
   },
-  add_badges: { func: "add_badges", result: true },
+  set_badges: { func: "set_badges", result: true },
   commit: { func: "commit", result: true },
   add_member: { func: "add_member", result: true },
   vote: { func: "vote", result: true },

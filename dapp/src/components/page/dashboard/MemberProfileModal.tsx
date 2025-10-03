@@ -2,23 +2,19 @@ import type { FC } from "react";
 import { useState, useEffect } from "react";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Button from "components/utils/Button";
-import type { Member, Badge, Project } from "../../../../packages/tansu";
-import { Buffer } from "buffer";
-import {
-  getIpfsBasicLink,
-  fetchFromIPFS,
-  fetchJSONFromIPFS,
-} from "utils/ipfsFunctions";
+import type { Member, Badge } from "../../../../packages/tansu";
+import { getIpfsBasicLink, fetchJSONFromIPFS } from "utils/ipfsFunctions";
 import Markdown from "markdown-to-jsx";
 import { truncateMiddle } from "../../../utils/utils";
 import { connectedPublicKey } from "../../../utils/store";
-import { toast } from "../../../utils/utils";
+
 import { getProjectFromId } from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
-import { getStellarExplorerURL } from "../../../utils/urls";
+import { getStellarExpertUrl } from "../../../utils/urls";
 import CopyButton from "components/utils/CopyButton";
-
-const network = import.meta.env.SOROBAN_NETWORK || "testnet";
+import { Buffer } from "buffer";
+import OnChainActions from "./OnChainActions";
+import { badgeName } from "../../../utils/badges";
 
 interface Props extends ModalProps {
   member: Member | null;
@@ -38,23 +34,6 @@ interface ProjectWithName {
   badges: Array<Badge>;
   projectId: Buffer;
 }
-
-const badgeName = (b: Badge) => {
-  switch (b) {
-    case 10000000:
-      return "Developer";
-    case 5000000:
-      return "Triage";
-    case 1000000:
-      return "Community";
-    case 500000:
-      return "Verified";
-    case 1:
-      return "Default";
-    default:
-      return b.toString();
-  }
-};
 
 const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
@@ -79,6 +58,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
       if (
         member &&
         member.meta &&
+        typeof member.meta === "string" &&
         member.meta.trim() &&
         member.meta.trim() !== " "
       ) {
@@ -114,7 +94,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 setProfileImageUrl(`${ipfsUrl}/${profileData.image}`);
               }
             }
-          } catch (error) {
+          } catch {
             // Silent failure - this is an expected case for missing profile data
           }
 
@@ -135,9 +115,16 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                   setProfileImageUrl(candidate);
                 }
               };
+              img.onerror = () => {
+                // Silently handle 404 errors - profile images are optional
+                if (idx === exts.length - 1 && !found) {
+                  // If this was the last extension and no image found, clear the URL
+                  setProfileImageUrl("");
+                }
+              };
             });
           }
-        } catch (error) {
+        } catch {
           // Silent error handling
         } finally {
           setIsLoading(false);
@@ -160,7 +147,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
             badges: proj.badges,
             projectId: proj.project,
           };
-        } catch (error) {
+        } catch {
           return {
             name: "Unknown Project",
             badges: proj.badges,
@@ -212,7 +199,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
 
   // Address display component with copy functionality
   const AddressDisplay = ({ address }: { address: string }) => {
-    const explorerUrl = getStellarExplorerURL(address);
+    const explorerUrl = getStellarExpertUrl(address);
 
     return (
       <div className="mt-1 bg-zinc-50 p-2 rounded flex items-center gap-2 w-full">
@@ -303,7 +290,9 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
     <Modal onClose={onClose} fullWidth>
       {isLoading ? (
         <div className="flex items-center justify-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div>
+            <img src="/images/loading.svg" className="w-12 animate-spin" />
+          </div>
         </div>
       ) : (
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full">
@@ -473,9 +462,9 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                         {proj.name}
                       </p>
                       <div className="flex flex-wrap justify-center gap-2">
-                        {proj.badges.map((b, i) => (
+                        {Array.from(new Set(proj.badges)).map((b) => (
                           <span
-                            key={i}
+                            key={b}
                             className="px-2 py-0.5 sm:px-3 sm:py-1 bg-primary text-white text-xs sm:text-sm rounded"
                           >
                             {badgeName(b)}
@@ -487,6 +476,24 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 </div>
               )}
             </div>
+
+            {/* On-chain Actions List */}
+            {address && (
+              <div className="mt-6">
+                <h4 className="text-base sm:text-lg font-semibold text-primary mb-1 sm:mb-2">
+                  On-chain Activity
+                </h4>
+                <OnChainActions
+                  address={address}
+                  projectCache={Object.fromEntries(
+                    projectsWithNames.map((p) => [
+                      Buffer.from(p.projectId).toString("hex"),
+                      p.name,
+                    ]),
+                  )}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
