@@ -87,60 +87,69 @@
       setLoggedIn(publicKey);
     }
 
-    async function connectWallet() {
-      const provider = loadedProvider();
+async function connectWallet() {
+  const provider = loadedProvider();
 
-      if (button.title) {
-        // If already logged in
-        if (provider === "xbull") {
-          const { kit } = await import("./stellar-wallets-kit");
-          kit.setWallet("xbull");
+  if (button.title) {
+    // Already connected - revalidate account with provider
+    if (provider) {
+      const { kit } = await import("./stellar-wallets-kit");
+      kit.setWallet(provider);
+
+      try {
+        const { address } = await kit.getAddress();
+        const currentStored = loadedPublicKey();
+
+        if (address !== currentStored) {
+          // 🔥 User switched accounts inside this wallet
+          setConnection(address, provider);
+          await setLoggedIn(address);
+          window.dispatchEvent(
+            new CustomEvent("walletSwitched", { detail: { address, provider } })
+          );
+        }
+      } catch {
+        // Wallet not available or user rejected
+        disconnect();
+      }
+    } else {
+      // No provider stored, force reconnect flow
+      window.dispatchEvent(new CustomEvent("openProfileModal"));
+    }
+    return;
+  }
+
+  // First-time connection flow
+  try {
+    const { kit } = await import("./stellar-wallets-kit");
+
+    await kit.openModal({
+      onWalletSelected: async (option: { id: string }) => {
+        try {
+          kit.setWallet(option.id);
           const { address } = await kit.getAddress();
 
-          const currentStored = loadedPublicKey();
-          if (address !== currentStored) {
-            // 🔥 User switched accounts inside xBull
-            setConnection(address, "xbull");
-            await setLoggedIn(address);
-            window.dispatchEvent(
-              new CustomEvent("walletSwitched", { detail: address })
-            );
-          }
-        } else {
-          // For Freighter (or others), just open profile modal
-          window.dispatchEvent(new CustomEvent("openProfileModal"));
+          // Save both provider + key
+          setConnection(address, option.id);
+          await setLoggedIn(address);
+
+          window.dispatchEvent(
+            new CustomEvent("walletConnected", {
+              detail: { address, provider: option.id },
+            })
+          );
+        } catch {
+          // Wallet connection failed - user might have rejected or wallet unavailable 
+          // This is expected behavior, no need to log
         }
-        return;
-      }
+      },
+    });
+  } catch {
+    // Wallet modal opening failed - this is expected behavior for some cases 
+    // No need to log as it's handled gracefully by the UI
+  }
+}
 
-      // First connection flow
-      try {
-        const { kit } = await import("./stellar-wallets-kit");
-
-        await kit.openModal({
-          onWalletSelected: async (option: { id: string }) => {
-            try {
-              kit.setWallet(option.id);
-              const { address } = await kit.getAddress();
-
-              // Save both provider + key
-              setConnection(address, option.id);
-              await setLoggedIn(address);
-
-              window.dispatchEvent(
-                new CustomEvent("walletConnected", { detail: address })
-              );
-            } catch (e) {
-              // Wallet connection failed - user might have rejected or wallet unavailable
-             // This is expected behavior, no need to log
-            }
-          },
-        });
-      } catch (e) {
-        // Wallet modal opening failed - this is expected behavior for some cases 
-        // No need to log as it's handled gracefully by the UI
-      }
-    }
 
     if (button) {
       button.addEventListener("click", connectWallet);
