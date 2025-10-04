@@ -3,6 +3,13 @@ use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
 // Constants
 pub const TIMELOCK_DELAY: u64 = 24 * 3600; // 24 hours in seconds
 
+// Storage TTL constants
+pub const INSTANCE_TTL_BUMP: u32 = 535680;
+pub const INSTANCE_TTL_THRESHOLD: u32 = 267840;
+
+pub const PERSISTENT_TTL_BUMP: u32 = 535680; // ~31 days worth of ledgers
+pub const PERSISTENT_TTL_THRESHOLD: u32 = 267840; // ~15 days threshold
+
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
 pub struct Contract {

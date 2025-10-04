@@ -194,9 +194,31 @@ fn retrieve_contract(env: &Env, key: types::ContractKey) -> types::Contract {
 fn validate_contract(env: &Env, contract: &types::Contract) {
     let contract_executable = contract.address.executable();
 
-    if let Some(wasm_hash) = contract.clone().wasm_hash
-        && contract_executable != Some(Executable::Wasm(wasm_hash))
-    {
-        panic_with_error!(&env, &errors::ContractErrors::ContractValidation)
+    if let Some(wasm_hash) = contract.clone().wasm_hash {
+        if contract_executable != Some(Executable::Wasm(wasm_hash)) {
+            panic_with_error!(&env, &errors::ContractErrors::ContractValidation)
+        }
     }
+}
+
+/// Extend TTL for persistent storage entries to prevent expiration
+///
+fn extend_persistent_ttl<K>(env: &Env, key: &K)
+where
+    K: soroban_sdk::IntoVal<Env, soroban_sdk::Val>
+{
+    env.storage().persistent().extend_ttl(
+        key,
+        types::PERSISTENT_TTL_THRESHOLD,
+        types::PERSISTENT_TTL_BUMP,
+    );
+}
+
+/// Extend TTL for instance storage to prevent expiration
+///
+fn extend_instance_ttl(env: &Env) {
+    env.storage().instance().extend_ttl(
+        types::INSTANCE_TTL_THRESHOLD,
+        types::INSTANCE_TTL_BUMP,
+    );
 }

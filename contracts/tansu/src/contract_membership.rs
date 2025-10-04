@@ -32,6 +32,7 @@ impl MembershipTrait for Tansu {
                 meta,
             };
             env.storage().persistent().set(&member_key_, &member);
+            crate::extend_persistent_ttl(&env, &member_key_);
 
             events::MemberAdded { member_address }.publish(&env);
         };
@@ -101,13 +102,13 @@ impl MembershipTrait for Tansu {
         // a project
         'member_projects_badges: {
             for i in 0..member_.projects.len() {
-                if let Some(project_badge) = member_.projects.get(i)
-                    && project_badge.project == key
-                {
-                    let mut project_badges = project_badge.clone();
-                    project_badges.badges = badges.clone();
-                    member_.projects.set(i, project_badges);
-                    break 'member_projects_badges;
+                if let Some(project_badge) = member_.projects.get(i) {
+                    if project_badge.project == key {
+                        let mut project_badges = project_badge.clone();
+                        project_badges.badges = badges.clone();
+                        member_.projects.set(i, project_badges);
+                        break 'member_projects_badges;
+                    }
                 }
             }
             let project_badges = types::ProjectBadges {
@@ -153,7 +154,9 @@ impl MembershipTrait for Tansu {
         }
 
         env.storage().persistent().set(&badges_key_, &badges_);
+        crate::extend_persistent_ttl(&env, &badges_key_);
         env.storage().persistent().set(&member_key_, &member_);
+        crate::extend_persistent_ttl(&env, &member_key_);
 
         events::BadgesUpdated {
             project_key: key,
