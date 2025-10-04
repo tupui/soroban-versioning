@@ -58,7 +58,15 @@ async function getKeyHex(key) {
 }
 
 (async () => {
-  const data = new TextEncoder().encode("This is some secret data...");  // This is our data to encrypt.
+  // Get the proof string from CLI args
+  const proofArg = process.argv[2];
+
+  if (!proofArg) {
+    console.error("Usage: node tools/AES256-encrypt.js \"<YOUR_STORACHA_PROOF_STRING>\"");
+    process.exit(1);
+  }
+
+  const data = new TextEncoder().encode(proofArg);
   const header = new TextEncoder().encode("storachaProof");
 
   const key = await generateKey();
