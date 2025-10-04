@@ -19,7 +19,6 @@ import { generateRSAKeyPair } from "utils/crypto";
 import { setupAnonymousVoting } from "@service/ContractService";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
-import Textarea from "components/utils/Textarea";
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -136,22 +135,22 @@ const [contractAddressError, setContractAddressError] = useState<string | null>(
 const prepareProposalFiles = (): File[] => {
   const proposalOutcome: ProposalOutcome = useContract
     ? {
-        // When using contract, store contract address in the approved outcome
+        // Contract mode - empty descriptions, just contract address
         approved: {
-          description: approveDescription,
+          description: "",
           contract: contractAddress || "",
         },
         rejected: {
-          description: rejectDescription,
+          description: "",
           contract: contractAddress || "", 
         },
         cancelled: {
-          description: cancelledDescription,
+          description: "",
           contract: contractAddress || "", 
         },
       }
     : {
-        // Traditional XDR-based outcomes
+        // XDR mode - same as before
         approved: {
           description: approveDescription,
           ...(approveXdr && { xdr: approveXdr }),
@@ -592,7 +591,7 @@ const prepareProposalFiles = (): File[] => {
           </div>
         </div>
       ) : step == 2 ? (
-  <div className="flex flex-col gap-[42px]">
+ <div className="flex flex-col gap-[42px]">
     <div className="flex flex-col gap-[30px]">
       <div className="flex gap-[18px]">
         <img src="/images/cards.svg" />
@@ -600,21 +599,56 @@ const prepareProposalFiles = (): File[] => {
           <Step step={step} totalSteps={4} />
           <Title
             title="Outcome Details"
-            description="Provide descriptions and XDRs or a contract call for approved, rejected, and canceled outcomes."
+            description="Choose how outcomes will be executed: XDR transactions or smart contract."
           />
         </div>
       </div>
       
-      {/* Contract Address Input - shown when using contract */}
-      {useContract && (
+      {/* GLOBAL Outcome Method Selector */}
+      <div className="w-full p-4 border border-zinc-700 rounded-lg bg-zinc-900/50">
+        <div className="flex flex-col gap-3">
+          <label className="text-base font-semibold text-primary">
+            Outcome Execution Method
+          </label>
+          <select
+            className="px-4 py-3 border border-zinc-700 rounded-md bg-transparent text-primary text-base"
+            value={useContract ? 'contract' : 'xdr'}
+            onChange={(e) => {
+              const newValue = e.target.value === 'contract';
+              setUseContract(newValue);
+              if (newValue) {
+                setApproveXdr(null);
+                setRejectXdr(null);
+                setCancelledXdr(null);
+                setApproveDescription('');
+                setRejectDescription('');
+                setCancelledDescription('');
+              } else {
+                setContractAddress(null);
+              }
+            }}
+          >
+            <option value="xdr">XDR Transactions</option>
+            <option value="contract">Smart Contract Execution</option>
+          </select>
+          <p className="text-sm text-secondary">
+            {useContract 
+              ? 'A smart contract will handle all three outcomes. Descriptions will be automatically fetched from the contract interface.'
+              : 'Define XDR transactions and descriptions for each outcome individually.'
+            }
+          </p>
+        </div>
+      </div>
+      
+      {useContract ? (
         <div className="w-full p-4 border border-zinc-700 rounded-lg bg-zinc-900/50">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <p className="text-base font-semibold text-primary">
-                Outcome Contract Address
+                Smart Contract Address
               </p>
-              <a
-                href="/"
+               
+               <a href="https://developers.stellar.org/docs/smart-contracts"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs text-blue-500 underline"
@@ -623,63 +657,51 @@ const prepareProposalFiles = (): File[] => {
               </a>
             </div>
             <Input
-              placeholder="Enter contract address (e.g., CA...)"
+              placeholder="Enter contract address (CA...)"
               value={contractAddress || ""}
-              onChange={(e) => setContractAddress(e.target.value)}
+              onChange={(e) => {
+                setContractAddress(e.target.value);
+                setContractAddressError(null);
+              }}
               error={contractAddressError}
             />
             {contractAddress && contractAddress.length === 56 && (
-              <div className="flex items-center gap-3">
-                <a
-                  href={`https://stellar.expert/explorer/public/contract/${contractAddress}`}
+              <div className="flex flex-col gap-2">
+                
+                <a href={`https://stellar.expert/explorer/public/contract/${contractAddress}?filter=interface`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-500 underline flex items-center gap-1"
                 >
-                  View on Explorer
+                  View contract interface & docstrings on Stellar Expert
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
                     <polyline points="15 3 21 3 21 9"/>
                     <line x1="10" y1="14" x2="21" y2="3"/>
                   </svg>
                 </a>
-                <span className="text-sm text-green-500">✓ Valid address format</span>
+                <span className="text-sm text-green-500">✓ Valid contract address format</span>
               </div>
             )}
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
               <p className="text-sm text-secondary mb-2">
-                <strong>Note:</strong> This single contract will handle all three outcomes (approved, rejected, cancelled).
-                The contract must implement the standard outcome interface.
+                <strong>How it works:</strong> The contract must implement methods for all three outcomes 
+                (approved, rejected, cancelled). Outcome descriptions will be automatically parsed from the 
+                contract's docstrings when the proposal is created.
               </p>
-              <details className="cursor-pointer">
-                <summary className="text-sm text-blue-500">Download Contract Templates</summary>
+              <details className="cursor-pointer mt-2">
+                <summary className="text-sm text-blue-500 font-medium">Download Contract Templates</summary>
                 <div className="flex flex-col gap-2 mt-2 ml-4">
-                  <a
-                    href="/"
-                    download
-                    className="text-sm text-blue-500 underline flex items-center gap-1"
-                  >
+                  <a href="/" download className="text-sm text-blue-500 underline">
                     📄 Basic Template - Simple outcome execution
                   </a>
-                  <a
-                    href="/"
-                    download
-                    className="text-sm text-blue-500 underline flex items-center gap-1"
-                  >
+                  <a href="/" download className="text-sm text-blue-500 underline">
                     💰 Treasury Distribution - Fund allocation logic
                   </a>
-                  <a
-                    href="/"
-                    download
-                    className="text-sm text-blue-500 underline flex items-center gap-1"
-                  >
-                   Contract Upgrade - Upgrade other contracts
+                  <a href="/" download className="text-sm text-blue-500 underline">
+                    🔧 Contract Upgrade - Upgrade other contracts
                   </a>
-                  <a
-                    href="/"
-                    download
-                    className="text-sm text-blue-500 underline flex items-center gap-1"
-                  >
+                  <a href="/" download className="text-sm text-blue-500 underline">
                     🔐 Multi-Signature - Requires additional signers
                   </a>
                 </div>
@@ -687,27 +709,19 @@ const prepareProposalFiles = (): File[] => {
             </div>
           </div>
         </div>
-      )}
-      
-      <OutcomeInput
-        type="approved"
-        description={approveDescription}
-        setDescription={setApproveDescription}
-        xdr={approveXdr}
-        setXdr={setApproveXdr}
-        descriptionError={approveDescriptionError}
-        xdrError={approveXdrError}
-        onDescriptionChange={() => setApproveDescriptionError(null)}
-        onXdrChange={() => setApproveXdrError(null)}
-        contractAddress={contractAddress}
-        setContractAddress={setContractAddress}
-        useContract={useContract}
-        setUseContract={setUseContract}
-      />
-      
-      {/* Only show other outcomes if not using contract */}
-      {!useContract && (
+      ) : (
         <>
+          <OutcomeInput
+            type="approved"
+            description={approveDescription}
+            setDescription={setApproveDescription}
+            xdr={approveXdr}
+            setXdr={setApproveXdr}
+            descriptionError={approveDescriptionError}
+            xdrError={approveXdrError}
+            onDescriptionChange={() => setApproveDescriptionError(null)}
+            onXdrChange={() => setApproveXdrError(null)}
+          />
           <OutcomeInput
             type="rejected"
             description={rejectDescription}
@@ -724,32 +738,8 @@ const prepareProposalFiles = (): File[] => {
           />
         </>
       )}
-      
-      {/* When using contract, still need descriptions for other outcomes */}
-      {useContract && (
-        <div className="flex flex-col gap-6 p-4 border border-zinc-600 rounded-lg">
-          <p className="text-sm text-secondary">
-            Provide descriptions for rejected and cancelled outcomes (handled by the contract):
-          </p>
-          <div className="flex flex-col gap-4">
-            <Label label="Rejected Outcome Description">
-              <Textarea
-                placeholder="Describe what happens when rejected"
-                value={rejectDescription}
-                onChange={(e) => setRejectDescription(e.target.value)}
-              />
-            </Label>
-            <Label label="Cancelled Outcome Description">
-              <Textarea
-                placeholder="Describe what happens when cancelled"
-                value={cancelledDescription}
-                onChange={(e) => setCancelledDescription(e.target.value)}
-              />
-            </Label>
-          </div>
-        </div>
-      )}
     </div>
+    
     <div className="flex justify-end gap-[18px]">
       <Button type="secondary" onClick={() => setStep(step - 1)}>
         Back
@@ -758,22 +748,15 @@ const prepareProposalFiles = (): File[] => {
         data-testid="proposal-next"
         onClick={() => {
           try {
-            if (!validateApproveOutcome())
-              throw new Error("Invalid approved outcome");
-            
-            // Additional validation for contract mode
             if (useContract) {
               if (!contractAddress || contractAddress.length !== 56) {
-                throw new Error("Please enter a valid contract address");
+                throw new Error("Please enter a valid 56-character contract address");
               }
-              if (!rejectDescription || rejectDescription.length < 3) {
-                throw new Error("Please provide a description for rejected outcome");
-              }
-              if (!cancelledDescription || cancelledDescription.length < 3) {
-                throw new Error("Please provide a description for cancelled outcome");
+            } else {
+              if (!validateApproveOutcome()) {
+                throw new Error("Invalid approved outcome");
               }
             }
-
             setStep(step + 1);
           } catch (err: any) {
             console.error(err.message);
@@ -785,6 +768,7 @@ const prepareProposalFiles = (): File[] => {
       </Button>
     </div>
   </div>
+
 ) : step == 3 ? (
         <div className="flex flex-col gap-[42px]">
           <div className="flex gap-[18px]">
