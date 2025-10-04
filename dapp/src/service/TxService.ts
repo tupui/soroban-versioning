@@ -301,16 +301,18 @@ export async function signAssembledTransaction(
   const { kit } = await import("../components/stellar-wallets-kit");
   if (provider) {
     kit.setWallet(provider);
-    if (provider === "xbull") {
-      try {
+
+    try {
+      if (typeof kit.getAddress === "function") {
         const { address } = await kit.getAddress();
         const stored = loadedPublicKey();
         if (address && address !== stored) {
+          // Keep persisted state in sync with whichever wallet is active
           setConnection(address, provider);
         }
-      } catch {
-        // ignore - signing can still be attempted
       }
+    } catch {
+      // ignore - failing to refresh shouldn't block signing attempt
     }
   }
 
