@@ -1,6 +1,6 @@
 import { calculateDirectoryCid } from "../utils/ipfsFunctions";
-import { create } from "@web3-storage/w3up-client";
-import { extract } from "@web3-storage/w3up-client/delegation";
+import { create } from "@storacha/client";
+import { extract } from "@storacha/client/dist/delegation";
 //
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";

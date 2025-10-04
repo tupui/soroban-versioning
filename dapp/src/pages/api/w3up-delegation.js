@@ -142,14 +142,10 @@ async function generateDelegation(did) {
   }
 
   // Dynamic imports to avoid initialization issues
-  const { create } = await import("@web3-storage/w3up-client");
-  const { Signer } = await import(
-    "@web3-storage/w3up-client/principal/ed25519"
-  );
-  const Proof = await import("@web3-storage/w3up-client/proof");
-  const { StoreMemory } = await import(
-    "@web3-storage/w3up-client/stores/memory"
-  );
+  const { create } = await import("@storacha/client");
+  const { Signer } = await import("@storacha/client/principal/ed25519");
+  const Proof = await import("@storacha/client/proof");
+  const { StoreMemory } = await import("@storacha/client/stores/memory");
 
   if (storachaProof.length === 64) {
     storachaProof = await decryptProof(storachaProof);
