@@ -24,12 +24,17 @@ const CommitHistory = () => {
         projectRepoInfo.repository,
         page,
       );
-      setCommitHistory(history);
-      setCurrentPage(page);
 
-      // Set the latest commit
-      if (history.length > 0 && history[0].commits.length > 0) {
-        latestCommit.set(history[0].commits[0].sha);
+      if (history) {
+        setCommitHistory(history);
+        setCurrentPage(page);
+
+        // Set the latest commit
+        if (history.length > 0 && history[0].commits.length > 0) {
+          latestCommit.set(history[0].commits[0].sha);
+        }
+      } else {
+        setCommitHistory([]);
       }
     }
   };

@@ -1,0 +1,168 @@
+import { useState } from "react";
+
+interface MonthlyStats {
+  [month: string]: {
+    commits: number;
+    contributors: number;
+    linesChanged: number;
+  };
+}
+
+interface MonthlyActivityChartProps {
+  monthlyStats: MonthlyStats;
+}
+
+const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
+  monthlyStats
+}) => {
+  const [metric, setMetric] = useState<'commits' | 'contributors'>('commits');
+  const [timeRange, setTimeRange] = useState<'6m' | '12m' | 'all'>('12m');
+
+  const months = Object.keys(monthlyStats).sort();
+
+  const getFilteredMonths = () => {
+    if (timeRange === 'all') return months;
+
+    const monthsToShow = timeRange === '6m' ? 6 : 12;
+    return months.slice(-monthsToShow);
+  };
+
+  const filteredMonths = getFilteredMonths();
+  const maxValue = Math.max(
+    ...filteredMonths.map(month => monthlyStats[month]?.[metric] || 0),
+    1
+  );
+
+  const formatMonth = (monthKey: string) => {
+    const [year, month] = monthKey.split('-');
+    if (!year || !month) return monthKey;
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+  };
+
+  const getBarHeight = (value: number) => {
+    return (value / maxValue) * 100;
+  };
+
+  const getTotalForPeriod = () => {
+    return filteredMonths.reduce((sum, month) => {
+      return sum + (monthlyStats[month]?.[metric] || 0);
+    }, 0);
+  };
+
+  const getAverageForPeriod = () => {
+    const total = getTotalForPeriod();
+    return filteredMonths.length > 0 ? Math.round(total / filteredMonths.length) : 0;
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-lg border border-gray-200">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <h3 className="text-lg font-semibold text-primary">Monthly Activity</h3>
+          <div className="flex gap-2 flex-wrap">
+            <select
+              value={metric}
+              onChange={(e) => setMetric(e.target.value as 'commits' | 'contributors')}
+              className="px-3 py-1 text-xs border border-gray-300 rounded-md bg-white"
+            >
+              <option value="commits">Commits</option>
+              <option value="contributors">Contributors</option>
+            </select>
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value as '6m' | '12m' | 'all')}
+              className="px-3 py-1 text-xs border border-gray-300 rounded-md bg-white"
+            >
+              <option value="6m">Last 6 months</option>
+              <option value="12m">Last 12 months</option>
+              <option value="all">All time</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Stats Summary */}
+        <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary">{getTotalForPeriod()}</div>
+            <div className="text-xs text-secondary">Total {metric}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-primary">{getAverageForPeriod()}</div>
+            <div className="text-xs text-secondary">Monthly average</div>
+          </div>
+        </div>
+
+        {/* Chart */}
+        <div className="relative">
+          <div className="relative h-32 px-2 overflow-hidden">
+            {filteredMonths.length === 0 ? (
+              <div className="flex items-center justify-center w-full h-full text-blue-800 text-sm">
+                No data available
+              </div>
+            ) : (
+              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                {/* Draw curve line */}
+                <path
+                  d={filteredMonths
+                    .filter(Boolean)
+                    .map((month, index, arr) => {
+                      const value = monthlyStats[month]?.[metric] || 0;
+                      const height = getBarHeight(value);
+                      const x = arr.length > 1 ? (index / (arr.length - 1)) * 100 : 50;
+                      const y = 100 - height;
+                      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+                    })
+                    .join(' ')}
+                  fill="none"
+                  stroke="#8b5cf6"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+
+                {filteredMonths.map((month, index) => {
+                  if (!month) return null;
+                  const value = monthlyStats[month]?.[metric] || 0;
+                  const height = getBarHeight(value);
+                  const x = filteredMonths.length > 1 ? (index / (filteredMonths.length - 1)) * 100 : 50;
+                  const y = 100 - height;
+
+                  return (
+                    <g key={month}>
+                      <circle
+                        cx={x}
+                        cy={y}
+                        r="1.5"
+                        fill="#8b5cf6"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <title>{formatMonth(month)}: {value} {metric}</title>
+                    </g>
+                  );
+                })}
+              </svg>
+            )}
+          </div>
+
+          {/* X-axis labels */}
+          <div className="flex justify-center gap-1 mt-2 px-2">
+            {filteredMonths.map((month, index) => {
+              if (!month) return null;
+              return (
+                <div key={month} className="flex-1 max-w-8 text-center">
+                  {index % Math.ceil(filteredMonths.length / 6) === 0 && (
+                    <span className="text-xs text-secondary">{formatMonth(month)}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MonthlyActivityChart;
