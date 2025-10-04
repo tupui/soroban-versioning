@@ -101,8 +101,8 @@ async function connectWallet() {
         const currentStored = loadedPublicKey();
 
         if (address !== currentStored) {
-          // 🔥 User switched accounts inside this wallet
-          setConnection(address, provider);
+          //  User switched accounts inside this wallet
+          setConnection(address, provider); 
           await setLoggedIn(address);
           window.dispatchEvent(
             new CustomEvent("walletSwitched", { detail: { address, provider } })
