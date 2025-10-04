@@ -3,34 +3,20 @@
 This guide explains how to set up IPFS uploads via Storacha for the dApp, how to generate and encrypt your Storacha proof with AES-256, and how to configure the required environment variables.
 
 The dApp server route `dapp/src/pages/api/w3up-delegation.js` expects:
-- `STORACHA_SING_PRIVATE_KEY` (required): your W3UP/Storacha ED25519 principal private key.
-- `STORACHA_PROOF` (required): either the plain proof string or a 64-hex key used to decrypt a local `encrypted_proof.bin`.
+- `STORACHA_SING_PRIVATE_KEY` (required): your Storacha ED25519 principal private key.
 
 If `STORACHA_PROOF` is exactly 64 characters, the app treats it as an AES key (hex) and decrypts a local `encrypted_proof.bin` using `dapp/src/utils/decryptAES256.ts`.
 
 ---
 
-## 1) Prerequisites
-- Bun installed for dApp development.
-- A Storacha (Web3.Storage W3UP) account and a created Space/Proof.
-- This repository cloned locally.
+## 1) Create a Storacha Proof
 
-References in the codebase:
-- Encryption tool: `tools/AES256-encrypt.js`
-- Decryption helper: `dapp/src/utils/decryptAES256.ts`
-- Env typings: `dapp/src/env.d.ts`
-- API usage: `dapp/src/pages/api/w3up-delegation.js`
-
----
-
-## 2) Create a Storacha Proof
-
-Follow Storacha/W3UP docs to create a Space and obtain its Proof (a UCAN proof string). You will end up with a proof string you can paste into an environment variable or encrypt locally.
+Follow Storacha docs to create a Space and obtain its Proof (a UCAN proof string). You will end up with a proof string you can paste into an environment variable or encrypt locally.
 
 Install CLI:
 
 ```bash
-npm install -g @web3-storage/w3cli
+bun install -g @storacha/cli
 ```
 
 Create a space:
@@ -70,7 +56,7 @@ Keep this string safe; it grants the app permission to delegate for uploads.
 
 ---
 
-## 3) Choose Your Storage Mode for the Proof
+## 2) Choose Your Storage Mode for the Proof
 
 You have two supported options.
 
@@ -86,7 +72,7 @@ The runtime logic in `w3up-delegation.js`:
 - Otherwise, treat `STORACHA_PROOF` as the plain proof string.
 
 ---
-## 4) Encrypted Mode: Generate AES Key and `encrypted_proof.bin`
+## 3) Encrypted Mode: Generate AES Key and `encrypted_proof.bin`
 
 The repository provides [`tools/AES256-encrypt.js`](../tools/AES256-encrypt.js), which encrypts your proof with **AES-GCM** and writes an `encrypted_proof.bin` file.
 
@@ -119,7 +105,7 @@ mv encrypted_proof.bin dapp/
 
 ---
 
-## 5) Configure Environment Variables
+## 4) Configure Environment Variables
 
 Create your dApp environment file from the template and populate required values:
 
@@ -129,7 +115,7 @@ cp dapp/.env.example dapp/.env
 
 Open `dapp/.env` and set:
 
-- `STORACHA_SING_PRIVATE_KEY`: Your W3UP ED25519 principal private key (compatible with `@web3-storage/w3up-client/principal/ed25519` `Signer.parse(...)`).
+- `STORACHA_SING_PRIVATE_KEY`: Your storacha principal private key.
 - `STORACHA_PROOF`:
   - Encrypted mode: set this to the 64-hex key printed by the encryption script. Ensure `dapp/encrypted_proof.bin` exists.
   - Plain mode: set this to the entire proof string.
@@ -152,7 +138,7 @@ STORACHA_PROOF="<YOUR_PLAIN_STORACHA_PROOF_STRING>"
 
 ---
 
-## 6) Verify Your Setup
+## 5) Verify Your Setup
 
 - Development server:
   ```bash
@@ -164,7 +150,7 @@ STORACHA_PROOF="<YOUR_PLAIN_STORACHA_PROOF_STRING>"
 - Trigger the delegation API in the app flow that requests delegation (proposal/member/project). The server route `POST /src/pages/api/w3up-delegation.js` will:
   - Validate inputs and environment.
   - If `STORACHA_PROOF` is 64 hex, call `decryptAES256` to read `encrypted_proof.bin` and decrypt your proof.
-  - Initialize a W3UP client and return a delegation archive.
+  - Initialize a storacha client and return a delegation archive.
 
 If misconfigured, you may see:
 - `Storacha credentials not configured. Please set STORACHA_SING_PRIVATE_KEY and STORACHA_PROOF` (missing env vars)
