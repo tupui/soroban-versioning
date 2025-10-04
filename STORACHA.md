@@ -27,6 +27,45 @@ References in the codebase:
 
 Follow Storacha/W3UP docs to create a Space and obtain its Proof (a UCAN proof string). You will end up with a proof string you can paste into an environment variable or encrypt locally.
 
+Install CLI:
+
+```bash
+npm install -g @web3-storage/w3cli
+```
+
+Create a space:
+
+```bash
+w3 space create
+```
+You will be prompted to enter a name for your space:
+
+```
+What would you like to call this space? <enter name>
+```
+
+The CLI will then output something like:
+
+```
+You need to save the following secret recovery key somewhere safe!
+For example write it down on a piece of paper and put it inside your favorite book.
+
+••••• •••••••• •••• •••••• ••••••• ••••• ••••• •••••••• •••• ••••• •••• ••••• •••• ••••••• •••••• •••• •••••
+••••••• ••• •••••• •••••• •••• ••••••• •••••••
+
+🔐 Secret recovery key is correct!
+🏗️ To serve this space we need to set a billing account
+? How do you want to authorize your account? Via Email
+? 📧 Please enter an email address to setup an account: <enter email>
+Authorize your account
+Select a payment plan
+```
+
+This will generate a UCAN proof string (in `proof.txt`) that you can:
+
+* Paste directly into an environment variable (**plain mode**), or
+* Encrypt into `encrypted_proof.bin` (**encrypted mode**, recommended).
+
 Keep this string safe; it grants the app permission to delegate for uploads.
 
 ---
@@ -38,54 +77,45 @@ You have two supported options.
 - Plain mode (simplest): store the proof directly in the `STORACHA_PROOF` environment variable.
 - Encrypted mode (recommended): encrypt the proof locally into `encrypted_proof.bin` and store only the AES key (hex) in the environment.
 
+> Why encrypted mode?
+> Some hosting providers (like **Netlify**) impose strict limits on environment variable size.
+> Since proofs can be large, we use AES encryption to store them in a file (`encrypted_proof.bin`) and only keep the short AES key in `STORACHA_PROOF`.
+
 The runtime logic in `w3up-delegation.js`:
 - If `STORACHA_PROOF.length === 64` → treat it as AES key hex and decrypt `encrypted_proof.bin` at runtime.
 - Otherwise, treat `STORACHA_PROOF` as the plain proof string.
 
 ---
+## 4) Encrypted Mode: Generate AES Key and `encrypted_proof.bin`
 
-## 4) Encrypted Mode: Generate AES key and encrypted_proof.bin
+The repository provides [`tools/AES256-encrypt.js`](../tools/AES256-encrypt.js), which encrypts your proof with **AES-GCM** and writes an `encrypted_proof.bin` file.
 
-The repository provides `tools/AES256-encrypt.js` that encrypts arbitrary data using AES-GCM and writes an `encrypted_proof.bin` JSON payload with:
-- `nonce` (base64)
-- `header` (base64, AAD)
-- `ciphertext` (base64)
-- `tag` (base64)
+Run it with your proof as an argument:
 
-Steps:
+```bash
+node tools/AES256-encrypt.js "<PASTE_YOUR_STORACHA_PROOF_STRING>"
+```
 
-1. Open `tools/AES256-encrypt.js` and replace the placeholder data with your actual proof string:
-   - Locate:
-     ```js
-     const data = new TextEncoder().encode("This is some secret data...");
-     const header = new TextEncoder().encode("storachaProof");
-     ```
-   - Replace the `data` line with your proof string, e.g.:
-     ```js
-     const data = new TextEncoder().encode("<PASTE_YOUR_STORACHA_PROOF_STRING>");
-     ```
-     You can keep the `header` as `"storachaProof"` (it is used as AES-GCM additional authenticated data and must match during decryption).
+The script will output something like:
 
-2. From the repository root, run the script with Node 20+:
-   ```bash
-   node tools/AES256-encrypt.js
-   ```
+```
+This is our key in hex: <64-hex-key>
+Encrypted data written to encrypted_proof.bin
+```
 
-3. The script will output a line like:
-   ```
-   This is our key in hex: <64-hex-key>
-   Encrypted data written to encrypted_proof.bin
-   ```
-   Copy the 64-hex key and keep it safe.
+* Copy the 64-hex key and keep it safe.
+* Move the generated file into the dApp root so the server can find it at runtime:
 
-4. Move the generated `encrypted_proof.bin` to the dApp root so the server route can find it at runtime (it reads `process.cwd()`):
-   ```bash
-   mv encrypted_proof.bin dapp/
-   ```
+```bash
+mv encrypted_proof.bin dapp/
+```
 
-Notes:
-- The decryption code (`dapp/src/utils/decryptAES256.ts`) expects the same header value (default `storachaProof`). If you change the header in the encryption script, you must update it in both places to match.
-- Do not commit your `encrypted_proof.bin` or keys to version control.
+### Notes:
+
+* The decryption helper [`decryptAES256.ts`](../dapp/src/utils/decryptAES256.ts) expects the same header (`storachaProof`).
+  If you change the header in the encryption script, you must also update it in the decryption code.
+* You **may commit** `encrypted_proof.bin` if needed to reproduce builds.
+  But never commit your AES key or `.env` file.
 
 ---
 
