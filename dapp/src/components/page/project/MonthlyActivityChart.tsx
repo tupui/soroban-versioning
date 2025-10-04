@@ -121,6 +121,27 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
                 />
+
+                {filteredMonths.map((month, index) => {
+                  if (!month) return null;
+                  const value = monthlyStats[month]?.[metric] || 0;
+                  const height = getBarHeight(value);
+                  const x = filteredMonths.length > 1 ? (index / (filteredMonths.length - 1)) * 100 : 50;
+                  const y = 100 - height;
+
+                  return (
+                    <g key={month}>
+                      <circle
+                        cx={x}
+                        cy={y}
+                        r="1.5"
+                        fill="#8b5cf6"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <title>{formatMonth(month)}: {value} {metric}</title>
+                    </g>
+                  );
+                })}
               </svg>
             )}
           </div>
