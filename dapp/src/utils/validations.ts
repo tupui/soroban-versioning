@@ -5,8 +5,7 @@
 
 import DOMPurify from "dompurify";
 
-// Export validation functions from centralized schemas
-export {
+import {
   validateProjectName,
   validateStellarAddress,
   validateGithubUrl,
@@ -15,6 +14,15 @@ export {
   validateProposalName,
   validateTextContent,
 } from "../schemas/validation";
+export {
+  validateProjectName,
+  validateStellarAddress,
+  validateGithubUrl,
+  validateMaintainerAddress,
+  validateUrl,
+  validateProposalName,
+  validateTextContent,
+};
 
 /**
  * Sanitizes user input to prevent XSS attacks
