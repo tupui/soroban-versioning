@@ -28,23 +28,41 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
   const [donateMessage, setDonateMessage] = useState<string>("");
   const [updateSuccessful, setUpdateSuccessful] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const amountInputRef = useRef<HTMLInputElement>(null);
   const tipAmountInputRef = useRef<HTMLInputElement>(null);
 
-  const onClose = () => {
-    setIsOpen(false);
+  const amountOptions = [10, 100, 1000];
+
+  // --- Reset form state ---
+  const resetForm = () => {
+    setAmount(10);
+    setTipAmount("");
+    setDonateMessage("");
     setUpdateSuccessful(false);
-    // Reload page if donation was successful to show fresh data
-    if (updateSuccessful) {
+    setIsLoading(false);
+    amountInputRef.current?.blur();
+    tipAmountInputRef.current?.blur();
+  };
+
+  const onClose = () => {
+    const wasSuccessful = updateSuccessful;
+    setIsOpen(false);
+    resetForm();
+    if (wasSuccessful) {
       window.location.reload();
     }
   };
 
-  const amountOptions = [10, 100, 1000];
+  const handleOpen = () => {
+    onBeforeOpen?.();
+    resetForm(); // clean slate on open
+    setIsOpen(true);
+  };
 
+  // --- Input handlers ---
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(e.target.value);
-    setAmount(value);
+    setAmount(Number(e.target.value));
   };
 
   const handleTipAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +73,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
     setAmount(value);
   };
 
+  // --- Donation logic ---
   const handleContribute = async () => {
     if (amount < 1) {
       toast.error("Support", "Minimum donation is 1 XLM.");
@@ -62,41 +81,35 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
     }
 
     setIsLoading(true);
+
     try {
-      const domainInfo = await getAddressFromDomain("tansu");
+      // Resolve domain owner
+      const domainInfo = await getAddressFromDomain("tansu").catch(() => null);
+      if (!domainInfo || !domainInfo.owner) {
+        toast.error("Support", "Could not resolve domain owner. Please try again.");
+        return;
+      }
 
-      if (domainInfo && domainInfo.owner) {
-        // Prefer explicit address field if present; otherwise fall back to owner
-        let dest = (domainInfo as any).address || domainInfo.owner;
-        try {
-          if (!StrKey.isValidEd25519PublicKey(dest)) {
-            throw new Error("Invalid owner address in domain record");
-          }
-        } catch (_) {
-          toast.error(
-            "Cannot read domain information.",
-            "Invalid owner address in domain record.",
-          );
-          return;
-        }
-        const domainOwnerAddress = dest as string;
+      let dest = (domainInfo as any).address || domainInfo.owner;
+      if (!StrKey.isValidEd25519PublicKey(dest)) {
+        toast.error("Support", "Invalid owner address in domain record.");
+        return;
+      }
+      const domainOwnerAddress = dest as string;
 
-        const payment = await sendXLM(
-          amount.toString(),
-          domainOwnerAddress,
-          tipAmount.toString(),
-          donateMessage,
-        );
+      // Attempt payment (sendXLM handles wallet checks)
+      const payment = await sendXLM(
+        amount.toString(),
+        domainOwnerAddress,
+        tipAmount.toString(),
+        donateMessage,
+      );
 
-        if (payment) {
-          toast.success("Congratulation!", "You successfully donated.");
-          setUpdateSuccessful(true);
-          // Don't close modal immediately - let user close it manually
-        } else {
-          toast.error("Support", "Donation failed.");
-        }
+      if (payment) {
+        toast.success("Congratulation!", "You successfully donated.");
+        setUpdateSuccessful(true);
       } else {
-        toast.error("Support", "Cannot read domain information.");
+        toast.error("Support", "Donation failed. Please reconnect wallet and try again.");
       }
     } catch (error: any) {
       if (import.meta.env.DEV) {
@@ -104,34 +117,21 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
       }
       toast.error(
         "Support",
-        error.message || "An error occurred during the contribution process.",
+        error?.message || "An unexpected error occurred during the contribution process."
       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleOpen = () => {
-    // Close parent modal if onBeforeOpen is provided
-    if (onBeforeOpen) {
-      onBeforeOpen();
-    }
-    // Then open this modal
-    setIsOpen(true);
-  };
-
   return (
     <>
-      {/*
-        Playwright tests expect a `#support-button` selector. When the consumer
-        passes any JSX as children (currently a <Button/>), we clone it and
-        inject the required id so the tests can click it deterministically.
-      */}
       <div onClick={handleOpen}>
         {isValidElement(children)
           ? cloneElement(children as any, { id: "support-button" } as any)
           : children}
       </div>
+
       {isOpen && (
         <Modal onClose={onClose}>
           <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
@@ -152,9 +152,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
 
               {/* Amount Input */}
               <div className="flex flex-col gap-2 sm:gap-3">
-                <p className="text-sm sm:text-base font-[600] text-primary">
-                  Contribute
-                </p>
+                <p className="text-sm sm:text-base font-[600] text-primary">Contribute</p>
                 <div className="w-full flex-grow flex border border-[#978AA1]">
                   <input
                     ref={amountInputRef}
@@ -172,9 +170,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
                     <button
                       key={index}
                       className={`amount-button py-2 sm:py-[11px] flex justify-center items-center leading-5 text-base sm:text-xl border border-[#FFB21E] ${
-                        amount === value
-                          ? "bg-[#FFB21E] text-white"
-                          : "text-primary"
+                        amount === value ? "bg-[#FFB21E] text-white" : "text-primary"
                       }`}
                       onClick={() => handleAmountButtonClick(value)}
                     >
@@ -183,12 +179,8 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
                   ))}
                 </div>
                 <div className="flex gap-2 sm:gap-3">
-                  <p className="text-xs sm:text-base text-tertiary">
-                    Minimum amount:
-                  </p>
-                  <p className="text-xs sm:text-base font-[600] text-primary">
-                    1 XLM
-                  </p>
+                  <p className="text-xs sm:text-base text-tertiary">Minimum amount:</p>
+                  <p className="text-xs sm:text-base font-[600] text-primary">1 XLM</p>
                 </div>
               </div>
 
@@ -213,11 +205,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
                     Platform tip (optional)
                   </p>
                   <Tooltip text="Help us run the Tansu platform sustainably">
-                    <img
-                      src="/icons/info.svg"
-                      alt="Info"
-                      className="w-4 h-4 sm:w-auto sm:h-auto"
-                    />
+                    <img src="/icons/info.svg" alt="Info" className="w-4 h-4 sm:w-auto sm:h-auto" />
                   </Tooltip>
                 </div>
                 <div className="flex border border-[#978AA1]">
