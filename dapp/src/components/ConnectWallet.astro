@@ -41,18 +41,19 @@
   import {
     initializeConnection,
     loadedPublicKey,
-    setPublicKey,
+    setConnection,
     disconnect,
+    loadedProvider,
   } from "../service/walletService";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
+
     const button = document.querySelector(
-      "[data-connect]",
+      "[data-connect]"
     ) as HTMLButtonElement;
 
     async function setLoggedIn(publicKey: string) {
-      // Safe DOM manipulation instead of innerHTML
       button.textContent = "";
       const textElement = document.createElement("span");
       textElement.className =
@@ -86,39 +87,69 @@
       setLoggedIn(publicKey);
     }
 
-    async function connectWallet() {
-      if (button.title) {
-        // If the button has a title, it means we're logged in
-        // and the button should open the profile modal
-        window.dispatchEvent(new CustomEvent("openProfileModal"));
-        return;
-      }
+async function connectWallet() {
+  const provider = loadedProvider();
+
+  if (button.title) {
+    // Already connected - revalidate account with provider
+    if (provider) {
+      const { kit } = await import("./stellar-wallets-kit");
+      kit.setWallet(provider);
 
       try {
-        // Dynamic import to avoid build-time resolution issues
-        const { kit } = await import("./stellar-wallets-kit");
+        const { address } = await kit.getAddress();
+        const currentStored = loadedPublicKey();
 
-        await kit.openModal({
-          onWalletSelected: async (option: { id: string }) => {
-            try {
-              kit.setWallet(option.id);
-              const { address } = await kit.getAddress();
-              setPublicKey(address);
-              await setLoggedIn(address);
-              window.dispatchEvent(
-                new CustomEvent("walletConnected", { detail: address }),
-              );
-            } catch (e) {
-              // Wallet connection failed - user might have rejected or wallet unavailable
-              // This is expected behavior, no need to log
-            }
-          },
-        });
-      } catch (e) {
-        // Wallet modal opening failed - this is expected behavior for some cases
-        // No need to log as it's handled gracefully by the UI
+        if (address !== currentStored) {
+          //  User switched accounts inside this wallet
+          setConnection(address, provider); 
+          await setLoggedIn(address);
+          window.dispatchEvent(
+            new CustomEvent("walletSwitched", { detail: { address, provider } })
+          );
+        }
+      } catch {
+        // Wallet not available or user rejected
+        disconnect();
       }
+    } else {
+      // No provider stored, force reconnect flow
+      window.dispatchEvent(new CustomEvent("openProfileModal"));
     }
+    return;
+  }
+
+  // First-time connection flow
+  try {
+    const { kit } = await import("./stellar-wallets-kit");
+
+    await kit.openModal({
+      onWalletSelected: async (option: { id: string }) => {
+        try {
+          kit.setWallet(option.id);
+          const { address } = await kit.getAddress();
+
+          // Save both provider + key
+          setConnection(address, option.id);
+          await setLoggedIn(address);
+
+          window.dispatchEvent(
+            new CustomEvent("walletConnected", {
+              detail: { address, provider: option.id },
+            })
+          );
+        } catch {
+          // Wallet connection failed - user might have rejected or wallet unavailable 
+          // This is expected behavior, no need to log
+        }
+      },
+    });
+  } catch {
+    // Wallet modal opening failed - this is expected behavior for some cases 
+    // No need to log as it's handled gracefully by the UI
+  }
+}
+
 
     if (button) {
       button.addEventListener("click", connectWallet);
@@ -131,10 +162,9 @@
       }
     });
 
-    // Handle disconnect event from the profile modal
+    // Handle disconnect
     window.addEventListener("walletDisconnected", () => {
       disconnect();
-      // Reset button to Connect state using safe DOM manipulation
       button.textContent = "";
       const textElement = document.createElement("span");
       textElement.className =
@@ -155,5 +185,15 @@
       button.classList.toggle("bg-primary", false);
       button.classList.toggle("text-white", false);
     });
+
+    // Restore provider on reload
+    const provider = loadedProvider();
+    if (provider) {
+      import("./stellar-wallets-kit").then(({ kit }) => {
+        kit.setWallet(provider);
+      });
+    }
   });
 </script>
+
+
