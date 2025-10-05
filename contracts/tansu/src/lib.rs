@@ -7,6 +7,10 @@ mod domain_contract {
     soroban_sdk::contractimport!(file = "../domain_current.wasm");
 }
 
+mod outcomes_contract {
+    soroban_sdk::contractimport!(file = "../outcomes.wasm");
+}
+
 mod contract_dao;
 mod contract_membership;
 mod contract_tansu;
@@ -120,6 +124,7 @@ pub trait DaoTrait {
         ipfs: String,
         voting_ends_at: u64,
         public_voting: bool,
+        outcomes_contract: Option<Address>,
     ) -> u32;
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote);

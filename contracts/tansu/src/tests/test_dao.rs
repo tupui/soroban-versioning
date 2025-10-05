@@ -1,7 +1,6 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::{
-    errors::ContractErrors,
-    types::{AnonymousVote, Badge, Dao, ProposalStatus, PublicVote, Vote, VoteChoice},
+    errors::ContractErrors, types::{AnonymousVote, Badge, Dao, ProposalStatus, PublicVote, Vote, VoteChoice}
 };
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
 use soroban_sdk::{Address, BytesN, IntoVal, Map, String, Symbol, Val, vec};
@@ -24,7 +23,7 @@ fn proposal_flow() {
     let proposal_id =
         setup
             .contract
-            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true);
+            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true, &None);
 
     // Verify proposal creation event
     let mut all_events = setup.env.events().all();
@@ -183,7 +182,7 @@ fn dao_basic_functionality() {
     let proposal_id =
         setup
             .contract
-            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true);
+            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true, &None);
     assert_eq!(proposal_id, 0);
 
     let proposal = setup.contract.get_proposal(&id, &proposal_id);
@@ -268,7 +267,7 @@ fn dao_anonymous() {
     let proposal_id =
         setup
             .contract
-            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &false);
+            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &false, &None);
     assert_eq!(proposal_id, 0);
 
     let proposal = setup.contract.get_proposal(&id, &proposal_id);
@@ -352,14 +351,14 @@ fn voting_errors() {
     let proposal_id =
         setup
             .contract
-            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true);
+            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true, &None);
 
     // Start testing bad behaviours
 
     // Not initialized private voting
     let error = setup
         .contract
-        .try_create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &false)
+        .try_create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &false, &None)
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::NoAnonymousVotingConfig.into());
@@ -372,7 +371,7 @@ fn voting_errors() {
     let proposal_id_anonymous =
         setup
             .contract
-            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &false);
+            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &false, &None);
 
     // Wrong vote type anonymous vs public
     let err = setup
@@ -566,7 +565,7 @@ fn proposal_execution() {
     let proposal_id =
         setup
             .contract
-            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true);
+            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true, &None);
 
     // Add member with badge
     let kuiil = Address::generate(&setup.env);
@@ -628,7 +627,7 @@ fn proposal_revoke() {
     let proposal_id =
         setup
             .contract
-            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true);
+            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true, &None);
 
     let kuiil = Address::generate(&setup.env);
     let err = setup
@@ -704,7 +703,7 @@ fn voter_weight_validation() {
     let proposal_id =
         setup
             .contract
-            .create_proposal(&setup.mando, &id, &title, &ipfs, &voting_ends_at, &true);
+            .create_proposal(&setup.mando, &id, &title, &ipfs, &voting_ends_at, &true, &None);
 
     let kuiil = Address::generate(&setup.env);
     setup.token_stellar.mint(&kuiil, &(10 * 10_000_000));
@@ -766,4 +765,66 @@ fn voter_weight_validation() {
         assert_eq!(public_vote.weight, 42);
         assert_eq!(public_vote.vote_choice, VoteChoice::Approve);
     }
+}
+
+#[test]
+fn outcomes_execution() {
+    let setup = create_test_data();
+    let id = init_contract(&setup);
+
+    setup.env.ledger().set_timestamp(1234567890);
+    let voting_ends_at = 1234567890 + 3600 * 24 * 2;
+
+    let title = String::from_str(&setup.env, "Test Proposal");
+    let ipfs = String::from_str(
+        &setup.env,
+        "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
+    );
+
+    let proposal_id =
+        setup
+            .contract
+            .create_proposal(&setup.grogu, &id, &title, &ipfs, &voting_ends_at, &true, &Some(setup.outcomes_id));
+
+    // Add member with badge
+    let kuiil = Address::generate(&setup.env);
+    setup.token_stellar.mint(&kuiil, &(10 * 10_000_000));
+    let meta = String::from_str(&setup.env, "test");
+    setup.contract.add_member(&kuiil, &meta);
+    let badges = vec![&setup.env, Badge::Community];
+    setup
+        .contract
+        .set_badges(&setup.mando, &id, &kuiil, &badges);
+
+    setup.contract.vote(
+        &setup.mando,
+        &id,
+        &proposal_id,
+        &Vote::PublicVote(PublicVote {
+            address: setup.mando.clone(),
+            weight: 1,
+            vote_choice: VoteChoice::Approve,
+        }),
+    );
+
+    setup.contract.vote(
+        &kuiil,
+        &id,
+        &proposal_id,
+        &Vote::PublicVote(PublicVote {
+            address: kuiil.clone(),
+            weight: Badge::Community as u32,
+            vote_choice: VoteChoice::Approve,
+        }),
+    );
+
+    setup.env.ledger().set_timestamp(voting_ends_at + 1);
+
+    let vote_result = setup
+        .contract
+        .execute(&setup.mando, &id, &proposal_id, &None, &None);
+    assert_eq!(vote_result, ProposalStatus::Approved);
+
+    let proposal = setup.contract.get_proposal(&id, &proposal_id);
+    assert_eq!(proposal.status, ProposalStatus::Approved);
 }

@@ -1,5 +1,5 @@
 use crate::{
-    DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types,
+    DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types, outcomes_contract,
 };
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
@@ -170,6 +170,7 @@ impl DaoTrait for Tansu {
         ipfs: String,
         voting_ends_at: u64,
         public_voting: bool,
+        outcomes_contract: Option<Address>,
     ) -> u32 {
         Tansu::require_not_paused(env.clone());
 
@@ -250,6 +251,7 @@ impl DaoTrait for Tansu {
             ipfs,
             vote_data,
             status: types::ProposalStatus::Active,
+            outcomes_contract,
         };
 
         let next_id = proposal_id + 1;
@@ -604,6 +606,17 @@ impl DaoTrait for Tansu {
             maintainer: maintainer.clone(),
         }
         .publish(&env);
+
+        if (&proposal.outcomes_contract).is_some() {
+            let client = outcomes_contract::Client::new(&env, &(proposal.outcomes_contract).unwrap());
+
+            match proposal.status {
+                    types::ProposalStatus::Approved => client.approve_outcome(&maintainer),
+                    types::ProposalStatus::Rejected => client.reject_outcome(&maintainer),
+                    types::ProposalStatus::Cancelled => client.abstain_outcome(&maintainer),
+                    _ => (),
+            };
+        }
 
         proposal.status
     }
