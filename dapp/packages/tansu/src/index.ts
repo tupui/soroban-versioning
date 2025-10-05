@@ -101,9 +101,6 @@ export interface Member {
   projects: Array<ProjectBadges>;
   git_identity?: string;
   git_pubkey?: Buffer;
-  msg?: string;
-  sig?: Buffer;
-  signed_at?: u64;
 }
 
 export type ProposalStatus =
