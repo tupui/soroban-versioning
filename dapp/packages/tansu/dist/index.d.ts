@@ -9,12 +9,6 @@ import type { u32, u64, u128, Option } from "@stellar/stellar-sdk/contract";
 export * from "@stellar/stellar-sdk";
 export * as contract from "@stellar/stellar-sdk/contract";
 export * as rpc from "@stellar/stellar-sdk/rpc";
-export declare const networks: {
-  readonly testnet: {
-    readonly networkPassphrase: "Test SDF Network ; September 2015";
-    readonly contractId: "CBCXMB3JKKDOYHMBIBH3IQDPVCLHV4LQPCYA2LPKLLQ6JNJHAYPCUFAN";
-  };
-};
 export declare const ContractErrors: {
   0: {
     message: string;
@@ -88,16 +82,27 @@ export declare const ContractErrors: {
   23: {
     message: string;
   };
+  24: {
+    message: string;
+  };
+  25: {
+    message: string;
+  };
 };
-export interface DomainContract {
+export interface Contract {
   address: string;
-  wasm_hash: Buffer;
+  wasm_hash: Option<Buffer>;
 }
-export type DataKey =
+export type ContractKey =
   | {
       tag: "DomainContract";
       values: void;
     }
+  | {
+      tag: "CollateralContract";
+      values: void;
+    };
+export type DataKey =
   | {
       tag: "Member";
       values: readonly [string];
@@ -150,6 +155,10 @@ export type ProposalStatus =
     }
   | {
       tag: "Cancelled";
+      values: void;
+    }
+  | {
+      tag: "Malicious";
       values: void;
     };
 export type Vote =
@@ -209,6 +218,8 @@ export interface UpgradeProposal {
 export interface Proposal {
   id: u32;
   ipfs: string;
+  outcomes_contract: Option<string>;
+  proposer: string;
   status: ProposalStatus;
   title: string;
   vote_data: VoteData;
@@ -378,6 +389,11 @@ export interface Client {
    * Construct and simulate a create_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Create a new proposal for a project.
    *
+   * The proposer is automatically added to the abstain group.
+   * By creating a proposal, the proposer incur a collateral which is
+   * repaid upon execution of the proposal unless the proposal is revoked.
+   * This is a deterrent mechanism.
+   *
    * # Arguments
    * * `env` - The environment object
    * * `proposer` - Address of the proposal creator
@@ -386,10 +402,10 @@ export interface Client {
    * * `ipfs` - IPFS content identifier describing the proposal
    * * `voting_ends_at` - UNIX timestamp when voting ends
    * * `public_voting` - Whether voting is public or anonymous
+   * * [`Option<outcomes_contract>`] - Outcome contract address
+   *
    * # Returns
    * * `u32` - The ID of the created proposal.
-   *
-   * The proposer is automatically added to the abstain group.
    *
    * # Panics
    * * If the title is too long
@@ -404,6 +420,7 @@ export interface Client {
       ipfs,
       voting_ends_at,
       public_voting,
+      outcomes_contract,
     }: {
       proposer: string;
       project_key: Buffer;
@@ -411,6 +428,7 @@ export interface Client {
       ipfs: string;
       voting_ends_at: u64;
       public_voting: boolean;
+      outcomes_contract: Option<string>;
     },
     options?: {
       /**
@@ -427,6 +445,48 @@ export interface Client {
       simulate?: boolean;
     },
   ) => Promise<AssembledTransaction<u32>>;
+  /**
+   * Construct and simulate a revoke_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Revoke a proposal.
+   *
+   * Useful if there was some spam or bad intent. That will prevent the
+   * collateral to be claimed back.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `maintainer` - Address of the proposal creator
+   * * `project_key` - The project key identifier
+   * * `proposal_id` - The ID of the proposal to vote on
+   *
+   * # Panics
+   * * If the proposal is not active anymore
+   * * If the maintainer is not authorized
+   */
+  revoke_proposal: (
+    {
+      maintainer,
+      project_key,
+      proposal_id,
+    }: {
+      maintainer: string;
+      project_key: Buffer;
+      proposal_id: u32;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
   /**
    * Construct and simulate a vote transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Cast a vote on a proposal.
@@ -446,6 +506,7 @@ export interface Client {
    * # Panics
    * * If the voter has already voted
    * * If the voting period has ended
+   * * If the proposal is not active anymore
    * * If the proposal doesn't exist
    * * If the voter's weight exceeds their maximum allowed weight
    * * If the voter is not a member of the project
@@ -500,9 +561,9 @@ export interface Client {
    * # Panics
    * * If the voting period hasn't ended
    * * If the proposal doesn't exist
+   * * If the proposal is not active anymore
    * * If tallies/seeds are missing for anonymous votes
-   * * If commitment validation fails for anonymous votes
-   * *
+   * * If commitment
    */
   execute: (
     {
@@ -786,7 +847,7 @@ export interface Client {
    * Get all badges for a specific project, organized by badge type.
    *
    * Returns a structure containing vectors of member addresses for each badge type
-   * (Developer, Triage, Community, Verified, Default).
+   * (Developer, Triage, Community, Verified).
    *
    * # Arguments
    * * `env` - The environment object
@@ -938,45 +999,53 @@ export interface Client {
     simulate?: boolean;
   }) => Promise<AssembledTransaction<AdminsConfig>>;
   /**
-   * Construct and simulate a get_domain_contract_id transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Get the current Soroban Domain contract ID.
-   *
-   * # Arguments
-   * * `env` - The environment object
-   *
-   * # Returns
-   * * `Address` - The Soroban Domain contract ID
-   */
-  get_domain_contract_id: (options?: {
-    /**
-     * The fee to pay for the transaction. Default: BASE_FEE
-     */
-    fee?: number;
-    /**
-     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-     */
-    timeoutInSeconds?: number;
-    /**
-     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-     */
-    simulate?: boolean;
-  }) => Promise<AssembledTransaction<DomainContract>>;
-  /**
-   * Construct and simulate a set_domain_contract_id transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Set the Soroban Domain contract ID.
+   * Construct and simulate a set_domain_contract transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Set the Soroban Domain contract.
    *
    * # Arguments
    * * `env` - The environment object
    * * `admin` - The admin address
    * * `domain_contract` - The new domain contract
    */
-  set_domain_contract_id: (
+  set_domain_contract: (
     {
       admin,
       domain_contract,
     }: {
       admin: string;
-      domain_contract: DomainContract;
+      domain_contract: Contract;
+    },
+    options?: {
+      /**
+       * The fee to pay for the transaction. Default: BASE_FEE
+       */
+      fee?: number;
+      /**
+       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
+       */
+      timeoutInSeconds?: number;
+      /**
+       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
+       */
+      simulate?: boolean;
+    },
+  ) => Promise<AssembledTransaction<null>>;
+  /**
+   * Construct and simulate a set_collateral_contract transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Set the Collateral contract.
+   *
+   * # Arguments
+   * * `env` - The environment object
+   * * `admin` - The admin address
+   * * `collateral_contract` - The new collateral contract
+   */
+  set_collateral_contract: (
+    {
+      admin,
+      collateral_contract,
+    }: {
+      admin: string;
+      collateral_contract: Contract;
     },
     options?: {
       /**
@@ -1391,6 +1460,7 @@ export declare class Client extends ContractClient {
       json: string,
     ) => AssembledTransaction<Buffer<ArrayBufferLike>[]>;
     create_proposal: (json: string) => AssembledTransaction<number>;
+    revoke_proposal: (json: string) => AssembledTransaction<null>;
     vote: (json: string) => AssembledTransaction<null>;
     execute: (json: string) => AssembledTransaction<ProposalStatus>;
     proof: (json: string) => AssembledTransaction<boolean>;
@@ -1404,10 +1474,8 @@ export declare class Client extends ContractClient {
     pause: (json: string) => AssembledTransaction<null>;
     require_not_paused: (json: string) => AssembledTransaction<null>;
     get_admins_config: (json: string) => AssembledTransaction<AdminsConfig>;
-    get_domain_contract_id: (
-      json: string,
-    ) => AssembledTransaction<DomainContract>;
-    set_domain_contract_id: (json: string) => AssembledTransaction<null>;
+    set_domain_contract: (json: string) => AssembledTransaction<null>;
+    set_collateral_contract: (json: string) => AssembledTransaction<null>;
     propose_upgrade: (json: string) => AssembledTransaction<null>;
     approve_upgrade: (json: string) => AssembledTransaction<null>;
     finalize_upgrade: (json: string) => AssembledTransaction<null>;

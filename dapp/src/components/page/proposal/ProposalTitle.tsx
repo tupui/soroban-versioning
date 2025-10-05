@@ -3,7 +3,7 @@ import Button from "components/utils/Button";
 import { useEffect, useState } from "react";
 import type { ProposalView } from "types/proposal";
 import { connectedPublicKey } from "utils/store";
-import { toast } from "utils/utils";
+import { toast, truncateMiddle } from "utils/utils";
 import ProposalStatusSection from "./ProposalStatusSection";
 import VoteStatusBar from "./VoteStatusBar";
 import VotingResultModal from "./VotingResultModal";
@@ -81,21 +81,23 @@ const ProposalTitle: React.FC<Props> = ({
         )}
         <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
           <div className="flex flex-col gap-3 md:gap-[18px]">
-            {isMaintainer && (
-              <div className="flex items-center gap-3">
-                {/* <p className="leading-4 text-base text-[#695A77]">Created by</p> */}
-                <div className="flex items-center gap-2">
-                  {/* <p className="leading-4 text-base font-semibold text-primary">
-                    @
-                  </p> */}
+            <div className="flex items-center gap-3">
+              <p className="leading-4 text-base text-[#695A77]">Created by</p>
+              <div className="flex items-center gap-2">
+                <p className="leading-4 text-base font-semibold text-primary font-mono">
+                  {proposal?.proposer
+                    ? truncateMiddle(proposal.proposer, 20)
+                    : ""}
+                </p>
+                {isMaintainer && (
                   <div className="p-[2px_10px_4px_10px] bg-[#FFEFA8] rounded-[36px]">
                     <p className="leading-4 text-base font-semibold text-[#2D0F51]">
                       maintainer
                     </p>
                   </div>
-                </div>
+                )}
               </div>
-            )}
+            </div>
             <div className="flex flex-col gap-3">
               <p className="text-xl sm:text-2xl font-medium text-primary break-words">
                 {proposal?.id} {proposal?.title}
