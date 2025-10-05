@@ -575,11 +575,10 @@ impl DaoTrait for Tansu {
             let client = outcomes_contract::Client::new(&env, &(proposal.outcomes_contract).unwrap());
 
             match proposal.status {
-                    types::ProposalStatus::Active => (),
                     types::ProposalStatus::Approved => client.approve_outcome(&maintainer),
                     types::ProposalStatus::Rejected => client.reject_outcome(&maintainer),
                     types::ProposalStatus::Cancelled => client.abstain_outcome(&maintainer),
-                    types::ProposalStatus::Malicious => (),
+                    _ => (),
             };
         }
         
