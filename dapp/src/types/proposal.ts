@@ -15,6 +15,7 @@ export interface Proposal {
   status: ProposalStatus;
   voting_ends_at: number;
   voteStatus: VoteStatus;
+  outcomes_contract?: string | null;
 }
 
 export interface ProposalView {

@@ -22,6 +22,7 @@ export const MOCK_PROPOSAL = {
   ipfs: "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
   proposer: WALLET_PK,
   status: "Active",
+  outcomes_contract: null,
   vote_data: {
     public_voting: true,
     voting_ends_at: Math.floor(Date.now() / 1000) + 3600,
