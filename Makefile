@@ -153,6 +153,14 @@ contract_finalize_upgrade:  ## Execute the approved upgrade proposal
 		--admin $(shell stellar keys address mando-$(network)) \
 		--accept true
 
+contract_get_upgrade_proposal:  ## Get the current upgrade proposal
+	stellar contract invoke \
+    	--source-account mando-$(network) \
+    	--network $(network) \
+    	--id $(shell cat .stellar/tansu_id) \
+    	-- \
+    	get_upgrade_proposal
+
 # --------- Soroban Domains --------- #
 
 contract_domain_deploy:
