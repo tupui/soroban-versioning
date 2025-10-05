@@ -581,7 +581,6 @@ impl DaoTrait for Tansu {
                     _ => (),
             };
         }
-        
 
         proposal.status
     }
