@@ -164,6 +164,7 @@ impl DaoTrait for Tansu {
     /// * If the title is too long
     /// * If the voting period is invalid
     /// * If the project doesn't exist
+    #[allow(clippy::too_many_arguments)]
     fn create_proposal(
         env: Env,
         proposer: Address,

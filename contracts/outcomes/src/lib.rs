@@ -1,6 +1,6 @@
 #![no_std]
 
-use soroban_sdk::{Env, contract, Address};
+use soroban_sdk::{Address, Env, contract};
 
 mod contract_outcomes;
 
