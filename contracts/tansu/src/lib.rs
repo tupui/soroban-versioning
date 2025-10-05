@@ -116,6 +116,7 @@ pub trait DaoTrait {
         seeds: Vec<u128>,
     ) -> Vec<BytesN<96>>;
 
+    #[allow(clippy::too_many_arguments)]
     fn create_proposal(
         env: Env,
         proposer: Address,
