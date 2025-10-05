@@ -1,4 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 interface MonthlyStats {
   [month: string]: {
@@ -18,31 +27,35 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
   const [metric, setMetric] = useState<'commits' | 'contributors'>('commits');
   const [timeRange, setTimeRange] = useState<'6m' | '12m' | 'all'>('12m');
 
-  const months = Object.keys(monthlyStats).sort();
+  const months = Object.keys(monthlyStats).sort(
+    (a, b) => new Date(a).getTime() - new Date(b).getTime()
+  );
 
   const getFilteredMonths = () => {
     if (timeRange === 'all') return months;
-
-    const monthsToShow = timeRange === '6m' ? 6 : 12;
-    return months.slice(-monthsToShow);
+    const monthCount = timeRange === '6m' ? 6 : 12;
+    return months.slice(-monthCount);
   };
 
   const filteredMonths = getFilteredMonths();
-  const maxValue = Math.max(
-    ...filteredMonths.map(month => monthlyStats[month]?.[metric] || 0),
-    1
-  );
 
   const formatMonth = (monthKey: string) => {
     const [year, month] = monthKey.split('-');
     if (!year || !month) return monthKey;
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      year: '2-digit'
+    });
   };
 
-  const getBarHeight = (value: number) => {
-    return (value / maxValue) * 100;
-  };
+  const chartData = useMemo(() => {
+    return filteredMonths.map(month => ({
+      month: formatMonth(month),
+      value: monthlyStats[month]?.[metric] || 0,
+      fullDate: month,
+    }));
+  }, [filteredMonths, monthlyStats, metric]);
 
   const getTotalForPeriod = () => {
     return filteredMonths.reduce((sum, month) => {
@@ -56,8 +69,8 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-200">
-      <div className="flex flex-col gap-4">
+    <div className="bg-white p-6 rounded-lg border border-gray-200 h-full">
+      <div className="flex flex-col gap-4 h-full">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h3 className="text-lg font-semibold text-primary">Monthly Activity</h3>
           <div className="flex gap-2 flex-wrap">
@@ -94,71 +107,50 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
         </div>
 
         {/* Chart */}
-        <div className="relative">
-          <div className="relative h-32 px-2 overflow-hidden">
-            {filteredMonths.length === 0 ? (
-              <div className="flex items-center justify-center w-full h-full text-blue-800 text-sm">
-                No data available
-              </div>
-            ) : (
-              <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                {/* Draw curve line */}
-                <path
-                  d={filteredMonths
-                    .filter(Boolean)
-                    .map((month, index, arr) => {
-                      const value = monthlyStats[month]?.[metric] || 0;
-                      const height = getBarHeight(value);
-                      const x = arr.length > 1 ? (index / (arr.length - 1)) * 100 : 50;
-                      const y = 100 - height;
-                      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
-                    })
-                    .join(' ')}
-                  fill="none"
-                  stroke="#8b5cf6"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
+        <div className="flex-1 min-h-[250px]">
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 11 }}
+                  tickLine={{ stroke: '#9ca3af' }}
+                  stroke="#9ca3af"
                 />
-
-                {filteredMonths.map((month, index) => {
-                  if (!month) return null;
-                  const value = monthlyStats[month]?.[metric] || 0;
-                  const height = getBarHeight(value);
-                  const x = filteredMonths.length > 1 ? (index / (filteredMonths.length - 1)) * 100 : 50;
-                  const y = 100 - height;
-
-                  return (
-                    <g key={month}>
-                      <circle
-                        cx={x}
-                        cy={y}
-                        r="1.5"
-                        fill="#8b5cf6"
-                        vectorEffect="non-scaling-stroke"
-                      />
-                      <title>{formatMonth(month)}: {value} {metric}</title>
-                    </g>
-                  );
-                })}
-              </svg>
-            )}
-          </div>
-
-          {/* X-axis labels */}
-          <div className="flex justify-center gap-1 mt-2 px-2">
-            {filteredMonths.map((month, index) => {
-              if (!month) return null;
-              return (
-                <div key={month} className="flex-1 max-w-8 text-center">
-                  {index % Math.ceil(filteredMonths.length / 6) === 0 && (
-                    <span className="text-xs text-secondary">{formatMonth(month)}</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                <YAxis
+                  tick={{ fontSize: 11 }}
+                  tickLine={{ stroke: '#9ca3af' }}
+                  stroke="#9ca3af"
+                  tickFormatter={(value) => Math.round(value).toString()}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1f2937',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    color: '#ffffff',
+                    padding: '8px 12px'
+                  }}
+                  formatter={(value: number) => [value, metric === 'commits' ? 'Commits' : 'Contributors']}
+                  labelFormatter={(label) => label}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#8b5cf6"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: '#8b5cf6' }}
+                  activeDot={{ r: 6, stroke: '#a78bfa', strokeWidth: 2, fill: '#8b5cf6' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-secondary text-sm">
+              No data available
+            </div>
+          )}
         </div>
       </div>
     </div>
