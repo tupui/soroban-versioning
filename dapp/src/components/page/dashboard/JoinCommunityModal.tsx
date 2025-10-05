@@ -230,7 +230,7 @@ const JoinCommunityModal: FC<{
     <FlowProgressModal
       isOpen={true}
       onClose={handleClose}
-      onSuccess={onJoined}
+      onSuccess={() => onJoined?.()}
       step={step}
       setStep={setStep}
       isLoading={isLoading}

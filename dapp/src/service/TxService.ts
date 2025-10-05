@@ -2,7 +2,11 @@ import { retryAsync } from "../utils/retry";
 import { parseContractError } from "../utils/contractErrors";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { toast } from "utils/utils";
-import { loadedPublicKey } from "./walletService";
+import {
+  loadedPublicKey,
+  loadedProvider,
+  setConnection,
+} from "./walletService";
 
 /**
  * Send a signed transaction (Soroban) and decode typical return values.
@@ -141,9 +145,9 @@ export async function sendXLM(
   }
 
   try {
-    // Fetch the sender's account details from Horizon (sequence number)
     const horizonUrl = import.meta.env.PUBLIC_HORIZON_URL;
 
+    // Fetch the sender's account details from Horizon (sequence number)
     const accountResp = await fetch(
       `${horizonUrl}/accounts/${senderPublicKey}`,
       { headers: { Accept: "application/json" } },
@@ -171,7 +175,6 @@ export async function sendXLM(
       )
       .addMemo(StellarSdk.Memo.text(donateMessage));
 
-    // Add tip operation only if tipAmount is not "0"
     if (Number(tipAmount) > 0) {
       transactionBuilder.addOperation(
         StellarSdk.Operation.payment({
@@ -186,12 +189,28 @@ export async function sendXLM(
       .setTimeout(StellarSdk.TimeoutInfinite)
       .build();
 
-    // Sign the transaction using the wallet kit
+    // --- Ensure kit is set to the persisted provider and refresh address if available ---
+    const provider = loadedProvider();
     const { kit } = await import("../components/stellar-wallets-kit");
+    if (provider) {
+      kit.setWallet(provider);
+
+      try {
+        if (typeof kit.getAddress === "function") {
+          const { address } = await kit.getAddress();
+          const stored = loadedPublicKey();
+          if (address && address !== stored) {
+            setConnection(address, provider);
+          }
+        }
+      } catch {
+        // ignore - failing to refresh shouldn't block signing attempt
+      }
+    }
+
+    // Sign the transaction
     const { signedTxXdr } = await kit.signTransaction(transaction.toXDR());
 
-    // For classic Stellar transactions, we need to submit to Horizon directly
-    // since sendSignedTransaction is designed for Soroban transactions
     const signedTransaction = new StellarSdk.Transaction(
       signedTxXdr,
       import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
@@ -213,23 +232,19 @@ export async function sendXLM(
 
     const result = await response.json();
 
-    // Check if the transaction was successful according to Horizon API
     if (result && result.successful === true) {
       return true;
     } else {
-      // If not successful, check for error details
       const errorDetails =
         result?.error || result?.message || "Transaction failed on network";
       throw new Error(errorDetails);
     }
   } catch (error: any) {
-    // Show network-specific errors to help users understand what went wrong
     if (isStellarNetworkError(error)) {
       const errorString =
         typeof error === "string" ? error : error.message || error.toString();
       toast.error("Transaction Failed", errorString);
     } else {
-      // Surface non-network errors so users get actionable feedback
       const msg =
         typeof error === "string" ? error : error?.message || "Unknown error";
       toast.error("Support", msg);
@@ -244,11 +259,10 @@ export async function sendXLM(
 function isStellarNetworkError(error: any): boolean {
   if (!error) return false;
 
-  // These are Stellar network/transaction specific errors that should be shown to users
   const stellarErrorPatterns = [
-    "op_underfunded", // Insufficient balance
-    "tx_insufficient_fee", // Fee too low
-    "tx_bad_seq", // Sequence number issues
+    "op_underfunded",
+    "tx_insufficient_fee",
+    "tx_bad_seq",
   ];
 
   const errorString =
@@ -274,7 +288,25 @@ export async function signAssembledTransaction(
 
   const preparedXdr = assembledTx.toXDR();
 
+  // --- Ensure kit is set to the persisted provider and refresh address if available ---
+  const provider = loadedProvider();
   const { kit } = await import("../components/stellar-wallets-kit");
+  if (provider) {
+    kit.setWallet(provider);
+
+    try {
+      if (typeof kit.getAddress === "function") {
+        const { address } = await kit.getAddress();
+        const stored = loadedPublicKey();
+        if (address && address !== stored) {
+          setConnection(address, provider);
+        }
+      }
+    } catch {
+      // ignore - signing can still be attempted
+    }
+  }
+
   const { signedTxXdr } = await kit.signTransaction(preparedXdr);
 
   return signedTxXdr;

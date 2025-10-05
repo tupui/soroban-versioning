@@ -1,5 +1,6 @@
 use crate::{
-    DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types,
+    DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events,
+    outcomes_contract, types,
 };
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
@@ -144,7 +145,7 @@ impl DaoTrait for Tansu {
     /// The proposer is automatically added to the abstain group.
     /// By creating a proposal, the proposer incur a collateral which is
     /// repaid upon execution of the proposal unless the proposal is revoked.
-    /// This is a deterent mechanism.
+    /// This is a deterrent mechanism.
     ///
     /// # Arguments
     /// * `env` - The environment object
@@ -154,6 +155,7 @@ impl DaoTrait for Tansu {
     /// * `ipfs` - IPFS content identifier describing the proposal
     /// * `voting_ends_at` - UNIX timestamp when voting ends
     /// * `public_voting` - Whether voting is public or anonymous
+    /// * [`Option<outcomes_contract>`] - Outcome contract address
     ///
     /// # Returns
     /// * `u32` - The ID of the created proposal.
@@ -162,6 +164,7 @@ impl DaoTrait for Tansu {
     /// * If the title is too long
     /// * If the voting period is invalid
     /// * If the project doesn't exist
+    #[allow(clippy::too_many_arguments)]
     fn create_proposal(
         env: Env,
         proposer: Address,
@@ -170,6 +173,7 @@ impl DaoTrait for Tansu {
         ipfs: String,
         voting_ends_at: u64,
         public_voting: bool,
+        outcomes_contract: Option<Address>,
     ) -> u32 {
         Tansu::require_not_paused(env.clone());
 
@@ -250,6 +254,7 @@ impl DaoTrait for Tansu {
             ipfs,
             vote_data,
             status: types::ProposalStatus::Active,
+            outcomes_contract,
         };
 
         let next_id = proposal_id + 1;
@@ -604,6 +609,18 @@ impl DaoTrait for Tansu {
             maintainer: maintainer.clone(),
         }
         .publish(&env);
+
+        if (proposal.outcomes_contract).is_some() {
+            let client =
+                outcomes_contract::Client::new(&env, &(proposal.outcomes_contract).unwrap());
+
+            match proposal.status {
+                types::ProposalStatus::Approved => client.approve_outcome(&maintainer),
+                types::ProposalStatus::Rejected => client.reject_outcome(&maintainer),
+                types::ProposalStatus::Cancelled => client.abstain_outcome(&maintainer),
+                _ => (),
+            };
+        }
 
         proposal.status
     }
