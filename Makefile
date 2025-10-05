@@ -165,7 +165,7 @@ contract_get_upgrade_proposal:  ## Get the current upgrade proposal
 
 contract_domain_deploy:
 	stellar contract deploy \
-  		--wasm contracts/domain_3ebbeec072f4996958d4318656186732773ab5f0c159dcf039be202b4ecb8af8.wasm \
+  		--wasm contracts/domain_current.wasm \
   		--source-account mando-$(network) \
   		--network $(network) \
   		> .stellar/soroban_domain_id && \
@@ -209,7 +209,7 @@ contract_set_collateral_contract:  ## Set the SorobanDomain contract address
     	-- \
     	set_collateral_contract \
 		--admin $(shell stellar keys address mando-$(network)) \
-		--collateral_contract '{"address":"$(collateral_contract_id)"}'
+		--collateral_contract '{"address":"$(collateral_contract_id)","wasm_hash":null}'
 
 # --------- CONTRACT USAGE EXAMPLES --------- #
 
@@ -229,6 +229,7 @@ contract_version:
     	-- \
     	version
 
+# bafybeift4uou7f4qdrchrbwebxxvgf2ecmx56qqo6l2fyimmr4skb3iibi for salib
 contract_register:
 	stellar contract invoke \
     	--source-account mando-$(network) \
