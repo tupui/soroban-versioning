@@ -161,9 +161,18 @@ test.describe("🚨 Regression Prevention - Critical Error Detection", () => {
 
     expect(contractServiceTest.success).toBe(true);
     if (contractServiceTest.success) {
-      expect(contractServiceTest.methods.commitHash).toBe(true);
-      expect(contractServiceTest.methods.voteToProposal).toBe(true);
-      expect(contractServiceTest.methods.execute).toBe(true);
+      if (
+        contractServiceTest.success &&
+        contractServiceTest.methods &&
+        typeof contractServiceTest.methods === "object" &&
+        "commitHash" in contractServiceTest.methods &&
+        "voteToProposal" in contractServiceTest.methods &&
+        "execute" in contractServiceTest.methods
+      ) {
+        expect(contractServiceTest.methods.commitHash).toBe(true);
+        expect(contractServiceTest.methods.voteToProposal).toBe(true);
+        expect(contractServiceTest.methods.execute).toBe(true);
+      }
     }
 
     // Check for the specific SDK method errors we fixed

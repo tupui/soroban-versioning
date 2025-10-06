@@ -493,11 +493,12 @@ export async function applyAllMocks(page) {
   // Mock wallet service to provide authenticated user for tests
   await page.route("**/src/service/walletService.ts", (route) => {
     const body = `
-      export function loadedPublicKey(){ return '${WALLET_PK}'; }
-      export function setPublicKey(){}
-      export function disconnect(){}
-      export function initializeConnection(){}
-    `;
+    export function loadedPublicKey() { return '${WALLET_PK}'; }
+    export function loadedProvider() { return { id: 'freighter', name: 'Freighter', connected: true }; }
+    export function setPublicKey() {}
+    export function disconnect() {}
+    export function initializeConnection() { return { success: true }; }
+  `;
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },
@@ -508,11 +509,12 @@ export async function applyAllMocks(page) {
   // Also mock the wallet service with the @service alias pattern
   await page.route("**/@service/walletService*", (route) => {
     const body = `
-      export function loadedPublicKey(){ return '${WALLET_PK}'; }
-      export function setPublicKey(){}
-      export function disconnect(){}
-      export function initializeConnection(){}
-    `;
+    export function loadedPublicKey() { return '${WALLET_PK}'; }
+    export function loadedProvider() { return { id: 'freighter', name: 'Freighter', connected: true }; }
+    export function setPublicKey() {}
+    export function disconnect() {}
+    export function initializeConnection() { return { success: true }; }
+  `;
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },
