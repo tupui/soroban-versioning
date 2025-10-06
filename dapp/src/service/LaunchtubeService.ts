@@ -11,8 +11,9 @@ const LAUNCHTUBE_URL =
  * Check if Launchtube is enabled and configured
  */
 export function isLaunchtubeEnabled(): boolean {
+    const useLaunchtube = import.meta.env.PUBLIC_USE_LAUNCHTUBE ?? "true";
     return (
-        import.meta.env.PUBLIC_USE_LAUNCHTUBE === "true" &&
+        useLaunchtube === "true" &&
         !!import.meta.env.PUBLIC_LAUNCHTUBE_TOKEN
     );
 }
