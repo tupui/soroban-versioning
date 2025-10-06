@@ -2,11 +2,7 @@ import { retryAsync } from "../utils/retry";
 import { parseContractError } from "../utils/contractErrors";
 import * as StellarSdk from "@stellar/stellar-sdk";
 import { toast } from "utils/utils";
-import {
-    loadedPublicKey,
-    loadedProvider,
-    setConnection,
-} from "./walletService";
+import { loadedPublicKey } from "./walletService";
 import { isLaunchtubeEnabled, sendViaLaunchtube } from "./LaunchtubeService";
 
 /**
@@ -161,9 +157,9 @@ export async function sendXLM(
     }
 
     try {
+        // Fetch the sender's account details from Horizon (sequence number)
         const horizonUrl = import.meta.env.PUBLIC_HORIZON_URL;
 
-        // Fetch the sender's account details from Horizon (sequence number)
         const accountResp = await fetch(
             `${horizonUrl}/accounts/${senderPublicKey}`,
             { headers: { Accept: "application/json" } },
@@ -206,25 +202,8 @@ export async function sendXLM(
             .setTimeout(StellarSdk.TimeoutInfinite)
             .build();
 
-        // --- Ensure kit is set to the persisted provider and refresh address if available ---
-        const provider = loadedProvider();
-        const { kit } = await import("../components/stellar-wallets-kit");
-        if (provider) {
-            kit.setWallet(provider);
-            try {
-                if (typeof kit.getAddress === "function") {
-                    const { address } = await kit.getAddress();
-                    const stored = loadedPublicKey();
-                    if (address && address !== stored) {
-                        setConnection(address, provider);
-                    }
-                }
-            } catch {
-                // ignore - failing to refresh shouldn't block signing attempt
-            }
-        }
-
         // Sign the transaction using the wallet kit
+        const { kit } = await import("../components/stellar-wallets-kit");
         const { signedTxXdr } = await kit.signTransaction(transaction.toXDR());
 
         // For classic Stellar transactions, we need to submit to Horizon directly
@@ -311,24 +290,7 @@ export async function signAssembledTransaction(
 
     const preparedXdr = assembledTx.toXDR();
 
-    // --- Ensure kit is set to the persisted provider and refresh address if available ---
-    const provider = loadedProvider();
     const { kit } = await import("../components/stellar-wallets-kit");
-    if (provider) {
-        kit.setWallet(provider);
-        try {
-            if (typeof kit.getAddress === "function") {
-                const { address } = await kit.getAddress();
-                const stored = loadedPublicKey();
-                if (address && address !== stored) {
-                    setConnection(address, provider);
-                }
-            }
-        } catch {
-            // ignore - signing can still be attempted
-        }
-    }
-
     const { signedTxXdr } = await kit.signTransaction(preparedXdr);
 
     return signedTxXdr;
