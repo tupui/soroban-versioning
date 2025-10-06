@@ -1,5 +1,6 @@
 use crate::{
-    DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types,
+    DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events,
+    outcomes_contract, types,
 };
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
@@ -144,7 +145,7 @@ impl DaoTrait for Tansu {
     /// The proposer is automatically added to the abstain group.
     /// By creating a proposal, the proposer incur a collateral which is
     /// repaid upon execution of the proposal unless the proposal is revoked.
-    /// This is a deterent mechanism.
+    /// This is a deterrent mechanism.
     ///
     /// # Arguments
     /// * `env` - The environment object
@@ -154,6 +155,7 @@ impl DaoTrait for Tansu {
     /// * `ipfs` - IPFS content identifier describing the proposal
     /// * `voting_ends_at` - UNIX timestamp when voting ends
     /// * `public_voting` - Whether voting is public or anonymous
+    /// * [`Option<outcomes_contract>`] - Outcome contract address
     ///
     /// # Returns
     /// * `u32` - The ID of the created proposal.
@@ -162,6 +164,7 @@ impl DaoTrait for Tansu {
     /// * If the title is too long
     /// * If the voting period is invalid
     /// * If the project doesn't exist
+    #[allow(clippy::too_many_arguments)]
     fn create_proposal(
         env: Env,
         proposer: Address,
@@ -170,6 +173,7 @@ impl DaoTrait for Tansu {
         ipfs: String,
         voting_ends_at: u64,
         public_voting: bool,
+        outcomes_contract: Option<Address>,
     ) -> u32 {
         Tansu::require_not_paused(env.clone());
 
@@ -250,11 +254,12 @@ impl DaoTrait for Tansu {
             ipfs,
             vote_data,
             status: types::ProposalStatus::Active,
+            outcomes_contract,
         };
 
         let next_id = proposal_id + 1;
         let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
-        
+
         // Prevent exceeding maximum page limit
         if page >= MAX_PAGES {
             panic_with_error!(&env, &errors::ContractErrors::NoProposalorPageFound);
@@ -303,7 +308,12 @@ impl DaoTrait for Tansu {
     fn revoke_proposal(env: Env, maintainer: Address, project_key: Bytes, proposal_id: u32) {
         Tansu::require_not_paused(env.clone());
 
-        maintainer.require_auth();
+        let admins_config = Tansu::get_admins_config(env.clone());
+        if admins_config.admins.contains(maintainer.clone()) {
+            maintainer.require_auth();
+        } else {
+            crate::auth_maintainers(&env, &maintainer, &project_key);
+        }
 
         let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
         let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
@@ -318,6 +328,9 @@ impl DaoTrait for Tansu {
             panic_with_error!(&env, &errors::ContractErrors::ProposalActive);
         }
 
+        // we obfuscate the proposal to avoid any DMCA or else
+        proposal.title = String::from_str(&env, "REDACTED");
+        proposal.ipfs = String::from_str(&env, "NONE");
         proposal.status = types::ProposalStatus::Malicious;
 
         dao_page.proposals.set(sub_id, proposal.clone());
@@ -399,15 +412,14 @@ impl DaoTrait for Tansu {
         }
 
         // For anonymous votes, validate commitment structure
-        if !is_public_vote
-            && let types::Vote::AnonymousVote(vote_choice) = &vote {
-                if vote_choice.commitments.len() != 3 {
-                    panic_with_error!(&env, &errors::ContractErrors::BadCommitment)
-                }
-                for commitment in &vote_choice.commitments {
-                    G1Affine::from_bytes(commitment);
-                }
+        if !is_public_vote && let types::Vote::AnonymousVote(vote_choice) = &vote {
+            if vote_choice.commitments.len() != 3 {
+                panic_with_error!(&env, &errors::ContractErrors::BadCommitment)
             }
+            for commitment in &vote_choice.commitments {
+                G1Affine::from_bytes(commitment);
+            }
+        }
 
         // can only vote for yourself so address must match
         let vote_address = match &vote {
@@ -558,12 +570,12 @@ impl DaoTrait for Tansu {
                     (Some(t), Some(s)) => (t, s),
                     _ => panic_with_error!(&env, &errors::ContractErrors::TallySeedError),
                 };
-                
+
                 // Validate tallies and seeds have expected length (3: approve, reject, abstain)
                 if tallies_.len() != 3 || seeds_.len() != 3 {
                     panic_with_error!(&env, &errors::ContractErrors::TallySeedError);
                 }
-                
+
                 if !Self::proof(
                     env.clone(),
                     project_key.clone(),
@@ -597,6 +609,18 @@ impl DaoTrait for Tansu {
             maintainer: maintainer.clone(),
         }
         .publish(&env);
+
+        if (proposal.outcomes_contract).is_some() {
+            let client =
+                outcomes_contract::Client::new(&env, &(proposal.outcomes_contract).unwrap());
+
+            match proposal.status {
+                types::ProposalStatus::Approved => client.approve_outcome(&maintainer),
+                types::ProposalStatus::Rejected => client.reject_outcome(&maintainer),
+                types::ProposalStatus::Cancelled => client.abstain_outcome(&maintainer),
+                _ => (),
+            };
+        }
 
         proposal.status
     }

@@ -218,6 +218,7 @@ export interface UpgradeProposal {
 export interface Proposal {
   id: u32;
   ipfs: string;
+  outcomes_contract: Option<string>;
   proposer: string;
   status: ProposalStatus;
   title: string;
@@ -391,7 +392,7 @@ export interface Client {
    * The proposer is automatically added to the abstain group.
    * By creating a proposal, the proposer incur a collateral which is
    * repaid upon execution of the proposal unless the proposal is revoked.
-   * This is a deterent mechanism.
+   * This is a deterrent mechanism.
    *
    * # Arguments
    * * `env` - The environment object
@@ -401,6 +402,7 @@ export interface Client {
    * * `ipfs` - IPFS content identifier describing the proposal
    * * `voting_ends_at` - UNIX timestamp when voting ends
    * * `public_voting` - Whether voting is public or anonymous
+   * * [`Option<outcomes_contract>`] - Outcome contract address
    *
    * # Returns
    * * `u32` - The ID of the created proposal.
@@ -418,6 +420,7 @@ export interface Client {
       ipfs,
       voting_ends_at,
       public_voting,
+      outcomes_contract,
     }: {
       proposer: string;
       project_key: Buffer;
@@ -425,6 +428,7 @@ export interface Client {
       ipfs: string;
       voting_ends_at: u64;
       public_voting: boolean;
+      outcomes_contract: Option<string>;
     },
     options?: {
       /**

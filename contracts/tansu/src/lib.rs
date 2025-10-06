@@ -7,6 +7,10 @@ mod domain_contract {
     soroban_sdk::contractimport!(file = "../domain_current.wasm");
 }
 
+mod outcomes_contract {
+    soroban_sdk::contractimport!(file = "../outcomes.wasm");
+}
+
 mod contract_dao;
 mod contract_membership;
 mod contract_tansu;
@@ -112,6 +116,7 @@ pub trait DaoTrait {
         seeds: Vec<u128>,
     ) -> Vec<BytesN<96>>;
 
+    #[allow(clippy::too_many_arguments)]
     fn create_proposal(
         env: Env,
         proposer: Address,
@@ -120,6 +125,7 @@ pub trait DaoTrait {
         ipfs: String,
         voting_ends_at: u64,
         public_voting: bool,
+        outcomes_contract: Option<Address>,
     ) -> u32;
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote);
@@ -194,9 +200,9 @@ fn retrieve_contract(env: &Env, key: types::ContractKey) -> types::Contract {
 fn validate_contract(env: &Env, contract: &types::Contract) {
     let contract_executable = contract.address.executable();
 
-    if let Some(wasm_hash) = contract.clone().wasm_hash {
-        if contract_executable != Some(Executable::Wasm(wasm_hash)) {
-            panic_with_error!(&env, &errors::ContractErrors::ContractValidation)
-        }
+    if let Some(wasm_hash) = contract.clone().wasm_hash
+        && contract_executable != Some(Executable::Wasm(wasm_hash))
+    {
+        panic_with_error!(&env, &errors::ContractErrors::ContractValidation)
     }
 }
