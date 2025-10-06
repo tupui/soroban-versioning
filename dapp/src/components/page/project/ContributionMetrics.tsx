@@ -28,18 +28,26 @@ const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
         setLoading(true);
         setError(null);
 
-        const metrics = await ContributionMetricsService.fetchMetrics(owner, repo);
+        const metrics = await ContributionMetricsService.fetchMetrics(
+          owner,
+          repo,
+        );
         setMetrics(metrics);
 
         const configData = loadConfigData();
-        if (configData?.authorGithubNames && Array.isArray(configData.authorGithubNames)) {
+        if (
+          configData?.authorGithubNames &&
+          Array.isArray(configData.authorGithubNames)
+        ) {
           const maintainerNames = configData.authorGithubNames
-            .map((name) => (name && typeof name === "string" ? name.toLowerCase() : ""))
+            .map((name) =>
+              name && typeof name === "string" ? name.toLowerCase() : "",
+            )
             .filter(Boolean);
           setMaintainers(maintainerNames);
         }
       } catch (err) {
-        console.error('Error fetching contribution metrics:', err);
+        console.error("Error fetching contribution metrics:", err);
         setError("Failed to load contribution metrics");
       } finally {
         setLoading(false);
@@ -97,27 +105,41 @@ const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="text-2xl font-bold text-primary">{metrics.totalCommits}</div>
+          <div className="text-2xl font-bold text-primary">
+            {metrics.totalCommits}
+          </div>
           <div className="text-sm text-secondary">Total Commits</div>
         </div>
         <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="text-2xl font-bold text-primary">{metrics.totalContributors}</div>
+          <div className="text-2xl font-bold text-primary">
+            {metrics.totalContributors}
+          </div>
           <div className="text-sm text-secondary">Total Contributors</div>
         </div>
         <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="text-2xl font-bold text-primary">{metrics.activeContributors}</div>
+          <div className="text-2xl font-bold text-primary">
+            {metrics.activeContributors}
+          </div>
           <div className="text-sm text-secondary">Active (3 months)</div>
         </div>
         <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <div className="text-2xl font-bold text-primary">{metrics.repositoryTimespan.totalDays}</div>
+          <div className="text-2xl font-bold text-primary">
+            {metrics.repositoryTimespan.totalDays}
+          </div>
           <div className="text-sm text-secondary">Days Active</div>
         </div>
       </div>
 
-      <PonyFactorCard ponyFactor={metrics.ponyFactor} totalCommits={metrics.totalCommits} />
+      <PonyFactorCard
+        ponyFactor={metrics.ponyFactor}
+        totalCommits={metrics.totalCommits}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ContributorActivityChart contributors={metrics.contributorActivity} maintainers={maintainers} />
+        <ContributorActivityChart
+          contributors={metrics.contributorActivity}
+          maintainers={maintainers}
+        />
         <MonthlyActivityChart monthlyStats={metrics.monthlyStats} />
       </div>
     </div>

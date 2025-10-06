@@ -121,7 +121,10 @@ import { toast } from "utils/utils";
     loadProjectLatestSha,
     loadProjectName,
   } from "../../../service/StateService";
-  import { convertGitHubLink, getAuthorRepo } from "../../../utils/editLinkFunctions";
+  import {
+    convertGitHubLink,
+    getAuthorRepo,
+  } from "../../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../../utils/store";
   import { getBadges, getMember } from "@service/ReadContractService";
 
@@ -162,14 +165,24 @@ import { toast } from "utils/utils";
     );
 
     // Retry finding containers if not immediately available
-    if (!lastHashContainer || !readMoreContainer || !contributionMetricsContainer) {
+    if (
+      !lastHashContainer ||
+      !readMoreContainer ||
+      !contributionMetricsContainer
+    ) {
       await new Promise((resolve) => setTimeout(resolve, 100));
       lastHashContainer = document.getElementById("last-hash-modal-container");
       readMoreContainer = document.getElementById("read-more-modal-container");
-      contributionMetricsContainer = document.getElementById("contribution-metrics-section");
+      contributionMetricsContainer = document.getElementById(
+        "contribution-metrics-section",
+      );
     }
 
-    if (!lastHashContainer || !readMoreContainer || !contributionMetricsContainer) {
+    if (
+      !lastHashContainer ||
+      !readMoreContainer ||
+      !contributionMetricsContainer
+    ) {
       if (import.meta.env.DEV) {
         console.error("Containers not found", {
           lastHashContainer: !!lastHashContainer,

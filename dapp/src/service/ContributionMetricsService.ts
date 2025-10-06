@@ -12,7 +12,10 @@ export class ContributionMetricsService {
    * Fetch contribution metrics by analyzing GitHub API commit data
    * Uses the same getCommitHistory() function as CommitHistory component
    */
-  static async fetchMetrics(owner: string, repo: string): Promise<ContributionMetrics> {
+  static async fetchMetrics(
+    owner: string,
+    repo: string,
+  ): Promise<ContributionMetrics> {
     try {
       const allCommits: FormattedCommit[] = [];
       const maxPages = 34;
@@ -25,7 +28,10 @@ export class ContributionMetricsService {
           allCommits.push(...dayGroup.commits);
         }
 
-        const totalInPage = history.reduce((sum, day) => sum + day.commits.length, 0);
+        const totalInPage = history.reduce(
+          (sum, day) => sum + day.commits.length,
+          0,
+        );
         if (totalInPage < 30) break;
       }
 
@@ -35,13 +41,13 @@ export class ContributionMetricsService {
 
       return result.metrics;
     } catch (error) {
-      console.error('Failed to fetch contribution metrics:', error);
-      throw new Error('Failed to load contribution metrics');
+      console.error("Failed to fetch contribution metrics:", error);
+      throw new Error("Failed to load contribution metrics");
     }
   }
 
   private static convertToGitLogFormat(commits: FormattedCommit[]): string {
-    let gitLog = '';
+    let gitLog = "";
 
     for (const commit of commits) {
       gitLog += `commit ${commit.sha}\n`;
