@@ -124,7 +124,7 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
     await expect(page.locator(".project-modal-container")).not.toBeVisible();
   });
 
-  test("Join community modal – basic happy path", async ({ page }) => {
+  test("Join community modal – adapt to wallet state", async ({ page }) => {
     await page.goto("/");
 
     // Wait for page to load
