@@ -1,19 +1,21 @@
 import Button from "components/utils/Button";
 import Textarea from "components/utils/Textarea";
 import { capitalizeFirstLetter } from "utils/utils";
+import { useState, useEffect } from "react";
 
 interface OutcomeInputProps {
   type: string;
   description: string;
   setDescription: (description: string) => void;
   xdr: string | null;
-  setXdr: (xdr: string) => void;
+  setXdr: (xdr: string | null) => void;
   descriptionError?: string | null;
   xdrError?: string | null;
   onDescriptionChange?: (value: string) => void;
   onXdrChange?: (value: string) => void;
 }
 
+// Simplify the component - remove all contract-related logic
 const OutcomeInput = ({
   type,
   description,
@@ -25,14 +27,20 @@ const OutcomeInput = ({
   onDescriptionChange,
   onXdrChange,
 }: OutcomeInputProps) => {
+  const [hasXdr, setHasXdr] = useState(false);
+
+  useEffect(() => {
+    setHasXdr(xdr !== null);
+  }, [xdr]);
+
   return (
     <div className="flex flex-col items-start gap-[18px]">
       <div className={`text-xl font-medium text-${type}`}>
         {capitalizeFirstLetter(type)} Outcome
       </div>
-      {xdr == null ? (
+      {!hasXdr ? (
         <Button type="secondary" onClick={() => setXdr("")}>
-          Add Outcome
+          Add XDR Outcome
         </Button>
       ) : (
         <div className="w-full flex flex-col gap-[18px]">
@@ -55,6 +63,7 @@ const OutcomeInput = ({
               )}
             </div>
           </div>
+          
           <div className="flex flex-col gap-[18px]">
             <p className="leading-[16px] text-base font-[600] text-primary">
               XDR (Optional)
@@ -63,7 +72,7 @@ const OutcomeInput = ({
               <Textarea
                 className={`h-[64px] ${xdrError ? "border-red-500" : ""}`}
                 placeholder="Write the XDR"
-                value={xdr}
+                value={xdr || ""}
                 onChange={(e) => {
                   setXdr(e.target.value);
                   if (onXdrChange) onXdrChange(e.target.value);
