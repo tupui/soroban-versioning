@@ -7,12 +7,13 @@ test.describe("Anonymous voting – proof computation", () => {
   test("compute tallies/seeds (weighted) and call proof with those arrays", async ({
     page,
   }) => {
-    // --- STUB TANSU CLIENT ---
+    // Install a stub Tansu client before any module import happens in the page
     await page.addInitScript(() => {
+      // Three voters with different weights and choices
       const V1 = {
         address: "GA".padEnd(56, "A"),
         weight: 5,
-        encrypted_votes: ["1", "0", "0"],
+        encrypted_votes: ["1", "0", "0"], // approve
         encrypted_seeds: ["7", "8", "9"],
         commitments: [
           new Uint8Array(96),
@@ -23,7 +24,7 @@ test.describe("Anonymous voting – proof computation", () => {
       const V2 = {
         address: "GB".padEnd(56, "B"),
         weight: 2,
-        encrypted_votes: ["0", "1", "0"],
+        encrypted_votes: ["0", "1", "0"], // reject
         encrypted_seeds: ["3", "4", "5"],
         commitments: [
           new Uint8Array(96),
@@ -34,7 +35,7 @@ test.describe("Anonymous voting – proof computation", () => {
       const V3 = {
         address: "GC".padEnd(56, "C"),
         weight: 1,
-        encrypted_votes: ["0", "0", "1"],
+        encrypted_votes: ["0", "0", "1"], // abstain
         encrypted_seeds: ["1", "1", "1"],
         commitments: [
           new Uint8Array(96),
@@ -87,7 +88,7 @@ test.describe("Anonymous voting – proof computation", () => {
       };
     });
 
-    // --- MOCK IMPORTS ---
+    // Serve the stub for the module import path used by the app
     await page.route("**/src/contracts/soroban_tansu.ts", (route) => {
       const body = `export default (globalThis).__tansuClient;`;
       route.fulfill({
@@ -120,7 +121,7 @@ test.describe("Anonymous voting – proof computation", () => {
       });
     });
 
-    // --- RUN THE TEST ---
+    // Navigate to any page (module imports available). Then import the utility and run it.
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
     const { tallies, seeds } = await page.evaluate(async () => {
@@ -133,10 +134,17 @@ test.describe("Anonymous voting – proof computation", () => {
       );
       return { tallies: data.tallies, seeds: data.seeds };
     });
-
+    // Expected weighted tallies: [5,2,1]
     expect(tallies).toEqual([5n, 2n, 1n]);
+
+    // Seeds are aggregated per option with weights applied:
+    // V1 seeds [7,8,9]*5 → [35,40,45]
+    // V2 seeds [3,4,5]*2 → [6,8,10]
+    // V3 seeds [1,1,1]*1 → [1,1,1]
+    // Total: [35+6+1, 40+8+1, 45+10+1] = [42,49,56]
     expect(seeds).toEqual([42n, 49n, 56n]);
 
+    // Ensure the same arrays were used for the proof call
     const captured = await page.evaluate(() => (window as any).__captured);
     expect(captured.proofArgs.tallies).toEqual(tallies);
     expect(captured.proofArgs.seeds).toEqual(seeds);

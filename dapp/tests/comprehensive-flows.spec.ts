@@ -38,6 +38,7 @@ test.describe("Tansu dApp - Comprehensive User Flows", () => {
       // Navigate safely
       await safeGoto(page, "/");
 
+      // Initial state - Connect button visible and shows Profile (user is authenticated) but we make that happen in the code below and continue at line 68
       const connectButton = page.locator("[data-connect]");
       const buttonText = connectButton.locator("span");
 

@@ -62,7 +62,7 @@ test("execute() receives weighted tallies/seeds for anonymous proposal", async (
     });
   });
 
-  // Stub ContractService to forward to mocked client
+  // Stub ContractService execute to just forward to the mocked client
   await page.route("**/src/service/ContractService.ts", (route) => {
     const body = `
       export async function execute(project_name, proposal_id, tallies, seeds){
@@ -79,7 +79,7 @@ test("execute() receives weighted tallies/seeds for anonymous proposal", async (
     });
   });
 
-  // Stub wallet kit so signing path is never reached
+  // Stub wallet kit so signing path is never reached (we only test argument wiring)
   await page.route("**/src/components/stellar-wallets-kit.ts", (route) => {
     const body = `export const kit = { signTransaction: async (xdr) => ({ signedTxXdr: xdr }) };`;
     route.fulfill({

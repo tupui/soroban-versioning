@@ -15,9 +15,11 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
   test.afterEach(async ({ page }) => {
     // Clean up any open modals or state
     try {
+      // Close any open modals by clicking escape or close buttons
       await page.keyboard.press("Escape");
       await page.waitForTimeout(100);
 
+      // Also try to close any visible modals
       const closeButtons = page.locator("button", {
         hasText: /Close|Cancel|×/,
       });
@@ -122,8 +124,10 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
     await expect(page.locator(".project-modal-container")).not.toBeVisible();
   });
 
-  test("Join community modal – adapt to wallet state", async ({ page }) => {
+  test("Join community modal – basic happy path", async ({ page }) => {
     await page.goto("/");
+
+    // Wait for page to load
     await page.waitForTimeout(1000);
 
     // Check if wallet is connected by inspecting the connect button text

@@ -510,7 +510,7 @@ export async function applyAllMocks(page) {
     };
   });
 
-  // Apply walletService mock before navigating
+  // Apply walletService mock before navigating to provide authenticated user for tests
   await page.route("**/src/service/walletService.ts", (route) => {
     const body = `
     export function loadedPublicKey() { return '${WALLET_PK}'; }
