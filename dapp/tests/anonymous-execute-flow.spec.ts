@@ -89,7 +89,7 @@ test("execute() receives weighted tallies/seeds for anonymous proposal", async (
     });
   });
 
-  // Stub walletService to provide a connected Freighter wallet
+  // Stub walletService to provide a connected Mock wallet
   await page.route("**/src/service/walletService.ts", (route) => {
     const body = `
     export function loadedPublicKey() { 
@@ -97,8 +97,8 @@ test("execute() receives weighted tallies/seeds for anonymous proposal", async (
     }
 
     export function loadedProvider() { 
-      // Simulate a Freighter wallet object
-      return { id: 'freighter', name: 'Freighter', connected: true }; 
+      // Simulate a Mock wallet object
+      return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; 
     }
 
     export function setConnection() {}

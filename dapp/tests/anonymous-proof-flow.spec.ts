@@ -105,8 +105,8 @@ test.describe("Anonymous voting – proof computation", () => {
     }
 
     export function loadedProvider() { 
-      // Simulate a connected Freighter wallet
-      return { id: 'freighter', name: 'Freighter', connected: true }; 
+      // Simulate a connected Mock wallet
+      return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; 
     }
 
     export function setConnection() {}

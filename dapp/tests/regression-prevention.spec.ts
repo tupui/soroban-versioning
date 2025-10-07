@@ -214,8 +214,11 @@ test.describe("🚨 Regression Prevention - Critical Error Detection", () => {
           "../src/service/ContractService.ts"
         );
 
+        // Use commitHash to avoid unused variable error
+        const isFunction = typeof commitHash === "function";
+
         // This should not throw switch/XDR parsing errors during initialization
-        return { success: true, error: null };
+        return { success: true, isFunction, error: null };
       } catch (error: any) {
         return { success: false, error: error.message };
       }
