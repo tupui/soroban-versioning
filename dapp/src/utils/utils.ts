@@ -109,6 +109,7 @@ export const modifyProposalToView = (
   const proposalView: ProposalView = {
     id: proposal.id,
     title: proposal.title,
+    proposer: proposal.proposer,
     projectName: projectName,
     ipfsLink: proposal.ipfs,
     endDate: proposal.voting_ends_at,
@@ -144,8 +145,10 @@ export const modifyProposalFromContract = (
       id: proposal.id,
       title: proposal.title,
       ipfs: proposal.ipfs,
+      proposer: proposal.proposer,
       status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
       voting_ends_at: Number(proposal.vote_data.voting_ends_at),
+      outcomes_contract: proposal.outcomes_contract || null,
       voteStatus: {
         approve: {
           voteType: VoteType.APPROVE,
@@ -195,8 +198,10 @@ export const modifyProposalFromContract = (
     id: proposal.id,
     title: proposal.title,
     ipfs: proposal.ipfs,
+    proposer: proposal.proposer,
     status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
     voting_ends_at: Number(proposal.vote_data.voting_ends_at),
+    outcomes_contract: proposal.outcomes_contract || null,
     voteStatus: {
       approve: { voteType: VoteType.APPROVE, score: 0, voters: [] },
       reject: { voteType: VoteType.REJECT, score: 0, voters: [] },

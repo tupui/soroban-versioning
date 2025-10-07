@@ -122,6 +122,7 @@ async function createSignedProposalTransaction(
     ipfs: ipfs,
     voting_ends_at: BigInt(votingEndsAt),
     public_voting: publicVoting,
+    outcomes_contract: undefined,
   });
 
   // Check for simulation errors (contract errors) before signing
