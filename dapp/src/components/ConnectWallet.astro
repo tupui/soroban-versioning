@@ -1,3 +1,7 @@
+---
+import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx";
+---
+
 <div id="connect-wrap" aria-live="polite" class="relative">
   <div
     id="get-started"
@@ -36,6 +40,9 @@
   </button>
 </div>
 
+<!-- React-hydrated modal for unfunded wallets -->
+<WalletFundingWrapper client:load />
+
 <script>
   import { connectedPublicKey } from "utils/store";
   import {
@@ -44,14 +51,13 @@
     setConnection,
     disconnect,
     loadedProvider,
+    getWalletHealth,
   } from "../service/walletService";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
 
-    const button = document.querySelector(
-      "[data-connect]",
-    ) as HTMLButtonElement;
+    const button = document.querySelector("[data-connect]") as HTMLButtonElement;
 
     async function setLoggedIn(publicKey: string) {
       button.textContent = "";
@@ -76,7 +82,6 @@
       button.classList.toggle("transition-opacity", true);
       button.classList.toggle("cursor-pointer", true);
 
-      // Change click handler to open profile instead of connect wallet
       button.onclick = () => {
         window.dispatchEvent(new CustomEvent("openProfileModal"));
       };
@@ -91,47 +96,39 @@
       const provider = loadedProvider();
 
       if (button.title) {
-        // Already connected - revalidate account with provider
+        // Already connected - revalidate
         if (provider) {
           const { kit } = await import("./stellar-wallets-kit");
           kit.setWallet(provider);
-
           try {
             const { address } = await kit.getAddress();
             const currentStored = loadedPublicKey();
 
             if (address !== currentStored) {
-              //  User switched accounts inside this wallet
               setConnection(address, provider);
               await setLoggedIn(address);
               window.dispatchEvent(
-                new CustomEvent("walletSwitched", {
-                  detail: { address, provider },
-                }),
+                new CustomEvent("walletSwitched", { detail: { address, provider } }),
               );
             }
           } catch {
-            // Wallet not available or user rejected
             disconnect();
           }
         } else {
-          // No provider stored, force reconnect flow
           window.dispatchEvent(new CustomEvent("openProfileModal"));
         }
         return;
       }
 
-      // First-time connection flow
+      // First connection
       try {
         const { kit } = await import("./stellar-wallets-kit");
-
         await kit.openModal({
           onWalletSelected: async (option: { id: string }) => {
             try {
               kit.setWallet(option.id);
               const { address } = await kit.getAddress();
 
-              // Save both provider + key
               setConnection(address, option.id);
               await setLoggedIn(address);
 
@@ -140,30 +137,39 @@
                   detail: { address, provider: option.id },
                 }),
               );
+
+              // ✅ Check funding status right after connection
+              const { exists, balance } = await getWalletHealth();
+              const minRequired = 1; // Minimum XLM to exist
+              const networkPass =
+                import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE || "";
+              const network = /Test/i.test(networkPass) ? "testnet" : "mainnet";
+
+              if (!exists || balance < minRequired) {
+                // Fire event for the React modal
+                window.dispatchEvent(
+                  new CustomEvent("openFundingModal", {
+                    detail: { exists, balance, network },
+                  }),
+                );
+              }
             } catch {
-              // Wallet connection failed - user might have rejected or wallet unavailable
-              // This is expected behavior, no need to log
+              // connection error ignored
             }
           },
         });
       } catch {
-        // Wallet modal opening failed - this is expected behavior for some cases
-        // No need to log as it's handled gracefully by the UI
+        // ignored
       }
     }
 
-    if (button) {
-      button.addEventListener("click", connectWallet);
-    }
+    if (button) button.addEventListener("click", connectWallet);
 
     const getStarted = document.querySelector("#get-started");
     connectedPublicKey.subscribe((publicKey) => {
-      if (publicKey) {
-        getStarted?.classList.remove("xl:flex");
-      }
+      if (publicKey) getStarted?.classList.remove("xl:flex");
     });
 
-    // Handle disconnect
     window.addEventListener("walletDisconnected", () => {
       disconnect();
       button.textContent = "";
@@ -187,7 +193,6 @@
       button.classList.toggle("text-white", false);
     });
 
-    // Restore provider on reload
     const provider = loadedProvider();
     if (provider) {
       import("./stellar-wallets-kit").then(({ kit }) => {
