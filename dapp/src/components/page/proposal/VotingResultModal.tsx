@@ -20,29 +20,37 @@ const VotingResultModal: React.FC<VotingResultModal> = ({
 }) => {
   return (
     <Modal onClose={onClose}>
-      <div className="flex items-start gap-[18px]">
-        <img src="/images/heart-arrow-target.svg" />
-        <div className="flex-grow flex flex-col gap-[30px]">
-          <div className="flex flex-col gap-3">
-            <p className="leading-6 text-xl font-medium text-primary">
+      <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
+        <img
+          src="/images/heart-arrow-target.svg"
+          className="w-16 sm:w-auto mx-auto sm:mx-0"
+          alt="Voting Results"
+        />
+        <div className="flex-grow flex flex-col gap-6 sm:gap-[30px]">
+          <div className="flex flex-col gap-2 sm:gap-3 text-center sm:text-left">
+            <p className="leading-6 text-lg sm:text-xl font-medium text-primary">
               Voting Results
             </p>
-            <p className="text-base text-secondary">
+            <p className="text-sm sm:text-base text-secondary">
               The voting period has ended. Below are the final results.
             </p>
           </div>
+
           <VotingResult voteStatus={voteStatus} withDetail />
+
           <Voters
             voteStatus={voteStatus}
             projectMaintainers={projectMaintainers}
             onlyMaintainers
           />
+
           <Voters
             voteStatus={voteStatus}
             projectMaintainers={projectMaintainers}
             onlyMaintainers={false}
           />
-          <div className="flex justify-end">
+
+          <div className="flex justify-center sm:justify-end">
             <Button onClick={onClose}>Got It</Button>
           </div>
         </div>

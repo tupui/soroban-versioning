@@ -106,7 +106,7 @@ export const OutcomeDetail: React.FC<{
         const decoded = StellarXdr.decode("TransactionEnvelope", _xdr);
         setContent(parseToLosslessJson(decoded));
       }
-    } catch {
+    } catch (error) {
       console.error("Error decoding XDR:", error);
     }
   };

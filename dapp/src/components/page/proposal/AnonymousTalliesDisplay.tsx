@@ -32,37 +32,41 @@ const AnonymousTalliesDisplay: React.FC<Props> = ({
         countsOverride={counts}
       />
       {decodedVotes.length > 0 && (
-        <details className="border border-zinc-300 rounded max-h-48 overflow-y-auto">
-          <summary className="p-2 cursor-pointer">View decoded votes</summary>
-          <table className="text-sm w-full">
-            <thead>
-              <tr className="bg-zinc-100">
-                <th className="p-2">Address</th>
-                <th>Vote</th>
-                <th>Weight</th>
-                <th>Max</th>
-                <th>Seed</th>
-              </tr>
-            </thead>
-            <tbody>
-              {decodedVotes.map((v, i) => (
-                <tr key={i} className="odd:bg-white even:bg-zinc-50">
-                  <td className="p-1 break-all">{v.address}</td>
-                  <td className="p-1">{v.vote}</td>
-                  <td className="p-1">{v.weight}</td>
-                  <td className="p-1">{v.maxWeight}</td>
-                  <td className="p-1">{v.seed}</td>
+        <details className="border border-zinc-300 rounded max-h-48 md:max-h-60 overflow-y-auto overflow-x-auto">
+          <summary className="p-2 cursor-pointer text-sm md:text-base">
+            View decoded votes
+          </summary>
+          <div className="w-full overflow-x-auto">
+            <table className="text-xs md:text-sm w-full min-w-[500px]">
+              <thead>
+                <tr className="bg-zinc-100 text-left">
+                  <th className="p-2">Address</th>
+                  <th>Vote</th>
+                  <th>Weight</th>
+                  <th>Max</th>
+                  <th>Seed</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {decodedVotes.map((v, i) => (
+                  <tr key={i} className="odd:bg-white even:bg-zinc-50">
+                    <td className="p-1 break-all">{v.address}</td>
+                    <td className="p-1">{v.vote}</td>
+                    <td className="p-1">{v.weight}</td>
+                    <td className="p-1">{v.maxWeight}</td>
+                    <td className="p-1">{v.seed}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </details>
       )}
 
       {proofOk !== undefined && (
         <div className="flex flex-col gap-2 mt-4">
-          <div className="flex items-center gap-2">
-            <p className="text-base">Proof:</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-sm md:text-base">Proof:</p>
             {proofOk === null ? null : proofOk ? (
               <span aria-label="proof-ok" className="text-green-600 text-xl">
                 ✅
@@ -73,7 +77,7 @@ const AnonymousTalliesDisplay: React.FC<Props> = ({
               </span>
             )}
           </div>
-          <p className="text-sm text-secondary max-w-prose">
+          <p className="text-xs md:text-sm text-secondary max-w-prose">
             This check verifies that the aggregated tallies and seeds correspond
             to the on-chain vote commitments (weights applied during
             verification). Use it to confirm decrypted results before executing

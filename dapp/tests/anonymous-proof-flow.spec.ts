@@ -98,11 +98,34 @@ test.describe("Anonymous voting – proof computation", () => {
       });
     });
 
+    // --- MOCK WALLET SERVICE ---
+    await page.route("**/src/service/walletService.ts", (route) => {
+      const body = `
+    export function loadedPublicKey() { 
+      return 'G'.padEnd(56,'A'); 
+    }
+
+    export function loadedProvider() { 
+      // Simulate a connected Mock wallet
+      return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; 
+    }
+
+    export function setConnection() {}
+    export function disconnect() {}
+    export function initializeConnection() {}
+  `;
+      route.fulfill({
+        status: 200,
+        headers: { "content-type": "application/javascript" },
+        body,
+      });
+    });
+
     // Navigate to any page (module imports available). Then import the utility and run it.
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
     const { tallies, seeds } = await page.evaluate(async () => {
-      const mod = await import("/src/utils/anonymousVoting.ts");
+      const mod = await import("../src/utils/anonymousVoting.ts");
       const data = await mod.computeAnonymousVotingData(
         "demo",
         1,
@@ -111,7 +134,6 @@ test.describe("Anonymous voting – proof computation", () => {
       );
       return { tallies: data.tallies, seeds: data.seeds };
     });
-
     // Expected weighted tallies: [5,2,1]
     expect(tallies).toEqual([5n, 2n, 1n]);
 

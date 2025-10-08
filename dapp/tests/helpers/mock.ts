@@ -374,7 +374,11 @@ export async function applyAllMocks(page) {
       requestAccess: async () => true,
       signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
       signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
-      getNetwork: async () => ({ network: 'testnet' })
+      getNetwork: async () => ({ network: 'testnet' }),
+      setWallet: async (walletId) => {
+        console.log('Mock setWallet called with:', walletId);
+        return true;
+      }
     };`;
     route.fulfill({
       status: 200,
@@ -414,6 +418,10 @@ export async function applyAllMocks(page) {
         async getNetwork() {
           return { network: 'testnet' };
         }
+        async setWallet(walletId) {
+          console.log('Mock setWallet called with:', walletId);
+          return true;
+        }
       }
       
       export class LedgerModule {
@@ -439,6 +447,10 @@ export async function applyAllMocks(page) {
         async getNetwork() {
           return { network: 'testnet' };
         }
+        async setWallet(walletId) {
+          console.log('Mock setWallet called with:', walletId);
+          return true;
+        }
       }
     `;
     route.fulfill({
@@ -457,7 +469,11 @@ export async function applyAllMocks(page) {
       requestAccess: async () => true,
       signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
       signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
-      getNetwork: async () => ({ network: 'testnet' })
+      getNetwork: async () => ({ network: 'testnet' }),
+      setWallet: async (walletId) => {
+        console.log('Mock setWallet called with:', walletId);
+        return true;
+      }
     };`;
     route.fulfill({
       status: 200,
@@ -487,17 +503,23 @@ export async function applyAllMocks(page) {
         signerAddress: "${WALLET_PK}",
       }),
       getNetwork: async () => ({ network: "testnet" }),
+      setWallet: async (walletId) => {
+        console.log("Mock setWallet called with:", walletId);
+        return true;
+      },
     };
   });
 
-  // Mock wallet service to provide authenticated user for tests
+  // Apply walletService mock before navigating to provide authenticated user for tests
   await page.route("**/src/service/walletService.ts", (route) => {
     const body = `
-      export function loadedPublicKey(){ return '${WALLET_PK}'; }
-      export function setPublicKey(){}
-      export function disconnect(){}
-      export function initializeConnection(){}
-    `;
+    export function loadedPublicKey() { return '${WALLET_PK}'; }
+    export function loadedProvider() { return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; }
+    export function setPublicKey() {}
+    export function setConnection() {}      
+    export function disconnect() {}
+    export function initializeConnection() { return { success: true }; }
+  `;
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },
@@ -508,11 +530,13 @@ export async function applyAllMocks(page) {
   // Also mock the wallet service with the @service alias pattern
   await page.route("**/@service/walletService*", (route) => {
     const body = `
-      export function loadedPublicKey(){ return '${WALLET_PK}'; }
-      export function setPublicKey(){}
-      export function disconnect(){}
-      export function initializeConnection(){}
-    `;
+    export function loadedPublicKey() { return '${WALLET_PK}'; }
+    export function loadedProvider() { return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; }
+    export function setPublicKey() {}
+    export function setConnection() {}      
+    export function disconnect() {}
+    export function initializeConnection() { return { success: true }; }
+  `;
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },
@@ -729,6 +753,10 @@ export async function applyMinimalMocks(page) {
         }
         return { signedTxXdr: `signed_${xdr}` };
       },
+      setWallet: async (walletId) => {
+        console.log("Mock setWallet called with:", walletId);
+        return true;
+      },
     };
   });
 }
@@ -761,15 +789,22 @@ export async function applyDiagnosticMocks(page) {
 
   // Enhanced wallet kit for debugging
   await page.addInitScript(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    window.kit = {
-      signTransaction: async (xdr) => {
-        if (!xdr || typeof xdr !== "string") {
-          throw new Error("Invalid XDR provided to wallet");
-        }
-        return { signedTxXdr: `signed_${xdr}` };
-      },
-    };
+    window.addEventListener("walletConnected", (event) => {
+      const connectBtn = document.querySelector("[data-connect] span");
+      if (connectBtn) connectBtn.textContent = "Profile";
+    });
+
+    window.addEventListener("walletDisconnected", () => {
+      const connectBtn = document.querySelector("[data-connect] span");
+      if (connectBtn) connectBtn.textContent = "Connect";
+    });
+
+    // Add setWallet to diagnostic window.kit if needed
+    if (window.kit && !window.kit.setWallet) {
+      window.kit.setWallet = async (walletId) => {
+        console.log("Mock setWallet called with:", walletId);
+        return true;
+      };
+    }
   });
 }

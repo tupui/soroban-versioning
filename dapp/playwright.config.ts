@@ -32,7 +32,8 @@ export default defineConfig({
     trace: "off",
     screenshot: "off",
     video: "off",
-
+    channel: "chrome",
+    ...devices["Desktop Chrome"],
     // Fast Chrome settings
     launchOptions: {
       args: [

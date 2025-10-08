@@ -68,20 +68,22 @@ const VerifyAnonymousVotesModal: React.FC<Props> = ({
   return (
     <Modal onClose={onClose}>
       {step === 1 ? (
-        <div className="flex flex-col gap-[30px]">
+        <div className="flex flex-col gap-6 sm:gap-[30px]">
           <Step step={1} totalSteps={2} />
+
           <Title
             title="Upload anonymous key file"
             description="The private key will be used locally to decrypt votes and verify the proof."
           />
+
           <div
             className={classNames(
-              "border",
+              "border rounded-md",
               processingError ? "border-red-500" : "border-zinc-700",
-              "p-3",
+              "p-3 sm:p-4 text-sm sm:text-base break-words",
             )}
           >
-            <label className="cursor-pointer text-primary underline">
+            <label className="cursor-pointer text-primary underline block text-center sm:text-left">
               Choose key file
               <input
                 type="file"
@@ -91,23 +93,29 @@ const VerifyAnonymousVotesModal: React.FC<Props> = ({
               />
             </label>
           </div>
+
           {processingError && (
-            <p className="text-red-500 text-sm">{processingError}</p>
+            <p className="text-red-500 text-xs sm:text-sm break-words">
+              {processingError}
+            </p>
           )}
         </div>
       ) : (
-        <div className="flex flex-col gap-[30px]">
+        <div className="flex flex-col gap-6 sm:gap-[30px]">
           <Step step={2} totalSteps={2} />
+
           <Title
             title="Decrypted tallies"
             description="Below are the tallies computed from decrypted votes."
           />
+
           <AnonymousTalliesDisplay
             voteStatus={voteStatus || undefined}
             decodedVotes={decodedVotes}
             proofOk={proofOk}
           />
-          <div className="flex justify-end">
+
+          <div className="flex justify-center sm:justify-end">
             <Button type="secondary" onClick={onClose}>
               Close
             </Button>

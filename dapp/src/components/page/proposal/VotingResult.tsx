@@ -36,13 +36,15 @@ const VotingResult: FC<Props> = ({
 
   return (
     <>
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6">
         {voteResult && (
           <div className="flex flex-col gap-[18px]">
             <p className="leading-4 text-base text-secondary">Final Outcome</p>
             <div className="flex items-center gap-2">
               <VoteTypeCheckbox size="sm" voteType={voteResult} />
-              <p className={`leading-5 text-xl font-medium text-${voteResult}`}>
+              <p
+                className={`leading-5 text-lg md:text-xl font-medium text-${voteResult}`}
+              >
                 {votedTypeLabelMap[voteResult]}
               </p>
             </div>
@@ -53,7 +55,7 @@ const VotingResult: FC<Props> = ({
             <p className="leading-4 text-base text-secondary">
               Total Votes Cast
             </p>
-            <p className="leading-6 text-xl text-primary">
+            <p className="leading-6 text-lg md:text-xl text-primary">
               {totalVotesOverride !== undefined
                 ? totalVotesOverride
                 : countsOverride
@@ -68,29 +70,32 @@ const VotingResult: FC<Props> = ({
           </div>
         )}
       </div>
+
       {withDetail && (
-        <div className="flex gap-6">
-          <div className="flex flex-col gap-[18px]">
+        <div className="flex flex-col md:flex-row flex-wrap gap-4 md:gap-6 mt-4">
+          <div className="flex flex-col gap-[18px] min-w-[120px]">
             <p className="leading-4 text-base text-approved">Approved</p>
-            <p className="leading-6 text-xl text-primary">
+            <p className="leading-6 text-lg md:text-xl text-primary">
               {countsOverride
                 ? countsOverride.approve
                 : voteStatus?.approve.score}{" "}
               votes
             </p>
           </div>
-          <div className="flex flex-col gap-[18px]">
+
+          <div className="flex flex-col gap-[18px] min-w-[120px]">
             <p className="leading-4 text-base text-cancelled">Cancelled</p>
-            <p className="leading-6 text-xl text-primary">
+            <p className="leading-6 text-lg md:text-xl text-primary">
               {countsOverride
                 ? countsOverride.abstain
                 : voteStatus?.abstain.score}{" "}
               votes
             </p>
           </div>
-          <div className="flex flex-col gap-[18px]">
+
+          <div className="flex flex-col gap-[18px] min-w-[120px]">
             <p className="leading-4 text-base text-rejected">Rejected</p>
-            <p className="leading-6 text-xl text-primary">
+            <p className="leading-6 text-lg md:text-xl text-primary">
               {countsOverride
                 ? countsOverride.reject
                 : voteStatus?.reject.score}{" "}

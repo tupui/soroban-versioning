@@ -1,6 +1,13 @@
 import { test, expect } from "@playwright/test";
 import { applyAllMocks, applyMinimalMocks } from "./helpers/mock";
 
+// Extend Window interface for mockGetMemberResponse
+declare global {
+  interface Window {
+    mockGetMemberResponse?: any;
+  }
+}
+
 test.describe("Essential Production Validation", () => {
   // Global error tracking for each test
   let globalErrors: string[] = [];
@@ -156,7 +163,7 @@ test.describe("Essential Production Validation", () => {
     const contractServiceTest = await page.evaluate(async () => {
       try {
         const { commitHash, voteToProposal, execute } = await import(
-          "./src/service/ContractService.ts"
+          "../src/service/ContractService.ts"
         );
 
         // Should not throw "is not a function" errors during static analysis
@@ -177,7 +184,10 @@ test.describe("Essential Production Validation", () => {
           hasCommitHashMethod: false,
           hasVoteMethod: false,
           hasExecuteMethod: false,
-          error: error.message,
+          error:
+            typeof error === "object" && error !== null && "message" in error
+              ? (error as { message: string }).message
+              : String(error),
         };
       }
     });
