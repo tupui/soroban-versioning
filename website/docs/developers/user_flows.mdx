@@ -279,13 +279,13 @@ Maintainers can update project commit hashes to track code versions on-chain.
 sequenceDiagram
   participant M as Maintainer
   participant D as dApp
-  participant GH as GitHub
+  participant LG as Local Git Mirror
   participant SC as SorobanContract
   participant DB as Database
 
   M->>D: Update Commit Hash
-  D->>GH: Verify Commit Exists
-  GH-->>D: Commit Verification
+  D->>LG: Clone & Verify Commit
+  LG-->>D: Commit Verification
   M->>SC: Submit commit()
   SC-->>D: Commit Updated
   SC->>DB: Emit Commit Event
@@ -294,7 +294,8 @@ sequenceDiagram
 
 ### Commit Verification
 
-- **GitHub API Integration**: Verify commit hashes exist in specified repository
+- **Local Git Clone**: The dApp clones the repository server-side to verify the commit exists, supporting any git hosting provider
+- **Generic Metadata Fetching**: Commit history, README content, and latest hashes are resolved through the local clone instead of external platform APIs
 - **Hash Format Validation**: Ensure 40-character hexadecimal format
 - **Authorization Check**: Only project maintainers can update commits
 

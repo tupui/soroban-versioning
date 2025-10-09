@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { ContributionMetrics as ContributionMetricsType } from "../../../types/contributionMetrics";
+import type { ContributionMetrics as ContributionMetricsData } from "../../../types/contributionMetrics";
 import { ContributionMetricsService } from "../../../service/ContributionMetricsService";
 import { loadConfigData } from "../../../service/StateService";
 import PonyFactorCard from "./PonyFactorCard";
@@ -8,16 +8,14 @@ import MonthlyActivityChart from "./MonthlyActivityChart";
 
 interface ContributionMetricsProps {
   projectName: string;
-  owner: string;
-  repo: string;
+  repoUrl: string;
 }
 
 const ContributionMetrics = ({
   projectName,
-  owner,
-  repo,
+  repoUrl,
 }: ContributionMetricsProps) => {
-  const [metrics, setMetrics] = useState<ContributionMetricsType | null>(null);
+  const [metrics, setMetrics] = useState<ContributionMetricsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [maintainers, setMaintainers] = useState<string[]>([]);
@@ -28,10 +26,7 @@ const ContributionMetrics = ({
         setLoading(true);
         setError(null);
 
-        const metrics = await ContributionMetricsService.fetchMetrics(
-          owner,
-          repo,
-        );
+        const metrics = await ContributionMetricsService.fetchMetrics(repoUrl);
         setMetrics(metrics);
 
         const configData = loadConfigData();
@@ -54,10 +49,10 @@ const ContributionMetrics = ({
       }
     };
 
-    if (projectName && owner && repo) {
+    if (projectName && repoUrl) {
       fetchMetrics();
     }
-  }, [projectName, owner, repo]);
+  }, [projectName, repoUrl]);
 
   if (loading) {
     return (
