@@ -374,7 +374,8 @@ export async function applyAllMocks(page) {
       requestAccess: async () => true,
       signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
       signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
-      getNetwork: async () => ({ network: 'testnet' })
+      getNetwork: async () => ({ network: 'testnet' }),
+      setWallet: (id) => { /* no-op for tests */ }
     };`;
     route.fulfill({
       status: 200,
@@ -457,7 +458,8 @@ export async function applyAllMocks(page) {
       requestAccess: async () => true,
       signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
       signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
-      getNetwork: async () => ({ network: 'testnet' })
+      getNetwork: async () => ({ network: 'testnet' }),
+      setWallet: (id) => { /* no-op for tests */ }
     };`;
     route.fulfill({
       status: 200,
@@ -494,6 +496,8 @@ export async function applyAllMocks(page) {
   await page.route("**/src/service/walletService.ts", (route) => {
     const body = `
       export function loadedPublicKey(){ return '${WALLET_PK}'; }
+      export function loadedProvider(){ return 'freighter'; }
+      export function setConnection(){ }
       export function setPublicKey(){}
       export function disconnect(){}
       export function initializeConnection(){}
@@ -509,6 +513,8 @@ export async function applyAllMocks(page) {
   await page.route("**/@service/walletService*", (route) => {
     const body = `
       export function loadedPublicKey(){ return '${WALLET_PK}'; }
+      export function loadedProvider(){ return 'freighter'; }
+      export function setConnection(){ }
       export function setPublicKey(){}
       export function disconnect(){}
       export function initializeConnection(){}

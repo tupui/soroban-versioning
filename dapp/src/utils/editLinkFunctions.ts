@@ -12,42 +12,38 @@ export function convertGitHubLink(link: string): string {
   }
 }
 
-export function getGithubContentUrl(
-  username: string,
-  repoName: string,
-  filePath: string,
-): string {
-  return `https://raw.githubusercontent.com/${username}/${repoName}/${filePath}`;
-}
-
 export function getAuthorRepo(repoUrl: string): {
   username: string | undefined;
   repoName: string | undefined;
 } {
-  const match = repoUrl.match(/https\:\/\/github\.com\/([^\/]+)\/([^\/]+)/);
-  if (!match || !match[1] || !match[2])
+  try {
+    if (repoUrl.startsWith("git@")) {
+      const [, path] = repoUrl.split(":");
+      if (!path) {
+        return { username: undefined, repoName: undefined };
+      }
+      const segments = path
+        .replace(/\.git$/, "")
+        .split("/")
+        .filter(Boolean);
+      if (segments.length < 2) {
+        return { username: undefined, repoName: undefined };
+      }
+      const repoName = segments.pop();
+      const username = segments.pop();
+      return { username, repoName };
+    }
+
+    const url = new URL(repoUrl);
+    const segments = url.pathname.split("/").filter(Boolean);
+    if (segments.length < 2) {
+      return { username: undefined, repoName: undefined };
+    }
+
+    const repoName = segments.pop()?.replace(/\.git$/, "");
+    const username = segments.pop();
+    return { username, repoName };
+  } catch {
     return { username: undefined, repoName: undefined };
-  return { username: match[1], repoName: match[2] };
-}
-
-export function getGithubContentUrlFromConfigUrl(
-  configUrl: string,
-): string | undefined {
-  const { username, repoName } = getAuthorRepo(configUrl);
-  if (username && repoName) {
-    // use master as GitHub will do an automatic redirection to main
-    return getGithubContentUrl(username, repoName, "master/tansu.toml");
   }
-  return undefined;
-}
-
-export function getGithubContentUrlFromReadmeUrl(
-  configUrl: string,
-): string | undefined {
-  const { username, repoName } = getAuthorRepo(configUrl);
-  if (username && repoName) {
-    // use master as GitHub will do an automatic redirection to main
-    return getGithubContentUrl(username, repoName, "master/README.md");
-  }
-  return undefined;
 }

@@ -92,6 +92,8 @@ test("execute() receives weighted tallies/seeds for anonymous proposal", async (
   await page.route("**/src/service/walletService.ts", (route) => {
     const body = `
       export function loadedPublicKey(){ return 'G'.padEnd(56,'A'); }
+      export function loadedProvider(){ return 'freighter'; }
+      export function setConnection(){}
       export function setPublicKey(){}
       export function disconnect(){}
       export function initializeConnection(){}

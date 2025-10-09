@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { getCommitHistory } from "../../../service/GithubService.ts";
 import {
   loadConfigData,
-  loadProjectRepoInfo,
+  loadProjectRepoUrl,
 } from "../../../service/StateService.ts";
 import { formatDate } from "../../../utils/formatTimeFunctions.ts";
 import { latestCommit, projectInfoLoaded } from "../../../utils/store.ts";
@@ -17,13 +17,9 @@ const CommitHistory = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const fetchCommitHistory = async (page = 1) => {
-    const projectRepoInfo = loadProjectRepoInfo();
-    if (projectRepoInfo?.author && projectRepoInfo?.repository) {
-      const history = await getCommitHistory(
-        projectRepoInfo.author,
-        projectRepoInfo.repository,
-        page,
-      );
+    const repoUrl = loadProjectRepoUrl();
+    if (repoUrl) {
+      const history = await getCommitHistory(repoUrl, page);
 
       if (history) {
         setCommitHistory(history);
