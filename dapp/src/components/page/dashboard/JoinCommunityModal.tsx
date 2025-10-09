@@ -2,10 +2,12 @@ import { useState, type FC, useEffect } from "react";
 import Input from "components/utils/Input";
 import Button from "components/utils/Button";
 import FlowProgressModal from "components/utils/FlowProgressModal";
+import GitVerification from "components/utils/GitVerification";
 import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
 import { validateStellarAddress, validateUrl } from "utils/validations";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
+import type { GitVerificationData } from "utils/gitVerification";
 
 interface ProfileImageFile {
   localUrl: string;
@@ -33,6 +35,9 @@ const JoinCommunityModal: FC<{
   const [updateSuccessful, setUpdateSuccessful] = useState(false);
   const [step, setStep] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
+  
+
+  const [gitVerificationData, setGitVerificationData] = useState<GitVerificationData | null>(null);
 
   // Validation errors
   const [addressError, setAddressError] = useState<string | null>(null);
@@ -155,6 +160,7 @@ const JoinCommunityModal: FC<{
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: [],
+          gitVerificationData,
           onProgress: setStep,
         });
 
@@ -201,6 +207,7 @@ const JoinCommunityModal: FC<{
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: files,
+          gitVerificationData,
           onProgress: setStep,
         });
 
