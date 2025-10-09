@@ -11,14 +11,17 @@ export interface Proposal {
   id: number;
   title: string;
   ipfs: string;
+  proposer: string;
   status: ProposalStatus;
   voting_ends_at: number;
   voteStatus: VoteStatus;
+  outcomes_contract?: string | null;
 }
 
 export interface ProposalView {
   id: number;
   title: string;
+  proposer: string;
   projectName: string;
   ipfsLink: string;
   status: ProposalViewStatus;

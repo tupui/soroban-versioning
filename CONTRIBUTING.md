@@ -22,6 +22,11 @@ Welcome to our community! Thank you for taking the time to read the following.
 
 After cloning the repository, see the various Makefiles.
 
+For IPFS uploads via Storacha, please follow the guide at `STORACHA.md` to:
+- create a Storacha account and obtain a proof,
+- encrypt the proof locally using AES-256 with the helper script in `tools/AES256-encrypt.js`, and
+- configure `STORACHA_SING_PRIVATE_KEY` and `STORACHA_PROOF` in `dapp/.env` (see `dapp/.env.example`).
+
 ### Testing
 
 Testing your code is paramount. Without continuous integration, we **cannot**
