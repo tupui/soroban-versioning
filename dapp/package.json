@@ -11,7 +11,7 @@
     "@stellar/stellar-xdr-json": "^23.0.0-rc.1",
     "@web3-storage/access": "^20.3.0",
     "@web3-storage/w3up-client": "^17.3.0",
-    "astro": "5.14.1",
+    "astro": "5.14.3",
     "astro-seo": "^0.8.4",
     "classnames": "^2.5.1",
     "d3-array": "^3.2.4",
