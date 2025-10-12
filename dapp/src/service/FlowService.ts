@@ -6,6 +6,7 @@ import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
 import { deriveProjectKey } from "../utils/projectKey";
+import type { GitVerificationData } from "../utils/gitVerification";
 //
 
 //
@@ -266,6 +267,17 @@ export async function joinCommunityFlow({
 
   // Step 2: Create and sign the smart contract transaction with the CID
   onProgress?.(7); // signing step indicator (offset -5 → shows Sign)
+  
+  // Log Git verification data if provided (for future contract integration)
+  if (gitVerificationData) {
+    console.log('Git verification data provided:', {
+      gitHandle: gitVerificationData.gitHandle,
+      publicKeyLength: gitVerificationData.publicKey.length,
+      envelopeLength: gitVerificationData.envelope.length,
+      signatureLength: gitVerificationData.signature.length,
+    });
+  }
+  
   const signedTxXdr = await createSignedAddMemberTransaction(
     memberAddress,
     cid,

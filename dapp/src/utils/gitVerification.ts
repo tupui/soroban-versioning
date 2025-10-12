@@ -26,7 +26,7 @@ export function parseGitHandle(gitHandle: string): ParsedGitHandle | null {
   if (!match) return null;
   
   const [, provider, username] = match;
-  if (!GIT_PROVIDERS[provider]) return null;
+  if (!provider || !username || !GIT_PROVIDERS[provider]) return null;
   
   return { provider, username };
 }
@@ -38,10 +38,15 @@ export async function fetchGitPublicKeys(gitHandle: string): Promise<string[]> {
   }
 
   const provider = GIT_PROVIDERS[parsed.provider];
-  const url = provider.keysUrl(parsed.username);
+  if (!provider) {
+    throw new Error(`Unsupported provider: ${parsed.provider}`);
+  }
+
+  const originalUrl = provider.keysUrl(parsed.username);
+  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(proxyUrl);
     if (!response.ok) {
       throw new Error(`Failed to fetch keys from ${provider.name}: ${response.statusText}`);
     }
@@ -72,8 +77,13 @@ export function extractEd25519PublicKey(sshKey: string): Buffer {
     throw new Error('Invalid SSH Ed25519 key format');
   }
 
+  const keyPart = parts[1];
+  if (!keyPart) {
+    throw new Error('Missing key data in SSH key');
+  }
+
   try {
-    const keyData = Buffer.from(parts[1], 'base64');
+    const keyData = Buffer.from(keyPart, 'base64');
     const keyType = keyData.subarray(4, 15).toString();
     if (keyType !== 'ssh-ed25519') {
       throw new Error('Key type mismatch');
@@ -128,15 +138,23 @@ export function parseSEP53Envelope(envelope: string): {
 
   const [header, networkPassphrase, signingAccount, nonce, payload] = lines;
   
-  if (header !== "Stellar Signed Message") {
+  if (!header || header !== "Stellar Signed Message") {
     throw new Error('Invalid SEP-53 envelope: header must be "Stellar Signed Message"');
   }
 
-  if (!/^[0-9a-f]{32}$/i.test(nonce)) {
+  if (!networkPassphrase) {
+    throw new Error('Invalid SEP-53 envelope: missing network passphrase');
+  }
+
+  if (!signingAccount) {
+    throw new Error('Invalid SEP-53 envelope: missing signing account');
+  }
+
+  if (!nonce || !/^[0-9a-f]{32}$/i.test(nonce)) {
     throw new Error('Invalid SEP-53 envelope: nonce must be 32 hex characters');
   }
 
-  if (!payload.startsWith('tansu-bind|')) {
+  if (!payload || !payload.startsWith('tansu-bind|')) {
     throw new Error('Invalid SEP-53 envelope: payload must start with "tansu-bind|"');
   }
 
