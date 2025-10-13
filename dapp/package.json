@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/netlify": "6.5.11",
+    "@astrojs/netlify": "6.5.12",
     "@astrojs/react": "4.4.0",
     "@creit.tech/sorobandomains-sdk": "^0.1.6",
     "@creit.tech/stellar-wallets-kit": "^1.9.2",
@@ -12,7 +12,7 @@
     "@stellar/stellar-xdr-json": "^23.0.0-rc.1",
     "@web3-storage/access": "^20.3.0",
     "@web3-storage/w3up-client": "^17.3.0",
-    "astro": "5.14.3",
+    "astro": "5.14.4",
     "astro-seo": "^0.8.4",
     "axios": "^1.12.2",
     "buffer": "^6.0.3",
