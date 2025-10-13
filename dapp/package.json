@@ -15,6 +15,7 @@
     "astro": "5.14.1",
     "astro-seo": "^0.8.4",
     "axios": "^1.12.2",
+    "buffer": "^6.0.3",
     "classnames": "^2.5.1",
     "d3-array": "^3.2.4",
     "d3-color": "^3.1.0",
