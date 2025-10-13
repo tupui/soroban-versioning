@@ -5,6 +5,7 @@
     "@astrojs/react": "4.4.0",
     "@creit.tech/sorobandomains-sdk": "^0.1.6",
     "@creit.tech/stellar-wallets-kit": "^1.9.2",
+    "@ipld/dag-ucan": "^3.4.5",
     "@nanostores/react": "^1.0.0",
     "@noble/curves": "^1.9.7",
     "@stellar/stellar-sdk": "^14.1.1",
@@ -13,6 +14,8 @@
     "@web3-storage/w3up-client": "^17.3.0",
     "astro": "5.14.1",
     "astro-seo": "^0.8.4",
+    "axios": "^1.12.2",
+    "buffer": "^6.0.3",
     "classnames": "^2.5.1",
     "d3-array": "^3.2.4",
     "d3-color": "^3.1.0",
@@ -31,8 +34,11 @@
     "lossless-json": "^4.2.0",
     "markdown-to-jsx": "^7.7.13",
     "nanostores": "^1.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react18-json-view": "^0.2.9",
     "recharts": "^2.15.0",
+    "toml": "^3.0.0",
     "typescript": "^5.9.2"
   },
   "devDependencies": {
