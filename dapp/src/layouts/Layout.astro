@@ -1,7 +1,7 @@
 ---
 import Navbar from "../components/layout/Navbar.astro";
 import Footer from "../components/layout/Footer.astro";
-import { ViewTransitions } from "astro:transitions";
+import { ClientRouter } from "astro:transitions";
 import { SEO } from "astro-seo";
 
 import "../styles/global.css";
@@ -188,7 +188,7 @@ const { title, page } = Astro.props;
       rel="stylesheet"
     />
 
-    <ViewTransitions />
+    <ClientRouter />
 
     <SEO
       title={title}
@@ -237,7 +237,7 @@ const { title, page } = Astro.props;
     />
 
     <!-- Structured Data for SEO -->
-    <script type="application/ld+json">
+    <script type="application/ld+json" is:inline>
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",

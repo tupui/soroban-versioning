@@ -35,7 +35,7 @@ function hexToArrayBuffer(hex: string): ArrayBuffer {
   }
   const byteArray = new Uint8Array(hex.length / 2);
   for (let i = 0; i < byteArray.length; i++) {
-    byteArray[i] = parseInt(hex.substr(i * 2, 2), 16);
+    byteArray[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
   }
   return byteArray.buffer;
 }

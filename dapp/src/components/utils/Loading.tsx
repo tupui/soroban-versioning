@@ -8,7 +8,7 @@
  * The two implementations should maintain identical styling for consistency.
  */
 
-export default function Loading({ _theme = "dark" }: { theme?: string }) {
+export default function Loading() {
   return (
     <div className="flex flex-col items-center justify-center gap-3">
       <img src="/images/loading.svg" className="w-10 animate-spin" />
