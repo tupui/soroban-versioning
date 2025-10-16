@@ -191,8 +191,8 @@ test.describe("Tansu dApp - Comprehensive User Flows", () => {
     });
   });
 
-  test("XSS protection and input handling", async ({ page }) => {
-    test.setTimeout(90000); // ⏳ Allow 90s since multiple navigations are involved
+  test("🛡️ XSS protection and input handling", async ({ page }) => {
+    test.setTimeout(90000);
 
     const xssPayloads = [
       '<script>alert("xss")</script>',
@@ -204,7 +204,7 @@ test.describe("Tansu dApp - Comprehensive User Flows", () => {
       try {
         await page.goto(`/project?name=${encodeURIComponent(payload)}`, {
           waitUntil: "domcontentloaded",
-          timeout: 5000, // shorter timeout per attempt
+          timeout: 5000,
         });
         await expect(page.locator("body")).toBeVisible();
       } catch {

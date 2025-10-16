@@ -57,14 +57,11 @@ export async function decryptWithPrivateKey(
 
 // ────────────────── Helpers ──────────────────
 
-// Convert ArrayBuffer → Base64
 function bufToB64(buf: ArrayBuffer): string {
   return btoa(String.fromCharCode(...new Uint8Array(buf)));
 }
 
-// Convert Base64 → ArrayBuffer
 function b64ToBuf(b64: string): ArrayBuffer {
-  // 🛡️ Sanitize the Base64 string
   // Removes spaces, tabs, newlines, and non-base64-safe characters
   b64 = b64.replace(/[^A-Za-z0-9+/=]/g, "");
 
@@ -72,7 +69,6 @@ function b64ToBuf(b64: string): ArrayBuffer {
   return Uint8Array.from(bin, (c) => c.charCodeAt(0)).buffer;
 }
 
-// Import Base64 → PublicKey
 async function importPublicKey(b64: string): Promise<CryptoKey> {
   const clean = b64.replace(/[^A-Za-z0-9+/=]/g, "");
   return crypto.subtle.importKey(
@@ -84,7 +80,6 @@ async function importPublicKey(b64: string): Promise<CryptoKey> {
   );
 }
 
-// Import Base64 → PrivateKey
 async function importPrivateKey(b64: string): Promise<CryptoKey> {
   const clean = b64.replace(/[^A-Za-z0-9+/=]/g, "");
   return crypto.subtle.importKey(
