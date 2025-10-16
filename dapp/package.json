@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@astrojs/check": "^0.9.4",
-    "@astrojs/netlify": "6.5.11",
+    "@astrojs/netlify": "6.5.12",
     "@astrojs/react": "4.4.0",
     "@creit.tech/sorobandomains-sdk": "^0.1.6",
     "@creit.tech/stellar-wallets-kit": "^1.9.2",
@@ -12,7 +12,7 @@
     "@stellar/stellar-xdr-json": "^23.0.0-rc.1",
     "@web3-storage/access": "^20.3.0",
     "@web3-storage/w3up-client": "^17.3.0",
-    "astro": "5.14.1",
+    "astro": "5.14.4",
     "astro-seo": "^0.8.4",
     "axios": "^1.12.2",
     "buffer": "^6.0.3",
@@ -37,7 +37,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react18-json-view": "^0.2.9",
-    "recharts": "^2.15.0",
+    "recharts": "^3.2.1",
     "toml": "^3.0.0",
     "typescript": "^5.9.2"
   },
@@ -53,7 +53,7 @@
     "eslint": "^9.34.0",
     "eslint-plugin-react": "^7.37.5",
     "glob": "^11.0.3",
-    "lighthouse": "^12.8.2",
+    "lighthouse": "^13.0.0",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-astro": "^0.14.1",
