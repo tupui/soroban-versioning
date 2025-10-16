@@ -33,7 +33,14 @@ import NavbarSearch from "../NavbarSearch.tsx";
 
         <!-- Search bar -->
         <div class="flex-1 flex justify-start ml-3 md:ml-4">
-          <NavbarSearch client:load _onAddProject={() => {}} />
+          <NavbarSearch
+            client:load
+            _onAddProject={() => {
+              document.dispatchEvent(
+                new CustomEvent("show-create-project-modal"),
+              );
+            }}
+          />
         </div>
 
         <!-- Wallet connect + community button -->

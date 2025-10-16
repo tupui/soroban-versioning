@@ -70,7 +70,7 @@ const ReadMoreModal: FC<ReadMoreModalProps> = ({
           if (content) {
             setReadmeContent(content);
           }
-        } catch {
+        } catch (error) {
           console.error("Failed to load README:", error);
           setReadmeContent(
             "Failed to load README content. Please check the repository directly.",

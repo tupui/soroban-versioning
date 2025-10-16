@@ -59,7 +59,7 @@ import ReadmeViewer from "./ReadmeViewer";
         );
 
         const moveToReleases = document.getElementById("move-to-releases");
-        if (moveToReleases) {
+        if (moveToReleases instanceof HTMLAnchorElement) {
           moveToReleases.href = `${repositoryUrl}/releases`;
           moveToReleases.target = "_blank";
           moveToReleases.rel = "noopener noreferrer";

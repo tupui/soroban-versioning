@@ -152,7 +152,7 @@ const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
       return;
     }
 
-    document.dispatchEvent(new CustomEvent("show-create-project-modal"));
+    _onAddProject();
   };
 
   const handleClearSearch = () => {
