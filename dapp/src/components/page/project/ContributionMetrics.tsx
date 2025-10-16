@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { ContributionMetrics } from "../../../types/contributionMetrics";
+import type { ContributionMetrics as ContributionMetricsType } from "../../../types/contributionMetrics";
 import { ContributionMetricsService } from "../../../service/ContributionMetricsService";
 import { loadConfigData } from "../../../service/StateService";
 import PonyFactorCard from "./PonyFactorCard";
@@ -12,12 +12,12 @@ interface ContributionMetricsProps {
   repo: string;
 }
 
-const ContributionMetrics: React.FC<ContributionMetricsProps> = ({
+const ContributionMetrics = ({
   projectName,
   owner,
   repo,
-}) => {
-  const [metrics, setMetrics] = useState<ContributionMetrics | null>(null);
+}: ContributionMetricsProps) => {
+  const [metrics, setMetrics] = useState<ContributionMetricsType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [maintainers, setMaintainers] = useState<string[]>([]);
