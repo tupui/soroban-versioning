@@ -194,10 +194,16 @@ const VotingModal: React.FC<VotersModalProps> = ({
                 <input
                   type="range"
                   min="1"
-                  max={maxWeight}
-                  value={selectedWeight}
-                  onChange={(e) => setSelectedWeight(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
+                  max="100"
+                  value={Math.round((selectedWeight / maxWeight) * 100)}
+                  onChange={(e) => {
+                    const percentage = Number(e.target.value);
+                    setSelectedWeight(Math.round((percentage / 100) * maxWeight));
+                  }}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary"
+                  style={{
+                    background: `linear-gradient(to right, #7c3aed 0%, #7c3aed ${Math.round((selectedWeight / maxWeight) * 100)}%, #e5e7eb ${Math.round((selectedWeight / maxWeight) * 100)}%, #e5e7eb 100%)`
+                  }}
                 />
                 <p className="text-xs text-secondary">
                   Slide to adjust your voting power
