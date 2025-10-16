@@ -1,5 +1,6 @@
-import { bls12_381 } from "@noble/curves/bls12-381";
-import { sha256 } from "@noble/hashes/sha2";
+import { bls12_381 } from "@noble/curves/bls12-381.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { utf8ToBytes } from "@noble/hashes/utils.js";
 
 /**
  * Result of a vote processing operation
@@ -28,12 +29,15 @@ export function processVote(vote: number, randomValue: number): VoteResult {
     const randomBI = BigInt(randomValue);
 
     // Generate deterministic base points from hash values
-    const G = bls12_381.G1.hashToCurve(sha256("VOTING_BASEPOINT_G_2024_v1"), {
-      DST: "VOTING_G",
-    });
-    const H = bls12_381.G1.hashToCurve(sha256("VOTING_BASEPOINT_H_2024_v1"), {
-      DST: "VOTING_H",
-    });
+    const G = bls12_381.G1.hashToCurve(
+      sha256(utf8ToBytes("VOTING_BASEPOINT_G_2024_v1")),
+      { DST: utf8ToBytes("VOTING_G") },
+    );
+
+    const H = bls12_381.G1.hashToCurve(
+      sha256(utf8ToBytes("VOTING_BASEPOINT_H_2024_v1")),
+      { DST: utf8ToBytes("VOTING_H") },
+    );
 
     // Handle negative votes by computing modular negation in the scalar field
     const voteBI = BigInt(vote);
@@ -46,7 +50,7 @@ export function processVote(vote: number, randomValue: number): VoteResult {
     const commitment = vG.add(rH);
 
     // Convert commitment to compressed format (48 bytes)
-    // @ts-ignore - The type definition doesn't include toRawBytes but it exists in the implementation
+    // @ts-ignore - toRawBytes exists in implementation
     const commitmentBytes = commitment.toRawBytes(true);
 
     return {
@@ -54,7 +58,9 @@ export function processVote(vote: number, randomValue: number): VoteResult {
     };
   } catch (error) {
     throw new Error(
-      `Failed to process vote: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to process vote: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     );
   }
 }
@@ -65,4 +71,5 @@ const vote = 1;
 const random = 123456;
 const result = processVote(vote, random);
 const commitmentHex = Buffer.from(result.commitment).toString("hex");
+console.log("Commitment (hex):", commitmentHex);
 */
