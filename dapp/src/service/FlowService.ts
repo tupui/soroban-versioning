@@ -1,6 +1,6 @@
 import { calculateDirectoryCid } from "../utils/ipfsFunctions";
-import { create } from "@web3-storage/w3up-client";
-import { extract } from "@web3-storage/w3up-client/delegation";
+import { create } from "@storacha/client";
+
 //
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
@@ -46,7 +46,7 @@ interface CreateProjectFlowParams {
 /**
  * Upload files to IPFS using delegation
  */
-async function uploadWithDelegation({
+export async function uploadWithDelegation({
   files,
   type,
   projectName,
@@ -55,6 +55,7 @@ async function uploadWithDelegation({
 }: UploadWithDelegationParams): Promise<string> {
   const apiUrl = `/api/w3up-delegation`;
 
+  // Request delegation from the backend
   const response = await fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -80,19 +81,16 @@ async function uploadWithDelegation({
     throw new Error(errorMessage);
   }
 
-  const data = await response.arrayBuffer();
+  const delegationData = await response.json();
 
-  const delegation = await extract(new Uint8Array(data));
-  if (!delegation.ok) {
-    throw new Error("Failed to extract delegation", {
-      cause: delegation.error,
-    });
-  }
-
+  // Create Storacha client
   const client = await create();
-  const space = await client.addSpace(delegation.ok);
+
+  // Create a new space for uploading files
+  const space = await client.addSpace(delegationData);
   await client.setCurrentSpace(space.did());
 
+  // Upload files to IPFS
   const directoryCid = await client.uploadDirectory(files);
   if (!directoryCid) throw new Error("Failed to upload to IPFS");
 

@@ -53,7 +53,7 @@ export const getOutcomeLinkFromIpfs = (cid: string): string => {
 /**
  * Compute the CID that IPFS / Web3.Storage would assign to a directory without uploading it.
  * Uses createDirectoryEncoderStream from ipfs-car to create the same UnixFS + DAG-PB layout
- * that @web3-storage/w3up-client would use.
+ * that @storacha/client would use.
  *
  * @param files - Array of File objects or objects with path and content
  * @returns The calculated CID
@@ -104,7 +104,7 @@ export const calculateDirectoryCid = async (
     // For more complex inputs, use the original implementation that supports custom objects
     else {
       // Dynamically import the IPFS libraries to reduce initial bundle size
-      const { create } = await import("@web3-storage/w3up-client");
+      const { create } = await import("@storacha/client");
       const client = await create();
 
       // Convert the files array to the format expected by the uploadDirectory method
