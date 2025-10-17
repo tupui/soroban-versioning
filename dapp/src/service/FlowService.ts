@@ -86,11 +86,8 @@ export async function uploadWithDelegation({
   // Create Storacha client
   const client = await create();
 
-  // Load the delegation from the backend response
-  const delegation = delegationData;
-
   // Create a new space for uploading files
-  const space = await client.addSpace(delegation);
+  const space = await client.addSpace(delegationData);
   await client.setCurrentSpace(space.did());
 
   // Upload files to IPFS
