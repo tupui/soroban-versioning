@@ -8,14 +8,12 @@ import MonthlyActivityChart from "./MonthlyActivityChart";
 
 interface ContributionMetricsProps {
   projectName: string;
-  owner: string;
-  repo: string;
+  repositoryUrl: string;
 }
 
 const ContributionMetrics = ({
   projectName,
-  owner,
-  repo,
+  repositoryUrl,
 }: ContributionMetricsProps) => {
   const [metrics, setMetrics] = useState<ContributionMetricsType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,10 +26,8 @@ const ContributionMetrics = ({
         setLoading(true);
         setError(null);
 
-        const metrics = await ContributionMetricsService.fetchMetrics(
-          owner,
-          repo,
-        );
+        const metrics =
+          await ContributionMetricsService.fetchMetrics(repositoryUrl);
         setMetrics(metrics);
 
         const configData = loadConfigData();
@@ -54,10 +50,10 @@ const ContributionMetrics = ({
       }
     };
 
-    if (projectName && owner && repo) {
+    if (projectName && repositoryUrl) {
       fetchMetrics();
     }
-  }, [projectName, owner, repo]);
+  }, [projectName, repositoryUrl]);
 
   if (loading) {
     return (

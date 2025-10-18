@@ -345,8 +345,12 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
 
-        const { username, repoName } = getAuthorRepo(project.config.url);
-        if (username && repoName) {
+        const { descriptor, username, repoName } = getAuthorRepo(
+          project.config.url,
+        );
+        if (descriptor) {
+          setProjectRepoInfo(descriptor);
+        } else if (username && repoName) {
           setProjectRepoInfo(username, repoName);
         }
 

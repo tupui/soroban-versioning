@@ -108,7 +108,7 @@ import Button from "components/utils/Button";
 <div id="read-more-modal-container"></div>
 
 <script>
-  import { getLatestCommitData } from "@service/GithubService";
+  import { getLatestCommitData } from "@service/RepositoryService";
   import { getIpfsBasicLink } from "utils/ipfsFunctions";
   import { navigate } from "astro:transitions/client";
   import type { ConfigData } from "types/projectConfig";
@@ -375,6 +375,11 @@ import Button from "components/utils/Button";
           projectNameElement.textContent = projectInfo.name;
         }
         const configData = loadConfigData();
+        const repoDetails = projectInfo?.config?.url
+          ? getAuthorRepo(projectInfo.config.url)
+          : undefined;
+        const repoHost = repoDetails?.descriptor?.host || "repository";
+        const repoDisplayName = repoHost.replace(/^www\./, "");
 
         const projectThumbnail = document.getElementById(
           "project-thumbnail",
@@ -428,6 +433,7 @@ import Button from "components/utils/Button";
               );
             }
           } else {
+            // Fallback to repo URL if no explicit officials provided
             addLinkButton(officialLinks, projectInfo.config.url, "github");
           }
         }
@@ -482,7 +488,9 @@ import Button from "components/utils/Button";
           link.appendChild(icon);
           link.appendChild(text);
 
-          syncStatusContainer.appendChild(link);
+          if (syncStatusContainer) {
+            syncStatusContainer.appendChild(link);
+          }
 
           // Add commit badge
           const latestSha = loadProjectLatestSha();
@@ -519,13 +527,11 @@ import Button from "components/utils/Button";
               ) {
                 commitIcon.src = "/icons/check.svg";
                 commitIcon.alt = "Check";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain exists on GitHub</p>';
+                commitPopup.innerHTML = `<p class="text-sm w-36 sm:w-max">Commit SHA on-chain exists on ${repoDisplayName}</p>`;
               } else {
                 commitIcon.src = "/icons/check.svg";
                 commitIcon.alt = "Failed";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain cannot be found on GitHub</p>';
+                commitPopup.innerHTML = `<p class="text-sm w-36 sm:w-max">Commit SHA on-chain cannot be found on ${repoDisplayName}</p>`;
               }
             } else {
               commitIcon.src = "/icons/failed.svg";
@@ -536,8 +542,7 @@ import Button from "components/utils/Button";
           } catch (error) {
             commitIcon.src = "/icons/failed.svg";
             commitIcon.alt = "Failed";
-            commitPopup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on GitHub</p>';
+            commitPopup.innerHTML = `<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on ${repoDisplayName}</p>`;
           }
         }
 
@@ -549,8 +554,10 @@ import Button from "components/utils/Button";
           logoImageLink: configData?.logoImageLink
             ? convertGitHubLink(configData.logoImageLink)
             : "",
-          githubUrl:
-            configData?.officials?.githubLink || projectInfo.config.url,
+          repositoryUrl:
+            configData?.officials?.repository?.url ||
+            configData?.officials?.githubLink ||
+            projectInfo.config.url,
           websiteUrl: configData?.officials?.websiteLink,
         };
 
@@ -579,13 +586,15 @@ import Button from "components/utils/Button";
         }
 
         if (projectInfo?.name && projectInfo?.config?.url) {
-          const { username, repoName } = getAuthorRepo(projectInfo.config.url);
-          if (username && repoName) {
+          const repositoryUrl =
+            configData?.officials?.repository?.url ||
+            repoDetails?.descriptor?.url ||
+            projectInfo.config.url;
+          if (repositoryUrl) {
             contributionMetricsRoot.render(
               React.createElement(ContributionMetrics, {
                 projectName: projectInfo.name,
-                owner: username,
-                repo: repoName,
+                repositoryUrl,
               }),
             );
           }
@@ -603,10 +612,11 @@ import Button from "components/utils/Button";
     });
 
     function addLinkButton(
-      container: HTMLElement,
+      container: HTMLElement | null,
       url: string,
       iconName: string,
     ) {
+      if (!container) return; // Defensive guard
       const button = document.createElement("a");
       button.href = url;
       button.target = "_blank";
@@ -678,7 +688,7 @@ import Button from "components/utils/Button";
               ul.appendChild(li);
             });
             secDiv.appendChild(ul);
-            contentDiv.appendChild(secDiv);
+            if (contentDiv) contentDiv.appendChild(secDiv);
           }
         });
       } catch (e) {

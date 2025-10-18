@@ -1,3 +1,5 @@
+import type { RepositoryDescriptor } from "./repository";
+
 export interface ConfigData {
   projectName: string;
   logoImageLink: string;
@@ -7,6 +9,7 @@ export interface ConfigData {
   officials: {
     websiteLink: string;
     githubLink: string;
+    repository?: RepositoryDescriptor;
   };
   socialLinks: {
     twitter: string;
