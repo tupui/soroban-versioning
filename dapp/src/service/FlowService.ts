@@ -1,5 +1,6 @@
 import { calculateDirectoryCid } from "../utils/ipfsFunctions";
 import { create } from "@storacha/client";
+import * as Delegation from "@ucanto/core/delegation";
 
 //
 import Tansu from "../contracts/soroban_tansu";
@@ -81,13 +82,26 @@ export async function uploadWithDelegation({
     throw new Error(errorMessage);
   }
 
-  const delegationData = await response.json();
+  const delegationArchive = await response.arrayBuffer();
+  const uint8 = new Uint8Array(delegationArchive);
+  const extracted = await Delegation.extract(uint8);
+
+  let delegation;
+  if ("ok" in extracted) {
+    delegation = extracted.ok;
+  } else if (Array.isArray(extracted)) {
+    delegation = extracted[0];
+  }
+
+  if (!delegation) {
+    throw new Error("Failed to extract a valid delegation from archive");
+  }
 
   // Create Storacha client
   const client = await create();
 
   // Create a new space for uploading files
-  const space = await client.addSpace(delegationData);
+  const space = await client.addSpace(delegation);
   await client.setCurrentSpace(space.did());
 
   // Upload files to IPFS
