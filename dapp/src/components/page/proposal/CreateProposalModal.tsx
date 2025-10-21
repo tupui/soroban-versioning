@@ -268,7 +268,7 @@ const CreateProposalModal = () => {
     return descError === null;
   };
 
-  // Automatically donwload keys on first checking of anonymous voting check
+  // Automatically donwload keys on first checking of anonymous voting check and then show reset option on subsequent download
   const handleToggleAnonymous = async (checked: boolean) => {
     setIsAnonymousVoting(checked);
 
@@ -285,12 +285,15 @@ const CreateProposalModal = () => {
       const { hasAnonymousVotingConfig } = await import(
         "@service/ReadContractService"
       );
+
       const exists = await hasAnonymousVotingConfig(projectName);
 
       if (exists && generatedKeys) {
         setExistingAnonConfig(true);
         setResetAnonKeys(false);
-      } else {
+        return;
+      }
+      if (!generatedKeys) {
         const keys = await generateRSAKeyPair();
         setGeneratedKeys(keys);
         setExistingAnonConfig(false);
@@ -299,13 +302,15 @@ const CreateProposalModal = () => {
         // Auto-download
         downloadKeys(keys);
       }
-    } catch (_) {
-      const keys = await generateRSAKeyPair();
-      setGeneratedKeys(keys);
-      setExistingAnonConfig(false);
-      setResetAnonKeys(false);
-
-      downloadKeys(keys);
+    } catch (error) {
+      console.error("Error checking anonymous config:", error);
+      if (!generatedKeys) {
+        const keys = await generateRSAKeyPair();
+        setGeneratedKeys(keys);
+        setExistingAnonConfig(false);
+        setResetAnonKeys(false);
+        downloadKeys(keys);
+      }
     }
   };
 
@@ -400,13 +405,13 @@ const CreateProposalModal = () => {
                       )}
 
                     {isAnonymousVoting && existingAnonConfig && (
-                      <>
+                      <div className="flex gap-2 flex-wrap">
                         <span className="text-sm text-green-600">
-                          Existing anonymous voting keys are already configured.
+                          Anonymous voting key has already been downloaded.
                         </span>
                         <button
                           type="button"
-                          className="text-blue-500 underline text-sm w-fit"
+                          className="text-blue-500 underline text-sm w-fit "
                           onClick={async () => {
                             const keys = await generateRSAKeyPair();
                             setGeneratedKeys(keys);
@@ -417,7 +422,7 @@ const CreateProposalModal = () => {
                         >
                           Reset Keys
                         </button>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
