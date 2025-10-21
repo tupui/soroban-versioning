@@ -268,7 +268,7 @@ const CreateProposalModal = () => {
     return descError === null;
   };
 
-  // Automatically donwload keys on first checking of anonymous voting check
+  // Automatically donwload keys on first checking of anonymous voting check and then show reset option on subsequent download
   const handleToggleAnonymous = async (checked: boolean) => {
     setIsAnonymousVoting(checked);
 
