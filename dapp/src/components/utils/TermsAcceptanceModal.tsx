@@ -121,7 +121,7 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {sections.keyPoints.map((item, index) => (
+                  {sections.keyPoints.map((item: any, index: number) => (
                     <div key={index} className="bg-gray-50 rounded-lg p-3">
                       <h3 className="font-semibold text-primary mb-1">
                         {item.title}
@@ -144,7 +144,7 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {sections.importantRisks.map((item, index) => (
+                  {sections.importantRisks.map((item: any, index: number) => (
                     <div key={index} className="bg-red-50 rounded-lg p-3">
                       <h4 className="font-semibold text-red-800 mb-1">
                         {item.title}
@@ -167,13 +167,15 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {sections.yourResponsibilities.map((item, index) => (
-                    <div key={index} className="bg-blue-50 rounded-lg p-3">
-                      <p className="text-blue-700 text-sm font-medium">
-                        {item}
-                      </p>
-                    </div>
-                  ))}
+                  {sections.yourResponsibilities.map(
+                    (item: any, index: number) => (
+                      <div key={index} className="bg-blue-50 rounded-lg p-3">
+                        <p className="text-blue-700 text-sm font-medium">
+                          {item}
+                        </p>
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
@@ -215,13 +217,15 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {sections.limitationsOfLiability.map((item, index) => (
-                    <div key={index} className="bg-yellow-50 rounded-lg p-3">
-                      <p className="text-yellow-700 text-sm font-medium">
-                        {item}
-                      </p>
-                    </div>
-                  ))}
+                  {sections.limitationsOfLiability.map(
+                    (item: any, index: number) => (
+                      <div key={index} className="bg-yellow-50 rounded-lg p-3">
+                        <p className="text-yellow-700 text-sm font-medium">
+                          {item}
+                        </p>
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             )}
