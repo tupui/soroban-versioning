@@ -1,7 +1,3 @@
----
-import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx";
----
-
 <div id="connect-wrap" aria-live="polite" class="relative">
   <div
     id="get-started"
@@ -40,9 +36,6 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
   </button>
 </div>
 
-<!-- React-hydrated modal for unfunded wallets -->
-<WalletFundingWrapper client:load />
-
 <script>
   import { connectedPublicKey } from "utils/store";
   import {
@@ -51,36 +44,43 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
     setConnection,
     disconnect,
     loadedProvider,
-    getWalletHealth,
   } from "../service/walletService";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
 
-    const button = document.querySelector("[data-connect]") as HTMLButtonElement;
+    const button = document.querySelector(
+      "[data-connect]",
+    ) as HTMLButtonElement;
 
     async function setLoggedIn(publicKey: string) {
       button.textContent = "";
+
       const textElement = document.createElement("span");
       textElement.className =
         "hidden sm:inline text-xs md:text-sm lg:text-base font-medium text-white truncate";
       textElement.textContent = "Profile";
+
       const imgElement = document.createElement("img");
       imgElement.src = "/icons/profile.svg";
       imgElement.alt = "User profile icon";
       imgElement.className = "w-4 md:w-5 h-4 md:h-5 flex-shrink-0";
       imgElement.setAttribute("width", "20");
       imgElement.setAttribute("height", "20");
+
       button.appendChild(textElement);
       button.appendChild(imgElement);
       button.title = publicKey;
       button.setAttribute("aria-label", "Open user profile");
-      button.classList.toggle("bg-white", false);
-      button.classList.toggle("bg-primary", true);
-      button.classList.toggle("text-white", true);
-      button.classList.toggle("hover:opacity-90", true);
-      button.classList.toggle("transition-opacity", true);
-      button.classList.toggle("cursor-pointer", true);
+
+      button.classList.remove("bg-white");
+      button.classList.add(
+        "bg-primary",
+        "text-white",
+        "hover:opacity-90",
+        "transition-opacity",
+        "cursor-pointer",
+      );
 
       button.onclick = () => {
         window.dispatchEvent(new CustomEvent("openProfileModal"));
@@ -88,39 +88,43 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
     }
 
     const publicKey = loadedPublicKey();
-    if (publicKey) {
-      setLoggedIn(publicKey);
-    }
+    if (publicKey) setLoggedIn(publicKey);
 
     async function connectWallet() {
       const provider = loadedProvider();
 
       if (button.title) {
-        // Already connected - revalidate
+        // Already connected - revalidate account with provider
         if (provider) {
           const { kit } = await import("./stellar-wallets-kit");
           kit.setWallet(provider);
+
           try {
             const { address } = await kit.getAddress();
             const currentStored = loadedPublicKey();
 
             if (address !== currentStored) {
+              //  User switched accounts inside this wallet
               setConnection(address, provider);
               await setLoggedIn(address);
               window.dispatchEvent(
-                new CustomEvent("walletSwitched", { detail: { address, provider } }),
+                new CustomEvent("walletSwitched", {
+                  detail: { address, provider },
+                }),
               );
             }
           } catch {
+            // Wallet not available or user rejected
             disconnect();
           }
         } else {
+          // No provider stored, force reconnect flow
           window.dispatchEvent(new CustomEvent("openProfileModal"));
         }
         return;
       }
 
-      // First connection
+      // First-time connection flow
       try {
         const { kit } = await import("./stellar-wallets-kit");
         await kit.openModal({
@@ -129,6 +133,7 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
               kit.setWallet(option.id);
               const { address } = await kit.getAddress();
 
+              // Save both provider + key
               setConnection(address, option.id);
               await setLoggedIn(address);
 
@@ -137,46 +142,35 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
                   detail: { address, provider: option.id },
                 }),
               );
-
-              // ✅ Check funding status right after connection
-              const { exists, balance } = await getWalletHealth();
-              const minRequired = 1; // Minimum XLM to exist
-              const networkPass =
-                import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE || "";
-              const network = /Test/i.test(networkPass) ? "testnet" : "mainnet";
-
-              if (!exists || balance < minRequired) {
-                // Fire event for the React modal
-                window.dispatchEvent(
-                  new CustomEvent("openFundingModal", {
-                    detail: { exists, balance, network },
-                  }),
-                );
-              }
             } catch {
-              // connection error ignored
+              // Wallet connection failed - user might have rejected or wallet unavailable
+              // This is expected behavior, no need to log
             }
           },
         });
       } catch {
-        // ignored
+        // Wallet modal opening failed - this is expected behavior for some cases
+        // No need to log as it's handled gracefully by the UI
       }
     }
 
-    if (button) button.addEventListener("click", connectWallet);
+    button.addEventListener("click", connectWallet);
 
     const getStarted = document.querySelector("#get-started");
     connectedPublicKey.subscribe((publicKey) => {
       if (publicKey) getStarted?.classList.remove("xl:flex");
     });
 
+    // Handle disconnect
     window.addEventListener("walletDisconnected", () => {
       disconnect();
       button.textContent = "";
+
       const textElement = document.createElement("span");
       textElement.className =
         "text-xs md:text-sm lg:text-base font-medium text-pink truncate";
       textElement.textContent = "Connect";
+
       const imgElement = document.createElement("img");
       imgElement.src = "/icons/connect.png";
       imgElement.alt = "Connect wallet icon";
@@ -184,15 +178,17 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
         "w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 flex-shrink-0";
       imgElement.setAttribute("width", "20");
       imgElement.setAttribute("height", "20");
+
       button.appendChild(textElement);
       button.appendChild(imgElement);
       button.title = "";
       button.setAttribute("aria-label", "Connect wallet to start using Tansu");
-      button.classList.toggle("bg-white", true);
-      button.classList.toggle("bg-primary", false);
-      button.classList.toggle("text-white", false);
+
+      button.classList.add("bg-white");
+      button.classList.remove("bg-primary", "text-white");
     });
 
+    // Restore provider on reload
     const provider = loadedProvider();
     if (provider) {
       import("./stellar-wallets-kit").then(({ kit }) => {
