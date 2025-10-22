@@ -1,0 +1,49 @@
+{
+  "lastUpdated": "October 21, 2025",
+  "introduction": "Tansu is a decentralized governance platform operated by Consulting Manao GmbH, located in Austria. By using our dApp, you agree to be bound by these Terms of Service.",
+  "importantNotice": "Our architecture is fully decentralized—we do not operate backend servers or store user data. We recommend reading our Privacy Policy alongside these Terms.",
+  "sections": {
+    "keyPoints": [
+      { "title": "Age Requirement", "content": "You must be at least 18 years old to use our services." },
+      { "title": "Free Service", "content": "Tansu is provided free of charge. Users only pay blockchain transaction fees." },
+      { "title": "Wallet Required", "content": "You must use a third-party Stellar wallet to authenticate your account." },
+      { "title": "Content Responsibility", "content": "You are solely responsible for all content you upload to IPFS." },
+      { "title": "Collateral System", "content": "Proposals and voting require collateral, reimbursed upon successful execution." },
+      { "title": "Austrian Law", "content": "These Terms are governed by Austrian law with jurisdiction in Graz, Austria." }
+    ],
+    "importantRisks": [
+      { "title": "Blockchain Risks", "content": "Transactions are permanent and cannot be reversed. Cryptocurrency prices fluctuate significantly." },
+      { "title": "IPFS Content", "content": "Content uploaded to IPFS is permanent and cannot be deleted. It remains accessible even if unlinked from our platform." },
+      { "title": "Anonymous Voting", "content": "Lost private keys prevent vote decryption and proposal execution. No recovery mechanism exists." },
+      { "title": "No Recourse", "content": "Lost keys, failed transactions, or errors cannot be reversed or compensated." }
+    ],
+    "yourResponsibilities": [
+      "Use services in compliance with Austrian law and these Terms",
+      "Secure your wallet and private keys",
+      "Provide accurate information when using our services",
+      "Ensure uploaded content complies with laws and doesn't infringe on others' rights",
+      "Do not upload illegal, harmful, or inappropriate content",
+      "Do not attempt to compromise platform security",
+      "Do not engage in fraudulent or deceptive practices"
+    ],
+    "serviceModifications": {
+      "description": "We reserve the right to modify, suspend, or discontinue the dApp at any time. We may upgrade smart contracts for feature additions, bug fixes, security updates, compliance updates, and performance optimization.",
+      "administrativeRights": "We may take administrative actions including project deletion, proposal cancellation, member suspension, and data corrections to enforce Terms, ensure security, or comply with legal requirements."
+    },
+    "limitationsOfLiability": [
+      "We do not guarantee continuous, uninterrupted access to our services",
+      "Our services depend on third-party systems beyond our control",
+      "We provide services \"as is\" without warranties of any kind",
+      "Our liability is limited to the maximum extent permitted by Austrian law",
+      "We are not liable for user-generated content stored on IPFS or blockchain"
+    ],
+    "contactInformation": {
+      "company": "Consulting Manao GmbH",
+      "details": "Registered in Austrian Commercial Register (Firmenbuch)\nLandesgericht Graz, FN 571029z\nVAT ID: ATU77780135\nManaging Director: Pamphile Tupui Christophe Roy",
+      "address": "Köpplingberg 124, 8561 Söding-Sankt Johann, Austria",
+      "email": "legal@consulting-manao.com",
+      "website": "tansu.dev"
+    }
+  }
+}
+

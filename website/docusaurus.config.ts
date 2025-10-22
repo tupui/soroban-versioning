@@ -111,40 +111,7 @@ const config: Config = {
     },
     footer: {
       style: 'dark',
-      // links: [
-      //   {
-      //     title: 'Docs',
-      //     items: [
-      //       {
-      //         label: 'Documentation',
-      //         to: '/docs/intro',
-      //       },
-      //     ],
-      //   },
-      //   {
-      //     title: 'Community',
-      //     items: [
-      //       {
-      //         label: 'Discord',
-      //         href: 'https://discord.com/channels/897514728459468821/1262501866915237908',
-      //       },
-      //     ],
-      //   },
-      //   {
-      //     title: 'More',
-      //     items: [
-      //       {
-      //         label: 'Blog',
-      //         to: '/blog',
-      //       },
-      //       {
-      //         label: 'GitHub',
-      //         href: 'https://github.com/facebook/docusaurus',
-      //       },
-      //     ],
-      //   },
-      // ],
-      copyright: `<p>Copyright © ${new Date().getFullYear()} Tansu. Made by <a href="https://consulting-manao.com">Consulting Manao GmbH</a></p>`,
+      copyright: `<p>Copyright © ${new Date().getFullYear()} Tansu. Made by <a href="https://consulting-manao.com">Consulting Manao GmbH</a> | <a href="/docs/terms-of-service">Terms of Service</a> | <a href="/docs/privacy-policy">Privacy Policy</a></p>`,
     },
     prism: {
       theme: prismThemes.github,

@@ -198,11 +198,13 @@ const VotingModal: React.FC<VotersModalProps> = ({
                   value={Math.round((selectedWeight / maxWeight) * 100)}
                   onChange={(e) => {
                     const percentage = Number(e.target.value);
-                    setSelectedWeight(Math.round((percentage / 100) * maxWeight));
+                    setSelectedWeight(
+                      Math.round((percentage / 100) * maxWeight),
+                    );
                   }}
                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary"
                   style={{
-                    background: `linear-gradient(to right, #7c3aed 0%, #7c3aed ${Math.round((selectedWeight / maxWeight) * 100)}%, #e5e7eb ${Math.round((selectedWeight / maxWeight) * 100)}%, #e5e7eb 100%)`
+                    background: `linear-gradient(to right, #7c3aed 0%, #7c3aed ${Math.round((selectedWeight / maxWeight) * 100)}%, #e5e7eb ${Math.round((selectedWeight / maxWeight) * 100)}%, #e5e7eb 100%)`,
                   }}
                 />
                 <p className="text-xs text-secondary">
