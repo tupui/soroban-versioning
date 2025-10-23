@@ -165,6 +165,10 @@ export async function computeAnonymousVotingData(
       /* ignore – default 1 */
     }
 
+    if (voteChoiceIdx === 2 && maxWeight === 1) {
+      maxWeight = 50000;
+    }
+
     decodedPerVoter.push({
       address: memberAddr,
       vote:
