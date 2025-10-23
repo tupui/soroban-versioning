@@ -8,6 +8,7 @@ import { deriveProjectKey } from "./projectKey";
 import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";
 import { decryptWithPrivateKey } from "utils/crypto";
+import { badgeName } from "./badges";
 
 // Lazy-loaded imports to avoid circular dependency issues in Astro/SSR
 async function getTansu() {
@@ -166,7 +167,10 @@ export async function computeAnonymousVotingData(
     }
 
     if (voteChoiceIdx === 2 && maxWeight === 1) {
-      maxWeight = 50000;
+      const verifiedCode = 500000;
+      if (badgeName(verifiedCode) === "Verified") {
+        maxWeight = verifiedCode;
+      }
     }
 
     decodedPerVoter.push({
