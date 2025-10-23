@@ -128,35 +128,29 @@ export const modifyProposalFromContract = (
       (v: Vote) => v.tag === "PublicVote",
     );
 
-    const voters_approve = publicVotes.filter((v: Vote) => {
+    // Filter out invalid votes once at the top
+    const validVotes = publicVotes.filter((v: Vote) => {
       const voteData = (v as any).values?.[0];
-      if (!voteData?.vote_choice?.tag) {
-        return false;
-      }
+      return voteData?.vote_choice?.tag && voteData?.address;
+    });
+
+    const voters_approve = validVotes.filter((v: Vote) => {
+      const voteData = (v as any).values?.[0];
       return voteData.vote_choice.tag === "Approve";
     });
-    const voters_reject = publicVotes.filter((v: Vote) => {
+    const voters_reject = validVotes.filter((v: Vote) => {
       const voteData = (v as any).values?.[0];
-      if (!voteData?.vote_choice?.tag) {
-        return false;
-      }
       return voteData.vote_choice.tag === "Reject";
     });
-    const voters_abstain = publicVotes.filter((v: Vote) => {
+    const voters_abstain = validVotes.filter((v: Vote) => {
       const voteData = (v as any).values?.[0];
-      if (!voteData?.vote_choice?.tag) {
-        return false;
-      }
       return voteData.vote_choice.tag === "Abstain";
     });
 
     const sumWeight = (arr: Vote[]) =>
       arr.reduce((acc, v) => {
         const voteData = (v as any).values?.[0];
-        if (!voteData?.weight) {
-          return acc;
-        }
-        return acc + voteData.weight;
+        return acc + (voteData.weight || 0);
       }, 0);
 
     return {
@@ -171,56 +165,41 @@ export const modifyProposalFromContract = (
         approve: {
           voteType: VoteType.APPROVE,
           score: sumWeight(voters_approve),
-          voters: voters_approve
-            .map((voter: Vote) => {
-              const voteData = (voter as any).values?.[0];
-              if (!voteData?.address) {
-                return null;
-              }
-              return {
-                address: voteData.address,
-                image: null,
-                name: "",
-                github: "",
-              };
-            })
-            .filter((v): v is NonNullable<typeof v> => v !== null),
+          voters: voters_approve.map((voter: Vote) => {
+            const voteData = (voter as any).values?.[0];
+            return {
+              address: voteData.address,
+              image: null,
+              name: "",
+              github: "",
+            };
+          }),
         },
         reject: {
           voteType: VoteType.REJECT,
           score: sumWeight(voters_reject),
-          voters: voters_reject
-            .map((voter: Vote) => {
-              const voteData = (voter as any).values?.[0];
-              if (!voteData?.address) {
-                return null;
-              }
-              return {
-                address: voteData.address,
-                image: null,
-                name: "",
-                github: "",
-              };
-            })
-            .filter((v): v is NonNullable<typeof v> => v !== null),
+          voters: voters_reject.map((voter: Vote) => {
+            const voteData = (voter as any).values?.[0];
+            return {
+              address: voteData.address,
+              image: null,
+              name: "",
+              github: "",
+            };
+          }),
         },
         abstain: {
           voteType: VoteType.CANCEL,
           score: sumWeight(voters_abstain),
-          voters: voters_abstain
-            .map((voter: Vote) => {
-              const voteData = (voter as any).values?.[0];
-              if (!voteData?.address) {
-                return null;
-              }
-              return {
-                address: voteData.address,
-                image: null,
-                name: "",
-                github: "",
-              };
-            })
-            .filter((v): v is NonNullable<typeof v> => v !== null),
+          voters: voters_abstain.map((voter: Vote) => {
+            const voteData = (voter as any).values?.[0];
+            return {
+              address: voteData.address,
+              image: null,
+              name: "",
+              github: "",
+            };
+          }),
         },
       },
     };
