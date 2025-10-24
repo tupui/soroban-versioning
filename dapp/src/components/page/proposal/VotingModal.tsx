@@ -2,9 +2,12 @@ import Button from "components/utils/Button";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Title from "components/utils/Title";
 import { voteTypeDescriptionMap, voteTypeLabelMap } from "constants/constants";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VoteType } from "types/proposal";
 import VoteTypeCheckbox from "./VoteTypeCheckbox";
+import { deriveProjectKey } from "../../../utils/projectKey";
+import Tansu from "../../../contracts/soroban_tansu";
+import { loadedPublicKey } from "../../../service/walletService";
 
 interface VotersModalProps extends ModalProps {
   projectName: string;
@@ -28,6 +31,44 @@ const VotingModal: React.FC<VotersModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [voteError, setVoteError] = useState<string | null>(null);
+  const [maxWeight, setMaxWeight] = useState<number>(1);
+  const [selectedWeight, setSelectedWeight] = useState<number>(1);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const fetchMaxWeight = async () => {
+      try {
+        const publicKey = loadedPublicKey();
+        if (!publicKey) return;
+
+        Tansu.options.publicKey = publicKey;
+        const projectKey = deriveProjectKey(projectName);
+
+        const weightTx = await Tansu.get_max_weight({
+          project_key: projectKey,
+          member_address: publicKey,
+        });
+
+        if (!ignore) {
+          const weight = Number(weightTx.result) || 1;
+          setMaxWeight(weight);
+          setSelectedWeight(weight);
+        }
+      } catch {
+        if (!ignore) {
+          setMaxWeight(1);
+          setSelectedWeight(1);
+        }
+      }
+    };
+
+    fetchMaxWeight();
+
+    return () => {
+      ignore = true;
+    };
+  }, [projectName]);
 
   const validateVote = (): boolean => {
     if (!selectedOption) {
@@ -60,6 +101,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
         projectName,
         proposalId!,
         selectedOption as VoteType,
+        selectedWeight,
       );
       setIsVoted?.(true);
       setStep(2);
@@ -142,6 +184,34 @@ const VotingModal: React.FC<VotersModalProps> = ({
                 {voteError}
               </div>
             )}
+
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-primary">
+                  Voting Power: {selectedWeight.toLocaleString()} /{" "}
+                  {maxWeight.toLocaleString()}
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="100"
+                  value={Math.round((selectedWeight / maxWeight) * 100)}
+                  onChange={(e) => {
+                    const percentage = Number(e.target.value);
+                    setSelectedWeight(
+                      Math.round((percentage / 100) * maxWeight),
+                    );
+                  }}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary"
+                  style={{
+                    background: `linear-gradient(to right, #7c3aed 0%, #7c3aed ${Math.round((selectedWeight / maxWeight) * 100)}%, #e5e7eb ${Math.round((selectedWeight / maxWeight) * 100)}%, #e5e7eb 100%)`,
+                  }}
+                />
+                <p className="text-xs text-secondary">
+                  Slide to adjust your voting power
+                </p>
+              </div>
+            </div>
 
             <div className="flex flex-col items-end gap-4">
               <div className="flex gap-3">

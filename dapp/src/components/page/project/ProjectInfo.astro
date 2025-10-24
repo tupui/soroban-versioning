@@ -3,8 +3,6 @@ import CommitHistory from "./CommitHistory";
 import DonateModal from "./DonateModal";
 import LatestCommit from "./LatestCommit";
 import Button from "components/utils/Button";
-import { getMember } from "@service/ReadContractService";
-import { toast } from "utils/utils";
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
@@ -101,6 +99,7 @@ import { toast } from "utils/utils";
       <p class="leading-4 text-base text-secondary">Community badges</p>
       <div class="community-content flex flex-col gap-4 p-4"></div>
     </div>
+    <div id="contribution-metrics-section" class="bg-white w-full"></div>
     <CommitHistory client:load />
   </div>
 </div>
@@ -120,7 +119,10 @@ import { toast } from "utils/utils";
     loadProjectLatestSha,
     loadProjectName,
   } from "../../../service/StateService";
-  import { convertGitHubLink } from "../../../utils/editLinkFunctions";
+  import {
+    convertGitHubLink,
+    getAuthorRepo,
+  } from "../../../utils/editLinkFunctions";
   import { projectInfoLoaded } from "../../../utils/store";
   import { getBadges, getMember } from "@service/ReadContractService";
 
@@ -140,33 +142,50 @@ import { toast } from "utils/utils";
       { createRoot },
       { default: LastHashModal },
       { default: ReadMoreModal },
+      { default: ContributionMetrics },
     ] = await Promise.all([
       import("react"),
       import("react-dom/client"),
       import("./LastHashModal"),
       import("./ReadMoreModal"),
+      import("./ContributionMetrics"),
     ]);
 
-    // Create React roots for modals with retry logic
+    // Create React roots for modals and components with retry logic
     let lastHashContainer = document.getElementById(
       "last-hash-modal-container",
     );
     let readMoreContainer = document.getElementById(
       "read-more-modal-container",
     );
+    let contributionMetricsContainer = document.getElementById(
+      "contribution-metrics-section",
+    );
 
     // Retry finding containers if not immediately available
-    if (!lastHashContainer || !readMoreContainer) {
+    if (
+      !lastHashContainer ||
+      !readMoreContainer ||
+      !contributionMetricsContainer
+    ) {
       await new Promise((resolve) => setTimeout(resolve, 100));
       lastHashContainer = document.getElementById("last-hash-modal-container");
       readMoreContainer = document.getElementById("read-more-modal-container");
+      contributionMetricsContainer = document.getElementById(
+        "contribution-metrics-section",
+      );
     }
 
-    if (!lastHashContainer || !readMoreContainer) {
+    if (
+      !lastHashContainer ||
+      !readMoreContainer ||
+      !contributionMetricsContainer
+    ) {
       if (import.meta.env.DEV) {
-        console.error("Modal containers not found", {
+        console.error("Containers not found", {
           lastHashContainer: !!lastHashContainer,
           readMoreContainer: !!readMoreContainer,
+          contributionMetricsContainer: !!contributionMetricsContainer,
           documentReady: document.readyState,
         });
       }
@@ -175,12 +194,13 @@ import { toast } from "utils/utils";
 
     const lastHashRoot = createRoot(lastHashContainer);
     const readMoreRoot = createRoot(readMoreContainer);
+    const contributionMetricsRoot = createRoot(contributionMetricsContainer);
 
     // Modal state
     let isLastHashModalOpen = false;
     let isReadMoreModalOpen = false;
-    let commitData = null;
-    let projectData = null;
+    let commitData: any = null;
+    let projectData: any = null;
 
     // Render function for modals
     const renderModals = () => {
@@ -209,7 +229,6 @@ import { toast } from "utils/utils";
 
     // Initial render
     renderModals();
-
     const updateConfigButton = document.querySelector("[data-update-config]");
     const udpateConfigModal = document.getElementById(
       "update-config-modal",
@@ -269,9 +288,9 @@ import { toast } from "utils/utils";
 
           // Build address→handle map (order-independent)
           let addrToHandle: Record<string, string> = {};
-          if (hasMapping) {
+          if (hasMapping && configData) {
             for (let i = 0; i < configData.maintainersAddresses.length; i++) {
-              addrToHandle[configData.maintainersAddresses[i]] =
+              addrToHandle[configData.maintainersAddresses[i]!] =
                 configData.authorGithubNames[i] || "";
             }
           }
@@ -559,6 +578,19 @@ import { toast } from "utils/utils";
           }
         }
 
+        if (projectInfo?.name && projectInfo?.config?.url) {
+          const { username, repoName } = getAuthorRepo(projectInfo.config.url);
+          if (username && repoName) {
+            contributionMetricsRoot.render(
+              React.createElement(ContributionMetrics, {
+                projectName: projectInfo.name,
+                owner: username,
+                repo: repoName,
+              }),
+            );
+          }
+        }
+
         // Re-render modals with the updated data
         renderModals();
       }
@@ -667,7 +699,7 @@ import { toast } from "utils/utils";
     });
 
     // Helper to open member profile modal; attached globally for click handlers
-    async function openProfileModal(address) {
+    async function openProfileModal(address: any) {
       try {
         const memberData = await getMember(address);
 

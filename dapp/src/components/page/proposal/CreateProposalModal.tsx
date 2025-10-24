@@ -19,6 +19,7 @@ import { generateRSAKeyPair } from "utils/crypto";
 import { setupAnonymousVoting } from "@service/ContractService";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
+import Loading from "components/utils/Loading";
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -56,7 +57,7 @@ const CreateProposalModal = () => {
   } | null>(null);
   const [existingAnonConfig, setExistingAnonConfig] = useState<boolean>(false);
   const [resetAnonKeys, setResetAnonKeys] = useState<boolean>(false);
-  const [_, setKeysDownloaded] = useState<boolean>(false);
+  const [keysDownloaded, setKeysDownloaded] = useState<boolean>(false);
   const [proposalNameError, setProposalNameError] = useState<string | null>(
     null,
   );
@@ -268,42 +269,55 @@ const CreateProposalModal = () => {
     return descError === null;
   };
 
+  // Automatically donwload keys on first checking of anonymous voting check
   const handleToggleAnonymous = async (checked: boolean) => {
     setIsAnonymousVoting(checked);
-    if (!checked) return;
-    if (!projectName) {
+
+    if (!checked) {
+      setExistingAnonConfig(false);
+      setGeneratedKeys(null);
+      setKeysDownloaded(false);
       return;
     }
+
+    if (!projectName) return;
 
     try {
       const { hasAnonymousVotingConfig } = await import(
         "@service/ReadContractService"
       );
+
       const exists = await hasAnonymousVotingConfig(projectName);
+
       if (exists) {
         setExistingAnonConfig(true);
         setResetAnonKeys(false);
-        setGeneratedKeys(null);
-      } else {
-        setExistingAnonConfig(false);
+        return;
+      }
+
+      if (!generatedKeys) {
         const keys = await generateRSAKeyPair();
         setGeneratedKeys(keys);
+        setExistingAnonConfig(false);
         setResetAnonKeys(false);
+        downloadKeys(keys);
       }
-    } catch (_) {
-      // Network or unexpected – treat as missing config but do not log/toast
-      setExistingAnonConfig(false);
-      const keys = await generateRSAKeyPair();
-      setGeneratedKeys(keys);
-      setResetAnonKeys(false);
+    } catch (error) {
+      console.error("Error checking anonymous config:", error);
+
+      if (!generatedKeys) {
+        const keys = await generateRSAKeyPair();
+        setGeneratedKeys(keys);
+        setExistingAnonConfig(false);
+        setResetAnonKeys(false);
+        downloadKeys(keys);
+      }
     }
   };
 
-  const downloadKeys = () => {
-    if (!generatedKeys) return;
-    const blob = new Blob([JSON.stringify(generatedKeys)], {
-      type: "application/json",
-    });
+  const downloadKeys = (keys: any) => {
+    if (!keys) return;
+    const blob = new Blob([JSON.stringify(keys)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -345,62 +359,77 @@ const CreateProposalModal = () => {
       successMessage="Congratulations! You've successfully submitted your proposal. Let's move forward and make it a success!"
     >
       {step == 1 ? (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex flex-col gap-[30px]">
-            <div className="flex gap-[18px]">
-              <img src="/images/idea.svg" />
-              <div className="flex-grow flex flex-col justify-center gap-[30px]">
+        <div className="flex flex-col gap-10">
+          <div className="flex flex-col gap-8">
+            {/* Header section */}
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-[18px]">
+              <img
+                src="/images/idea.svg"
+                alt="Idea icon"
+                className="w-16 h-16 sm:w-20 sm:h-20 self-center sm:self-start"
+              />
+              <div className="flex-grow flex flex-col justify-center gap-6 sm:gap-[30px]">
                 <Step step={step} totalSteps={4} />
                 <Title
                   title="Basic Information"
                   description="Enter the title and description for your proposal to begin."
                 />
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="anonymousCheckbox"
-                    checked={isAnonymousVoting}
-                    onChange={(e) => handleToggleAnonymous(e.target.checked)}
-                  />
-                  <label
-                    htmlFor="anonymousCheckbox"
-                    className="text-sm text-secondary"
-                  >
-                    Enable anonymous voting
-                  </label>
-                  {isAnonymousVoting &&
-                    existingAnonConfig &&
-                    !resetAnonKeys && (
-                      <span className="text-sm text-green-600">
-                        Existing anonymous voting keys are already configured.
-                      </span>
-                    )}
-                  {isAnonymousVoting &&
-                    existingAnonConfig &&
-                    !resetAnonKeys && (
-                      <button
-                        type="button"
-                        className="text-blue-500 underline text-sm"
-                        onClick={async () => {
-                          const keys = await generateRSAKeyPair();
-                          setGeneratedKeys(keys);
-                          setResetAnonKeys(true);
-                          setKeysDownloaded(false);
-                        }}
-                      >
-                        Reset keys
-                      </button>
-                    )}
-                  {isAnonymousVoting && generatedKeys && (
-                    <button
-                      type="button"
-                      className="text-blue-500 underline text-sm"
-                      onClick={downloadKeys}
+
+                {/* Anonymous voting section */}
+                <div className="flex flex-col gap-2 sm:gap-3">
+                  {/* Checkbox + Label in the same line */}
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="anonymousCheckbox"
+                      checked={isAnonymousVoting}
+                      onChange={(e) => handleToggleAnonymous(e.target.checked)}
+                    />
+                    <label
+                      htmlFor="anonymousCheckbox"
+                      className="text-sm text-secondary"
                     >
-                      Download keys
-                    </button>
-                  )}
+                      Enable anonymous voting
+                    </label>
+                  </div>
+
+                  {/* Below section (messages/buttons) */}
+                  <div className="flex flex-col gap-1">
+                    {isAnonymousVoting &&
+                      keysDownloaded &&
+                      !existingAnonConfig && (
+                        <span className="text-sm text-green-600">
+                          Your anonymous key file has been downloaded. Keep it
+                          safe — it will be required to finalize voting when
+                          executing the proposal.
+                        </span>
+                      )}
+
+                    {isAnonymousVoting && existingAnonConfig && (
+                      <>
+                        <div className="flex gap-2 flex-wrap">
+                          <span className="text-sm text-green-600">
+                            Already configured.
+                          </span>
+                          <button
+                            type="button"
+                            className="text-blue-500 underline text-sm w-fit"
+                            onClick={async () => {
+                              const keys = await generateRSAKeyPair();
+                              setGeneratedKeys(keys);
+                              setResetAnonKeys(true);
+                              setKeysDownloaded(false);
+                              downloadKeys(keys);
+                            }}
+                          >
+                            Reset Keys
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
+
                 <Input
                   label="Proposal Name"
                   placeholder="Write the name"
@@ -413,8 +442,12 @@ const CreateProposalModal = () => {
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-[18px]">
-              <p className="text-base font-[600] text-primary">Description</p>
+
+            {/* Description Section */}
+            <div className="flex flex-col gap-4 sm:gap-[18px]">
+              <p className="text-base font-semibold text-primary">
+                Description
+              </p>
               <div
                 className={`rounded-md border ${descriptionError ? "border-red-500" : "border-zinc-700"} overflow-hidden`}
               >
@@ -427,13 +460,14 @@ const CreateProposalModal = () => {
                   placeholder="Input your proposal description here..."
                 />
               </div>
+
               {/* Image upload controls */}
               <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <p className="text-sm text-secondary">
                     Optionally attach images and insert them into your Markdown.
                   </p>
-                  <label className="cursor-pointer text-primary underline text-sm">
+                  <label className="cursor-pointer text-primary underline text-sm self-start sm:self-end">
                     Add image
                     <input
                       type="file"
@@ -478,17 +512,19 @@ const CreateProposalModal = () => {
                     />
                   </label>
                 </div>
+
                 {imageError && (
                   <p className="text-red-500 text-sm">{imageError}</p>
                 )}
+
                 {imageFiles.length > 0 && (
                   <div className="flex flex-col gap-2">
                     <p className="text-sm text-secondary">Attached images</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                       {imageFiles.map((img, idx) => (
                         <div
                           key={idx}
-                          className="border p-2 flex flex-col gap-2"
+                          className="border p-2 flex flex-col gap-2 rounded-md"
                         >
                           <img
                             src={img.localUrl}
@@ -530,12 +566,15 @@ const CreateProposalModal = () => {
                   </div>
                 )}
               </div>
+
               {descriptionError && (
                 <p className="text-red-500 text-sm">{descriptionError}</p>
               )}
             </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
+
+          {/* Footer Buttons */}
+          <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-[18px] mt-6">
             <Button type="secondary" onClick={() => setShowModal(false)}>
               Cancel
             </Button>
@@ -549,10 +588,8 @@ const CreateProposalModal = () => {
                   )
                     throw new Error("Invalid proposal name or description");
 
-                  // additional anonymous voting validation
                   if (isAnonymousVoting) {
                     if (!existingAnonConfig || resetAnonKeys) {
-                      // Only require keys to be generated; downloading is encouraged but not blocking
                       if (!generatedKeys) {
                         throw new Error(
                           "Anonymous voting keys have not been generated yet.",
@@ -573,11 +610,16 @@ const CreateProposalModal = () => {
           </div>
         </div>
       ) : step == 2 ? (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex flex-col gap-[30px]">
-            <div className="flex gap-[18px]">
-              <img src="/images/cards.svg" />
-              <div className="flex-grow flex flex-col justify-center gap-[30px]">
+        <div className="flex flex-col gap-10 md:gap-14">
+          {/* Header and title section */}
+          <div className="flex flex-col gap-8 md:gap-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6">
+              <img
+                src="/images/cards.svg"
+                alt="cards"
+                className="w-20 h-auto mx-auto sm:mx-0 sm:w-24"
+              />
+              <div className="flex-grow flex flex-col justify-center gap-6 text-center sm:text-left">
                 <Step step={step} totalSteps={4} />
                 <Title
                   title="Outcome Details"
@@ -585,34 +627,44 @@ const CreateProposalModal = () => {
                 />
               </div>
             </div>
-            <OutcomeInput
-              type="approved"
-              description={approveDescription}
-              setDescription={setApproveDescription}
-              xdr={approveXdr}
-              setXdr={setApproveXdr}
-              descriptionError={approveDescriptionError}
-              xdrError={approveXdrError}
-              onDescriptionChange={() => setApproveDescriptionError(null)}
-              onXdrChange={() => setApproveXdrError(null)}
-            />
-            <OutcomeInput
-              type="rejected"
-              description={rejectDescription}
-              setDescription={setRejectDescription}
-              xdr={rejectXdr}
-              setXdr={setRejectXdr}
-            />
-            <OutcomeInput
-              type="cancelled"
-              description={cancelledDescription}
-              setDescription={setCancelledDescription}
-              xdr={cancelledXdr}
-              setXdr={setCancelledXdr}
-            />
+
+            {/* Outcome Inputs */}
+            <div className="flex flex-col gap-6 md:gap-8">
+              <OutcomeInput
+                type="approved"
+                description={approveDescription}
+                setDescription={setApproveDescription}
+                xdr={approveXdr}
+                setXdr={setApproveXdr}
+                descriptionError={approveDescriptionError}
+                xdrError={approveXdrError}
+                onDescriptionChange={() => setApproveDescriptionError(null)}
+                onXdrChange={() => setApproveXdrError(null)}
+              />
+              <OutcomeInput
+                type="rejected"
+                description={rejectDescription}
+                setDescription={setRejectDescription}
+                xdr={rejectXdr}
+                setXdr={setRejectXdr}
+              />
+              <OutcomeInput
+                type="cancelled"
+                description={cancelledDescription}
+                setDescription={setCancelledDescription}
+                xdr={cancelledXdr}
+                setXdr={setCancelledXdr}
+              />
+            </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
-            <Button type="secondary" onClick={() => setStep(step - 1)}>
+
+          {/* Navigation buttons */}
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 sm:gap-6">
+            <Button
+              type="secondary"
+              onClick={() => setStep(step - 1)}
+              className="w-full sm:w-auto"
+            >
               Back
             </Button>
             <Button
@@ -628,35 +680,46 @@ const CreateProposalModal = () => {
                   toast.error("Submit proposal", err.message);
                 }
               }}
+              className="w-full sm:w-auto"
             >
               Next
             </Button>
           </div>
         </div>
       ) : step == 3 ? (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex gap-[18px]">
-            <img src="/images/clock.svg" />
-            <div className="flex-grow flex flex-col justify-center gap-[30px]">
+        <div className="flex flex-col gap-10 md:gap-14">
+          {/* Header and content */}
+          <div className="flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-8">
+            <img
+              src="/images/clock.svg"
+              alt="clock icon"
+              className="w-20 h-auto mx-auto sm:mx-0 sm:w-24"
+            />
+
+            <div className="flex-grow flex flex-col justify-center gap-6 sm:gap-8 text-center sm:text-left">
               <Step step={step} totalSteps={4} />
               <Title
                 title="Voting Duration"
                 description="Enter the number of days for the voting period."
               />
-              <div className="flex flex-col gap-6">
+
+              {/* Voting Duration Controls */}
+              <div className="flex flex-col gap-4 sm:gap-6">
                 <p className="leading-4 text-base font-semibold text-primary">
                   Select End Day
                 </p>
-                <div className="flex flex-col gap-[30px]">
+
+                <div className="flex flex-col gap-6">
                   <DatePicker
                     selectedDate={selectedDate}
                     onDateChange={setSelectedDate}
                   />
-                  <div className="flex gap-3">
-                    <p className="leading-4 text-base text-secondary">
+
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 text-sm sm:text-base">
+                    <p className="leading-4 text-secondary">
                       Minimum duration:
                     </p>
-                    <p className="leading-4 text-base font-semibold text-primary">
+                    <p className="leading-4 font-semibold text-primary">
                       1 day
                     </p>
                   </div>
@@ -664,10 +727,17 @@ const CreateProposalModal = () => {
               </div>
             </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
-            <Button type="secondary" onClick={() => setStep(step - 1)}>
+
+          {/* Buttons */}
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 sm:gap-6">
+            <Button
+              type="secondary"
+              onClick={() => setStep(step - 1)}
+              className="w-full sm:w-auto"
+            >
               Back
             </Button>
+
             <Button
               data-testid="proposal-next"
               onClick={() => {
@@ -676,8 +746,7 @@ const CreateProposalModal = () => {
                   let diffMs = new Date(selectedDate).getTime() - Date.now();
                   let diffHours = diffMs / (1000 * 60 * 60);
 
-                  // If the user picked the next day (or any day) but the time
-                  // component would make the window < 25h, bump it to 25h.
+                  // Ensure at least 25 hours of duration
                   if (diffHours < 25) {
                     const corrected = new Date(
                       Date.now() + 25 * 60 * 60 * 1000,
@@ -696,71 +765,94 @@ const CreateProposalModal = () => {
                   toast.error("Submit proposal", err.message);
                 }
               }}
+              className="w-full sm:w-auto"
             >
               Next
             </Button>
           </div>
         </div>
       ) : step == 4 ? (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex flex-col gap-[30px]">
-            <div className="flex gap-[18px]">
-              <img src="/images/note.svg" />
-              <div className="flex-grow flex flex-col justify-center gap-[30px]">
-                <Step step={step} totalSteps={4} />
-                <Title
-                  title="Review and Submit Your Proposal"
-                  description="Take a moment to review your proposal before submitting. You can go back and make changes if needed."
-                />
-                <div className="flex justify-end gap-[18px]">
-                  <Button type="secondary" onClick={() => setStep(step - 1)}>
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handleRegisterProposal}
-                    data-testid="proposal-register"
-                  >
-                    Register Proposal
-                  </Button>
-                </div>
+        <div className="flex flex-col gap-10 md:gap-14">
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
+            <img
+              src="/images/note.svg"
+              alt="note icon"
+              className="w-20 h-auto mx-auto sm:mx-0 sm:w-24"
+            />
+
+            <div className="flex-grow flex flex-col justify-center gap-6 sm:gap-8 text-center sm:text-left">
+              <Step step={step} totalSteps={4} />
+              <Title
+                title="Review and Submit Your Proposal"
+                description="Take a moment to review your proposal before submitting. You can go back and make changes if needed."
+              />
+
+              {/* Buttons for small screens */}
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 sm:gap-6">
+                <Button
+                  type="secondary"
+                  onClick={() => setStep(step - 1)}
+                  className="w-full sm:w-auto"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={handleRegisterProposal}
+                  data-testid="proposal-register"
+                  className="w-full sm:w-auto"
+                >
+                  Register Proposal
+                </Button>
               </div>
             </div>
+          </div>
+
+          {/* Review Sections */}
+          <div className="flex flex-col gap-8 sm:gap-10">
+            {/* First Step */}
             <div className="flex flex-col gap-6">
-              <div className="flex gap-6">
-                <p className="leading-6 text-xl font-medium text-primary">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <p className="text-lg sm:text-xl font-medium text-primary">
                   First Step
                 </p>
                 <Button
                   type="secondary"
                   size="sm"
-                  className="p-[2px_10px]"
+                  className="px-3 py-1 text-sm sm:text-base"
                   onClick={() => setStep(1)}
                 >
                   Back to the First Step
                 </Button>
               </div>
               <Label label="Proposal name">
-                <p className="leading-6 text-xl text-primary">{proposalName}</p>
+                <p className="text-lg sm:text-xl text-primary break-words">
+                  {proposalName}
+                </p>
               </Label>
               <Label label="Proposal description">
                 <ExpandableText>{mdText}</ExpandableText>
               </Label>
             </div>
+
             <div className="h-[1px] bg-[#ECE3F4]" />
+
+            {/* Second Step */}
             <div className="flex flex-col gap-6">
-              <div className="flex gap-6">
-                <p className="leading-6 text-xl font-medium text-primary">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <p className="text-lg sm:text-xl font-medium text-primary">
                   Second Step
                 </p>
                 <Button
                   type="secondary"
                   size="sm"
-                  className="p-[2px_10px]"
+                  className="px-3 py-1 text-sm sm:text-base"
                   onClick={() => setStep(2)}
                 >
                   Back to the Second Step
                 </Button>
               </div>
+
               {[
                 { type: "approved", desc: approveDescription, xdr: approveXdr },
                 { type: "rejected", desc: rejectDescription, xdr: rejectXdr },
@@ -770,50 +862,60 @@ const CreateProposalModal = () => {
                   xdr: cancelledXdr,
                 },
               ].map(({ type, desc, xdr }, index) => (
-                <div key={index} className="flex flex-col gap-6">
-                  <p className={`leading-5 text-xl text-${type}`}>
+                <div key={index} className="flex flex-col gap-4">
+                  <p className={`text-lg sm:text-xl font-medium text-${type}`}>
                     {capitalizeFirstLetter(type)} Outcome
                   </p>
-                  <Label label="description">
+                  <Label label="Description">
                     <ExpandableText>{desc}</ExpandableText>
                   </Label>
                   <Label label="XDR">
-                    <p className="leading-6 text-xl text-primary">
-                      {xdr ? xdr : "-"}
+                    <p className="text-base sm:text-lg text-primary break-all">
+                      {xdr || "-"}
                     </p>
                   </Label>
                 </div>
               ))}
             </div>
+
             <div className="h-[1px] bg-[#ECE3F4]" />
+
+            {/* Third Step */}
             <div className="flex flex-col gap-6">
-              <div className="flex gap-6">
-                <p className="leading-6 text-xl font-medium text-primary">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <p className="text-lg sm:text-xl font-medium text-primary">
                   Third Step
                 </p>
                 <Button
                   type="secondary"
                   size="sm"
-                  className="p-[2px_10px]"
+                  className="px-3 py-1 text-sm sm:text-base"
                   onClick={() => setStep(3)}
                 >
                   Back to the Third Step
                 </Button>
               </div>
               <Label label="Voting End Day">
-                <p className="text-lg text-primary">
+                <p className="text-base sm:text-lg text-primary">
                   {formatDate(selectedDate.toISOString())}
                 </p>
               </Label>
             </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
-            <Button type="secondary" onClick={() => setStep(step - 1)}>
+
+          {/* Bottom Buttons (repeated for desktop) */}
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 sm:gap-6">
+            <Button
+              type="secondary"
+              onClick={() => setStep(step - 1)}
+              className="w-full sm:w-auto"
+            >
               Back
             </Button>
             <Button
               onClick={handleRegisterProposal}
               data-testid="proposal-register"
+              className="w-full sm:w-auto"
             >
               Register Proposal
             </Button>
@@ -822,46 +924,72 @@ const CreateProposalModal = () => {
       ) : step === 5 &&
         isAnonymousVoting &&
         (!existingAnonConfig || resetAnonKeys) ? (
-        <div className="flex flex-col gap-[42px]" data-testid="anon-setup-step">
-          <div className="flex items-start gap-[18px]">
-            <img src="/images/scan.svg" />
-            <div className="flex-grow flex flex-col gap-[18px]">
+        <div
+          className="flex flex-col gap-10 md:gap-12"
+          data-testid="anon-setup-step"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-8">
+            <img
+              src="/images/scan.svg"
+              alt="scan icon"
+              className="w-20 h-auto mx-auto sm:mx-0 sm:w-24"
+            />
+
+            <div className="flex-grow flex flex-col gap-4 sm:gap-6 text-center sm:text-left">
               <Step step={1} totalSteps={5} />
               <Title
                 title="Configure anonymous voting"
                 description="Generate keys and sign the setup transaction. This enables anonymous voting for this project."
               />
+
               {generatedKeys ? (
-                <div className="text-sm text-secondary">
+                <p className="text-sm sm:text-base text-secondary">
                   Keys are generated. Proceed to sign the setup transaction.
-                </div>
+                </p>
               ) : (
-                <div className="text-sm text-secondary">Generating keys…</div>
+                <p className="text-sm sm:text-base text-secondary">
+                  Generating keys…
+                </p>
               )}
-              <div className="flex justify-end gap-[18px]">
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-4">
                 <Button
                   data-testid="sign-setup"
+                  disabled={isLoading}
                   onClick={async () => {
                     try {
+                      setIsLoading(true);
+
                       if (!projectName) throw new Error("Project name missing");
                       if (!generatedKeys)
                         throw new Error("Anonymous keys missing");
+
                       await setupAnonymousVoting(
                         projectName,
                         generatedKeys.publicKey,
                         true,
                       );
+
                       setExistingAnonConfig(true);
                       setResetAnonKeys(false);
-                      // proceed to proposal creation
+
                       const files = preparedFiles || prepareProposalFiles();
                       await startProposalCreation(files);
                     } catch (e: any) {
                       setError(e.message);
+                    } finally {
+                      setIsLoading(false);
                     }
                   }}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2"
                 >
-                  Sign setup
+                  {isLoading ? (
+                    <div className="absolute inset-0 bg-white flex items-center justify-center z-50">
+                      <Loading />
+                    </div>
+                  ) : (
+                    "Sign setup"
+                  )}
                 </Button>
               </div>
             </div>

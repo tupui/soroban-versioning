@@ -25,7 +25,6 @@ export const projectNameSchema = z
 export const githubUrlSchema = z
   .string()
   .min(1, "GitHub URL is required")
-  .url("Invalid URL format")
   .refine((url) => {
     try {
       const parsedUrl = new URL(url);
@@ -50,8 +49,7 @@ export const githubHandleSchema = z
 
 export const httpsUrlSchema = z
   .string()
-  .url("Invalid URL format")
-  .startsWith("https://", "URL must start with https://");
+  .refine((url) => url.startsWith("https://"), "URL must start with https://");
 
 export const optionalHttpsUrlSchema = z
   .string()

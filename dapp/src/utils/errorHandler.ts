@@ -63,11 +63,13 @@ export function handleError(
       const { errorMessage } = extractContractError(error);
       const _logMessage = `${context}: ${errorMessage}`;
       // No console.error in production
+      console.error(_logMessage);
     } else {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       const _logMessage = `${context}: ${errorMessage}`;
       // No console.error in production
+      console.error(_logMessage);
     }
   }
 

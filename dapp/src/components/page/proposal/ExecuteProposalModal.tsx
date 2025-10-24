@@ -128,7 +128,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
         throw new Error("Invalid key-file – missing privateKey field");
       // Validate uploaded key against on-chain config (centralized helper)
       const { validateAnonymousKeyForProject } = await import(
-        "utils/anonymousVoting"
+        "../../../utils/anonymousVoting"
       );
       await validateAnonymousKeyForProject(projectName!, parsed.publicKey);
       setPrivateKey(parsed.privateKey);
@@ -199,10 +199,15 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
     <Modal onClose={onClose}>
       {/* ───────────────────────── step 1 ───────────────────────── */}
       {step === 1 && isAnonymous ? (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex items-start gap-[18px]">
-            <img src="/images/scan.svg" />
-            <div className="flex-grow flex flex-col gap-[30px]">
+        <div className="flex flex-col gap-10 px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-[18px]">
+            <img
+              src="/images/scan.svg"
+              alt="Anonymous voting setup"
+              className="w-16 sm:w-20 md:w-24 mx-auto sm:mx-0"
+            />
+
+            <div className="flex-grow flex flex-col gap-6 sm:gap-[30px] w-full">
               <Step step={step} totalSteps={totalSteps} />
               <Title
                 title="Provide the anonymous voting key-file"
@@ -215,14 +220,14 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
                   </>
                 }
               />
+
               <div
                 className={classNames(
-                  "border",
+                  "border p-3 w-full rounded-md transition-colors",
                   processingError ? "border-red-500" : "border-zinc-700",
-                  "p-3 w-full",
                 )}
               >
-                <label className="cursor-pointer text-primary underline">
+                <label className="cursor-pointer text-primary underline block text-center sm:text-left">
                   Choose key file
                   <input
                     type="file"
@@ -232,19 +237,24 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
                   />
                 </label>
               </div>
+
               {processingError && (
-                <p className="text-red-500 text-sm">{processingError}</p>
+                <p className="text-red-500 text-sm text-center sm:text-left">
+                  {processingError}
+                </p>
               )}
+
               {tallies && (
-                <div className="flex flex-col gap-2 text-sm text-primary">
+                <div className="flex flex-col gap-2 text-sm text-primary text-center sm:text-left">
                   <p>Approve: {tallies[0]}</p>
-                  <p>Reject:&nbsp;&nbsp;{tallies[1]}</p>
+                  <p>Reject: {tallies[1]}</p>
                   <p>Abstain: {tallies[2]}</p>
                 </div>
               )}
             </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
+
+          <div className="flex justify-center sm:justify-end gap-3 sm:gap-[18px]">
             <Button type="secondary" onClick={onClose}>
               Cancel
             </Button>
@@ -252,15 +262,21 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
         </div>
       ) : step === 2 && isAnonymous ? (
         /* ────────────── step 2 (anonymous) – decrypted tallies ───────────── */
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex items-start gap-[18px]">
-            <img src="/images/box-with-coin-inside.svg" />
-            <div className="flex-grow flex flex-col gap-[30px]">
+        <div className="flex flex-col gap-10 px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-[18px]">
+            <img
+              src="/images/box-with-coin-inside.svg"
+              alt="Decrypted tallies"
+              className="w-16 sm:w-20 md:w-24 mx-auto sm:mx-0"
+            />
+
+            <div className="flex-grow flex flex-col gap-6 sm:gap-[30px] w-full">
               <Step step={step} totalSteps={totalSteps} />
               <Title
                 title="Decrypted tallies"
                 description="Below are the tallies computed from decrypted votes."
               />
+
               <AnonymousTalliesDisplay
                 voteStatus={displayVoteStatus}
                 decodedVotes={decodedVotes}
@@ -268,7 +284,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
               />
             </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
+
+          <div className="flex justify-center sm:justify-end gap-3 sm:gap-[18px]">
             <Button type="secondary" onClick={() => setStep(step - 1)}>
               Back
             </Button>
@@ -276,10 +293,14 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
           </div>
         </div>
       ) : step === 1 ? (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex items-start gap-6">
-            <img src="/images/lock-in-box.svg" />
-            <div className="flex-grow flex flex-col gap-[30px]">
+        <div className="flex flex-col gap-10 sm:gap-[42px]">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-[18px]">
+            <img
+              src="/images/lock-in-box.svg"
+              className="w-16 h-16 sm:w-auto sm:h-auto mx-auto sm:mx-0"
+              alt="Lock in box"
+            />
+            <div className="flex-grow flex flex-col gap-6 sm:gap-[30px] text-center sm:text-left">
               <Step step={step} totalSteps={totalSteps} />
               <Title
                 title="Finalizing the Vote"
@@ -288,7 +309,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
               <VotingResult voteStatus={displayVoteStatus} withDetail />
             </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
+
+          <div className="flex flex-col sm:flex-row justify-end gap-4 sm:gap-[18px]">
             <Button type="secondary" onClick={onClose}>
               Cancel
             </Button>
@@ -309,21 +331,26 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
           </div>
         </div>
       ) : step === (isAnonymous ? 3 : 2) ? (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex items-start gap-[18px]">
-            <img src="/images/scan.svg" />
-            <div className="flex-grow flex flex-col gap-[30px]">
+        <div className="flex flex-col gap-10 sm:gap-[42px]">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-[18px]">
+            <img
+              src="/images/scan.svg"
+              className="w-16 h-16 sm:w-auto sm:h-auto mx-auto sm:mx-0"
+              alt="Scan"
+            />
+            <div className="flex-grow flex flex-col gap-6 sm:gap-[30px] text-center sm:text-left">
               <Step step={step} totalSteps={totalSteps} />
               <Title
                 title="Finalize the Vote Execution"
                 description="Review the transaction details before execution. You can verify the XDR and proceed with the final step."
               />
               <VotingResult voteStatus={displayVoteStatus} />
+
               {executionXdr && (
-                <div className="flex flex-col items-start gap-[18px]">
+                <div className="flex flex-col items-center sm:items-start gap-4 sm:gap-[18px]">
                   <p className="leading-4 text-base text-secondary">XDR</p>
-                  <div className="p-[8px_18px] bg-[#FFEFA8] flex items-center gap-[18px]">
-                    <p className="leading-[18px] text-lg text-primary">
+                  <div className="p-2 sm:p-[8px_18px] bg-[#FFEFA8] flex flex-col sm:flex-row items-center gap-3 sm:gap-[18px] rounded-lg">
+                    <p className="leading-[18px] text-lg text-primary break-all sm:break-normal text-center sm:text-left">
                       {executionXdr.slice(0, 24) + "..."}
                     </p>
                     <CopyButton textToCopy={executionXdr} size="sm" />
@@ -332,7 +359,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
               )}
             </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
+
+          <div className="flex flex-col sm:flex-row justify-end gap-4 sm:gap-[18px]">
             <Button type="secondary" onClick={() => setStep(step - 1)}>
               Back
             </Button>
@@ -353,10 +381,14 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-[42px]">
-          <div className="flex items-start gap-[18px]">
-            <img src="/images/flower.svg" />
-            <div className="flex-grow flex flex-col gap-[30px]">
+        <div className="flex flex-col gap-10 sm:gap-[42px]">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-[18px]">
+            <img
+              src="/images/flower.svg"
+              className="w-16 h-16 sm:w-auto sm:h-auto mx-auto sm:mx-0"
+              alt="Success Icon"
+            />
+            <div className="flex-grow flex flex-col gap-6 sm:gap-[30px] text-center sm:text-left">
               <Step step={step} totalSteps={totalSteps} />
               <Title
                 title="Your Vote Is Officially Executed!"
@@ -365,7 +397,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
               <VotingResult voteStatus={displayVoteStatus} />
             </div>
           </div>
-          <div className="flex justify-end gap-[18px]">
+
+          <div className="flex flex-col sm:flex-row justify-end gap-4 sm:gap-[18px]">
             <Button type="secondary" onClick={onClose}>
               Close
             </Button>
