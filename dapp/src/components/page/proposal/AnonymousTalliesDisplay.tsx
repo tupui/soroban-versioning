@@ -1,5 +1,6 @@
 import VotingResult from "./VotingResult";
 import type { VoteStatus } from "types/proposal";
+import AddressDisplay from "./AddressDisplay"; // import our new component
 
 interface Props {
   voteStatus: VoteStatus | undefined;
@@ -50,10 +51,14 @@ const AnonymousTalliesDisplay: React.FC<Props> = ({
               <tbody>
                 {decodedVotes.map((v, i) => (
                   <tr key={i} className="odd:bg-white even:bg-zinc-50">
-                    <td className="p-1 break-all">{v.address}</td>
+                    <td className="p-1">
+                      <AddressDisplay address={v.address} />
+                    </td>
                     <td className="p-1">{v.vote}</td>
                     <td className="p-1">{v.weight}</td>
-                    <td className="p-1">{v.maxWeight}</td>
+                    <td className="p-1">
+                      {v.isProposer ? "N/A" : v.maxWeight}
+                    </td>
                     <td className="p-1">{v.seed}</td>
                   </tr>
                 ))}

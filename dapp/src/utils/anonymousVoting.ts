@@ -8,7 +8,7 @@ import { deriveProjectKey } from "./projectKey";
 import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";
 import { decryptWithPrivateKey } from "utils/crypto";
-
+import { Badge } from "../../packages/tansu/dist";
 // Lazy-loaded imports to avoid circular dependency issues in Astro/SSR
 async function getTansu() {
   const mod = await import("../contracts/soroban_tansu");
@@ -52,7 +52,7 @@ export interface DecodedVote {
   vote: "approve" | "reject" | "abstain";
   seed: number;
   weight: number;
-  maxWeight: number;
+  maxWeight: number | string;
 }
 
 export interface AnonymousVotingData {
@@ -89,6 +89,9 @@ export async function computeAnonymousVotingData(
   });
   const votes: any[] = rawProposal?.vote_data?.votes ?? [];
 
+  // Extract proposer address
+  const proposerAddr: string = rawProposal?.proposer ?? "";
+
   // Init accumulators
   const talliesArr = [0, 0, 0];
   const seedsArr = [0, 0, 0];
@@ -100,7 +103,6 @@ export async function computeAnonymousVotingData(
     const data: any = vote.values?.[0];
     if (!data) continue;
 
-    const weight: number = Number((data as { weight?: number }).weight ?? 1);
     const encryptedVotes: string[] =
       (data as { encrypted_votes?: string[] }).encrypted_votes ?? [];
     const encryptedSeeds: string[] =
@@ -108,61 +110,62 @@ export async function computeAnonymousVotingData(
 
     let voteChoiceIdx = -1;
     let selectedSeedRaw = 0;
-    for (let i = 0; i < 3; i++) {
-      if (i >= encryptedVotes.length || i >= encryptedSeeds.length) continue;
-      const vCipher = encryptedVotes[i] as string | undefined;
-      const sCipher = encryptedSeeds[i] as string | undefined;
-      if (!vCipher || !sCipher) continue;
+    // Retrieve max weight for voter
+    const memberAddr = (data as { address?: string }).address ?? "";
 
-      // Decrypt (or parse plain numbers for default votes)
-      let vDec: number;
-      if (isPlainNumber(vCipher)) {
-        vDec = parseInt(vCipher);
-      } else {
-        const decStr = await decryptWithPrivateKey(vCipher!, privateKey);
-        const numStr = decStr.includes(":") ? decStr.split(":").pop()! : decStr;
-        vDec = parseInt(numStr);
-      }
-      let sDec: number;
-      if (isPlainNumber(sCipher)) {
-        sDec = parseInt(sCipher);
-      } else {
-        const decStr = await decryptWithPrivateKey(sCipher!, privateKey);
-        const numStr = decStr.includes(":") ? decStr.split(":").pop()! : decStr;
-        sDec = parseInt(numStr);
-      }
+    let weight: number;
+    let maxWeight: number | string;
 
-      if (vDec > 0) {
-        voteChoiceIdx = i;
-        selectedSeedRaw = sDec; // capture per-voter unweighted seed for display
-      }
-      // Apply voting weight to both vote value and seed
-      if (
-        talliesArr[i] !== undefined &&
-        seedsArr[i] !== undefined &&
-        voteCounts[i] !== undefined
-      ) {
-        talliesArr[i]! += vDec * weight;
-        seedsArr[i]! += sDec * weight;
-        if (vDec > 0) {
-          voteCounts[i]! += 1;
+    if (memberAddr === proposerAddr) {
+      weight = Badge.Verified;
+      maxWeight = "N/A"; //For proposer
+    } else {
+      // Normal voter – use weight from contract
+      weight = Number((data as { weight?: number }).weight ?? Badge.Default);
+      maxWeight = Badge.Default;
+      try {
+        const maxRes = await Tansu.get_max_weight({
+          project_key,
+          member_address: memberAddr,
+        });
+        if (maxRes && typeof maxRes === "object" && "result" in maxRes) {
+          maxWeight = Number(maxRes.result) || Badge.Default;
         }
+      } catch (_) {
+        /* ignore – default Badge.Default */
       }
     }
 
-    // Retrieve max weight for voter
-    const memberAddr = (data as { address?: string }).address ?? "";
-    let maxWeight = 1;
-    try {
-      const maxRes = await Tansu.get_max_weight({
-        project_key,
-        member_address: memberAddr,
-      });
-      if (maxRes && typeof maxRes === "object" && "result" in maxRes) {
-        maxWeight = Number(maxRes.result) || 1;
-      }
-    } catch (_) {
-      /* ignore – default 1 */
+    // Process each choice
+    for (let i = 0; i < 3; i++) {
+      if (i >= encryptedVotes.length || i >= encryptedSeeds.length) continue;
+      const vCipher = encryptedVotes[i];
+      const sCipher = encryptedSeeds[i];
+      if (!vCipher || !sCipher) continue;
+
+      // Decrypt (or parse plain numbers for default votes)
+      const vDec = isPlainNumber(vCipher)
+        ? parseInt(vCipher)
+        : parseInt(
+            (await decryptWithPrivateKey(vCipher, privateKey))
+              .split(":")
+              .pop()!,
+          );
+      const sDec = isPlainNumber(sCipher)
+        ? parseInt(sCipher)
+        : parseInt(
+            (await decryptWithPrivateKey(sCipher, privateKey))
+              .split(":")
+              .pop()!,
+          );
+
+      if (vDec > 0) voteChoiceIdx = i;
+      if (vDec > 0) selectedSeedRaw = sDec; // capture per-voter unweighted seed for display
+
+      // Apply voting weight to both vote value and seed
+      talliesArr[i]! += vDec * weight;
+      seedsArr[i]! += sDec * weight;
+      if (vDec > 0) voteCounts[i]! += 1;
     }
 
     decodedPerVoter.push({
