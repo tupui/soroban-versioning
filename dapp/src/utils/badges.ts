@@ -1,22 +1,16 @@
-export enum Badge {
-  DEVELOPER = 10000000,
-  TRIAGE = 5000000,
-  COMMUNITY = 1000000,
-  VERIFIED = 500000,
-  DEFAULT = 1,
-}
+export type BadgeCode = number;
 
-export function badgeName(code: Badge | number): string {
+export function badgeName(code: BadgeCode): string {
   switch (code) {
-    case Badge.DEVELOPER:
+    case 10000000:
       return "Developer";
-    case Badge.TRIAGE:
+    case 5000000:
       return "Triage";
-    case Badge.COMMUNITY:
+    case 1000000:
       return "Community";
-    case Badge.VERIFIED:
+    case 500000:
       return "Verified";
-    case Badge.DEFAULT:
+    case 1:
       return "Default";
     default:
       return code.toString();
