@@ -30,9 +30,10 @@ graph LR;
 3. **Tallies** – once voting ends, a maintainer can tally (using execute) – if anonymous, tallies & seeds are supplied.
 4. The proposal status becomes **Approved**, **Rejected** or **Cancelled** based on supermajority rules.
 5. If an **outcomes_contract** is specified, the appropriate callback is triggered automatically:
-   - **Approved** → `approve_outcome()`
-   - **Rejected** → `reject_outcome()`
-   - **Cancelled** → `abstain_outcome()`
+
+- **Approved** → `approve_outcome()`
+- **Rejected** → `reject_outcome()`
+- **Cancelled** → `abstain_outcome()`
 
 ### Voting Timeline
 
@@ -111,7 +112,11 @@ flowchart TD
 3. **Voting**: Members generate commitments and encrypted payloads off-chain, then submit `AnonymousVote` via the contract
 4. **Execution**: After voting ends, any maintainer with the RSA private key decrypts votes, computes weighted tallies, and submits to `execute()` for verification
 
-:::tip For a high-level sequence diagram of the anonymous voting flow, see the [User Flows documentation](./user_flows.mdx#2-governance-flow). :::
+:::tip
+
+For a high-level sequence diagram of the anonymous voting flow, see the [User Flows documentation](./user_flows.mdx#2-governance-flow).
+
+:::
 
 ### Key Management & Trust Model
 
@@ -122,9 +127,9 @@ The anonymous voting system requires a trusted party (executor) to hold the RSA-
 - **Key Holder Power**: Can decrypt ALL votes at any time
 - **Single Point of Trust**: Creates centralization in otherwise decentralized governance
 - **Required Trust**:
-  - Will not prematurely reveal votes (prevents social pressure/bribery)
-  - Will execute the proposal after voting ends
-  - Will provide correct tallies (cryptographic proof prevents lying, but they could refuse to execute)
+- Will not prematurely reveal votes (prevents social pressure/bribery)
+- Will execute the proposal after voting ends
+- Will provide correct tallies (cryptographic proof prevents lying, but they could refuse to execute)
 
 **Security Implications:**
 
@@ -165,7 +170,11 @@ For proposals requiring no trust assumptions, use public voting mode where talli
 
 ### Pedersen Commitment Scheme
 
-:::danger Never Submit as Transaction The `build_commitments_from_votes` function **MUST ONLY** be called in simulation mode (read-only). **NEVER** submit this as a transaction on-chain, as it would expose your votes and seeds publicly, completely breaking anonymity. Always use it client-side or via RPC simulation. :::
+:::danger
+
+Never Submit as Transaction The `build_commitments_from_votes` function **MUST ONLY** be called in simulation mode (read-only). **NEVER** submit this as a transaction on-chain, as it would expose your votes and seeds publicly, completely breaking anonymity. Always use it client-side or via RPC simulation.
+
+:::
 
 Pedersen commitments over the BLS12-381 G1 group provide cryptographic hiding.
 
@@ -306,9 +315,9 @@ $$
 $$
 \begin{align}
 \sum (w \cdot C[i]) &= \sum (w \cdot (g \cdot v[i] + h \cdot r[i])) \\
-                     &= \sum (w \cdot g \cdot v[i]) + \sum (w \cdot h \cdot r[i]) \\
-                     &= g \cdot \sum (w \cdot v[i]) + h \cdot \sum (w \cdot r[i]) \\
-                     &= g \cdot \text{tally}[i] + h \cdot \text{seed\_tally}[i]
+&= \sum (w \cdot g \cdot v[i]) + \sum (w \cdot h \cdot r[i]) \\
+&= g \cdot \sum (w \cdot v[i]) + h \cdot \sum (w \cdot r[i]) \\
+&= g \cdot \text{tally}[i] + h \cdot \text{seed\_tally}[i]
 \end{align}
 $$
 
