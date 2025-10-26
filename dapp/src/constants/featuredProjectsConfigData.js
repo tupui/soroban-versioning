@@ -3,7 +3,7 @@ export const featuredProjectsConfigData = [
     projectName: "tansu",
     logoImageLink:
       "https://github.com/tupui/soroban-versioning/blob/main/website/static/img/logo.svg",
-    description: "Bringing Git hashes onto Stellar's blockchain",
+    description: "Decentralized project governance on Stellar",
     organizationName: "Consulting Manao GmbH",
     officials: {
       websiteLink: "https://tansu.dev",
@@ -11,7 +11,9 @@ export const featuredProjectsConfigData = [
     },
     socialLinks: {},
     authorGithubNames: ["tupui"],
-    maintainersAddresses: [import.meta.env.PUBLIC_TANSU_OWNER_ID],
+    maintainersAddresses: [
+      "GD4FXNCYPQWNDWZYZZD4WFYYFTP466IKAKCZOYE5TPFTSSOZDA4QF3ER",
+    ],
   },
 ];
 
