@@ -15,7 +15,7 @@ A person which is part of a project's team. This is not necessarily tight to any
 ## System Overview
 
 1. Using the dApp, a maintainer registers a project providing a unique name, some metadata and a list of maintainers.
-2. The project's registration triggers an event which can be listened to by anyone on the network. As part of our dApp infrastructure, we listen to all events and store then in our database;
+2. The project's registration triggers an event which can be listened to by anyone on the network. As part of our dApp infrastructure, we listen to all events and store them in our database;
 3. Either using the dApp, or from tools provided to directly call the contract, maintainers can update projects data. Most notably, the last commit hash;
 4. Users can use the dApp to easily get insights on a project. They see the project history, can click on specific commits to have more information and link to the centralized platform used by the project itself.
 
@@ -25,7 +25,7 @@ The Soroban contract handles all on-chain features of the projects from registra
 
 When maintainers register their projects, a unique hash based on the project name is created. This serves as a `project_key` to uniquely identify a project and is stored as a data entry on the ledger.
 
-Behind the scene, it uses [Soroban Domain](https://sorobandomains.org/) as a way to prevent name squatting and other nefarious registration. The community will have easy tools to report issues. This will effectively prevent misuse of our contract.
+Behind the scene, it uses [Soroban Domain](https://sorobandomains.org/) to prevent name squatting and malicious registrations. The community has tools to report issues and prevent contract misuse.
 
 Each project stores 3 elements on-chain:
 
@@ -53,15 +53,37 @@ Everyone can get a project's commit hash at any time by either making a simulati
 - **Event Emission**: All state changes emit verifiable events
 - **Upgrade Mechanism**: Controlled contract upgrade system
 
+### Event System
+
+The contract emits events for all state changes:
+
+**Project Events:**
+
+- `ProjectRegistered` - New project created
+- `ProjectUpdated` - Metadata or maintainers changed
+- `CommitUpdated` - New commit hash set
+
+**Governance Events:**
+
+- `AnonymousVotingSetup` - Anonymous voting configured
+- `ProposalCreated` - New proposal submitted
+- `VoteCast` - Vote recorded
+- `ProposalExecuted` - Proposal finalized
+
+**Membership Events:**
+
+- `MemberAdded` - New member registered
+- `BadgesSet` - Badges assigned/updated
+
+Events are indexed by the backend API for efficient querying.
+
 ## Backend Infrastructure
 
-At the interface between the contract and the dApp, we have a backend infrastructure doing the heavy lifting. The backend API and specification will be open so that anyone can easily use their own infrastructure or build on top of it more easily.
+Backend infrastructure bridges the contract and dApp. The backend API is open for custom infrastructure or extensions.
 
-A PostgreSQL database will store all events, and we will use FastAPI along with SQLAlchemy to interact with it. Having a DB will help us save on explicit contract calls. Specific endpoints are yet to be defined. The contract calls will be made in Python thanks to the libraries py-stellar-base and soroban-cli-python (which was built by our team).
+A PostgreSQL database stores all events using FastAPI and SQLAlchemy. The database caches events to reduce contract calls. Contract calls are made in Python using py-stellar-base and soroban-cli-python.
 
-The other key component which we are already bringing is Git hooks. Upon specific Git actions, maintainers will trigger automatically, and behind the scene, hooks to call the contract and update the commit hash of the project. This can greatly improve the developer experience to make it a seamless operation. In the long term, users could also benefit from the hooks and have security features built-in such as warning if hash do not match between on-chain and off-chain.
-
-We also need to think about the most reluctant maintainers and have ways to observe off-chain data and pre-update on-chain data.
+Git hooks automate commit tracking. Upon specific Git actions, maintainers trigger hooks that call the contract to update the commit hash. Future enhancements will warn users of hash mismatches.
 
 ## IPFS Integration
 
@@ -74,12 +96,12 @@ Tansu uses IPFS for decentralized content storage:
 
 ## dApp
 
-The first version of the dApp is simple and focus on a basic feature set. We first need to build trust with the community and only then we can expand our feature set with what our users actually need.
+The dApp provides essential project management features.
 
-The dApp leverages well-known JS SDKs to propose an effective and familiar user interface. We are using Astro with the `stellar-wallets-kit` and `sorobandomains-sdk`. This helps us build faster and handle addresses and signing safely so that our system never sees a user's secret key–hence fully non-custodial.
+Built with Astro, `stellar-wallets-kit`, and `sorobandomains-sdk`. The dApp is fully non-custodial and never accesses private keys.
 
-Maintainers will be able to handle all aspects of their projects on the dApp. They will have tools to add or remove maintainers, update metadata and set the new commit hash of the project.
+Maintainers can handle all aspects of their projects: add or remove maintainers, update metadata, and set commit hashes.
 
-Users will be able to view project details and observe its current state. We will link each commit hash to the centralization platform the project is using. The metadata file, similar to a SEP-1, will be rendered to show useful information to users.
+Users can view project details and current state. Each commit hash links to the project's code repository. The metadata file (similar to SEP-1) renders project information.
 
-In general, the interface should be clear enough to show where the data is coming from and there should be a simple way to see the data on-chain and off-chain.
+The interface clearly shows data sources for both on-chain and off-chain information.

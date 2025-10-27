@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # User Flows
 
-This document provides detailed technical documentation of all user flows in the Tansu protocol, including the architecture components involved and security considerations.
+Technical documentation of user flows in the Tansu protocol.
 
 ## System Architecture Overview
 
@@ -54,7 +54,7 @@ flowchart TD
 
 ### Overview
 
-The project registration flow allows maintainers to register new projects on the Tansu protocol with proper domain verification and metadata storage.
+Maintainers register projects with domain verification and metadata storage.
 
 ### Flow Diagram
 
@@ -120,79 +120,99 @@ sequenceDiagram
 
 ### Overview
 
-The governance system enables decentralized decision-making through proposals and voting, with optional anonymous voting capabilities.
+Decentralized governance through proposals and voting. Optional anonymous voting uses Pedersen commitments over BLS12-381.
 
-### Flow Diagram
+### Detailed Sequence Diagram
 
 ```mermaid
 sequenceDiagram
-  participant M as Maintainer
-  participant V as Voter
-  participant D as dApp
-  participant BLS as BLS12-381
-  participant IPFS as IPFS
-  participant SC as SorobanContract
+    participant Admin as Admin/Maintainer
+    participant Voter as Voter Client
+    participant Contract as Smart Contract
+    participant Storage as Contract Storage
+    participant Executor as Executor
 
-  M->>D: Create Proposal
-  opt Anonymous Voting
-    D->>SC: Call anonymous_voting_setup()
-    SC-->>D: Store generator points & ECDH pubkey
-    D->>M: Download ECDH private key
-  end
-  D->>IPFS: Upload Proposal Content
-  IPFS-->>D: Return CID
-  M->>SC: Submit create_proposal()
-  SC-->>D: Proposal Created
+    rect rgb(230, 240, 255)
+    Note over Admin,Storage: PHASE 1: ANONYMOUS VOTING SETUP
 
-  V->>D: View Proposal
-  V->>D: Cast Vote
-  alt Public Vote
-    D->>SC: Submit vote() with PublicVote
-  else Anonymous Vote
-    D->>BLS: Generate commitments C = G(v) + H(r)
-    D->>D: Encrypt votes & seeds with ECDH
-    D->>SC: Submit AnonymousVote with commitments
-  end
-  SC-->>D: Vote Recorded
+    Admin->>Contract: anonymous_voting_setup(maintainer, project_key, rsa_public_key)
+    activate Contract
+    Note over Contract: Generate BLS12-381 generator points
+    Contract->>Storage: Store AnonymousVoteConfig {g, h, RSA_pub}
+    Contract-->>Admin: Setup Complete
+    deactivate Contract
+    end
 
-  M->>D: Execute Proposal
-  alt Anonymous Proposal
-    M->>D: Upload ECDH private key
-    D->>D: Decrypt votes & compute tallies
-    D->>SC: Submit execute() with tallies & seeds
-    SC->>SC: Verify commitments match tallies
-  else Public Proposal
-    D->>SC: Submit execute() without tallies
-  end
-  SC-->>D: Proposal Executed
+    rect rgb(240, 255, 240)
+    Note over Admin,Storage: PHASE 2: PROPOSAL CREATION
+
+    Admin->>Contract: create_proposal(project_key, title, ipfs, voting_ends_at, public_voting=false)
+    activate Contract
+    Note over Contract: Deposit PROPOSAL_COLLATERAL (100 XLM)
+    Contract->>Storage: Store Proposal (status: Active)
+    Contract-->>Admin: Proposal ID
+    deactivate Contract
+    end
+
+    rect rgb(255, 245, 230)
+    Note over Voter,Storage: PHASE 3: ANONYMOUS VOTING
+
+    Voter->>Voter: Select vote choice (approve/reject/abstain)
+    Note over Voter: Create vote array:<br/>approve=[1,0,0], reject=[0,1,0], abstain=[0,0,1]<br/>Generate random seeds: crypto.getRandomValues()
+
+    Voter->>Contract: get_anonymous_voting_config(project_key)
+    Contract->>Storage: Retrieve config
+    Storage-->>Voter: {g, h, RSA_pub}
+
+    Note over Voter: RSA-OAEP encrypt votes & seeds
+    Voter->>Contract: build_commitments_from_votes(votes, seeds) [SIMULATION]
+    Note over Contract: Build commitments using Pedersen scheme
+    Contract-->>Voter: commitments [C0, C1, C2]
+
+    Voter->>Contract: vote(voter, proposal_id, AnonymousVote)
+    activate Contract
+    Note over Contract: Validate commitment structure (3 G1 points)<br/>Check voter eligibility & weight<br/>Deposit VOTE_COLLATERAL (10 XLM)
+    Contract->>Storage: Store encrypted votes, seeds, commitments
+    Contract-->>Voter: Vote Recorded
+    deactivate Contract
+    end
+
+    rect rgb(255, 240, 245)
+    Note over Executor,Storage: PHASE 4: DECRYPTION & TALLYING
+
+    Executor->>Contract: get_proposal(project_key, proposal_id)
+    Contract->>Storage: Retrieve proposal with all votes
+    Storage-->>Executor: Proposal with AnonymousVotes
+
+    Note over Executor: For each vote:<br/>1. RSA-decrypt votes & seeds<br/>2. Apply voting weight<br/>3. Accumulate tallies & seed tallies
+    Executor->>Executor: tallies = [Σ(v[i]×w), ...] for i in {approve, reject, abstain}<br/>seeds = [Σ(r[i]×w), ...]
+    end
+
+    rect rgb(245, 240, 255)
+    Note over Executor,Storage: PHASE 5: PROOF VERIFICATION & EXECUTION
+
+    Executor->>Contract: execute(maintainer, proposal_id, tallies, seeds)
+    activate Contract
+    Note over Contract: Return collaterals to proposer & voters
+
+    Note over Contract: PROOF VERIFICATION:<br/>Verify proof using homomorphic properties
+
+    Contract->>Contract: proof(project_key, proposal, tallies, seeds)
+
+    alt Proof Valid
+        Note over Contract: Determine outcome (supermajority):<br/>Approved: approve > (reject + abstain)<br/>Rejected: reject > (approve + abstain)<br/>Cancelled: otherwise
+        Contract->>Storage: Update proposal status
+        Contract-->>Executor: Proposal Executed (status)
+    else Proof Invalid
+        Contract-->>Executor: Error: InvalidProof
+    end
+    deactivate Contract
+    end
 ```
 
-### Anonymous Voting Technical Details
+### Technical Details
 
-#### Key Generation
-
-- **ECDH key pairs** generated client-side using Web Crypto API
-- **Private key download** required before proposal submission
-- **Public key storage** in smart contract for vote encryption
-
-#### Vote Encryption
-
-- **BLS12-381 commitment scheme**: Votes committed as C = G(v) + H(r) where G, H are generator points
-- **ECDH encryption**: Votes and seeds encrypted with ECDH public key
-- **Commitment verification**: Contract verifies commitments match revealed tallies and seeds
-
-#### Execution Phase
-
-- **Private key upload**: Required to decrypt and tally anonymous votes
-- **Verification**: Contract verifies commitments match decrypted votes using BLS12-381
-- **Privacy preservation**: Only final tallies revealed, individual votes remain private
-
-### Security Considerations
-
-- **Proposal immutability**: Content stored on IPFS cannot be modified
-- **Vote integrity**: Cryptographic commitments prevent vote manipulation
-- **Execution authorization**: Only maintainers can execute proposals
-- **Time-bounded voting**: Proposals have fixed voting periods (24h minimum, 30d maximum)
+For complete cryptographic details, security considerations, and trust model explanations, see the [Governance & Proposals](./governance.mdx) documentation.
 
 ---
 

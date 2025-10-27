@@ -1,6 +1,6 @@
 import { useStore } from "@nanostores/react";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { getDemoConfigData } from "../../../constants/demoConfigData";
+import { getFeaturedProjectsConfigData } from "../../../constants/featuredProjectsConfigData.js";
 import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
@@ -47,7 +47,7 @@ const ProjectList = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const data = getDemoConfigData();
+      const data = getFeaturedProjectsConfigData();
       setProjects(data);
       setFilteredProjects(data);
     };

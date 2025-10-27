@@ -16,7 +16,7 @@ export const prerender = false;
  * @returns {Promise<string[]|null>} - Returns maintainer public keys for proposals, or an empty array for members
  */
 async function validateRequest(type, signedTxXdr, projectName) {
-  const { Transaction, xdr } = await import("@stellar/stellar-sdk");
+  const { Transaction } = await import("@stellar/stellar-sdk");
   const tx = new Transaction(
     signedTxXdr,
     import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
@@ -141,26 +141,22 @@ async function generateDelegation(did) {
     );
   }
 
-  // Dynamic imports to avoid initialization issues
-  const { create } = await import("@web3-storage/w3up-client");
-  const { Signer } = await import(
-    "@web3-storage/w3up-client/principal/ed25519"
-  );
-  const Proof = await import("@web3-storage/w3up-client/proof");
-  const { StoreMemory } = await import(
-    "@web3-storage/w3up-client/stores/memory"
-  );
-
   if (storachaProof.length === 64) {
     storachaProof = await decryptProof(storachaProof);
   }
 
-  const proof = await Proof.parse(storachaProof);
+  // Dynamic imports to avoid initialization issues
+  const { create } = await import("@storacha/client");
+  const { Signer } = await import("@storacha/client/principal/ed25519");
+  const Proof = await import("@storacha/client/proof");
+  const { StoreMemory } = await import("@storacha/client/stores/memory");
 
+  const proof = await Proof.parse(storachaProof);
   const principal = Signer.parse(key);
   const store = new StoreMemory();
   const client = await create({ principal, store });
 
+  // Use the delegation directly instead of loadDelegation
   const space = await client.addSpace(proof);
   await client.setCurrentSpace(space.did());
 
@@ -182,6 +178,7 @@ async function generateDelegation(did) {
     expiration,
   });
 
+  // Return the delegation archive directly
   const archive = await delegation.archive();
   return archive.ok;
 }

@@ -26,11 +26,19 @@ Install the CLI:
 ```bash
 bun install @storacha/cli
 ```
+Create an Account or Log In :
+
+```bash
+storacha login
+```
+
+This command prompts you to enter your email address in the terminal.
+- First-time login: A verification link will be sent to your email. Open your email inbox, click the link to complete the signup process, and subscribe to a billing plan.
+- Subsequent logins: Simply enter your email address when prompted to sign in.
 
 Create a space:
 
 ```bash
-storacha login
 storacha space create tansu
 ```
 

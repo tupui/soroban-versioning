@@ -661,7 +661,7 @@ url = "${MOCK_PROJECT.config_url}"
   });
 
   // Stub w3up client so uploadDirectory returns the same CID as calculateDirectoryCid
-  await page.route("**/@web3-storage/w3up-client*", async (route) => {
+  await page.route("**/@storacha/client*", async (route) => {
     const js = `export const create = async () => ({ agent: { did: () => 'did:test' }, addSpace: async () => ({ did: () => 'did:test' }), setCurrentSpace: async () => {}, uploadDirectory: async () => ({ toString: () => 'bafytestcidmock' }) });`;
     route.fulfill({
       status: 200,
@@ -671,17 +671,14 @@ url = "${MOCK_PROJECT.config_url}"
   });
 
   // Stub delegation extract to always return ok
-  await page.route(
-    "**/@web3-storage/w3up-client/delegation*",
-    async (route) => {
-      const js = `export const extract = async () => ({ ok: {} });`;
-      route.fulfill({
-        status: 200,
-        headers: { "content-type": "application/javascript" },
-        body: js,
-      });
-    },
-  );
+  await page.route("**/@@storacha/client/delegation*", async (route) => {
+    const js = `export const extract = async () => ({ ok: {} });`;
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body: js,
+    });
+  });
 
   // Also stub generic send/getTransaction endpoints in case rpc.Server uses relative paths
   await stubTransactionSend(page);

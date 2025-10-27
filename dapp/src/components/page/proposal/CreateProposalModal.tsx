@@ -19,6 +19,7 @@ import { generateRSAKeyPair } from "utils/crypto";
 import { setupAnonymousVoting } from "@service/ContractService";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
+import Loading from "components/utils/Loading";
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -285,27 +286,32 @@ const CreateProposalModal = () => {
       const { hasAnonymousVotingConfig } = await import(
         "@service/ReadContractService"
       );
+
       const exists = await hasAnonymousVotingConfig(projectName);
 
-      if (exists && generatedKeys) {
+      if (exists) {
         setExistingAnonConfig(true);
         setResetAnonKeys(false);
-      } else {
+        return;
+      }
+
+      if (!generatedKeys) {
         const keys = await generateRSAKeyPair();
         setGeneratedKeys(keys);
         setExistingAnonConfig(false);
         setResetAnonKeys(false);
-
-        // Auto-download
         downloadKeys(keys);
       }
-    } catch (_) {
-      const keys = await generateRSAKeyPair();
-      setGeneratedKeys(keys);
-      setExistingAnonConfig(false);
-      setResetAnonKeys(false);
+    } catch (error) {
+      console.error("Error checking anonymous config:", error);
 
-      downloadKeys(keys);
+      if (!generatedKeys) {
+        const keys = await generateRSAKeyPair();
+        setGeneratedKeys(keys);
+        setExistingAnonConfig(false);
+        setResetAnonKeys(false);
+        downloadKeys(keys);
+      }
     }
   };
 
@@ -401,22 +407,24 @@ const CreateProposalModal = () => {
 
                     {isAnonymousVoting && existingAnonConfig && (
                       <>
-                        <span className="text-sm text-green-600">
-                          Existing anonymous voting keys are already configured.
-                        </span>
-                        <button
-                          type="button"
-                          className="text-blue-500 underline text-sm w-fit"
-                          onClick={async () => {
-                            const keys = await generateRSAKeyPair();
-                            setGeneratedKeys(keys);
-                            setResetAnonKeys(true);
-                            setKeysDownloaded(false);
-                            downloadKeys(keys);
-                          }}
-                        >
-                          Reset Keys
-                        </button>
+                        <div className="flex gap-2 flex-wrap">
+                          <span className="text-sm text-green-600">
+                            Already configured.
+                          </span>
+                          <button
+                            type="button"
+                            className="text-blue-500 underline text-sm w-fit"
+                            onClick={async () => {
+                              const keys = await generateRSAKeyPair();
+                              setGeneratedKeys(keys);
+                              setResetAnonKeys(true);
+                              setKeysDownloaded(false);
+                              downloadKeys(keys);
+                            }}
+                          >
+                            Reset Keys
+                          </button>
+                        </div>
                       </>
                     )}
                   </div>
@@ -947,8 +955,11 @@ const CreateProposalModal = () => {
               <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-4">
                 <Button
                   data-testid="sign-setup"
+                  disabled={isLoading}
                   onClick={async () => {
                     try {
+                      setIsLoading(true);
+
                       if (!projectName) throw new Error("Project name missing");
                       if (!generatedKeys)
                         throw new Error("Anonymous keys missing");
@@ -958,18 +969,27 @@ const CreateProposalModal = () => {
                         generatedKeys.publicKey,
                         true,
                       );
+
                       setExistingAnonConfig(true);
                       setResetAnonKeys(false);
-                      // proceed to proposal creation
+
                       const files = preparedFiles || prepareProposalFiles();
                       await startProposalCreation(files);
                     } catch (e: any) {
                       setError(e.message);
+                    } finally {
+                      setIsLoading(false);
                     }
                   }}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2"
                 >
-                  Sign setup
+                  {isLoading ? (
+                    <div className="absolute inset-0 bg-white flex items-center justify-center z-50">
+                      <Loading />
+                    </div>
+                  ) : (
+                    "Sign setup"
+                  )}
                 </Button>
               </div>
             </div>

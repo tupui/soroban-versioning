@@ -27,6 +27,7 @@ Tansu does not replace GitHub (or your preferred hosting solution) – it comple
 - **Membership & badges**: Register as a member, earn badges for your contributions, and participate in governance.
 - **Automated workflows**: Use Git hooks to sync commit hashes on-chain, and let the dApp handle signatures and wallet integration.
 - **Anonymous voting**: Advanced cryptographic voting with BLS12-381 commitments for privacy-preserving governance.
+- **Collateral-based spam prevention**: Economic disincentives for malicious behavior.
 
 ## Learn More
 

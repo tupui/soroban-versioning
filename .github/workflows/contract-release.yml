@@ -22,9 +22,7 @@ jobs:
       release_name: ${{ github.ref_name }}
       release_description: "Tansu contract release"
       home_domain: 'tansu.dev'
-      relative_path: '["contracts/tansu"]'
+      relative_path: 'contracts/tansu'
       package: 'tansu'
-    environment:
-      name: publish-contract
     secrets:
       release_token: ${{ secrets.GITHUB_TOKEN }}
