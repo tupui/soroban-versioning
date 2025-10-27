@@ -36,6 +36,15 @@ jobs:
         run: bun install
 
       - name: Build app
+        env:
+          PUBLIC_SOROBAN_NETWORK_PASSPHRASE: ${{ vars.PUBLIC_SOROBAN_NETWORK_PASSPHRASE }}
+          PUBLIC_SOROBAN_RPC_URL: ${{ vars.PUBLIC_SOROBAN_RPC_URL }}
+          PUBLIC_HORIZON_URL: ${{ vars.PUBLIC_HORIZON_URL }}
+          PUBLIC_TANSU_CONTRACT_ID: ${{ vars.PUBLIC_TANSU_CONTRACT_ID }}
+          PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: ${{ vars.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID }}
+          PUBLIC_TANSU_OWNER_ID: ${{ vars.PUBLIC_TANSU_OWNER_ID }}
+          PUBLIC_DEFAULT_FEE: ${{ vars.PUBLIC_DEFAULT_FEE }}
+          PUBLIC_DEFAULT_TIMEOUT: ${{ vars.PUBLIC_DEFAULT_TIMEOUT }}
         run: bun run build
 
       - name: Generate artifact attestation for dist
