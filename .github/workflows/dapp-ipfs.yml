@@ -37,6 +37,7 @@ jobs:
 
       - name: Build app
         env:
+          PUBLIC_DELEGATION_API_URL: ${{ secrets.PUBLIC_DELEGATION_API_URL }}
           PUBLIC_SOROBAN_NETWORK_PASSPHRASE: ${{ vars.PUBLIC_SOROBAN_NETWORK_PASSPHRASE }}
           PUBLIC_SOROBAN_RPC_URL: ${{ vars.PUBLIC_SOROBAN_RPC_URL }}
           PUBLIC_HORIZON_URL: ${{ vars.PUBLIC_HORIZON_URL }}

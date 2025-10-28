@@ -15,8 +15,6 @@ import { checkSimulationError } from "../utils/contractErrors";
 
 interface UploadWithDelegationParams {
   files: File[];
-  type: "proposal" | "member" | "project";
-  projectName?: string;
   signedTxXdr: string; // The signed contract transaction
   did: string;
 }
@@ -49,18 +47,19 @@ interface CreateProjectFlowParams {
  */
 export async function uploadWithDelegation({
   files,
-  type,
-  projectName,
   signedTxXdr,
   did,
 }: UploadWithDelegationParams): Promise<string> {
-  const apiUrl = `/api/w3up-delegation`;
+  // Use configurable delegation API URL (defaults to Cloudflare Worker)
+  const apiUrl =
+    import.meta.env.PUBLIC_DELEGATION_API_URL ||
+    "https://ipfs-delegation.tansu-dev.workers.dev";
 
   // Request delegation from the backend
   const response = await fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ signedTxXdr, did, type, projectName }),
+    body: JSON.stringify({ signedTxXdr, did }),
   });
 
   if (!response.ok) {
@@ -221,8 +220,6 @@ export async function createProposalFlow({
   onProgress?.(8); // Uploading to IPFS (UI index 3)
   const uploadedCid = await uploadWithDelegation({
     files: proposalFiles,
-    type: "proposal",
-    projectName,
     signedTxXdr,
     did,
   });
@@ -287,7 +284,6 @@ export async function joinCommunityFlow({
     try {
       const uploadedCid = await uploadWithDelegation({
         files: profileFiles,
-        type: "member",
         signedTxXdr,
         did,
       });
@@ -356,7 +352,6 @@ export async function createProjectFlow({
 
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
-    type: "project",
     signedTxXdr,
     did,
   });
@@ -436,7 +431,6 @@ export async function updateConfigFlow({
   onProgress?.(8); // UI offset -4 → shows "Uploading"
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
-    type: "project",
     signedTxXdr,
     did,
   });
