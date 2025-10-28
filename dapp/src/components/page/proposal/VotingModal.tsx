@@ -228,6 +228,10 @@ const VotingModal: React.FC<VotersModalProps> = ({
               <p className="text-sm sm:text-base text-secondary text-right">
                 Once submitted, your vote cannot be changed.
               </p>
+              <p className="px-3 py-1 text-sm sm:text-base bg-[#F5F1F9] text-primary">
+                ℹ️ Casting a vote requires a 10 XLM collateral. This collateral
+                is refunded when the vote is executed
+              </p>
             </div>
           </div>
         </div>
