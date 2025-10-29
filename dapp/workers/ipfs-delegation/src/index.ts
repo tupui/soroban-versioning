@@ -25,8 +25,39 @@ interface DelegationRequest {
   signedTxXdr: string;
 }
 
+const ALLOWED_ORIGINS = [
+  "http://localhost:4321",
+  "https://testnet.tansu.dev",
+  "https://app.tansu.dev",
+  "https://tansu.xlm.sh",
+];
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+    return {};
+  }
+
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Max-Age": "86400", // 24 hours
+  };
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    const origin = request.headers.get("Origin");
+    const corsHeaders = getCorsHeaders(origin);
+
+    // Handle OPTIONS preflight request
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders,
+      });
+    }
+
     try {
       const body = (await request.json()) as DelegationRequest;
       const { signedTxXdr, did } = body;
@@ -45,6 +76,7 @@ export default {
       return new Response(archive, {
         status: 200,
         headers: {
+          ...corsHeaders,
           "Content-Type": "application/octet-stream",
           "Cache-Control": "no-store, no-cache, must-revalidate",
         },
@@ -53,7 +85,10 @@ export default {
       console.error("Error creating delegation:", err);
       return new Response(JSON.stringify({ error: err.message }), {
         status: err.message.includes("not found") ? 404 : 500,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       });
     }
   },
