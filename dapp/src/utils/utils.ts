@@ -150,7 +150,7 @@ export const modifyProposalFromContract = (
     const sumWeight = (arr: Vote[]) =>
       arr.reduce((acc, v) => {
         const voteData = (v as any).values?.[0];
-        return acc + (voteData.weight || 0);
+        return acc + (voteData.weight ?? 1);
       }, 0);
 
     return {
