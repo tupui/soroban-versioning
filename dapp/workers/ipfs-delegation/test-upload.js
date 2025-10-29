@@ -4,8 +4,6 @@ import * as Delegation from "@ucanto/core/delegation";
 
 const DEV_URL = "https://ipfs-testnet.tansu.dev";
 const PROD_URL = "https://ipfs.tansu.dev";
-const DEV_DID = "did:key:z6MktRW276dmyiYtVneaesBhraNHF6aKkXm986fZLHCFMr6x";
-const PROD_DID = "did:key:z6Mkw6ccf5ACT2WR5A8X9fQGrZ9Re2PBJF8NGnowMKaViAhB";
 
 const ENV = process.env.ENV || "LOCAL";
 

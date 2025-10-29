@@ -2,30 +2,6 @@
 
 Cloudflare Worker that generates Storacha delegations for IPFS uploads.
 
-## Prerequisites
-
-```bash
-bunx wrangler login
-```
-
-## Security
-
-All secrets are stored in Cloudflare Secrets.
-
-**For local development**: Use `.dev.vars` (gitignored)
-
-**For production**: Set secrets via wrangler (per environment):
-
-```bash
-# Development
-bunx wrangler secret put STORACHA_SING_PRIVATE_KEY --env testnet
-bunx wrangler secret put STORACHA_PROOF --env testnet
-
-# Production
-bunx wrangler secret put STORACHA_SING_PRIVATE_KEY --env production
-bunx wrangler secret put STORACHA_PROOF --env production
-```
-
 ## API
 
 ```json
@@ -40,19 +16,58 @@ Returns: binary delegation archive
 
 The worker validates the signed transaction is cryptographically signed by the source account before generating the delegation. It automatically detects whether the transaction is from testnet or mainnet.
 
+## Storacha setup
+
+Follow Storacha's documentation to create a Space and obtain its Proof (a UCAN proof string).
+
+If you do not have an account, you will be prompted to create one and select a plan. The free plan is more than enough
+for what we want to do.
+
+Install the CLI:
+
+```bash
+bun install @storacha/cli
+```
+Create an account or log in:
+
+```bash
+storacha login
+```
+
+Create a space:
+
+```bash
+storacha space create tansu
+```
+
+This will generate a space which is identifiable by a DID, something like `did:key:z6Mk...`.
+
+The next step is to create a key, this is `STORACHA_SING_PRIVATE_KEY`:
+
+```bash
+storacha key create --json
+```
+
+The key itself has it's own DID. Use that DID to create a delegation proof:
+
+```bash
+export AUDIENCE=did:key:z6Mk...
+storacha delegation create $AUDIENCE -c space/blob/add -c space/index/add -c filecoin/offer -c upload/add --base64
+```
+
+This is your `STORACHA_PROOF`.
+
 ## Development
 
-### Start the Worker
+Add your `STORACHA_SING_PRIVATE_KEY` and `STORACHA_PROOF` to `.dev.vars`
 
-In one terminal:
+### Start the Worker
 
 ```bash
 cd dapp/workers/ipfs-delegation
 bun install
 bun run dev
 ```
-
-The worker will start on `http://localhost:8787` and automatically reload on code changes.
 
 ### Test the Worker
 
@@ -63,7 +78,7 @@ cd dapp/workers/ipfs-delegation
 bun run test
 ```
 
-Or with custom environment:
+Or against deployed environments (see next section):
 
 ```bash
 ENV=DEV bun run test  # Use testnet environment
@@ -71,6 +86,26 @@ ENV=PROD bun run test # Use production environment
 ```
 
 ## Deployment
+
+### Prerequisites
+
+```bash
+bunx wrangler login
+```
+
+### Security
+
+All secrets are stored in Cloudflare Secrets. Set secrets via wrangler (per environment):
+
+```bash
+# Development
+bunx wrangler secret put STORACHA_SING_PRIVATE_KEY --env testnet
+bunx wrangler secret put STORACHA_PROOF --env testnet
+
+# Production
+bunx wrangler secret put STORACHA_SING_PRIVATE_KEY --env production
+bunx wrangler secret put STORACHA_PROOF --env production
+```
 
 ### Development (Testnet)
 
