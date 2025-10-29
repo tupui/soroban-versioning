@@ -33,42 +33,45 @@ export async function stubRpc(page) {
 
 export async function stubDelegation(page) {
   // Mock delegation endpoint (Cloudflare Worker)
-  await page.route(/(ipfs.*\.tansu\.dev|ipfs-delegation.*\.workers\.dev)/, (route) => {
-    // Create a minimal mock CAR archive that simulates a delegation
-    // This is a simplified structure that should allow tests to pass
-    const mockCarBytes = new Uint8Array([
-      // CAR v1 header
-      0x0a,
-      0xa1,
-      0x67,
-      0x76,
-      0x65,
-      0x72,
-      0x73,
-      0x69,
-      0x6f,
-      0x6e,
-      0x01,
-      // Root CID (simplified)
-      0x12,
-      0x20,
-      // Add 32 bytes for the CID hash
-      ...Array(32).fill(0x01),
-      // Add minimal block data
-      0x24, // varint for block size
-      0x12,
-      0x20, // CID prefix
-      ...Array(32).fill(0x02), // block CID
-      0x08, // block data size
-      ...Array(8).fill(0x03), // block data
-    ]);
+  await page.route(
+    /(ipfs.*\.tansu\.dev|ipfs-delegation.*\.workers\.dev)/,
+    (route) => {
+      // Create a minimal mock CAR archive that simulates a delegation
+      // This is a simplified structure that should allow tests to pass
+      const mockCarBytes = new Uint8Array([
+        // CAR v1 header
+        0x0a,
+        0xa1,
+        0x67,
+        0x76,
+        0x65,
+        0x72,
+        0x73,
+        0x69,
+        0x6f,
+        0x6e,
+        0x01,
+        // Root CID (simplified)
+        0x12,
+        0x20,
+        // Add 32 bytes for the CID hash
+        ...Array(32).fill(0x01),
+        // Add minimal block data
+        0x24, // varint for block size
+        0x12,
+        0x20, // CID prefix
+        ...Array(32).fill(0x02), // block CID
+        0x08, // block data size
+        ...Array(8).fill(0x03), // block data
+      ]);
 
-    route.fulfill({
-      status: 200,
-      contentType: "application/octet-stream",
-      body: mockCarBytes,
-    });
-  });
+      route.fulfill({
+        status: 200,
+        contentType: "application/octet-stream",
+        body: mockCarBytes,
+      });
+    },
+  );
 }
 
 export async function stubTransactionSend(page) {
@@ -625,41 +628,44 @@ url = "${MOCK_PROJECT.config_url}"
   });
 
   // Mock delegation endpoint for uploads (Cloudflare Worker)
-  await page.route(/(ipfs.*\.tansu\.dev|ipfs-delegation.*\.workers\.dev)/, (route) => {
-    // Use the same mock CAR archive as in stubDelegation
-    const mockCarBytes = new Uint8Array([
-      // CAR v1 header
-      0x0a,
-      0xa1,
-      0x67,
-      0x76,
-      0x65,
-      0x72,
-      0x73,
-      0x69,
-      0x6f,
-      0x6e,
-      0x01,
-      // Root CID (simplified)
-      0x12,
-      0x20,
-      // Add 32 bytes for the CID hash
-      ...Array(32).fill(0x01),
-      // Add minimal block data
-      0x24, // varint for block size
-      0x12,
-      0x20, // CID prefix
-      ...Array(32).fill(0x02), // block CID
-      0x08, // block data size
-      ...Array(8).fill(0x03), // block data
-    ]);
+  await page.route(
+    /(ipfs.*\.tansu\.dev|ipfs-delegation.*\.workers\.dev)/,
+    (route) => {
+      // Use the same mock CAR archive as in stubDelegation
+      const mockCarBytes = new Uint8Array([
+        // CAR v1 header
+        0x0a,
+        0xa1,
+        0x67,
+        0x76,
+        0x65,
+        0x72,
+        0x73,
+        0x69,
+        0x6f,
+        0x6e,
+        0x01,
+        // Root CID (simplified)
+        0x12,
+        0x20,
+        // Add 32 bytes for the CID hash
+        ...Array(32).fill(0x01),
+        // Add minimal block data
+        0x24, // varint for block size
+        0x12,
+        0x20, // CID prefix
+        ...Array(32).fill(0x02), // block CID
+        0x08, // block data size
+        ...Array(8).fill(0x03), // block data
+      ]);
 
-    route.fulfill({
-      status: 200,
-      contentType: "application/octet-stream",
-      body: mockCarBytes,
-    });
-  });
+      route.fulfill({
+        status: 200,
+        contentType: "application/octet-stream",
+        body: mockCarBytes,
+      });
+    },
+  );
 
   // Stub w3up client so uploadDirectory returns the same CID as calculateDirectoryCid
   await page.route("**/@storacha/client*", async (route) => {

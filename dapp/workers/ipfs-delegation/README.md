@@ -28,6 +28,7 @@ Install the CLI:
 ```bash
 bun install @storacha/cli
 ```
+
 Create an account or log in:
 
 ```bash
