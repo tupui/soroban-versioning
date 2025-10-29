@@ -32,7 +32,8 @@ export async function stubRpc(page) {
 }
 
 export async function stubDelegation(page) {
-  await page.route("**/api/w3up-delegation", (route) => {
+  // Mock delegation endpoint (Cloudflare Worker)
+  await page.route(/(ipfs.*\.tansu\.dev|ipfs-delegation.*\.workers\.dev)/, (route) => {
     // Create a minimal mock CAR archive that simulates a delegation
     // This is a simplified structure that should allow tests to pass
     const mockCarBytes = new Uint8Array([
@@ -623,8 +624,8 @@ url = "${MOCK_PROJECT.config_url}"
     route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
   });
 
-  // Mock delegation endpoint for uploads
-  await page.route("**/api/w3up-delegation", (route) => {
+  // Mock delegation endpoint for uploads (Cloudflare Worker)
+  await page.route(/(ipfs.*\.tansu\.dev|ipfs-delegation.*\.workers\.dev)/, (route) => {
     // Use the same mock CAR archive as in stubDelegation
     const mockCarBytes = new Uint8Array([
       // CAR v1 header

@@ -50,13 +50,8 @@ export async function uploadWithDelegation({
   signedTxXdr,
   did,
 }: UploadWithDelegationParams): Promise<string> {
-  // Use configurable delegation API URL (defaults to Cloudflare Worker)
-  const apiUrl =
-    import.meta.env.PUBLIC_DELEGATION_API_URL ||
-    "https://ipfs-delegation.tansu-dev.workers.dev";
-
   // Request delegation from the backend
-  const response = await fetch(apiUrl, {
+  const response = await fetch(import.meta.env.PUBLIC_DELEGATION_API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ signedTxXdr, did }),

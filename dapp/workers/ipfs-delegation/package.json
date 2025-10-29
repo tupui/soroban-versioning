@@ -5,7 +5,6 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "wrangler dev --port 8787",
-    "dev:background": "wrangler dev --port 8787 --persist-to=.wrangler",
     "test": "bun test-upload.js",
     "deploy:testnet": "wrangler deploy --env testnet",
     "deploy:production": "wrangler deploy --env production"
@@ -13,14 +12,13 @@
   "dependencies": {
     "@ipld/dag-ucan": "^3.4.5",
     "@stellar/stellar-sdk": "^14.3.0",
-    "@storacha/cli": "^1.6.16",
     "@storacha/client": "^1.8.11",
     "@ucanto/core": "^10.4.6",
-    "js-sha3": "^0.9.3",
     "multiformats": "13.4.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251014.0",
+    "@storacha/cli": "^1.6.16",
     "typescript": "^5.9.3",
     "wrangler": "^4.45.1"
   },
