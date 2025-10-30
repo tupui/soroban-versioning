@@ -36,3 +36,8 @@ test-results/
 
 # Local Netlify folder
 .netlify
+
+# Workers build artifacts
+dapp/workers/**/.wrangler
+dapp/workers/**/dist
+dapp/workers/**/node_modules
