@@ -5,9 +5,7 @@ permissions:
 
 on:
   push:
-    branches: [ main ]
-    paths:
-      - "dapp/**"
+    branches: [ app_prod ]
 
   workflow_dispatch:
 
@@ -44,8 +42,6 @@ jobs:
           PUBLIC_TANSU_CONTRACT_ID: ${{ vars.PUBLIC_TANSU_CONTRACT_ID }}
           PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: ${{ vars.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID }}
           PUBLIC_TANSU_OWNER_ID: ${{ vars.PUBLIC_TANSU_OWNER_ID }}
-          PUBLIC_DEFAULT_FEE: ${{ vars.PUBLIC_DEFAULT_FEE }}
-          PUBLIC_DEFAULT_TIMEOUT: ${{ vars.PUBLIC_DEFAULT_TIMEOUT }}
         run: bun run build
 
       - name: Generate artifact attestation for dist
@@ -61,16 +57,16 @@ jobs:
             ./dapp/dist/*
 
       # https://web3.storage/docs/how-to/ci/#github-action-add-to-web3
-      - uses: web3-storage/add-to-web3@afd8cba20f920c998f6d3b38db0abe64242fe042
-        id: w3up
+      - uses: storacha/add-to-web3@afd8cba20f920c998f6d3b38db0abe64242fe042
+        id: storacha
         with:
           path_to_add: "./dapp/dist"
-          proof: ${{ secrets.W3_PROOF }}
-          secret_key: ${{ secrets.W3_PRINCIPAL }}
+          secret_key: ${{ secrets.STORACHA_PRINCIPAL }}
+          proof: ${{ secrets.STORACHA_PROOF }}
 
       - name: Job summary
         run: |
           echo "### Shipping to IPFS! :rocket:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- CID: ${{ steps.w3up.outputs.cid }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- URL: ${{ steps.w3up.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- CID: ${{ steps.storacha.outputs.cid }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.storacha.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
