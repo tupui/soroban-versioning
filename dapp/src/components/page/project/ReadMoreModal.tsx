@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import type { FC } from "react";
 import Modal from "components/utils/Modal";
-import { fetchReadmeContentFromConfigUrl } from "../../../service/GithubService";
+import { fetchReadmeContentFromConfigUrl } from "../../../service/RepositoryService";
 import Markdown from "markdown-to-jsx";
 import "github-markdown-css";
 
@@ -15,7 +15,7 @@ interface ReadMoreModalProps {
     description: string;
     organization: string;
     logoImageLink: string;
-    githubUrl: string;
+    repositoryUrl: string;
     websiteUrl?: string;
   };
 }
@@ -62,10 +62,10 @@ const ReadMoreModal: FC<ReadMoreModalProps> = ({
 
   useEffect(() => {
     const loadReadme = async () => {
-      if (isOpen && projectData?.githubUrl) {
+      if (isOpen && projectData?.repositoryUrl) {
         try {
           const content = await fetchReadmeContentFromConfigUrl(
-            projectData.githubUrl,
+            projectData.repositoryUrl,
           );
           if (content) {
             setReadmeContent(content);
@@ -87,13 +87,13 @@ const ReadMoreModal: FC<ReadMoreModalProps> = ({
         setReadmeContent("");
       }
     };
-  }, [isOpen, projectData?.githubUrl]);
+  }, [isOpen, projectData?.repositoryUrl]);
 
   const handleGoToReleases = useCallback(() => {
-    if (projectData?.githubUrl) {
-      window.open(`${projectData.githubUrl}/releases`, "_blank");
+    if (projectData?.repositoryUrl) {
+      window.open(`${projectData.repositoryUrl}/releases`, "_blank");
     }
-  }, [projectData?.githubUrl]);
+  }, [projectData?.repositoryUrl]);
 
   if (!isOpen) return null;
 
@@ -115,9 +115,9 @@ const ReadMoreModal: FC<ReadMoreModalProps> = ({
                 {projectData?.name || ""}
               </p>
               <div className="flex items-center gap-3">
-                {projectData?.githubUrl && (
+                {projectData?.repositoryUrl && (
                   <a
-                    href={projectData.githubUrl}
+                    href={projectData.repositoryUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -154,8 +154,8 @@ const ReadMoreModal: FC<ReadMoreModalProps> = ({
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <CopyButton
                     textToCopy={
-                      projectData?.githubUrl
-                        ? `git clone ${projectData.githubUrl}`
+                      projectData?.repositoryUrl
+                        ? `git clone ${projectData.repositoryUrl}`
                         : ""
                     }
                     showText={true}

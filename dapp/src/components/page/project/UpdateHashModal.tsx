@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react";
-import { getLatestCommitHash } from "@service/GithubService";
+import { getLatestCommitHash } from "@service/RepositoryService";
 import { getProject } from "@service/ReadContractService";
 import { loadProjectInfo, setProject } from "@service/StateService";
 import { loadedPublicKey } from "@service/walletService";

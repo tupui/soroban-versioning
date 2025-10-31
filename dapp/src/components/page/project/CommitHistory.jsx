@@ -1,6 +1,6 @@
 import { useStore } from "@nanostores/react";
 import { useEffect, useState } from "react";
-import { getCommitHistory } from "../../../service/GithubService.ts";
+import { getCommitHistory } from "../../../service/RepositoryService.ts";
 import {
   loadConfigData,
   loadProjectRepoInfo,
@@ -18,24 +18,35 @@ const CommitHistory = () => {
 
   const fetchCommitHistory = async (page = 1) => {
     const projectRepoInfo = loadProjectRepoInfo();
-    if (projectRepoInfo?.author && projectRepoInfo?.repository) {
-      const history = await getCommitHistory(
+    if (!projectRepoInfo) {
+      return;
+    }
+
+    let history = null;
+    if (projectRepoInfo.descriptor) {
+      history = await getCommitHistory(
+        projectRepoInfo.descriptor,
+        undefined,
+        page,
+      );
+    } else if (projectRepoInfo.author && projectRepoInfo.repository) {
+      history = await getCommitHistory(
         projectRepoInfo.author,
         projectRepoInfo.repository,
         page,
       );
+    }
 
-      if (history) {
-        setCommitHistory(history);
-        setCurrentPage(page);
+    if (history) {
+      setCommitHistory(history);
+      setCurrentPage(page);
 
-        // Set the latest commit
-        if (history.length > 0 && history[0].commits.length > 0) {
-          latestCommit.set(history[0].commits[0].sha);
-        }
-      } else {
-        setCommitHistory([]);
+      // Set the latest commit
+      if (history.length > 0 && history[0].commits.length > 0) {
+        latestCommit.set(history[0].commits[0].sha);
       }
+    } else {
+      setCommitHistory([]);
     }
   };
 
