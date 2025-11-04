@@ -49,7 +49,7 @@ The next step is to create a key, this is `STORACHA_SING_PRIVATE_KEY`:
 storacha key create --json
 ```
 
-The key itself has it's own DID. Use that DID to create a delegation proof:
+The key itself has its own DID. Use that DID to create a delegation proof:
 
 ```bash
 export AUDIENCE=did:key:z6Mk...
