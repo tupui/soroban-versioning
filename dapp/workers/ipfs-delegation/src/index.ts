@@ -102,45 +102,52 @@ async function validateRequest(signedTxXdr: string): Promise<void> {
   const passphrases = [Networks.TESTNET, Networks.PUBLIC];
   let tx: Transaction | null = null;
 
+  // Try parsing and verifying signature with each network passphrase
+  // The hash computation depends on the passphrase, so we need to try both
   for (const passphrase of passphrases) {
     try {
-      tx = new Transaction(signedTxXdr, passphrase);
-      break; // Successfully parsed transaction
-    } catch {
-      continue; // Try next passphrase
+      const txForPassphrase = new Transaction(signedTxXdr, passphrase);
+
+      if (
+        !txForPassphrase.signatures ||
+        txForPassphrase.signatures.length === 0
+      ) {
+        continue;
+      }
+
+      if (!txForPassphrase.source) {
+        continue;
+      }
+
+      const sourceKeypair = Keypair.fromPublicKey(txForPassphrase.source);
+      const txHash = txForPassphrase.hash();
+
+      for (const signature of txForPassphrase.signatures) {
+        const sigBytes = signature.signature();
+        if (sourceKeypair.verify(txHash, sigBytes)) {
+          tx = txForPassphrase;
+          break;
+        }
+      }
+
+      // If we found a valid signature, break out of passphrase loop
+      if (tx) {
+        break;
+      }
+    } catch (e) {
+      // If parsing or verification fails with this passphrase, continue to next one
+      continue;
     }
   }
 
   if (!tx) {
-    throw new Error("Failed to parse transaction XDR");
-  }
-
-  // Verify transaction is signed
-  if (!tx.signatures || tx.signatures.length === 0) {
-    throw new Error("Transaction must be signed");
+    throw new Error("Transaction signature is invalid for the source account");
   }
 
   // Verify transaction has operations
   if (!tx.operations || tx.operations.length === 0) {
     throw new Error("Transaction must have at least one operation");
   }
-
-  // Verify source account is set
-  if (!tx.source) {
-    throw new Error("Transaction must have a source account");
-  }
-
-  // Cryptographically verify the signature belongs to the source account
-  const txHash = tx.hash();
-  const sourceKeypair = Keypair.fromPublicKey(tx.source);
-
-  for (const signature of tx.signatures) {
-    if (sourceKeypair.verify(txHash, signature.signature())) {
-      return; // Success
-    }
-  }
-
-  throw new Error("Transaction signature is invalid for the source account");
 }
 
 /**
