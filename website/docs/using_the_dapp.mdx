@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Quick-Start
 
-The web interface at [https://testnet.tansu.dev](https://testnet.tansu.dev) is the easiest way to interact with Tansu. It wraps all contract calls behind a familiar UI and never asks for your secret key – signature and account management are delegated to the [Stellar Wallets Kit](https://github.com/stellar/js-wallets-kit).
+The web interface at [https://testnet.tansu.dev](https://testnet.tansu.dev) is the easiest way to interact with Tansu. All contract calls use the [Stellar Wallets Kit](https://github.com/stellar/js-wallets-kit) for non-custodial wallet integration.
 
 > The steps below assume you are connected to **Testnet**. For Mainnet the flow is identical – only network selection and contract ID will differ.
 
@@ -50,7 +50,7 @@ See the [Membership](developers/membership.mdx) page for details.
 - **Title**
 - **Description** – rich-text editor (stored on IPFS)
 - **Voting end** – calendar picker (1-30 days)
-- **Outcome** – JSON describing XDR to execute on approval (optional)
+- **Outcome Contract** – external contract address for callbacks (optional)
 
 4. Submit and sign.
 
@@ -62,7 +62,7 @@ While a proposal is **Active** press **Vote** and choose **Approve**, **Reject**
 
 ## 7. Execute
 
-After the voting window closes any maintainer can press **Execute**. If the proposal is **Approved** and contains an XDR payload the dApp will prompt for an additional signature to broadcast the follow-up transaction.
+After the voting window closes any maintainer can press **Execute**. If the proposal includes an outcome contract, the appropriate callback is triggered based on the result (Approved, Rejected, or Cancelled).
 
 ---
 

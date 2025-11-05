@@ -1,0 +1,18 @@
+# Wrangler
+.wrangler/
+.dev.vars
+
+# Build output
+dist/
+.worker/
+
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+

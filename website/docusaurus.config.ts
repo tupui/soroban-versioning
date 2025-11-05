@@ -79,7 +79,7 @@ const config: Config = {
       {name: "x:card", content: "summary_large_image"},
       {
         name: "x:image",
-        content: "https://testnet.tansu.dev/logo.svg",
+        content: "https://app.tansu.dev/logo.svg",
       },
       {name: "x:title", content: "Tansu"},
       {
@@ -103,7 +103,7 @@ const config: Config = {
         },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
-          href: 'https://testnet.tansu.dev',
+          href: 'https://app.tansu.dev',
           label: 'Launch App',
           position: 'right',
         },

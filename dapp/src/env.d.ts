@@ -10,8 +10,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_TANSU_OWNER_ID: string;
   readonly PUBLIC_DEFAULT_FEE: string;
   readonly PUBLIC_DEFAULT_TIMEOUT: number;
-  readonly STORACHA_SING_PRIVATE_KEY: string;
-  readonly STORACHA_PROOF: string;
+  readonly PUBLIC_DELEGATION_API_URL: string;
 }
 
 interface ImportMeta {
