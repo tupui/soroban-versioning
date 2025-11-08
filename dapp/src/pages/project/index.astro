@@ -43,31 +43,40 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
         const project = await getProjectFromName(projectName);
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
-          const { username, repoName } = getAuthorRepo(project.config.url);
-          if (username && repoName) {
-            setProjectRepoInfo(username, repoName);
-          }
+
           const tomlData = await fetchTomlFromCid(project.config.ipfs);
+          let configData: any = {};
           if (tomlData) {
-            const configData = extractConfigData(tomlData, project);
+            configData = extractConfigData(tomlData, project);
             setConfigData(configData);
           } else {
             setConfigData({});
           }
-          try {
-            const latestSha = await getProjectHash();
-            if (
-              latestSha &&
-              typeof latestSha === "string" &&
-              latestSha.match(/^[a-f0-9]{40}$/)
-            ) {
-              setProjectLatestSha(latestSha);
-            } else {
-              setProjectLatestSha("");
+
+          // Only set GitHub repo info for SOFTWARE projects
+          const isSoftwareProject = configData.projectType === "SOFTWARE";
+          if (isSoftwareProject) {
+            const { username, repoName } = getAuthorRepo(project.config.url);
+            if (username && repoName) {
+              setProjectRepoInfo(username, repoName);
             }
-          } catch (error: any) {
-            toast.error("Something Went Wrong!", error.message);
+
+            try {
+              const latestSha = await getProjectHash();
+              if (
+                latestSha &&
+                typeof latestSha === "string" &&
+                latestSha.match(/^[a-f0-9]{40}$/)
+              ) {
+                setProjectLatestSha(latestSha);
+              } else {
+                setProjectLatestSha("");
+              }
+            } catch (error: any) {
+              toast.error("Something Went Wrong!", error.message);
+            }
           }
+
           projectInfoLoaded.set(true);
         } else {
           refreshLocalStorage();

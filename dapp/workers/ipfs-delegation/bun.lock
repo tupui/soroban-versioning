@@ -6,14 +6,13 @@
       "dependencies": {
         "@ipld/dag-ucan": "^3.4.5",
         "@stellar/stellar-sdk": "^14.3.0",
-        "@storacha/cli": "^1.6.16",
         "@storacha/client": "^1.8.11",
         "@ucanto/core": "^10.4.6",
-        "js-sha3": "^0.9.3",
         "multiformats": "13.4.1",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "^4.20251014.0",
+        "@storacha/cli": "^1.6.24",
         "typescript": "^5.9.3",
         "wrangler": "^4.45.1",
       },
@@ -230,7 +229,7 @@
 
     "@storacha/capabilities": ["@storacha/capabilities@1.10.0", "", { "dependencies": { "@ucanto/core": "^10.4.5", "@ucanto/interface": "^11.0.1", "@ucanto/principal": "^9.0.3", "@ucanto/transport": "^9.2.1", "@ucanto/validator": "^10.0.1", "@web3-storage/data-segment": "^5.2.0", "multiformats": "^13.3.6" } }, "sha512-rdKOuKuiifNi46ZpXXHhAhQeuOevZGkASg0rhy62RRXnbgfcCt6cBna9NL9ULYbycL/Im1DKpotaEf83E6sNEQ=="],
 
-    "@storacha/cli": ["@storacha/cli@1.6.16", "", { "dependencies": { "@inquirer/core": "^5.1.1", "@inquirer/prompts": "^3.3.0", "@ipld/car": "^5.4.0", "@ipld/dag-json": "^10.2.3", "@ipld/dag-ucan": "^3.4.5", "@storacha/access": "^1.6.2", "@storacha/client": "^1.8.11", "@storacha/did-mailto": "^1.0.2", "@ucanto/client": "^9.0.2", "@ucanto/core": "^10.4.5", "@ucanto/transport": "^9.2.1", "@web3-storage/content-claims": "^5.2.2", "@web3-storage/data-segment": "^5.3.0", "ansi-escapes": "^6.2.0", "chalk": "^5.3.0", "crypto-random-string": "^5.0.0", "files-from-path": "^1.1.4", "fr32-sha2-256-trunc254-padded-binary-tree-multihash": "^3.3.0", "open": "^9.1.0", "ora": "^7.0.1", "pretty-tree": "^1.0.0", "s-ago": "^2.2.0", "sade": "^1.8.1", "update-notifier": "^7.0.0" }, "bin": { "storacha": "bin.js" } }, "sha512-ANZKCTya7qxq7gr7+dT/1Xd/rcM/T4ub8nQzhoNqVibzMf3NF5ytgY4pFFjwMo/062iO5cjUSruotx0JOl0VyA=="],
+    "@storacha/cli": ["@storacha/cli@1.6.24", "", { "dependencies": { "@inquirer/core": "^5.1.1", "@inquirer/prompts": "^3.3.0", "@ipld/car": "^5.4.0", "@ipld/dag-json": "^10.2.3", "@ipld/dag-ucan": "^3.4.5", "@storacha/access": "^1.6.2", "@storacha/client": "^1.8.12", "@storacha/did-mailto": "^1.0.2", "@ucanto/client": "^9.0.2", "@ucanto/core": "^10.4.5", "@ucanto/transport": "^9.2.1", "@web3-storage/content-claims": "^5.2.2", "@web3-storage/data-segment": "^5.3.0", "ansi-escapes": "^6.2.0", "chalk": "^5.3.0", "crypto-random-string": "^5.0.0", "files-from-path": "^1.1.4", "fr32-sha2-256-trunc254-padded-binary-tree-multihash": "^3.3.0", "open": "^9.1.0", "ora": "^7.0.1", "pretty-tree": "^1.0.0", "s-ago": "^2.2.0", "sade": "^1.8.1", "update-notifier": "^7.0.0" }, "bin": { "storacha": "bin.js" } }, "sha512-wvmjNF1PS0jO5ryh6HzaZ7BwHPNNIwZ4bSG5b6gcd2NHwl57ptdvwOE/1DBFc5wdvICdP9biSO1FKGHLm9ZXUw=="],
 
     "@storacha/client": ["@storacha/client@1.8.11", "", { "dependencies": { "@ipld/dag-ucan": "^3.4.5", "@storacha/access": "^1.6.2", "@storacha/blob-index": "^1.2.2", "@storacha/capabilities": "^1.10.0", "@storacha/did-mailto": "^1.0.2", "@storacha/filecoin-client": "^1.0.13", "@storacha/upload-client": "^1.3.4", "@ucanto/client": "^9.0.2", "@ucanto/core": "^10.4.5", "@ucanto/interface": "^11.0.1", "@ucanto/principal": "^9.0.3", "@ucanto/transport": "^9.2.1", "environment": "^1.1.0" } }, "sha512-uqsCLS/x7PNJHFUu8pFOpEXdCWu0B1NLSkygAnT763IMbG/uc0nchZv9LXopIan8hl0RaFIRyZsg0kRPM25LgA=="],
 
@@ -552,8 +551,6 @@
 
     "it-to-stream": ["it-to-stream@1.0.0", "", { "dependencies": { "buffer": "^6.0.3", "fast-fifo": "^1.0.0", "get-iterator": "^1.0.2", "p-defer": "^3.0.0", "p-fifo": "^1.0.0", "readable-stream": "^3.6.0" } }, "sha512-pLULMZMAB/+vbdvbZtebC0nWBTbG581lk6w8P7DfIIIKUfa8FbY7Oi0FxZcFPbxvISs7A9E+cMpLDBc1XhpAOA=="],
 
-    "js-sha3": ["js-sha3@0.9.3", "", {}, "sha512-BcJPCQeLg6WjEx3FE591wVAevlli8lxsxm9/FzV4HXkV49TmBH38Yvrpce6fjbADGMKFrBMGTqrVz3qPIZ88Gg=="],
-
     "json-schema-traverse": ["json-schema-traverse@1.0.0", "", {}, "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="],
 
     "json-schema-typed": ["json-schema-typed@8.0.1", "", {}, "sha512-XQmWYj2Sm4kn4WeTYvmpKEbyPsL7nBsb647c7pMe6l02/yx2+Jfc4dT6UZkEXnIUb5LhD55r2HPsJ1milQ4rDg=="],
@@ -836,7 +833,7 @@
 
     "@storacha/capabilities/@ucanto/core": ["@ucanto/core@10.4.5", "", { "dependencies": { "@ipld/car": "^5.1.0", "@ipld/dag-cbor": "^9.0.0", "@ipld/dag-ucan": "^3.4.5", "@ucanto/interface": "^11.0.1", "multiformats": "^13.3.1" } }, "sha512-NKVgAFjpPu1QFyKjYHlaeJbSvst3oA79S7XNSFFQGhNKhGJ45ro67Fa5zxdy5jlU5jhSox3+T81VsmsszfBRYw=="],
 
-    "@storacha/cli/@ucanto/core": ["@ucanto/core@10.4.5", "", { "dependencies": { "@ipld/car": "^5.1.0", "@ipld/dag-cbor": "^9.0.0", "@ipld/dag-ucan": "^3.4.5", "@ucanto/interface": "^11.0.1", "multiformats": "^13.3.1" } }, "sha512-NKVgAFjpPu1QFyKjYHlaeJbSvst3oA79S7XNSFFQGhNKhGJ45ro67Fa5zxdy5jlU5jhSox3+T81VsmsszfBRYw=="],
+    "@storacha/cli/@storacha/client": ["@storacha/client@1.8.12", "", { "dependencies": { "@ipld/dag-ucan": "^3.4.5", "@storacha/access": "^1.6.2", "@storacha/blob-index": "^1.2.2", "@storacha/capabilities": "^1.10.0", "@storacha/did-mailto": "^1.0.2", "@storacha/filecoin-client": "^1.0.13", "@storacha/upload-client": "^1.3.4", "@ucanto/client": "^9.0.2", "@ucanto/core": "^10.4.5", "@ucanto/interface": "^11.0.1", "@ucanto/principal": "^9.0.3", "@ucanto/transport": "^9.2.1", "environment": "^1.1.0" } }, "sha512-a0Ww3biYdGoUd/ihZNSFEcWOBCz7miCGL8dvMuxjWwel9xsQP4TlNmxgs0kI1H3f92Bb/rnuwzFrMdsEqRGbsQ=="],
 
     "@storacha/client/@ucanto/core": ["@ucanto/core@10.4.5", "", { "dependencies": { "@ipld/car": "^5.1.0", "@ipld/dag-cbor": "^9.0.0", "@ipld/dag-ucan": "^3.4.5", "@ucanto/interface": "^11.0.1", "multiformats": "^13.3.1" } }, "sha512-NKVgAFjpPu1QFyKjYHlaeJbSvst3oA79S7XNSFFQGhNKhGJ45ro67Fa5zxdy5jlU5jhSox3+T81VsmsszfBRYw=="],
 
