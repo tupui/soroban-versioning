@@ -44,7 +44,6 @@
     "typescript": "^5.9.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20251107.0",
     "@eslint/js": "^9.34.0",
     "@playwright/test": "^1.55.0",
     "@tailwindcss/postcss": "^4.1.12",
