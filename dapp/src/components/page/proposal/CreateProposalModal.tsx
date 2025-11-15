@@ -331,37 +331,6 @@ const CreateProposalModal = () => {
     setShowModal(false);
 
     setStep(1);
-    setProposalName("");
-    setMdText("");
-    setImageFiles([]);
-    setImageError(null);
-    setApproveDescription("");
-    setRejectDescription("");
-    setCancelledDescription("");
-    setApproveXdr("");
-    setRejectXdr(null);
-    setCancelledXdr(null);
-    setSelectedDate(() => {
-      const d = new Date();
-      d.setDate(d.getDate() + 2);
-      return d;
-    });
-    setProposalId(null);
-    setIpfsLink("");
-    setIsAnonymousVoting(false);
-    setPreparedFiles(null);
-    setGeneratedKeys(null);
-    setExistingAnonConfig(false);
-    setResetAnonKeys(false);
-    setKeysDownloaded(false);
-    setProposalNameError(null);
-    setDescriptionError(null);
-    setApproveDescriptionError(null);
-    setApproveXdrError(null);
-    setIsLoading(false);
-    setIsUploading(false);
-    setIsSuccessful(false);
-    setError(null);
 
     if (step >= 10) {
       window.location.reload();
