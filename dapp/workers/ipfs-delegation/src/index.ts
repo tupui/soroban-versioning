@@ -73,7 +73,7 @@ export default {
       // Generate the delegation
       const archive = await generateDelegation(did, env);
 
-      return new Response(archive, {
+      return new Response(archive as any, {
         status: 200,
         headers: {
           ...corsHeaders,

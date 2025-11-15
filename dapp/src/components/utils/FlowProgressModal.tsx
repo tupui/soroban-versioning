@@ -62,14 +62,22 @@ const FlowProgressModal: React.FC<FlowProgressModalProps> = ({
         <ProgressStep step={step - 5} signLabel={signLabel} />
       ) : isSuccessful ? (
         <div
-          className="flex items-center gap-[18px]"
+          className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px] p-4 sm:p-6"
           data-testid="flow-success"
         >
-          <img src="/images/flower.svg" alt="Success" />
-          <div className="flex-grow flex flex-col gap-[30px]">
-            <p className="text-xl font-bold text-primary">{successTitle}</p>
-            <p className="text-secondary">{successMessage}</p>
-            <div className="flex justify-end gap-[18px]">
+          <img
+            src="/images/flower.svg"
+            alt="Success"
+            className="w-40 h-40 sm:w-auto sm:h-auto"
+          />
+          <div className="flex-grow flex flex-col gap-5 text-center sm:text-left">
+            <p className="text-lg sm:text-xl font-bold text-primary">
+              {successTitle}
+            </p>
+            <p className="text-sm sm:text-base text-secondary">
+              {successMessage}
+            </p>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-[18px]">
               <Button type="secondary" onClick={handleClose}>
                 Close
               </Button>
@@ -78,14 +86,21 @@ const FlowProgressModal: React.FC<FlowProgressModalProps> = ({
           </div>
         </div>
       ) : error ? (
-        <div className="flex items-center gap-[18px]" data-testid="flow-error">
-          <img src="/images/wrong.svg" alt="Error" />
-          <div className="flex-grow flex flex-col gap-[30px]">
-            <p className="text-xl font-bold text-red-600">
+        <div
+          className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px] p-4 sm:p-6"
+          data-testid="flow-error"
+        >
+          <img
+            src="/images/wrong.svg"
+            alt="Error"
+            className="w-40 h-40 sm:w-auto sm:h-auto"
+          />
+          <div className="flex-grow flex flex-col gap-5 text-center sm:text-left">
+            <p className="text-lg sm:text-xl font-bold text-red-600">
               Something went wrong
             </p>
-            <p className="text-secondary">{error}</p>
-            <div className="flex justify-end gap-[18px]">
+            <p className="text-sm sm:text-base text-secondary">{error}</p>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-[18px]">
               <Button type="secondary" onClick={handleClose}>
                 Close
               </Button>
