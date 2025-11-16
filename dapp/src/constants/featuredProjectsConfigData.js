@@ -1,6 +1,7 @@
 export const featuredProjectsConfigData = [
   {
     projectName: "tansu",
+    projectType: "SOFTWARE",
     logoImageLink:
       "https://github.com/tupui/soroban-versioning/blob/main/website/static/img/logo.svg",
     description: "Decentralized project governance on Stellar",
@@ -10,7 +11,7 @@ export const featuredProjectsConfigData = [
       githubLink: "https://github.com/tupui/soroban-versioning",
     },
     socialLinks: {},
-    authorGithubNames: ["tupui"],
+    authorHandles: ["tupui"],
     maintainersAddresses: [
       "GD4FXNCYPQWNDWZYZZD4WFYYFTP466IKAKCZOYE5TPFTSSOZDA4QF3ER",
     ],
