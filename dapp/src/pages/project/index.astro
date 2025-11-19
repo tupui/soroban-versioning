@@ -43,9 +43,11 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
         const project = await getProjectFromName(projectName);
         if (project && project.name && project.config && project.maintainers) {
           setProject(project);
-          const { username, repoName } = getAuthorRepo(project.config.url);
-          if (username && repoName) {
-            setProjectRepoInfo(username, repoName);
+          const { descriptor } = getAuthorRepo(project.config.url);
+          if (descriptor) {
+            setProjectRepoInfo(descriptor);
+          } else {
+            setProjectRepoInfo(project.config.url);
           }
           const tomlData = await fetchTomlFromCid(project.config.ipfs);
           if (tomlData) {
