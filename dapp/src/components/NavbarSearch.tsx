@@ -11,10 +11,12 @@ const NavbarSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [originalUrl, setOriginalUrl] = useState("");
-  const [isWalletConnected, setIsWalletConnected] = useState(
-    () => !!loadedPublicKey(),
-  );
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+
+  useEffect(() => {
+    setIsWalletConnected(!!loadedPublicKey());
+  }, []);
 
   useEffect(() => {
     saveOriginalUrl();
