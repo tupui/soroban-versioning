@@ -35,7 +35,9 @@ import Button from "components/utils/Button";
                 >
                 </p>
               </div>
-              <LatestCommit client:only />
+              <div data-component="LatestCommit">
+                <LatestCommit client:only />
+              </div>
             </div>
           </div>
         </div>
@@ -100,7 +102,9 @@ import Button from "components/utils/Button";
       <div class="community-content flex flex-col gap-4 p-4"></div>
     </div>
     <div id="contribution-metrics-section" class="bg-white w-full"></div>
-    <CommitHistory client:load />
+    <div data-component="CommitHistory">
+      <CommitHistory client:load />
+    </div>
   </div>
 </div>
 
@@ -282,16 +286,16 @@ import Button from "components/utils/Button";
           const hasMapping =
             configData &&
             Array.isArray(configData.maintainersAddresses) &&
-            Array.isArray(configData.authorGithubNames) &&
+            Array.isArray(configData.authorHandles) &&
             configData.maintainersAddresses.length ===
-              configData.authorGithubNames.length;
+              configData.authorHandles.length;
 
           // Build address→handle map (order-independent)
           let addrToHandle: Record<string, string> = {};
           if (hasMapping && configData) {
             for (let i = 0; i < configData.maintainersAddresses.length; i++) {
               addrToHandle[configData.maintainersAddresses[i]!] =
-                configData.authorGithubNames[i] || "";
+                configData.authorHandles[i] || "";
             }
           }
 
@@ -484,60 +488,70 @@ import Button from "components/utils/Button";
 
           syncStatusContainer.appendChild(link);
 
-          // Add commit badge
-          const latestSha = loadProjectLatestSha();
-          const commitComponent = document.createElement("div");
-          commitComponent.className =
-            "flex items-center space-x-2 rounded-full relative group";
+          // Add commit badge - only for SOFTWARE projects
+          const isSoftwareProject = configData?.projectType === "SOFTWARE";
+          if (isSoftwareProject) {
+            const latestSha = loadProjectLatestSha();
+            const commitComponent = document.createElement("div");
+            commitComponent.className =
+              "flex items-center space-x-2 rounded-full relative group";
 
-          const commitIcon = document.createElement("img");
-          commitIcon.className = "w-5 h-5";
+            const commitIcon = document.createElement("img");
+            commitIcon.className = "w-5 h-5";
 
-          const commitText = document.createElement("span");
-          commitText.className = "text-sm sm:text-base";
-          commitText.textContent = "Commit";
+            const commitText = document.createElement("span");
+            commitText.className = "text-sm sm:text-base";
+            commitText.textContent = "Commit";
 
-          const commitPopup = document.createElement("div");
-          commitPopup.className =
-            "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
+            const commitPopup = document.createElement("div");
+            commitPopup.className =
+              "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
 
-          const commitTriangle = document.createElement("div");
-          commitTriangle.className =
-            "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
+            const commitTriangle = document.createElement("div");
+            commitTriangle.className =
+              "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
 
-          try {
-            if (projectInfo.config.url && latestSha) {
-              const latestCommit = await getLatestCommitData(
-                projectInfo.config.url,
-                latestSha,
-              );
+            try {
+              if (projectInfo.config.url && latestSha) {
+                const latestCommit = await getLatestCommitData(
+                  projectInfo.config.url,
+                  latestSha,
+                );
 
-              if (
-                latestCommit &&
-                latestCommit.sha &&
-                latestCommit.sha === latestSha
-              ) {
-                commitIcon.src = "/icons/check.svg";
-                commitIcon.alt = "Check";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain exists on GitHub</p>';
+                if (
+                  latestCommit &&
+                  latestCommit.sha &&
+                  latestCommit.sha === latestSha
+                ) {
+                  commitIcon.src = "/icons/check.svg";
+                  commitIcon.alt = "Check";
+                  commitPopup.innerHTML =
+                    '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain exists on GitHub</p>';
+                } else {
+                  commitIcon.src = "/icons/check.svg";
+                  commitIcon.alt = "Failed";
+                  commitPopup.innerHTML =
+                    '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain cannot be found on GitHub</p>';
+                }
               } else {
-                commitIcon.src = "/icons/check.svg";
+                commitIcon.src = "/icons/failed.svg";
                 commitIcon.alt = "Failed";
                 commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain cannot be found on GitHub</p>';
+                  '<p class="text-sm w-36 sm:w-max">No commit SHA on-chain yet</p>';
               }
-            } else {
+            } catch (error) {
               commitIcon.src = "/icons/failed.svg";
               commitIcon.alt = "Failed";
               commitPopup.innerHTML =
-                '<p class="text-sm w-36 sm:w-max">No commit SHA on-chain yet</p>';
+                '<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on GitHub</p>';
             }
-          } catch (error) {
-            commitIcon.src = "/icons/failed.svg";
-            commitIcon.alt = "Failed";
-            commitPopup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on GitHub</p>';
+
+            commitPopup.appendChild(commitTriangle);
+            commitComponent.appendChild(commitIcon);
+            commitComponent.appendChild(commitText);
+            commitComponent.appendChild(commitPopup);
+
+            syncStatusContainer.appendChild(commitComponent);
           }
         }
 
@@ -554,40 +568,65 @@ import Button from "components/utils/Button";
           websiteUrl: configData?.officials?.websiteLink,
         };
 
-        // Set up commit data for LastHashModal
-        const latestSha = loadProjectLatestSha();
-        if (latestSha) {
-          try {
-            const latestCommit = await getLatestCommitData(
-              projectInfo.config.url,
-              latestSha,
-            );
+        // Set up commit data for LastHashModal - only for SOFTWARE projects
+        const isSoftwareProject = configData?.projectType === "SOFTWARE";
+        if (isSoftwareProject) {
+          const latestSha = loadProjectLatestSha();
+          if (latestSha) {
+            try {
+              const latestCommit = await getLatestCommitData(
+                projectInfo.config.url,
+                latestSha,
+              );
 
-            if (latestCommit) {
-              commitData = {
-                sha: latestCommit.sha,
-                html_url: latestCommit.html_url,
-                date: formatDateTime(latestCommit.commit.committer.date),
-                author: latestCommit.commit.author.name,
-              };
+              if (latestCommit) {
+                commitData = {
+                  sha: latestCommit.sha,
+                  html_url: latestCommit.html_url,
+                  date: formatDateTime(latestCommit.commit.committer.date),
+                  author: latestCommit.commit.author.name,
+                };
+              }
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error("Error loading commit data:", error);
+              }
             }
-          } catch (error) {
-            if (import.meta.env.DEV) {
-              console.error("Error loading commit data:", error);
+          }
+
+          // Render ContributionMetrics - only for SOFTWARE projects
+          if (projectInfo?.name && projectInfo?.config?.url) {
+            const { username, repoName } = getAuthorRepo(projectInfo.config.url);
+            if (username && repoName) {
+              contributionMetricsRoot.render(
+                React.createElement(ContributionMetrics, {
+                  projectName: projectInfo.name,
+                  owner: username,
+                  repo: repoName,
+                }),
+              );
             }
           }
         }
 
-        if (projectInfo?.name && projectInfo?.config?.url) {
-          const { username, repoName } = getAuthorRepo(projectInfo.config.url);
-          if (username && repoName) {
-            contributionMetricsRoot.render(
-              React.createElement(ContributionMetrics, {
-                projectName: projectInfo.name,
-                owner: username,
-                repo: repoName,
-              }),
-            );
+        // Hide Git-specific UI components for non-software projects
+        if (!isSoftwareProject) {
+          // Hide LatestCommit component
+          const latestCommitEl = document.querySelector('[data-component="LatestCommit"]');
+          if (latestCommitEl) {
+            (latestCommitEl as HTMLElement).style.display = 'none';
+          }
+
+          // Hide CommitHistory component
+          const commitHistoryEl = document.querySelector('[data-component="CommitHistory"]');
+          if (commitHistoryEl) {
+            (commitHistoryEl as HTMLElement).style.display = 'none';
+          }
+
+          // Hide contribution metrics section
+          const contributionMetricsEl = document.getElementById('contribution-metrics-section');
+          if (contributionMetricsEl) {
+            contributionMetricsEl.style.display = 'none';
           }
         }
 

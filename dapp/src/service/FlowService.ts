@@ -40,6 +40,7 @@ interface CreateProjectFlowParams {
   githubRepoUrl: string;
   maintainers: string[];
   onProgress?: (step: number) => void;
+  additionalFiles?: File[]; // Optional files like README.md for non-software projects
 }
 
 /**
@@ -313,9 +314,11 @@ export async function createProjectFlow({
   githubRepoUrl,
   maintainers,
   onProgress,
+  additionalFiles,
 }: CreateProjectFlowParams): Promise<boolean> {
   // Step 1 – Calculate CID
-  const expectedCid = await calculateDirectoryCid([tomlFile]);
+  const filesToUpload = [tomlFile, ...(additionalFiles || [])];
+  const expectedCid = await calculateDirectoryCid(filesToUpload);
 
   // Create W3UP client for DID retrieval
   const client = await create();
@@ -346,7 +349,7 @@ export async function createProjectFlow({
   onProgress?.(8); // uploading step indicator (offset -4 → shows Uploading)
 
   const cidUploaded = await uploadWithDelegation({
-    files: [tomlFile],
+    files: filesToUpload,
     signedTxXdr,
     did,
   });

@@ -90,7 +90,7 @@ const Voters: FC<VotersProps> = ({
         if (index != undefined && index >= 0) {
           return {
             ...voter,
-            name: voter?.name || configData?.authorGithubNames[index],
+            name: voter?.name || configData?.authorHandles[index],
           };
         }
         return voter;
