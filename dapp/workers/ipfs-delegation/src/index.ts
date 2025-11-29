@@ -30,18 +30,26 @@ const ALLOWED_ORIGINS = [
   "https://testnet.tansu.dev",
   "https://app.tansu.dev",
   "https://tansu.xlm.sh",
+  "https://deploy-preview-*--staging-tansu.netlify.app",
 ];
 
 function getCorsHeaders(origin: string | null): Record<string, string> {
-  if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
-    return {};
-  }
+  if (!origin) return {};
+
+  const isAllowed = ALLOWED_ORIGINS.some(
+    (allowed) =>
+      allowed === origin ||
+      (allowed.includes("*") &&
+        new RegExp(`^${allowed.replace(/\*/g, ".*")}$`).test(origin)),
+  );
+
+  if (!isAllowed) return {};
 
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Max-Age": "86400", // 24 hours
+    "Access-Control-Max-Age": "86400",
   };
 }
 
