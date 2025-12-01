@@ -8,6 +8,9 @@ use crate::{
     types,
 };
 
+const MAX_PROJECTS_PER_PAGE: u32 = 10;
+const MAX_PAGES: u32 = 1000;
+
 #[contractimpl]
 impl VersioningTrait for Tansu {
     /// Register a new project.
@@ -99,6 +102,36 @@ impl VersioningTrait for Tansu {
                 maintainer,
             }
             .publish(&env);
+
+            // Add to project list
+            let total_projects = env
+                .storage()
+                .persistent()
+                .get(&types::ProjectKey::TotalProjects)
+                .unwrap_or(0u32);
+
+            let page = total_projects / MAX_PROJECTS_PER_PAGE;
+            // Prevent exceeding maximum page limit
+            if page >= MAX_PAGES {
+                panic_with_error!(&env, &errors::ContractErrors::NoProjectPageFound);
+            }
+
+            let mut project_keys: Vec<Bytes> = env
+                .storage()
+                .persistent()
+                .get(&types::ProjectKey::ProjectKeys(page))
+                .unwrap_or(Vec::new(&env));
+
+            project_keys.push_back(key.clone());
+
+            env.storage()
+                .persistent()
+                .set(&types::ProjectKey::ProjectKeys(page), &project_keys);
+
+            env.storage()
+                .persistent()
+                .set(&types::ProjectKey::TotalProjects, &(total_projects + 1));
+
             key
         }
     }
@@ -219,6 +252,50 @@ impl VersioningTrait for Tansu {
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &errors::ContractErrors::InvalidKey);
             })
+    }
+
+    /// Get a page of projects.
+    ///
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `page` - The page number (0-based)
+    ///
+    /// # Returns
+    /// * `Vec<types::Project>` - List of projects on the requested page
+    fn get_projects(env: Env, page: u32) -> Vec<types::Project> {
+        // Prevent exceeding maximum page limit
+        if page >= MAX_PAGES {
+            panic_with_error!(&env, &errors::ContractErrors::NoProjectPageFound);
+        }
+
+        let project_keys: Vec<Bytes> = env
+            .storage()
+            .persistent()
+            .get(&types::ProjectKey::ProjectKeys(page))
+            .unwrap_or(Vec::new(&env));
+
+        if project_keys.is_empty() {
+            return Vec::new(&env);
+        }
+
+        let project_keys: Vec<Bytes> = env
+            .storage()
+            .persistent()
+            .get(&types::ProjectKey::ProjectKeys(page))
+            .unwrap_or(Vec::new(&env));
+
+        let mut projects = Vec::new(&env);
+        for key in project_keys {
+            let key_ = types::ProjectKey::Key(key.clone());
+            if let Some(project) = env
+                .storage()
+                .persistent()
+                .get::<types::ProjectKey, types::Project>(&key_)
+            {
+                projects.push_back(project);
+            }
+        }
+        projects
     }
 }
 

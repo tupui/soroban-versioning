@@ -97,6 +97,8 @@ pub trait VersioningTrait {
     fn get_commit(env: Env, project_key: Bytes) -> String;
 
     fn get_project(env: Env, project_key: Bytes) -> types::Project;
+
+    fn get_projects(env: Env, page: u32) -> Vec<types::Project>;
 }
 
 pub trait DaoTrait {

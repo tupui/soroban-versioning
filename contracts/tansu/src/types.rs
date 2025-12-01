@@ -154,11 +154,13 @@ pub struct Dao {
 #[derive(Clone, Debug, PartialEq)]
 pub enum ProjectKey {
     Key(Bytes),      // UUID of the project from keccak256(name)
-    Badges(Bytes),   // badges of the project
-    LastHash(Bytes), // last hash of the project
+    Badges(Bytes),   // Badges of the project
+    LastHash(Bytes), // Last hash of the project
     Dao(Bytes, u32), // Decentralized organization, pagination
     DaoTotalProposals(Bytes),
     AnonymousVoteConfig(Bytes),
+    ProjectKeys(u32), // List of project keys, pagination
+    TotalProjects,    // Total number of projects
 }
 
 #[contracttype]
