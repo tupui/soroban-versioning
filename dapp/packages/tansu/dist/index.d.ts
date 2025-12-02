@@ -98,30 +98,30 @@ export interface Contract {
 }
 export type ContractKey =
   | {
-    tag: "DomainContract";
-    values: void;
-  }
+      tag: "DomainContract";
+      values: void;
+    }
   | {
-    tag: "CollateralContract";
-    values: void;
-  };
+      tag: "CollateralContract";
+      values: void;
+    };
 export type DataKey =
   | {
-    tag: "Member";
-    values: readonly [string];
-  }
+      tag: "Member";
+      values: readonly [string];
+    }
   | {
-    tag: "Paused";
-    values: void;
-  }
+      tag: "Paused";
+      values: void;
+    }
   | {
-    tag: "UpgradeProposal";
-    values: void;
-  }
+      tag: "UpgradeProposal";
+      values: void;
+    }
   | {
-    tag: "AdminsConfig";
-    values: void;
-  };
+      tag: "AdminsConfig";
+      values: void;
+    };
 export interface Badges {
   community: Array<string>;
   developer: Array<string>;
@@ -145,47 +145,47 @@ export interface Member {
 }
 export type ProposalStatus =
   | {
-    tag: "Active";
-    values: void;
-  }
+      tag: "Active";
+      values: void;
+    }
   | {
-    tag: "Approved";
-    values: void;
-  }
+      tag: "Approved";
+      values: void;
+    }
   | {
-    tag: "Rejected";
-    values: void;
-  }
+      tag: "Rejected";
+      values: void;
+    }
   | {
-    tag: "Cancelled";
-    values: void;
-  }
+      tag: "Cancelled";
+      values: void;
+    }
   | {
-    tag: "Malicious";
-    values: void;
-  };
+      tag: "Malicious";
+      values: void;
+    };
 export type Vote =
   | {
-    tag: "PublicVote";
-    values: readonly [PublicVote];
-  }
+      tag: "PublicVote";
+      values: readonly [PublicVote];
+    }
   | {
-    tag: "AnonymousVote";
-    values: readonly [AnonymousVote];
-  };
+      tag: "AnonymousVote";
+      values: readonly [AnonymousVote];
+    };
 export type VoteChoice =
   | {
-    tag: "Approve";
-    values: void;
-  }
+      tag: "Approve";
+      values: void;
+    }
   | {
-    tag: "Reject";
-    values: void;
-  }
+      tag: "Reject";
+      values: void;
+    }
   | {
-    tag: "Abstain";
-    values: void;
-  };
+      tag: "Abstain";
+      values: void;
+    };
 export interface PublicVote {
   address: string;
   vote_choice: VoteChoice;
@@ -232,29 +232,29 @@ export interface Dao {
 }
 export type ProjectKey =
   | {
-    tag: "Key";
-    values: readonly [Buffer];
-  }
+      tag: "Key";
+      values: readonly [Buffer];
+    }
   | {
-    tag: "Badges";
-    values: readonly [Buffer];
-  }
+      tag: "Badges";
+      values: readonly [Buffer];
+    }
   | {
-    tag: "LastHash";
-    values: readonly [Buffer];
-  }
+      tag: "LastHash";
+      values: readonly [Buffer];
+    }
   | {
-    tag: "Dao";
-    values: readonly [Buffer, u32];
-  }
+      tag: "Dao";
+      values: readonly [Buffer, u32];
+    }
   | {
-    tag: "DaoTotalProposals";
-    values: readonly [Buffer];
-  }
+      tag: "DaoTotalProposals";
+      values: readonly [Buffer];
+    }
   | {
-    tag: "AnonymousVoteConfig";
-    values: readonly [Buffer];
-  };
+      tag: "AnonymousVoteConfig";
+      values: readonly [Buffer];
+    };
 export interface Config {
   ipfs: string;
   url: string;
