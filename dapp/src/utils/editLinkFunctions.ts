@@ -1,3 +1,11 @@
+import type { RepositoryDescriptor } from "../types/repository";
+import {
+  ensureRepositoryDescriptor,
+  getRepositoryConfigUrl,
+  getRepositoryReadmeUrl,
+  parseRepositoryUrl,
+} from "./repository";
+
 export function convertGitHubLink(link: string): string {
   const githubFileRegex =
     /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/(.+)$/;
@@ -12,42 +20,42 @@ export function convertGitHubLink(link: string): string {
   }
 }
 
-export function getGithubContentUrl(
-  username: string,
-  repoName: string,
-  filePath: string,
-): string {
-  return `https://raw.githubusercontent.com/${username}/${repoName}/${filePath}`;
-}
-
 export function getAuthorRepo(repoUrl: string): {
   username: string | undefined;
   repoName: string | undefined;
+  descriptor?: RepositoryDescriptor;
 } {
-  const match = repoUrl.match(/https\:\/\/github\.com\/([^\/]+)\/([^\/]+)/);
-  if (!match || !match[1] || !match[2])
+  const descriptor = parseRepositoryUrl(repoUrl);
+  if (!descriptor) {
     return { username: undefined, repoName: undefined };
-  return { username: match[1], repoName: match[2] };
+  }
+  return {
+    username: descriptor.owner,
+    repoName: descriptor.name,
+    descriptor,
+  };
 }
 
-export function getGithubContentUrlFromConfigUrl(
-  configUrl: string,
+export function getConfigContentUrlFromRepo(
+  repoUrl: string | RepositoryDescriptor,
 ): string | undefined {
-  const { username, repoName } = getAuthorRepo(configUrl);
-  if (username && repoName) {
-    // use master as GitHub will do an automatic redirection to main
-    return getGithubContentUrl(username, repoName, "master/tansu.toml");
+  const descriptor = ensureRepositoryDescriptor(repoUrl);
+  if (!descriptor) {
+    return undefined;
   }
-  return undefined;
+  return getRepositoryConfigUrl(descriptor);
 }
 
-export function getGithubContentUrlFromReadmeUrl(
-  configUrl: string,
+export function getReadmeContentUrlFromRepo(
+  repoUrl: string | RepositoryDescriptor,
 ): string | undefined {
-  const { username, repoName } = getAuthorRepo(configUrl);
-  if (username && repoName) {
-    // use master as GitHub will do an automatic redirection to main
-    return getGithubContentUrl(username, repoName, "master/README.md");
+  const descriptor = ensureRepositoryDescriptor(repoUrl);
+  if (!descriptor) {
+    return undefined;
   }
-  return undefined;
+  return getRepositoryReadmeUrl(descriptor);
 }
+
+// Backwards compatibility exports (existing imports expect these names)
+export const getGithubContentUrlFromConfigUrl = getConfigContentUrlFromRepo;
+export const getGithubContentUrlFromReadmeUrl = getReadmeContentUrlFromRepo;

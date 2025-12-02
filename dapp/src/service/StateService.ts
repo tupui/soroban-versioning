@@ -3,7 +3,12 @@ import * as pkg from "js-sha3";
 const { keccak256 } = pkg;
 import { Buffer } from "buffer";
 import type { Project } from "../../packages/tansu";
+import type { RepositoryDescriptor } from "../types/repository";
 import type { ConfigData } from "../types/projectConfig";
+import {
+  createRepositoryDescriptor,
+  parseRepositoryUrl,
+} from "../utils/repository";
 import { projectState as projectStateStore } from "utils/store";
 import { projectInfo as projectInfoStore } from "utils/store";
 import { projectRepoInfo as projectRepoInfoStore } from "utils/store";
@@ -29,11 +34,9 @@ const projectInfo: {
 };
 
 const projectRepoInfo: {
-  project_author: string | undefined;
-  project_repository: string | undefined;
+  descriptor: RepositoryDescriptor | undefined;
 } = {
-  project_author: undefined,
-  project_repository: undefined,
+  descriptor: undefined,
 };
 
 const projectLatestSha: {
@@ -54,10 +57,10 @@ function refreshLocalStorage(): void {
     projectInfo.project_maintainers = undefined;
     projectInfo.project_config_url = undefined;
     projectInfo.project_config_ipfs = undefined;
-    projectRepoInfo.project_author = undefined;
-    projectRepoInfo.project_repository = undefined;
+    projectRepoInfo.descriptor = undefined;
     projectLatestSha.sha = undefined;
     configData = undefined;
+    projectRepoInfoStore.set(undefined);
   }
 }
 
@@ -87,11 +90,35 @@ function setProject(project: Project): void {
   }
 }
 
-function setProjectRepoInfo(author: string, repository: string): void {
-  projectRepoInfo.project_author = author;
-  projectRepoInfo.project_repository = repository;
+function setProjectRepoInfo(
+  repository: RepositoryDescriptor | string,
+  repoName?: string,
+): void {
+  let descriptor: RepositoryDescriptor | undefined;
+
+  if (typeof repository !== "string") {
+    descriptor = repository;
+  } else if (repoName) {
+    descriptor = createRepositoryDescriptor({
+      host: "github.com",
+      owner: repository,
+      name: repoName,
+    });
+  } else {
+    descriptor = parseRepositoryUrl(repository) ?? undefined;
+  }
+
+  projectRepoInfo.descriptor = descriptor;
   if (typeof window !== "undefined") {
-    projectRepoInfoStore.set(projectRepoInfo);
+    if (descriptor) {
+      projectRepoInfoStore.set({
+        descriptor,
+        author: descriptor.owner,
+        repository: descriptor.name,
+      });
+    } else {
+      projectRepoInfoStore.set(undefined);
+    }
   }
 }
 
@@ -144,14 +171,15 @@ function loadProjectInfo(): Project | undefined {
 }
 
 function loadProjectRepoInfo():
-  | { author: string; repository: string }
+  | { author: string; repository: string; descriptor: RepositoryDescriptor }
   | undefined {
-  if (!projectRepoInfo.project_author || !projectRepoInfo.project_repository) {
+  if (!projectRepoInfo.descriptor) {
     return undefined;
   }
   return {
-    author: projectRepoInfo.project_author,
-    repository: projectRepoInfo.project_repository,
+    author: projectRepoInfo.descriptor.owner,
+    repository: projectRepoInfo.descriptor.name,
+    descriptor: projectRepoInfo.descriptor,
   };
 }
 
