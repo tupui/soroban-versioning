@@ -9,7 +9,6 @@ use crate::{
 };
 
 const MAX_PROJECTS_PER_PAGE: u32 = 10;
-const MAX_PAGES: u32 = 1000;
 
 #[contractimpl]
 impl VersioningTrait for Tansu {
@@ -109,12 +108,7 @@ impl VersioningTrait for Tansu {
                 .persistent()
                 .get(&types::ProjectKey::TotalProjects)
                 .unwrap_or(0u32);
-
             let page = total_projects / MAX_PROJECTS_PER_PAGE;
-            // Prevent exceeding maximum page limit
-            if page >= MAX_PAGES {
-                panic_with_error!(&env, &errors::ContractErrors::NoProjectPageFound);
-            }
 
             let mut project_keys: Vec<Bytes> = env
                 .storage()
@@ -263,39 +257,33 @@ impl VersioningTrait for Tansu {
     /// # Returns
     /// * `Vec<types::Project>` - List of projects on the requested page
     fn get_projects(env: Env, page: u32) -> Vec<types::Project> {
-        // Prevent exceeding maximum page limit
-        if page >= MAX_PAGES {
-            panic_with_error!(&env, &errors::ContractErrors::NoProjectPageFound);
-        }
-
-        let project_keys: Vec<Bytes> = env
+        if env
             .storage()
             .persistent()
-            .get(&types::ProjectKey::ProjectKeys(page))
-            .unwrap_or(Vec::new(&env));
-
-        if project_keys.is_empty() {
-            return Vec::new(&env);
-        }
-
-        let project_keys: Vec<Bytes> = env
-            .storage()
-            .persistent()
-            .get(&types::ProjectKey::ProjectKeys(page))
-            .unwrap_or(Vec::new(&env));
-
-        let mut projects = Vec::new(&env);
-        for key in project_keys {
-            let key_ = types::ProjectKey::Key(key.clone());
-            if let Some(project) = env
+            .get::<_, Vec<Bytes>>(&types::ProjectKey::ProjectKeys(page))
+            .is_some()
+        {
+            let project_keys: Vec<Bytes> = env
                 .storage()
                 .persistent()
-                .get::<types::ProjectKey, types::Project>(&key_)
-            {
-                projects.push_back(project);
+                .get(&types::ProjectKey::ProjectKeys(page))
+                .unwrap_or(Vec::new(&env));
+
+            let mut projects = Vec::new(&env);
+            for key in project_keys {
+                let key_ = types::ProjectKey::Key(key.clone());
+                if let Some(project) = env
+                    .storage()
+                    .persistent()
+                    .get::<types::ProjectKey, types::Project>(&key_)
+                {
+                    projects.push_back(project);
+                }
             }
+            projects
+        } else {
+            panic_with_error!(&env, &errors::ContractErrors::NoProjectPageFound);
         }
-        projects
     }
 }
 

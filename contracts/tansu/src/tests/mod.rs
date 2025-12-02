@@ -5,6 +5,5 @@ pub mod test_dao;
 pub mod test_domain;
 pub mod test_membership;
 pub mod test_pause_upgrade;
-pub mod test_project_list;
 pub mod test_register;
 pub mod test_utils;
