@@ -37,6 +37,7 @@ export const ContractErrors = {
   23: { message: "UpgradeError" },
   24: { message: "ContractValidation" },
   25: { message: "CollateralError" },
+  26: { message: "NoProjectPageFound" },
 };
 export var Badge;
 (function (Badge) {
