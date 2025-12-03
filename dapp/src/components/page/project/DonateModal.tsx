@@ -126,6 +126,11 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
 
   return (
     <>
+      {/*
+        Playwright tests expect a `#support-button` selector. When the consumer
+        passes any JSX as children (currently a <Button/>), we clone it and
+        inject the required id so the tests can click it deterministically.
+      */}
       <div onClick={handleOpen}>
         {isValidElement(children)
           ? cloneElement(children as any, { id: "support-button" } as any)
