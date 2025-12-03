@@ -51,17 +51,22 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
     setConnection,
     disconnect,
     loadedProvider,
-    checkAndNotifyFunding, 
+    checkAndNotifyFunding,
   } from "../service/walletService";
 
   document.addEventListener("astro:page-load", () => {
     console.log("🔍 Page loaded, initializing connection");
     initializeConnection();
-    
-    // Test if checkAndNotifyFunding exists
-    console.log("🔍 checkAndNotifyFunding exists?", typeof checkAndNotifyFunding);
 
-    const button = document.querySelector("[data-connect]") as HTMLButtonElement;
+    // Test if checkAndNotifyFunding exists
+    console.log(
+      "🔍 checkAndNotifyFunding exists?",
+      typeof checkAndNotifyFunding,
+    );
+
+    const button = document.querySelector(
+      "[data-connect]",
+    ) as HTMLButtonElement;
 
     async function setLoggedIn(publicKey: string) {
       button.textContent = "";
@@ -117,9 +122,11 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
               setConnection(address, provider);
               await setLoggedIn(address);
               window.dispatchEvent(
-                new CustomEvent("walletSwitched", { detail: { address, provider } }),
+                new CustomEvent("walletSwitched", {
+                  detail: { address, provider },
+                }),
               );
-              
+
               // ✅ Check funding after wallet switch
               await checkAndNotifyFunding();
             }
@@ -150,16 +157,16 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
                 }),
               );
 
-              console.log("🔍 About to call checkAndNotifyFunding after first connection");
+              console.log(
+                "🔍 About to call checkAndNotifyFunding after first connection",
+              );
               // ✅ Check funding status using centralized function
               await checkAndNotifyFunding();
               console.log("🔍 checkAndNotifyFunding completed");
-            } catch {
-            }
+            } catch {}
           },
         });
-      } catch {
-      }
+      } catch {}
     }
 
     if (button) button.addEventListener("click", connectWallet);

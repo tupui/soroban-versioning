@@ -86,7 +86,10 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
       // Resolve domain owner
       const domainInfo = await getAddressFromDomain("tansu").catch(() => null);
       if (!domainInfo || !domainInfo.owner) {
-        toast.error("Support", "Could not resolve domain owner. Please try again.");
+        toast.error(
+          "Support",
+          "Could not resolve domain owner. Please try again.",
+        );
         return;
       }
 
@@ -109,7 +112,10 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
         toast.success("Congratulation!", "You successfully donated.");
         setUpdateSuccessful(true);
       } else {
-        toast.error("Support", "Donation failed. Please reconnect wallet and try again.");
+        toast.error(
+          "Support",
+          "Donation failed. Please reconnect wallet and try again.",
+        );
       }
     } catch (error: any) {
       if (import.meta.env.DEV) {
@@ -117,7 +123,8 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
       }
       toast.error(
         "Support",
-        error?.message || "An unexpected error occurred during the contribution process."
+        error?.message ||
+          "An unexpected error occurred during the contribution process.",
       );
     } finally {
       setIsLoading(false);
@@ -157,7 +164,9 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
 
               {/* Amount Input */}
               <div className="flex flex-col gap-2 sm:gap-3">
-                <p className="text-sm sm:text-base font-[600] text-primary">Contribute</p>
+                <p className="text-sm sm:text-base font-[600] text-primary">
+                  Contribute
+                </p>
                 <div className="w-full flex-grow flex border border-[#978AA1]">
                   <input
                     ref={amountInputRef}
@@ -175,7 +184,9 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
                     <button
                       key={index}
                       className={`amount-button py-2 sm:py-[11px] flex justify-center items-center leading-5 text-base sm:text-xl border border-[#FFB21E] ${
-                        amount === value ? "bg-[#FFB21E] text-white" : "text-primary"
+                        amount === value
+                          ? "bg-[#FFB21E] text-white"
+                          : "text-primary"
                       }`}
                       onClick={() => handleAmountButtonClick(value)}
                     >
@@ -184,8 +195,12 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
                   ))}
                 </div>
                 <div className="flex gap-2 sm:gap-3">
-                  <p className="text-xs sm:text-base text-tertiary">Minimum amount:</p>
-                  <p className="text-xs sm:text-base font-[600] text-primary">1 XLM</p>
+                  <p className="text-xs sm:text-base text-tertiary">
+                    Minimum amount:
+                  </p>
+                  <p className="text-xs sm:text-base font-[600] text-primary">
+                    1 XLM
+                  </p>
                 </div>
               </div>
 
@@ -210,7 +225,11 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
                     Platform tip (optional)
                   </p>
                   <Tooltip text="Help us run the Tansu platform sustainably">
-                    <img src="/icons/info.svg" alt="Info" className="w-4 h-4 sm:w-auto sm:h-auto" />
+                    <img
+                      src="/icons/info.svg"
+                      alt="Info"
+                      className="w-4 h-4 sm:w-auto sm:h-auto"
+                    />
                   </Tooltip>
                 </div>
                 <div className="flex border border-[#978AA1]">

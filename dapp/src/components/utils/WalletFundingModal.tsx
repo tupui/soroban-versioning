@@ -24,9 +24,9 @@ const WalletFundingModal = ({
   const message = !exists
     ? "Your wallet does not yet exist on this network. Please fund it with XLM before continuing."
     : `Your wallet balance is ${balance.toFixed(
-        2
+        2,
       )} XLM — below the recommended minimum of ${minRequired.toFixed(
-        2
+        2,
       )} XLM required for transactions.`;
 
   return (
@@ -45,7 +45,11 @@ const WalletFundingModal = ({
         </p>
 
         <div className="w-full mt-3 flex justify-center">
-          <Button onClick={onClose} variant="secondary" className="w-full sm:w-auto">
+          <Button
+            onClick={onClose}
+            variant="secondary"
+            className="w-full sm:w-auto"
+          >
             Close
           </Button>
         </div>

@@ -19,7 +19,10 @@ export default function WalletFundingWrapper() {
     };
     window.addEventListener("openFundingModal", handleOpen as EventListener);
     return () =>
-      window.removeEventListener("openFundingModal", handleOpen as EventListener);
+      window.removeEventListener(
+        "openFundingModal",
+        handleOpen as EventListener,
+      );
   }, []);
 
   return (

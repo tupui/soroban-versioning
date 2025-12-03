@@ -73,7 +73,7 @@ function initializeConnection(): void {
     connectionState.publicKey = storedPublicKey;
     connectionState.provider = storedProvider;
     connectedPublicKey.set(storedPublicKey);
-    
+
     // ✅ Check funding for returning users
     setTimeout(() => {
       checkAndNotifyFunding();
@@ -85,7 +85,10 @@ function initializeConnection(): void {
  * Check if the connected wallet exists and has funds.
  * Returns { exists: boolean, balance: number }.
  */
-async function getWalletHealth(): Promise<{ exists: boolean; balance: number }> {
+async function getWalletHealth(): Promise<{
+  exists: boolean;
+  balance: number;
+}> {
   const publicKey = loadedPublicKey();
   const horizonUrl = import.meta.env.PUBLIC_HORIZON_URL;
 
@@ -108,7 +111,7 @@ async function getWalletHealth(): Promise<{ exists: boolean; balance: number }> 
 
     const json = await resp.json();
     const native = (json.balances || []).find(
-      (b: any) => b.asset_type === "native"
+      (b: any) => b.asset_type === "native",
     );
     const balance = native ? Number(native.balance) : 0;
 

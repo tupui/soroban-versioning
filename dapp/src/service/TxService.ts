@@ -218,7 +218,6 @@ export async function sendXLM(
     const errorDetails =
       result?.error || result?.message || "Transaction failed on network";
     throw new Error(errorDetails);
-
   } catch (error: any) {
     const msg =
       typeof error === "string" ? error : error?.message || "Unknown error";
@@ -230,7 +229,7 @@ export async function sendXLM(
     ) {
       toast.error(
         "Wallet not funded",
-        "Wallet not funded on this network. Fund your account or switch to the correct network, then try again."
+        "Wallet not funded on this network. Fund your account or switch to the correct network, then try again.",
       );
       return false;
     }
@@ -248,7 +247,6 @@ export async function sendXLM(
     return false;
   }
 }
-
 
 /**
  * Checks if an error is a Stellar network/transaction error (not a wallet error)
