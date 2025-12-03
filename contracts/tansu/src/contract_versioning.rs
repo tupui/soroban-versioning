@@ -95,13 +95,6 @@ impl VersioningTrait for Tansu {
             }
             env.storage().persistent().set(&key_, &project);
 
-            events::ProjectRegistered {
-                project_key: key.clone(),
-                name,
-                maintainer,
-            }
-            .publish(&env);
-
             // Add to project list
             let total_projects = env
                 .storage()
@@ -125,6 +118,13 @@ impl VersioningTrait for Tansu {
             env.storage()
                 .persistent()
                 .set(&types::ProjectKey::TotalProjects, &(total_projects + 1));
+
+            events::ProjectRegistered {
+                project_key: key.clone(),
+                name,
+                maintainer,
+            }
+            .publish(&env);
 
             key
         }
