@@ -257,28 +257,23 @@ impl VersioningTrait for Tansu {
     /// # Returns
     /// * `Vec<types::Project>` - List of projects on the requested page
     fn get_projects(env: Env, page: u32) -> Vec<types::Project> {
-        if env
+        if let Some(project_keys) = env
             .storage()
             .persistent()
             .get::<_, Vec<Bytes>>(&types::ProjectKey::ProjectKeys(page))
-            .is_some()
         {
-            let project_keys: Vec<Bytes> = env
-                .storage()
-                .persistent()
-                .get(&types::ProjectKey::ProjectKeys(page))
-                .unwrap_or(Vec::new(&env));
-
             let mut projects = Vec::new(&env);
             for key in project_keys {
                 let key_ = types::ProjectKey::Key(key.clone());
-                if let Some(project) = env
+                let project = env
                     .storage()
                     .persistent()
                     .get::<types::ProjectKey, types::Project>(&key_)
-                {
-                    projects.push_back(project);
-                }
+                    .unwrap_or_else(|| {
+                        panic_with_error!(&env, &errors::ContractErrors::InvalidKey);
+                    });
+
+                projects.push_back(project);
             }
             projects
         } else {
