@@ -136,8 +136,8 @@ fn test_project_listing() {
     let items_per_page = 10;
     let maintainer = &setup.grogu;
     let maintainers = vec![env, maintainer.clone()];
-    let url_prefix = String::from_str(env, "github.com/tansu-");
-    let ipfs_prefix = String::from_str(env, "2ef4f49fdd8fa9dc463f1f06a094c26b8871");
+    let url_prefix = "github.com/tansu-";
+    let ipfs_prefix = "2ef4f49fdd8fa9dc463f1f06a094c26b8871";
 
     // Let's mint some tokens to register the domain projects
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
@@ -145,7 +145,7 @@ fn test_project_listing() {
 
     // Register multiple projects (items_per_page projects per page) so we can test pagination
     for i in 0u32..items_per_page + 3 {
-        let suffix = convert_number_to_letter(i);
+        let suffix = std::format!("{}", (b'a' + i as u8) as char);
 
         let name_str = std::format!("tansu{}", suffix);
         let name = String::from_str(env, &name_str);
@@ -176,12 +176,4 @@ fn test_project_listing() {
     // Check empty page
     let err = setup.contract.try_get_projects(&2).unwrap_err().unwrap();
     assert_eq!(err, ContractErrors::NoProjectPageFound.into());
-}
-
-fn convert_number_to_letter(i: u32) -> std::string::String {
-    let suffix: std::string::String = std::format!("{}", i)
-        .chars()
-        .map(|c| (c as u8 - 48 + 97) as char)
-        .collect();
-    suffix
 }
