@@ -1,4 +1,6 @@
+extern crate std;
 use super::test_utils::{create_test_data, init_contract};
+use crate::types::Project;
 use crate::{contract_versioning::domain_register, errors::ContractErrors};
 use soroban_sdk::testutils::Events;
 use soroban_sdk::{Bytes, IntoVal, Map, String, Symbol, Val, symbol_short, vec};
@@ -123,4 +125,55 @@ fn register_maintainer_not_domain_owner_error() {
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::MaintainerNotDomainOwner.into());
+}
+
+#[test]
+fn test_project_listing() {
+    let setup = create_test_data();
+    let client = &setup.contract;
+    let env = &setup.env;
+
+    let items_per_page = 10;
+    let maintainer = &setup.grogu;
+    let maintainers = vec![env, maintainer.clone()];
+    let url_prefix = "github.com/tansu-";
+    let ipfs_prefix = "2ef4f49fdd8fa9dc463f1f06a094c26b8871";
+
+    // Let's mint some tokens to register the domain projects
+    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
+    setup.token_stellar.mint(maintainer, &genesis_amount);
+
+    // Register multiple projects (items_per_page projects per page) so we can test pagination
+    for i in 0u32..items_per_page + 3 {
+        let suffix = std::format!("{}", (b'a' + i as u8) as char);
+
+        let name_str = std::format!("tansu{}", suffix);
+        let name = String::from_str(env, &name_str);
+
+        let url_str = std::format!("{}{}", url_prefix, suffix);
+        let url = String::from_str(env, &url_str);
+
+        let ipfs_str = std::format!("{}{}", ipfs_prefix, i);
+        let ipfs = String::from_str(env, &ipfs_str);
+
+        client.register(maintainer, &name, &maintainers, &url, &ipfs);
+    }
+
+    // Check first page (should have items_per_page projects)
+    let page_0 = client.get_projects(&0);
+    assert_eq!(page_0.len(), items_per_page);
+    for i in 0u32..items_per_page {
+        let _: Project = page_0.get(i).unwrap();
+    }
+
+    // Check second page (should have 3 projects)
+    let page_1 = client.get_projects(&1);
+    assert_eq!(page_1.len(), 3);
+    for i in 0u32..page_1.len() {
+        let _: Project = page_1.get(i).unwrap();
+    }
+
+    // Check empty page
+    let err = setup.contract.try_get_projects(&2).unwrap_err().unwrap();
+    assert_eq!(err, ContractErrors::NoProjectPageFound.into());
 }

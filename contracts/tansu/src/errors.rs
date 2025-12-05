@@ -36,4 +36,6 @@ pub enum ContractErrors {
     UpgradeError = 23,
     ContractValidation = 24,
     CollateralError = 25,
+    // Versioning
+    NoProjectPageFound = 26,
 }
