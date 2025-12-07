@@ -269,9 +269,7 @@ impl VersioningTrait for Tansu {
                     .storage()
                     .persistent()
                     .get::<types::ProjectKey, types::Project>(&key_)
-                    .unwrap_or_else(|| {
-                        panic_with_error!(&env, &errors::ContractErrors::InvalidKey);
-                    });
+                    .expect("Invalid project key");
 
                 projects.push_back(project);
             }
