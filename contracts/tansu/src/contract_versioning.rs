@@ -8,6 +8,8 @@ use crate::{
     types,
 };
 
+const MAX_PROJECTS_PER_PAGE: u32 = 10;
+
 #[contractimpl]
 impl VersioningTrait for Tansu {
     /// Register a new project.
@@ -93,12 +95,37 @@ impl VersioningTrait for Tansu {
             }
             env.storage().persistent().set(&key_, &project);
 
+            // Add to project list
+            let total_projects = env
+                .storage()
+                .persistent()
+                .get(&types::ProjectKey::TotalProjects)
+                .unwrap_or(0u32);
+            let page = total_projects / MAX_PROJECTS_PER_PAGE;
+
+            let mut project_keys: Vec<Bytes> = env
+                .storage()
+                .persistent()
+                .get(&types::ProjectKey::ProjectKeys(page))
+                .unwrap_or(Vec::new(&env));
+
+            project_keys.push_back(key.clone());
+
+            env.storage()
+                .persistent()
+                .set(&types::ProjectKey::ProjectKeys(page), &project_keys);
+
+            env.storage()
+                .persistent()
+                .set(&types::ProjectKey::TotalProjects, &(total_projects + 1));
+
             events::ProjectRegistered {
                 project_key: key.clone(),
                 name,
                 maintainer,
             }
             .publish(&env);
+
             key
         }
     }
@@ -219,6 +246,37 @@ impl VersioningTrait for Tansu {
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &errors::ContractErrors::InvalidKey);
             })
+    }
+
+    /// Get a page of projects.
+    ///
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `page` - The page number (0-based)
+    ///
+    /// # Returns
+    /// * `Vec<types::Project>` - List of projects on the requested page
+    fn get_projects(env: Env, page: u32) -> Vec<types::Project> {
+        if let Some(project_keys) = env
+            .storage()
+            .persistent()
+            .get::<_, Vec<Bytes>>(&types::ProjectKey::ProjectKeys(page))
+        {
+            let mut projects = Vec::new(&env);
+            for key in project_keys {
+                let key_ = types::ProjectKey::Key(key.clone());
+                let project = env
+                    .storage()
+                    .persistent()
+                    .get::<types::ProjectKey, types::Project>(&key_)
+                    .expect("Invalid project key");
+
+                projects.push_back(project);
+            }
+            projects
+        } else {
+            panic_with_error!(&env, &errors::ContractErrors::NoProjectPageFound);
+        }
     }
 }
 
