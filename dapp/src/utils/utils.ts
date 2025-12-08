@@ -11,6 +11,8 @@ import {
   type ProposalView,
   type ProposalViewStatus,
 } from "types/proposal";
+import { parseRepositoryUrl } from "./repository";
+import type { ConfigData } from "../types/projectConfig";
 // Import the extracted IPFS functions have been moved to ipfsFunctions.ts
 
 export function truncateMiddle(str: string, maxLength: number): string {
@@ -26,27 +28,27 @@ export function truncateMiddle(str: string, maxLength: number): string {
   );
 }
 
-export function extractConfigData(tomlData: any, project: Project) {
+export function extractConfigData(tomlData: any, project: Project): ConfigData {
+  const repositoryDescriptor = parseRepositoryUrl(project.config.url || "");
+  const officials: ConfigData["officials"] = {
+    websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
+    githubLink: project.config.url || "",
+  };
+  if (repositoryDescriptor) {
+    officials.repository = repositoryDescriptor;
+  }
+
   return {
     projectName: project.name,
     logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
     thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
     description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
     organizationName: tomlData.DOCUMENTATION?.ORG_NAME || "",
-    officials: {
-      websiteLink: tomlData.DOCUMENTATION?.ORG_URL || "",
-      githubLink: project.config.url || "",
-    },
+    officials,
     socialLinks: {
-      ...(tomlData.DOCUMENTATION?.ORG_TWITTER && {
-        twitter: tomlData.DOCUMENTATION.ORG_TWITTER,
-      }),
-      ...(tomlData.DOCUMENTATION?.ORG_TELEGRAM && {
-        telegram: tomlData.DOCUMENTATION.ORG_TELEGRAM,
-      }),
-      ...(tomlData.DOCUMENTATION?.ORG_DISCORD && {
-        discord: tomlData.DOCUMENTATION.ORG_DISCORD,
-      }),
+      twitter: tomlData.DOCUMENTATION?.ORG_TWITTER || "",
+      telegram: tomlData.DOCUMENTATION?.ORG_TELEGRAM || "",
+      discord: tomlData.DOCUMENTATION?.ORG_DISCORD || "",
     },
     authorGithubNames:
       tomlData.PRINCIPALS?.map((p: { github: string }) => p.github) || [],

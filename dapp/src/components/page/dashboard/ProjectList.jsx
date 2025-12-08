@@ -8,6 +8,7 @@ import {
 } from "../../../service/ReadContractService.ts";
 import { loadConfigData } from "../../../service/StateService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
+import { parseRepositoryUrl } from "../../../utils/repository";
 import { projectCardModalOpen } from "../../../utils/store.ts";
 import { extractConfigData } from "../../../utils/utils";
 import CreateProjectModal from "./CreateProjectModal.tsx";
@@ -214,6 +215,7 @@ const ProjectList = () => {
           const configData = extractConfigData(tomlData, project);
           setConfigInfo(configData);
         } else {
+          const repositoryDescriptor = parseRepositoryUrl(project.config.url);
           const configData = {
             projectName: project.name,
             logoImageLink: undefined,
@@ -222,8 +224,15 @@ const ProjectList = () => {
             organizationName: "",
             officials: {
               githubLink: project.config.url,
+              ...(repositoryDescriptor
+                ? { repository: repositoryDescriptor }
+                : {}),
             },
-            socialLinks: {},
+            socialLinks: {
+              twitter: "",
+              telegram: "",
+              discord: "",
+            },
             authorGithubNames: [],
             maintainersAddresses: project.maintainers,
           };
