@@ -37,6 +37,7 @@ export const contractErrorMessages = {
   23: "Contract upgrade error.",
   24: "Contract validation error.",
   25: "Collateral error.",
+  26: "Project page could not be found.",
 };
 
 export type ContractErrorMessageKey = keyof typeof contractErrorMessages;
