@@ -77,6 +77,7 @@ pub struct OutcomeContract {
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
+#[allow(clippy::large_enum_variant)]
 pub enum Vote {
     PublicVote(PublicVote),
     AnonymousVote(AnonymousVote),
