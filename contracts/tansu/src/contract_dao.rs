@@ -385,6 +385,9 @@ impl DaoTrait for Tansu {
 
         // Check that voting period has not ended
         let curr_timestamp = env.ledger().timestamp();
+        if proposal.status != types::ProposalStatus::Active {
+            panic_with_error!(&env, &errors::ContractErrors::ProposalActive);
+        }
         if curr_timestamp >= proposal.vote_data.voting_ends_at {
             panic_with_error!(&env, &errors::ContractErrors::ProposalVotingTime);
         }
@@ -625,7 +628,7 @@ impl DaoTrait for Tansu {
                     contract.args.clone(),
                 );
                 let _ =
-                    r.map_err(|_| panic_with_error!(&env, &errors::ContractErrors::ProposalActive));
+                    r.map_err(|_| panic_with_error!(&env, &errors::ContractErrors::OutcomeError));
             }
         }
 
