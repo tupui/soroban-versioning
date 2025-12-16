@@ -11,7 +11,7 @@ ifndef admin
 endif
 
 ifndef wasm
-	override wasm = target/wasm32v1-none/release/tansu.optimized.wasm
+	override wasm = target/wasm32v1-none/release/tansu.wasm
 endif
 
 override tansu_id = $(shell cat .stellar/tansu_id-$(network))
@@ -81,20 +81,14 @@ local-stack:  ## local stack
 
 # --------- CONTRACT BUILD/TEST/DEPLOY --------- #
 
-contract_build:
-	stellar contract build
+contract_build:  ## Build optimized contract for production
+	stellar contract build --optimize
 	@ls -l target/wasm32v1-none/release/*.wasm
 
 contract_test:
 	cargo test
 
-contract_build-release: contract_build
-	stellar contract optimize --wasm target/wasm32v1-none/release/tansu.wasm
-	@ls -l target/wasm32v1-none/release/*.wasm
-
-
-# --contract-id $(tansu_id-$(network))
-contract_bindings: contract_build-release  ## Create bindings
+contract_bindings: contract_build  ## Create bindings
 	stellar contract bindings typescript \
 		--network $(network) \
 		--wasm $(wasm) \
