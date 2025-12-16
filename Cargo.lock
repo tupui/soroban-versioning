@@ -851,13 +851,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
-name = "outcomes"
-version = "1.0.0"
-dependencies = [
- "soroban-sdk",
-]
-
-[[package]]
 name = "p256"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1274,9 +1267,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-ledger-snapshot"
-version = "23.2.1"
+version = "23.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05774488b01f32ec69e2206d3306ea9178e0130d3e38263bf70208c7112e4d47"
+checksum = "1f778688aade32f689dd386878e7ff553ccd31f7de194da52db972a2a667baa8"
 dependencies = [
  "serde",
  "serde_json",
@@ -1288,9 +1281,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-sdk"
-version = "23.2.1"
+version = "23.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6bba6c9e79005a6fd5d4a2ee0a0b6df10994dfd6ec0783c2cbf5e4ba98bca034"
+checksum = "64ddf4cb462f95404af5f38bacd41f61285ca8af8099b0875ad2cdbb133690e4"
 dependencies = [
  "arbitrary",
  "bytes-lit",
@@ -1307,13 +1300,14 @@ dependencies = [
  "soroban-ledger-snapshot",
  "soroban-sdk-macros",
  "stellar-strkey",
+ "visibility",
 ]
 
 [[package]]
 name = "soroban-sdk-macros"
-version = "23.2.1"
+version = "23.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d550a4571f187e7b5f7cd1aaecfc0028d11b11fa14e19b75e312b62aa2b28ff"
+checksum = "632bdcd72882afa0f2490616944d63610e0d40e186aec74170cc5dd21f75df44"
 dependencies = [
  "darling",
  "heck",
@@ -1331,9 +1325,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-spec"
-version = "23.2.1"
+version = "23.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e56d9d9bb0380c78fbeb25b2335cfd868aff5c85b3e0e262966697c9af91844a"
+checksum = "83e23eb9e61eb7831a169132982f18cd4664d0b109f72871ef25645cfe6a0a91"
 dependencies = [
  "base64",
  "stellar-xdr",
@@ -1343,9 +1337,9 @@ dependencies = [
 
 [[package]]
 name = "soroban-spec-rust"
-version = "23.2.1"
+version = "23.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92174e24ad92aac4e2048fd1ad48131ffc3b50bc2bff33e7c9911c156de6bba6"
+checksum = "44a20e878c4f6c995541dce4269c52170f2655decc4e794ab70624b936adc1c7"
 dependencies = [
  "prettyplease",
  "proc-macro2",
@@ -1457,7 +1451,7 @@ dependencies = [
 
 [[package]]
 name = "tansu"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "soroban-sdk",
 ]
@@ -1529,6 +1523,17 @@ name = "version_check"
 version = "0.9.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a"
+
+[[package]]
+name = "visibility"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d674d135b4a8c1d7e813e2f8d1c9a58308aee4a680323066025e53132218bd91"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.106",
+]
 
 [[package]]
 name = "wasi"
