@@ -1,4 +1,4 @@
-.PHONY: help install prepare rust-lint clean contract_build contract_test contract_deploy contract_help pre_push_hook
+.PHONY: help install prepare rust-lint clean testnet_reset contract_build contract_test contract_deploy contract_help pre_push_hook
 .DEFAULT_GOAL := help
 SHELL:=/bin/bash
 
@@ -101,6 +101,7 @@ contract_bindings: contract_build-release  ## Create bindings
 		--output-dir dapp/packages/tansu \
 		--overwrite && \
 	cd dapp/packages/tansu && \
+	bun install --latest && \
 	bun run build && \
 	cd ../.. && \
 	bun format
@@ -110,6 +111,8 @@ contract_deploy:  ## Deploy Soroban contract to testnet
   		--wasm $(wasm) \
   		--source-account $(admin) \
   		--network $(network) \
+  		--salt $(shell printf tansu | openssl sha256 | cut -d " " -f2) \
+  		--fee 200 \
   		-- \
   		--admin $(shell stellar keys address $(admin)) \
   		> .stellar/tansu_id-$(network) && \
@@ -169,8 +172,9 @@ contract_domain_deploy:
   		--wasm contracts/domain_current.wasm \
   		--source-account $(admin) \
   		--network $(network) \
-  		> .stellar/soroban_domain_id && \
-  	cat .stellar/soroban_domain_id
+  		--salt $(shell printf soroban_domain | openssl sha256 | cut -d " " -f2) \
+  		> .stellar/soroban_domain_id-$(network) && \
+  	cat .stellar/soroban_domain_id-$(network)
 
 contract_domain_init:
 	stellar contract invoke \
@@ -212,6 +216,20 @@ contract_set_collateral_contract:  ## Set the SorobanDomain contract address
     	set_collateral_contract \
 		--admin $(shell stellar keys address $(admin)) \
 		--collateral_contract '{"address":"$(collateral_contract_id)","wasm_hash":null}'
+
+# --------- Testnet --------- #
+
+testnet_reset:  ## Playbook for testnet reset
+	make funds && \
+	make contract_bindings && \
+	make contract_deploy && \
+	make contract_domain_deploy && \
+	make contract_domain_init && \
+	make contract_set_domain_contract && \
+	make contract_set_collateral_contract && \
+	make contract_unpause && \
+	make contract_register && \
+	make contract_commit
 
 # --------- CONTRACT USAGE EXAMPLES --------- #
 

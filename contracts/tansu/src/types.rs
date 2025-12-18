@@ -159,6 +159,8 @@ pub enum ProjectKey {
     Dao(Bytes, u32), // Decentralized organization, pagination
     DaoTotalProposals(Bytes),
     AnonymousVoteConfig(Bytes),
+    ProjectKeys(u32), // List of project keys, pagination
+    TotalProjects,    // Total number of projects
 }
 
 #[contracttype]
