@@ -1,6 +1,6 @@
 import { useStore } from "@nanostores/react";
 import {
-  fetchOutcomeDataFromIPFS,
+  fetchProposalOutcomeData,
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
 import { getProjectFromName, getProposal } from "@service/ReadContractService";
@@ -63,9 +63,7 @@ const ProposalPage: React.FC = () => {
             );
             setDescription(fetchedDescription || "");
 
-            const outcomeData = await fetchOutcomeDataFromIPFS(
-              proposalData.ipfs,
-            );
+            const outcomeData = await fetchProposalOutcomeData(proposalData);
             setOutcome(outcomeData);
           }
 
@@ -128,6 +126,7 @@ const ProposalPage: React.FC = () => {
             <ExecuteProposalModal
               projectName={projectName}
               proposalId={id}
+              proposal={proposal}
               outcome={outcome}
               voteStatus={proposal?.voteStatus}
               onClose={() => setIsExecuteProposalModalOpen(false)}
