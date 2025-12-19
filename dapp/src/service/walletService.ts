@@ -36,6 +36,35 @@ function disconnect(): void {
   connectedPublicKey.set("");
 }
 
+async function checkAndNotifyFunding(): Promise<void> {
+  const publicKey = loadedPublicKey();
+  if (!publicKey) return;
+
+  console.log("🔍 Checking wallet funding for:", publicKey);
+
+  try {
+    const { exists, balance } = await getWalletHealth();
+    console.log("🔍 Wallet health:", { exists, balance });
+
+    const minRequired = 1;
+    const networkPass = import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE || "";
+    const network = /Test/i.test(networkPass) ? "testnet" : "mainnet";
+
+    if (!exists || balance < minRequired) {
+      console.log("🚨 Wallet needs funding! Opening modal");
+      window.dispatchEvent(
+        new CustomEvent("openFundingModal", {
+          detail: { exists, balance, network },
+        }),
+      );
+    } else {
+      console.log("✅ Wallet is sufficiently funded");
+    }
+  } catch (error) {
+    console.error("❌ Error checking wallet funding:", error);
+  }
+}
+
 function initializeConnection(): void {
   const storedPublicKey = localStorage.getItem("publicKey");
   const storedProvider = localStorage.getItem("walletProvider");
@@ -44,6 +73,52 @@ function initializeConnection(): void {
     connectionState.publicKey = storedPublicKey;
     connectionState.provider = storedProvider;
     connectedPublicKey.set(storedPublicKey);
+
+    // ✅ Check funding for returning users
+    setTimeout(() => {
+      checkAndNotifyFunding();
+    }, 500);
+  }
+}
+
+/**
+ * Check if the connected wallet exists and has funds.
+ * Returns { exists: boolean, balance: number }.
+ */
+async function getWalletHealth(): Promise<{
+  exists: boolean;
+  balance: number;
+}> {
+  const publicKey = loadedPublicKey();
+  const horizonUrl = import.meta.env.PUBLIC_HORIZON_URL;
+
+  if (!publicKey) return { exists: false, balance: 0 };
+
+  try {
+    const resp = await fetch(`${horizonUrl}/accounts/${publicKey}`, {
+      headers: { Accept: "application/json" },
+    });
+
+    if (resp.status === 404) {
+      // Account not found on this network
+      return { exists: false, balance: 0 };
+    }
+
+    if (!resp.ok) {
+      console.warn(`Unexpected Horizon response: ${resp.status}`);
+      return { exists: false, balance: 0 };
+    }
+
+    const json = await resp.json();
+    const native = (json.balances || []).find(
+      (b: any) => b.asset_type === "native",
+    );
+    const balance = native ? Number(native.balance) : 0;
+
+    return { exists: true, balance };
+  } catch (error) {
+    console.error("Error checking wallet health:", error);
+    return { exists: false, balance: 0 };
   }
 }
 
@@ -53,4 +128,14 @@ export {
   setConnection,
   disconnect,
   initializeConnection,
+  getWalletHealth,
+  export {
+  loadedPublicKey,
+  loadedProvider,
+  setConnection,
+  disconnect,
+  initializeConnection,
+  getWalletHealth,
+};
+export { checkAndNotifyFunding };
 };
