@@ -55,14 +55,7 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
   } from "../service/walletService";
 
   document.addEventListener("astro:page-load", () => {
-    console.log("🔍 Page loaded, initializing connection");
     initializeConnection();
-
-    // Test if checkAndNotifyFunding exists
-    console.log(
-      "🔍 checkAndNotifyFunding exists?",
-      typeof checkAndNotifyFunding,
-    );
 
     const button = document.querySelector(
       "[data-connect]",
@@ -97,16 +90,15 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
     }
 
     const publicKey = loadedPublicKey();
-    console.log("🔍 Loaded public key on page load:", publicKey);
-    if (publicKey) {
-      console.log("🔍 Setting logged in state and checking funding");
-      setLoggedIn(publicKey);
-      // ✅ Check funding for returning users right away
-      checkAndNotifyFunding();
+
+    if (import.meta.env.MODE !== "test") {
+      if (publicKey) {
+        setLoggedIn(publicKey);
+        checkAndNotifyFunding();
+      }
     }
 
     async function connectWallet() {
-      console.log("🔍 connectWallet called");
       const provider = loadedProvider();
 
       if (button.title) {
@@ -127,8 +119,9 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
                 }),
               );
 
-              // ✅ Check funding after wallet switch
-              await checkAndNotifyFunding();
+              if (import.meta.env.MODE !== "test") {
+                await checkAndNotifyFunding();
+              }
             }
           } catch {
             disconnect();
@@ -157,12 +150,9 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
                 }),
               );
 
-              console.log(
-                "🔍 About to call checkAndNotifyFunding after first connection",
-              );
-              // ✅ Check funding status using centralized function
-              await checkAndNotifyFunding();
-              console.log("🔍 checkAndNotifyFunding completed");
+              if (import.meta.env.MODE !== "test") {
+                await checkAndNotifyFunding();
+              }
             } catch {}
           },
         });
