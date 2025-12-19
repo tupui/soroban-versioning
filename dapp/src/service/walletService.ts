@@ -37,6 +37,7 @@ function disconnect(): void {
 }
 
 export async function checkAndNotifyFunding(): Promise<void> {
+  if (import.meta.env.MODE === "test") return;
   const publicKey = loadedPublicKey();
   if (!publicKey) return;
 

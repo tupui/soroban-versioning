@@ -91,9 +91,11 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
 
     const publicKey = loadedPublicKey();
 
-    if (publicKey) {
-      setLoggedIn(publicKey);
-      checkAndNotifyFunding();
+    if (import.meta.env.MODE !== "test") {
+      if (publicKey) {
+        setLoggedIn(publicKey);
+        checkAndNotifyFunding();
+      }
     }
 
     async function connectWallet() {
@@ -117,8 +119,9 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
                 }),
               );
 
-              // ✅ Check funding after wallet switch
-              await checkAndNotifyFunding();
+              if (import.meta.env.MODE !== "test") {
+                await checkAndNotifyFunding();
+              }
             }
           } catch {
             disconnect();
@@ -147,8 +150,9 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
                 }),
               );
 
-              // Check funding status using centralized function
-              await checkAndNotifyFunding();
+              if (import.meta.env.MODE !== "test") {
+                await checkAndNotifyFunding();
+              }
             } catch {}
           },
         });
