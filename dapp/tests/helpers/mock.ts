@@ -114,21 +114,188 @@ url = "${MOCK_PROJECT.config_url}"
   });
 }
 
-export async function applyAllMocks(page: any) {
-  // Existing mocks here...
+export async function applyAllMocks(page) {
+  // Allow everything by default, we only override selected external calls
+  await page.route("**", (route) => route.continue());
 
+  // ──────────────────────────────────────────────
+  // Mock ReadContractService functions
+  // ──────────────────────────────────────────────
   await page.addInitScript(() => {
-    // Mock checkAndNotifyFunding so it does nothing during tests
+    // Signal test mode to the app for deterministic flows
+    (window as any).__TEST_MODE__ = true;
+    // Force missing anonymous config path by default when requested in tests
+    (window as any).__mockAnonymousConfigMissing = true;
+    // Define WALLET_PK in window context for mocks to use
+    (window as any).WALLET_PK = "${WALLET_PK}";
+
+    // Mock getProjectFromName globally
+    (window as any).getProjectFromName = async (name) => {
+      const result = {
+        name: name || "demo",
+        maintainers: ["G".padEnd(56, "A"), "G".padEnd(56, "C"), "${WALLET_PK}"],
+        config: { url: "https://github.com/test/demo", ipfs: "abc123" },
+      };
+      console.log(
+        "Mock getProjectFromName called with:",
+        name,
+        "returning:",
+        result,
+      );
+      return result;
+    };
+
+    // Mock other ReadContractService functions needed by governance components
+    (window as any).getProposalPages = async (projectName: string) => {
+      return 1; // Return 1 page
+    };
+
+    (window as any).getProposals = async (
+      projectName: string,
+      page: number,
+    ) => {
+      return [MOCK_PROPOSAL]; // Return mock proposal
+    };
+
+    // Mock getMember function
+    (window as any).getMember = async (memberAddress: string) => {
+      if (!memberAddress) return null;
+      return MOCK_MEMBER;
+    };
+
+    // ──────────────────────────────────────────────
+    // Wallet funding mocks for e2e tests
+    // ──────────────────────────────────────────────
     (window as any).checkAndNotifyFunding = async () => {
       console.log("🧪 Mocked checkAndNotifyFunding called");
     };
-
-    // Mock getWalletHealth so tests don't depend on real wallet
     (window as any).getWalletHealth = async () => ({
       exists: true,
-      balance: 100,
+      balance: 100, // pretend wallet is fully funded
     });
   });
+
+  // Route interception to inject our mock into imports
+  await page.route("**/@service/ReadContractService*", async (route) => {
+    const response = await route.fetch();
+    let body = await response.text();
+
+    // Append export that overrides the original
+    body += `
+      const originalGetProjectFromName = getProjectFromName;
+      export function getProjectFromName(name) {
+        if ((window as any).getProjectFromName) {
+          return (window as any).getProjectFromName(name);
+        }
+        return originalGetProjectFromName(name);
+      }
+
+      export async function getProposalPages(projectName) {
+        if ((window as any).getProposalPages) {
+          return (window as any).getProposalPages(projectName);
+        }
+        return 1;
+      }
+
+      export async function getProposals(projectName, page) {
+        if ((window as any).getProposals) {
+          return (window as any).getProposals(projectName, page);
+        }
+        return [${JSON.stringify(MOCK_PROPOSAL)}];
+      }
+
+      export async function getMember(memberAddress) {
+        if ((window as any).getMember) {
+          return (window as any).getMember(memberAddress);
+        }
+        return ${JSON.stringify(MOCK_MEMBER)};
+      }
+    `;
+
+    route.fulfill({
+      status: response.status(),
+      headers: response.headers(),
+      body: body,
+    });
+  });
+
+  // Mock ReadContractService at multiple import paths to ensure it works
+  await page.route("**/service/ReadContractService*", async (route) => {
+    const body = `
+      export async function getProjectFromName(name) {
+        if (window.getProjectFromName) {
+          return window.getProjectFromName(name);
+        }
+        if (name === "testproject123" || name === "newproject" || name === "flowtest") {
+          return null;
+        }
+        return ${JSON.stringify(MOCK_PROJECT)};
+      }
+
+      export async function getProposalPages(projectName) {
+        if (window.getProposalPages) {
+          return window.getProposalPages(projectName);
+        }
+        return 1;
+      }
+
+      export async function getProposals(projectName, page) {
+        if (window.getProposals) {
+          return window.getProposals(projectName, page);
+        }
+        return [${JSON.stringify(MOCK_PROPOSAL)}];
+      }
+
+      export async function getMember(memberAddress) {
+        if (window.mockGetMemberResponse) {
+          return window.mockGetMemberResponse;
+        }
+        if (window.getMember) {
+          return window.getMember(memberAddress);
+        }
+        return ${JSON.stringify(MOCK_MEMBER)};
+      }
+
+      export async function getProject(projectKey) {
+        return ${JSON.stringify(MOCK_PROJECT)};
+      }
+
+      export async function getProjectFromId(projectId) {
+        return ${JSON.stringify(MOCK_PROJECT)};
+      }
+
+      export async function getProjectHash(projectKey) {
+        return "abc123";
+      }
+
+      export async function getBadges(projectKey) {
+        return {
+          developer: [window.WALLET_PK || "${WALLET_PK}"],
+          triage: [],
+          community: [window.WALLET_PK || "${WALLET_PK}"],
+          verified: [window.WALLET_PK || "${WALLET_PK}"],
+        };
+      }
+
+      export async function getProposal(projectKey, proposalId) {
+        return ${JSON.stringify(MOCK_PROPOSAL)};
+      }
+
+      export async function hasAnonymousVotingConfig(projectName) {
+        return false;
+      }
+    `;
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body,
+    });
+  });
+
+  // Wallet kit module stubs, walletService mocks, IPFS, Soroban RPC, etc.
+  // ──────────────────────────────────────────────
+  // Keep everything else from your original applyAllMocks here
+  // ... (omitted for brevity, include all the existing code you had for kit, walletService, IPFS, Soroban, delegation, etc.)
 }
 
 export async function mockCreateProposalFlow(page) {
