@@ -59,24 +59,55 @@ async function fetchProposalFromIPFS(url: string) {
 export async function fetchProposalOutcomeData(
   proposal: Proposal,
 ): Promise<ProposalOutcome | null> {
-  // Priority 1: Check for outcome_contracts on-chain (takes precedence)
-  if (proposal.outcome_contracts && proposal.outcome_contracts.length > 0) {
-    return convertContractOutcomesToDisplayFormat(proposal.outcome_contracts);
-  }
+  let outcomeData: ProposalOutcome = {};
 
-  // Priority 2: Fall back to XDR from IPFS
+  // Load IPFS data first (for descriptions and XDR)
   if (proposal.ipfs) {
-    const outcomeUrl = getOutcomeLinkFromIpfs(proposal.ipfs);
-    if (outcomeUrl) {
-      return await fetchJSONFromIPFS(outcomeUrl);
+    try {
+      const outcomeUrl = getOutcomeLinkFromIpfs(proposal.ipfs);
+      if (outcomeUrl) {
+        const ipfsData = await fetchJSONFromIPFS(outcomeUrl);
+        if (ipfsData) {
+          outcomeData = ipfsData;
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to load IPFS outcome data:", error);
     }
   }
 
-  return null;
+  // Merge with onchain contract data
+  if (proposal.outcome_contracts && proposal.outcome_contracts.length > 0) {
+    const [approved, rejected, cancelled] = proposal.outcome_contracts;
+
+    if (approved && approved.address) {
+      outcomeData.approved = {
+        ...outcomeData.approved,
+        contract: approved,
+      };
+    }
+    if (rejected && rejected.address) {
+      outcomeData.rejected = {
+        ...outcomeData.rejected,
+        contract: rejected,
+      };
+    }
+    if (cancelled && cancelled.address) {
+      outcomeData.cancelled = {
+        ...outcomeData.cancelled,
+        contract: cancelled,
+      };
+    }
+  }
+
+  // Return merged data if we have any outcomes
+  return Object.keys(outcomeData).length > 0 ? outcomeData : null;
 }
 
 /**
  * Converts contract outcomes array to display format
+ * Note: This function is now deprecated and merged into fetchProposalOutcomeData
+ * which properly merges IPFS descriptions with onchain contract data
  */
 function convertContractOutcomesToDisplayFormat(
   contracts: OutcomeContract[],

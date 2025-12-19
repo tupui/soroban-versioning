@@ -20,8 +20,8 @@ interface OutcomeInputProps {
   setContractOutcome: (contract: OutcomeContract | null) => void;
 
   // Mode selection
-  mode: "xdr" | "contract";
-  setMode: (mode: "xdr" | "contract") => void;
+  mode: "xdr" | "contract" | "none";
+  setMode: (mode: "xdr" | "contract" | "none") => void;
 
   // Validation errors
   descriptionError?: string | null;
@@ -31,7 +31,7 @@ interface OutcomeInputProps {
   // Callbacks
   onDescriptionChange?: (value: string) => void;
   onXdrChange?: (value: string) => void;
-  onModeChange?: (mode: "xdr" | "contract") => void;
+  onModeChange?: (mode: "xdr" | "contract" | "none") => void;
   onRemove?: () => void;
 
   // Network for contract explorer
@@ -57,16 +57,17 @@ const OutcomeInput = ({
   onRemove,
   network = "testnet", // Default to testnet
 }: OutcomeInputProps) => {
-  const handleModeChange = (newMode: "xdr" | "contract") => {
+  const handleModeChange = (newMode: "xdr" | "contract" | "none") => {
     setMode(newMode);
     if (onModeChange) onModeChange(newMode);
 
-    // Clear the other mode's data when switching
-    if (newMode === "xdr") {
+    // Only clear data when switching BETWEEN modes, not to/from "none"
+    if (newMode === "xdr" && mode === "contract") {
       setContractOutcome(null);
-    } else {
+    } else if (newMode === "contract" && mode === "xdr") {
       setXdr(null);
     }
+    // "none" mode preserves existing data
   };
 
   const handleContractFunctionSelect = (functionName: string, args: any[]) => {
@@ -89,7 +90,8 @@ const OutcomeInput = ({
 
   const hasOutcome =
     (mode === "xdr" && xdr !== null) ||
-    (mode === "contract" && contractOutcome !== null);
+    (mode === "contract" && contractOutcome !== null) ||
+    (mode === "none");
 
   return (
     <div className="flex flex-col items-start gap-[18px]">
@@ -107,13 +109,14 @@ const OutcomeInput = ({
             onClick={() => {
               if (mode === "xdr") {
                 setXdr("");
-              } else {
+              } else if (mode === "contract") {
                 setContractOutcome({
                   address: "",
                   execute_fn: "",
                   args: [],
                 });
               }
+              // For "none" mode, no additional setup needed
             }}
           >
             Add {capitalizeFirstLetter(type)} Outcome
@@ -134,9 +137,11 @@ const OutcomeInput = ({
                   // Fallback: just clear the values
                   if (mode === "xdr") {
                     setXdr(null);
-                  } else {
+                  } else if (mode === "contract") {
                     setContractOutcome(null);
                   }
+                  // For "none" mode, just clear description
+                  setDescription("");
                 }
               }}
             >
@@ -169,12 +174,12 @@ const OutcomeInput = ({
           {mode === "xdr" ? (
             <div className="flex flex-col gap-[18px]">
               <p className="leading-[16px] text-base font-[600] text-primary">
-                XDR (Optional)
+                XDR Transaction
               </p>
               <div>
                 <Textarea
-                  className={`h-[64px] ${xdrError ? "border-red-500" : ""}`}
-                  placeholder="Write the XDR"
+                  className={`min-h-[120px] font-mono text-sm ${xdrError ? "border-red-500" : ""}`}
+                  placeholder="Paste your XDR transaction here..."
                   value={xdr || ""}
                   onChange={(e) => {
                     setXdr(e.target.value);
@@ -186,13 +191,12 @@ const OutcomeInput = ({
                 )}
               </div>
             </div>
-          ) : (
+          ) : mode === "contract" ? (
             <div className="flex flex-col gap-[18px]">
               <p className="leading-[16px] text-base font-[600] text-primary">
                 Contract Function
               </p>
 
-              {/* Contract Address Input */}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium text-primary">
                   Contract Address
@@ -211,8 +215,8 @@ const OutcomeInput = ({
                   contractAddress={contractOutcome.address}
                   network={network}
                   onFunctionSelect={handleContractFunctionSelect}
-                  selectedFunction={contractOutcome.execute_fn}
-                  initialArgs={contractOutcome.args}
+                  selectedFunction={contractOutcome?.execute_fn || ""}
+                  initialArgs={contractOutcome?.args || []}
                 />
               )}
 
@@ -220,7 +224,7 @@ const OutcomeInput = ({
                 <p className="mt-1 text-sm text-red-500">{contractError}</p>
               )}
             </div>
-          )}
+          ) : null /* For "none" mode, show nothing additional */}
         </div>
       )}
     </div>

@@ -146,14 +146,14 @@ async function createSignedProposalTransaction(
   const project_key = deriveProjectKey(projectName);
 
   // Convert OutcomeContract[] to contract format expected by Soroban
-  // Filter out empty contracts to prevent "Unsupported address type" error
+  // Filter out null/empty contracts but preserve the array structure
   const convertedContracts = outcomeContracts
-    ?.filter((oc) => oc.address && oc.address.trim() !== "")
-    .map((oc) => ({
+    ?.map((oc) => oc && oc.address && oc.address.trim() !== "" ? {
       address: oc.address, // Contract expects string, not Address object
       execute_fn: oc.execute_fn, // Contract expects string, not ScVal
       args: oc.args, // Contract expects raw values, not ScVal
-    })) || [];
+    } : null)
+    .filter((oc) => oc !== null) || [];
 
   const tx = await Tansu.create_proposal({
     proposer: publicKey,

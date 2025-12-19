@@ -86,6 +86,13 @@ export const EnhancedContractFunctionSelector: React.FC<
     }
   }, [selectedFunction, functions]);
 
+  // Notify parent component when function or args change
+  useEffect(() => {
+    if (selectedFunction && args.length >= 0) {
+      onFunctionSelect(selectedFunction, args);
+    }
+  }, [selectedFunction, args]); // Removed onFunctionSelect from dependencies
+
   const loadContractFunctions = async () => {
     setIsLoading(true);
     setError(null);
@@ -275,26 +282,6 @@ export const EnhancedContractFunctionSelector: React.FC<
           ))}
       </div>
 
-      {/* Function preview */}
-      {selectedFunction && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">
-            Function Preview
-          </h4>
-          <p className="text-sm text-blue-800 font-medium">
-            {selectedFunction}()
-          </p>
-
-          {selectedFunc && selectedFunc.inputs.length > 0 && (
-            <div className="mt-3">
-              <p className="text-xs text-blue-700 mb-1">With arguments:</p>
-              <pre className="text-xs bg-white p-2 rounded border overflow-x-auto text-blue-900">
-                {JSON.stringify(args, null, 2)}
-              </pre>
-            </div>
-          )}
-        </div>
-      )}
 
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -400,7 +387,7 @@ const ArgInput: React.FC<ArgInputProps> = ({ type, value, onChange }) => {
     <Input
       type={getInputType()}
       placeholder={getPlaceholder()}
-      value={value}
+      value={value === undefined || value === null ? "" : value}
       onChange={handleChange}
       className="font-mono text-sm"
     />
