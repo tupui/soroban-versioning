@@ -534,6 +534,12 @@ export async function applyAllMocks(page) {
     export function setConnection() {}      
     export function disconnect() {}
     export function initializeConnection() { return { success: true }; }
+    export async function checkAndNotifyFunding() {
+      console.log('🧪 Mocked checkAndNotifyFunding called');
+    }
+    export async function getWalletHealth() {
+      return { exists: true, balance: 100 };
+    }
   `;
     route.fulfill({
       status: 200,
@@ -551,6 +557,12 @@ export async function applyAllMocks(page) {
     export function setConnection() {}      
     export function disconnect() {}
     export function initializeConnection() { return { success: true }; }
+    export async function checkAndNotifyFunding() {
+      console.log('🧪 Mocked checkAndNotifyFunding called');
+    }
+    export async function getWalletHealth() {
+      return { exists: true, balance: 100 };
+    }
   `;
     route.fulfill({
       status: 200,
