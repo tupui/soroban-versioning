@@ -129,5 +129,13 @@ export {
   disconnect,
   initializeConnection,
   getWalletHealth,
-  checkAndNotifyFunding,
+  export {
+  loadedPublicKey,
+  loadedProvider,
+  setConnection,
+  disconnect,
+  initializeConnection,
+  getWalletHealth,
+};
+export { checkAndNotifyFunding };
 };
