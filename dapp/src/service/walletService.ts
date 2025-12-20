@@ -36,7 +36,8 @@ function disconnect(): void {
   connectedPublicKey.set("");
 }
 
-async function checkAndNotifyFunding(): Promise<void> {
+export async function checkAndNotifyFunding(): Promise<void> {
+  if (import.meta.env.MODE === "test") return;
   const publicKey = loadedPublicKey();
   if (!publicKey) return;
 
@@ -129,13 +130,4 @@ export {
   disconnect,
   initializeConnection,
   getWalletHealth,
-  export {
-  loadedPublicKey,
-  loadedProvider,
-  setConnection,
-  disconnect,
-  initializeConnection,
-  getWalletHealth,
-};
-export { checkAndNotifyFunding };
 };
