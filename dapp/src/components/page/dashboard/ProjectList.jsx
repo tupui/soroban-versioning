@@ -5,6 +5,8 @@ import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
   getMember,
+  getProjectPages,
+  getAllProjects,
 } from "../../../service/ReadContractService.ts";
 import { loadConfigData } from "../../../service/StateService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
@@ -32,6 +34,11 @@ const ProjectList = () => {
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [memberResult, setMemberResult] = useState(undefined);
   const [showMemberProfileModal, setShowMemberProfileModal] = useState(false);
+
+  const [onChainProjects, setOnChainProjects] = useState([]);
+  const [isLoadingOnChain, setIsLoadingOnChain] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   // Define the handler function at component level so it's available everywhere
   const handleCreateProjectModal = useCallback(() => {
@@ -274,6 +281,65 @@ const ProjectList = () => {
     }
   };
 
+  const fetchOnChainProjects = async () => {
+    setIsLoadingOnChain(true);
+    try {
+      // Get total pages
+      const pages = await getProjectPages();
+      if (pages !== null && pages > 0) {
+        setTotalPages(pages);
+
+        // Fetch all projects from all pages
+        const allProjects = [];
+        for (let page = 0; page < pages; page++) {
+          const pageProjects = await getAllProjects(page);
+          if (pageProjects && pageProjects.length > 0) {
+            // Convert each project to config format
+            for (const project of pageProjects) {
+              try {
+                const tomlData = await fetchTomlFromCid(project.config.ipfs);
+                if (tomlData) {
+                  const configData = extractConfigData(tomlData, project);
+                  allProjects.push(configData);
+                } else {
+                  // Fallback if no TOML data
+                  allProjects.push({
+                    projectName: project.name,
+                    logoImageLink: undefined,
+                    thumbnailImageLink: "",
+                    description: "",
+                    organizationName: "",
+                    officials: {
+                      githubLink: project.config.url,
+                    },
+                    socialLinks: {},
+                    authorGithubNames: [],
+                    maintainersAddresses: project.maintainers,
+                  });
+                }
+              } catch (error) {
+                if (import.meta.env.DEV) {
+                  console.error("Error loading project:", project.name, error);
+                }
+              }
+            }
+          }
+        }
+        setOnChainProjects(allProjects);
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Error fetching on-chain projects:", error);
+      }
+    } finally {
+      setIsLoadingOnChain(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOnChainProjects();
+  }, []);
+
   // Determine if we should show the featured projects heading
   const showFeaturedHeading =
     !searchTerm ||
@@ -303,9 +369,9 @@ const ProjectList = () => {
           </p>
         </div>
       ) : filteredProjects && filteredProjects.length > 0 ? (
-        <div className="project-list grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 justify-items-center">
+        <div className="project-list grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 justify-items-center items-stretch">
           {filteredProjects.map((project, index) => (
-            <div className="w-full" key={index}>
+            <div className="w-full h-full" key={index}>
               <ProjectCard config={project} />
             </div>
           ))}
@@ -326,6 +392,44 @@ const ProjectList = () => {
           <p className="px-3 py-1 text-base sm:text-lg font-medium">
             No projects found. Try searching for something.
           </p>
+        </div>
+      )}
+
+      {!searchTerm && !memberNotFound && !isInOnChain && (
+        <div className="mt-16">
+          <div className="flex flex-col items-center gap-[30px] md:gap-[60px] mb-8">
+            <div className="w-full flex justify-center items-center">
+              <p className="text-[26px] leading-[42px] font-firamono text-pink">
+                All Projects
+              </p>
+            </div>
+          </div>
+
+          {isLoadingOnChain ? (
+            <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
+              <Spinner />
+              <p className="text-base text-secondary">
+                Loading projects ...
+              </p>
+            </div>
+          ) : onChainProjects.length > 0 ? (
+            <div className="project-list grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 justify-items-center items-stretch">
+              {onChainProjects.map((project, index) => (
+                <div className="w-full h-full" key={`onchain-${index}`}>
+                  <ProjectCard config={project} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12">
+              <p className="text-xl text-center font-medium text-zinc-700">
+                No projects found yet.
+              </p>
+              <p className="text-base text-center text-secondary mt-2">
+                Be the first to register a project!
+              </p>
+            </div>
+          )}
         </div>
       )}
 

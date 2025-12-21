@@ -242,6 +242,56 @@ async function getBadges(): Promise<Badges | null> {
   }
 }
 
+async function getProjectPages(): Promise<number | null> {
+  try {
+    const checkPageExist = async (page: number) => {
+      try {
+        const res = await Tansu.get_projects({
+          page,
+        });
+
+        // Check for simulation errors
+        checkSimulationError(res);
+
+        return res.result.length > 0;
+      } catch {
+        return false;
+      }
+    };
+
+    for (let page = 1; ; page *= 2) {
+      const isPageExist = await checkPageExist(page);
+      if (isPageExist) continue;
+      if (page <= 2) return 1;
+      let f = page / 2,
+        t = page;
+      while (t - f > 1) {
+        const m = Math.floor((f + t) / 2);
+        const isPageExist = await checkPageExist(m);
+        if (isPageExist) f = m;
+        else t = m;
+      }
+      return f;
+    }
+  } catch {
+    return null;
+  }
+}
+
+async function getAllProjects(page: number): Promise<Project[] | null> {
+  try {
+    const res = await Tansu.get_projects({
+      page: page,
+    });
+
+    checkSimulationError(res);
+
+    return res.result;
+  } catch {
+    return null;
+  }
+}
+
 export {
   getProject,
   getProjectHash,
@@ -252,6 +302,8 @@ export {
   getProposal,
   getMember,
   getBadges,
+  getProjectPages,
+  getAllProjects,
 };
 
 /**
