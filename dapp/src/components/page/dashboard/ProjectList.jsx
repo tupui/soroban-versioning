@@ -17,6 +17,7 @@ import ProjectCard from "./ProjectCard";
 import ProjectInfoModal from "./ProjectInfoModal.jsx";
 import MemberProfileModal from "./MemberProfileModal.tsx";
 import Spinner from "components/utils/Spinner.tsx";
+import Pagination from "components/utils/Pagination.tsx";
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);
@@ -39,6 +40,7 @@ const ProjectList = () => {
   const [isLoadingOnChain, setIsLoadingOnChain] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [currentUIPage, setCurrentUIPage] = useState(1);
 
   // Define the handler function at component level so it's available everywhere
   const handleCreateProjectModal = useCallback(() => {
@@ -287,8 +289,6 @@ const ProjectList = () => {
       // Get total pages
       const pages = await getProjectPages();
       if (pages !== null && pages > 0) {
-        setTotalPages(pages);
-
         // Fetch all projects from all pages
         const allProjects = [];
         for (let page = 0; page < pages; page++) {
@@ -326,6 +326,7 @@ const ProjectList = () => {
           }
         }
         setOnChainProjects(allProjects);
+        setTotalPages(Math.ceil(allProjects.length / 10));
       }
     } catch (error) {
       if (import.meta.env.DEV) {
@@ -339,6 +340,22 @@ const ProjectList = () => {
   useEffect(() => {
     fetchOnChainProjects();
   }, []);
+
+  const handlePageChange = (page) => {
+    setCurrentUIPage(page);
+    // Scroll to top of All Projects section
+    const allProjectsSection = document.querySelector('.all-projects-section');
+    if (allProjectsSection) {
+      allProjectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  // Get current projects (10 per page)
+  const getCurrentPageProjects = () => {
+    const startIndex = (currentUIPage - 1) * 10;
+    const endIndex = startIndex + 10;
+    return onChainProjects.slice(startIndex, endIndex);
+  };
 
   // Determine if we should show the featured projects heading
   const showFeaturedHeading =
@@ -396,7 +413,7 @@ const ProjectList = () => {
       )}
 
       {!searchTerm && !memberNotFound && !isInOnChain && (
-        <div className="mt-16">
+        <div className="mt-16 all-projects-section">
           <div className="flex flex-col items-center gap-[30px] md:gap-[60px] mb-8">
             <div className="w-full flex justify-center items-center">
               <p className="text-[26px] leading-[42px] font-firamono text-pink">
@@ -413,12 +430,23 @@ const ProjectList = () => {
               </p>
             </div>
           ) : onChainProjects.length > 0 ? (
-            <div className="project-list grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 justify-items-center items-stretch">
-              {onChainProjects.map((project, index) => (
-                <div className="w-full h-full" key={`onchain-${index}`}>
-                  <ProjectCard config={project} />
+            <div className="flex flex-col gap-8">
+              <div className="project-list grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 justify-items-center items-stretch">
+                {getCurrentPageProjects().map((project, index) => (
+                  <div className="w-full h-full" key={`onchain-${(currentUIPage - 1) * 10 + index}`}>
+                    <ProjectCard config={project} />
+                  </div>
+                ))}
+              </div>
+              {totalPages > 1 && (
+                <div className="flex justify-center py-4">
+                  <Pagination
+                    totalPage={totalPages}
+                    currentPage={currentUIPage}
+                    onPageChange={handlePageChange}
+                  />
                 </div>
-              ))}
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12">
