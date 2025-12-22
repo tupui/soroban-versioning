@@ -23,9 +23,8 @@ export const OutcomeModeSelector: React.FC<OutcomeModeSelectorProps> = ({
             : "text-secondary hover:text-primary hover:bg-white"
         } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center">
           <span>None</span>
-          <span className="text-xs opacity-75">(Description Only)</span>
         </div>
       </button>
 
@@ -39,9 +38,8 @@ export const OutcomeModeSelector: React.FC<OutcomeModeSelectorProps> = ({
             : "text-secondary hover:text-primary hover:bg-white"
         } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center">
           <span>Contract</span>
-          <span className="text-xs opacity-75">(Recommended)</span>
         </div>
       </button>
 
@@ -55,9 +53,8 @@ export const OutcomeModeSelector: React.FC<OutcomeModeSelectorProps> = ({
             : "text-secondary hover:text-primary hover:bg-white"
         } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center">
           <span>XDR</span>
-          <span className="text-xs opacity-75">(Advanced)</span>
         </div>
       </button>
     </div>

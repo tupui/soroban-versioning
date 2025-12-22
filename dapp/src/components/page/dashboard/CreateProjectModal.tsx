@@ -1,20 +1,20 @@
-import {getProjectFromName} from "@service/ReadContractService";
-import {loadedPublicKey} from "@service/walletService";
+import { getProjectFromName } from "@service/ReadContractService";
+import { loadedPublicKey } from "@service/walletService";
 import {
   setConfigData,
   setProject,
   setProjectRepoInfo,
 } from "@service/StateService";
-import {navigate} from "astro:transitions/client";
+import { navigate } from "astro:transitions/client";
 import Button from "components/utils/Button.tsx";
 import Input from "components/utils/Input.tsx";
 import Label from "components/utils/Label.tsx";
 import FlowProgressModal from "components/utils/FlowProgressModal.tsx";
 import Step from "components/utils/Step.tsx";
 import Title from "components/utils/Title.tsx";
-import {useState, type FC, useCallback, useEffect} from "react";
-import {getAuthorRepo} from "utils/editLinkFunctions";
-import {extractConfigData, toast} from "utils/utils";
+import { useState, type FC, useCallback, useEffect } from "react";
+import { getAuthorRepo } from "utils/editLinkFunctions";
+import { extractConfigData, toast } from "utils/utils";
 import {
   validateProjectName as validateProjectNameUtil,
   validateGithubUrl,
@@ -33,7 +33,7 @@ type ModalProps = {
   onClose: () => void;
 };
 
-const CreateProjectModal: FC<ModalProps> = ({onClose}) => {
+const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [projectName, setProjectName] = useState("");
   const [maintainerAddresses, setMaintainerAddresses] = useState<string[]>([
@@ -295,10 +295,10 @@ const CreateProjectModal: FC<ModalProps> = ({onClose}) => {
   const handleRegisterProject = async () => {
     setIsLoading(true);
     // Dynamic imports for heavy libs
-    const [{fetchTomlFromCid}] = await Promise.all([
+    const [{ fetchTomlFromCid }] = await Promise.all([
       import("utils/ipfsFunctions"),
     ]);
-    const {loadedPublicKey} = await import("@service/walletService");
+    const { loadedPublicKey } = await import("@service/walletService");
 
     try {
       const publicKey = loadedPublicKey();
@@ -330,7 +330,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
       // show progress
       setStep(6);
 
-      const {createProjectFlow} = await import("@service/FlowService");
+      const { createProjectFlow } = await import("@service/FlowService");
 
       await createProjectFlow({
         projectName,
@@ -345,7 +345,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
 
-        const {username, repoName} = getAuthorRepo(project.config.url);
+        const { username, repoName } = getAuthorRepo(project.config.url);
         if (username && repoName) {
           setProjectRepoInfo(username, repoName);
         }
@@ -445,7 +445,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
             <div className="flex flex-col gap-4 md:gap-[30px]">
               <div className="flex-grow flex flex-col gap-4 md:gap-[30px]">
                 <div className="flex flex-col gap-3 md:gap-5">
-                  <Step step={step} totalSteps={5}/>
+                  <Step step={step} totalSteps={5} />
                   <Title
                     title="Welcome to Your New Project!"
                     description="Add your project's name, slogan, and description to showcase its goals."
@@ -474,7 +474,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                   {domainStatus && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/3 flex items-center">
                       {domainStatus === "checking" ? (
-                        <Spinner/>
+                        <Spinner />
                       ) : domainStatus === "available" ? (
                         <div className="flex items-center text-green-600">
                           <img
@@ -546,7 +546,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
             <div className="flex flex-col gap-4 md:gap-[30px]">
               <div className="flex-grow md:flex-1 flex flex-col gap-4 md:gap-[30px]">
                 <div className="flex flex-col gap-3 md:gap-5">
-                  <Step step={step} totalSteps={5}/>
+                  <Step step={step} totalSteps={5} />
                   <Title
                     title="Build Your Team"
                     description="Add yourself as the maintainer and optionally include team members to collaborate on your project."
@@ -580,7 +580,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                         <Input
                           className="flex-1"
                           value={maintainerGithubs[i] ?? ""}
-                          {...(i == 0 && {label: "GitHub Handle"})}
+                          {...(i == 0 && { label: "GitHub Handle" })}
                           placeholder="username"
                           onChange={(e) => {
                             setMaintainerGithubs(
@@ -614,7 +614,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                               );
                             }}
                           >
-                            <img src="/icons/remove.svg"/>
+                            <img src="/icons/remove.svg" />
                           </button>
                         )}
                       </div>
@@ -672,7 +672,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
             <div className="flex flex-col gap-4 md:gap-[30px]">
               <div className="flex-grow md:flex-1 flex flex-col gap-4 md:gap-[30px]">
                 <div className="flex flex-col gap-3 md:gap-5">
-                  <Step step={step} totalSteps={5}/>
+                  <Step step={step} totalSteps={5} />
                   <Title
                     title="Add Supporting Materials"
                     description="Attach links to provide more context and strengthen your project proposal."
@@ -763,10 +763,10 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
       ) : step == 4 ? (
         <div key={step} className="flex flex-col gap-[30px]">
           <div className="flex items-center gap-[18px]">
-            <img className="flex-none w-[360px]" src="/images/note.svg"/>
+            <img className="flex-none w-[360px]" src="/images/note.svg" />
             <div className="flex-grow flex flex-col gap-[30px]">
               <div className="flex flex-col gap-5">
-                <Step step={step} totalSteps={5}/>
+                <Step step={step} totalSteps={5} />
                 <Title
                   title="Review and Submit Your Project"
                   description="Take a moment to review your project details before submitting. You can go back and make changes if needed."
@@ -804,7 +804,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
               <p className="leading-6 text-xl text-primary">{projectName}</p>
             </Label>
           </div>
-          <div className="h-[1px] bg-[#ECE3F4]"/>
+          <div className="h-[1px] bg-[#ECE3F4]" />
           <div className="flex flex-col gap-6">
             <div className="flex gap-6">
               <p className="leading-6 text-xl font-medium text-primary">
@@ -832,7 +832,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
               </div>
             </Label>
           </div>
-          <div className="h-[1px] bg-[#ECE3F4]"/>
+          <div className="h-[1px] bg-[#ECE3F4]" />
           <div className="flex flex-col gap-6">
             <div className="flex gap-6">
               <p className="leading-6 text-xl font-medium text-primary">

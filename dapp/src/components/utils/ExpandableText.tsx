@@ -13,9 +13,7 @@ export function ExpandableText({
   if (children?.trim()) {
     return (
       <div className={`relative ${className}`}>
-        <p className="text-lg text-primary whitespace-pre-wrap">
-          {children}
-        </p>
+        <p className="text-lg text-primary whitespace-pre-wrap">{children}</p>
       </div>
     );
   }

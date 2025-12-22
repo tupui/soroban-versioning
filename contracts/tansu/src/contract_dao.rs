@@ -618,7 +618,7 @@ impl DaoTrait for Tansu {
                 types::ProposalStatus::Approved => 0,
                 types::ProposalStatus::Rejected => 1,
                 types::ProposalStatus::Cancelled => 2,
-                _ => return proposal.status,
+                _ => panic_with_error!(&env, &errors::ContractErrors::ProposalActive),
             };
 
             if let Some(contract) = outcome_contracts.get(outcome_index) {

@@ -125,7 +125,6 @@ export const EnhancedContractFunctionSelector: React.FC<
     setArgs(newArgs);
   };
 
-
   const selectedFunc = functions.find((f) => f.name === selectedFunction);
 
   return (
@@ -282,13 +281,11 @@ export const EnhancedContractFunctionSelector: React.FC<
           ))}
       </div>
 
-
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
-
     </div>
   );
 };

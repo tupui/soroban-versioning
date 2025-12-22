@@ -52,9 +52,11 @@ const CreateProposalModal = () => {
 
   const [approveContract, setApproveContract] =
     useState<OutcomeContract | null>({ address: "", execute_fn: "", args: [] });
-  const [rejectContract, setRejectContract] = useState<OutcomeContract | null>(
-    { address: "", execute_fn: "", args: [] }
-  );
+  const [rejectContract, setRejectContract] = useState<OutcomeContract | null>({
+    address: "",
+    execute_fn: "",
+    args: [],
+  });
   const [cancelledContract, setCancelledContract] =
     useState<OutcomeContract | null>({ address: "", execute_fn: "", args: [] });
 
@@ -183,18 +185,27 @@ const CreateProposalModal = () => {
     // Always prepare outcomes.json with descriptions for all outcome types
     // Contract execution data stays onchain, descriptions go to IPFS
     const proposalOutcome: ProposalOutcome = {
-      approved: approveDescription.trim() ? {
-        description: approveDescription,
-        xdr: approveMode === "xdr" && approveXdr ? approveXdr : undefined,
-      } : undefined,
-      rejected: rejectDescription.trim() ? {
-        description: rejectDescription,
-        xdr: rejectMode === "xdr" && rejectXdr ? rejectXdr : undefined,
-      } : undefined,
-      cancelled: cancelledDescription.trim() ? {
-        description: cancelledDescription,
-        xdr: cancelledMode === "xdr" && cancelledXdr ? cancelledXdr : undefined,
-      } : undefined,
+      approved: approveDescription.trim()
+        ? {
+            description: approveDescription,
+            xdr: approveMode === "xdr" && approveXdr ? approveXdr : undefined,
+          }
+        : undefined,
+      rejected: rejectDescription.trim()
+        ? {
+            description: rejectDescription,
+            xdr: rejectMode === "xdr" && rejectXdr ? rejectXdr : undefined,
+          }
+        : undefined,
+      cancelled: cancelledDescription.trim()
+        ? {
+            description: cancelledDescription,
+            xdr:
+              cancelledMode === "xdr" && cancelledXdr
+                ? cancelledXdr
+                : undefined,
+          }
+        : undefined,
     };
 
     const outcomeBlob = new Blob([JSON.stringify(proposalOutcome)], {
@@ -224,16 +235,25 @@ const CreateProposalModal = () => {
     // This is a simplified mapping - in a real implementation you'd get this
     // from the contract introspection service based on the function signature
     const paramMappings: Record<string, string[]> = {
-      'mint': ['message', 'signature', 'recovery_id', 'public_key', 'nonce'],
-      'transfer': ['from', 'to', 'token_id', 'message', 'signature', 'recovery_id', 'public_key', 'nonce'],
-      'balance': ['owner'],
-      'owner_of': ['token_id'],
-      'get_nonce': ['public_key'],
-      'name': [],
-      'symbol': [],
-      'token_uri': ['token_id'],
-      'token_id': ['public_key'],
-      'public_key': ['token_id']
+      mint: ["message", "signature", "recovery_id", "public_key", "nonce"],
+      transfer: [
+        "from",
+        "to",
+        "token_id",
+        "message",
+        "signature",
+        "recovery_id",
+        "public_key",
+        "nonce",
+      ],
+      balance: ["owner"],
+      owner_of: ["token_id"],
+      get_nonce: ["public_key"],
+      name: [],
+      symbol: [],
+      token_uri: ["token_id"],
+      token_id: ["public_key"],
+      public_key: ["token_id"],
     };
 
     const params = paramMappings[functionName] || [];
@@ -242,17 +262,17 @@ const CreateProposalModal = () => {
 
   // Helper function to format contract values for display
   const formatContractValue = (arg: any): string => {
-    if (arg === null || arg === undefined) return 'null';
+    if (arg === null || arg === undefined) return "null";
 
     // Handle different JavaScript value types
     switch (typeof arg) {
-      case 'string':
+      case "string":
         return `"${arg}"`;
-      case 'number':
+      case "number":
         return arg.toString();
-      case 'boolean':
-        return arg ? 'true' : 'false';
-      case 'object':
+      case "boolean":
+        return arg ? "true" : "false";
+      case "object":
         return JSON.stringify(arg);
       default:
         return String(arg);
@@ -266,17 +286,38 @@ const CreateProposalModal = () => {
       setStep(6);
 
       // Validate outcomes before submission - only if outcomes are configured
-      const hasAnyOutcome = showApproveOutcome || showRejectOutcome || showCancelledOutcome;
+      const hasAnyOutcome =
+        showApproveOutcome || showRejectOutcome || showCancelledOutcome;
       if (hasAnyOutcome && !validateApproveOutcome(true)) {
         throw new Error("Invalid approved outcome configuration");
       }
 
       // 2️⃣  Calculate voting end timestamp & build proposal transaction
       // Ensure at least 25h window between now and voting end
-      let targetTs = new Date(selectedDate).getTime();
+      // Handle different date input types robustly
+      let targetTs: number;
+      if (selectedDate instanceof Date) {
+        targetTs = selectedDate.getTime();
+      } else if (
+        typeof selectedDate === "string" ||
+        typeof selectedDate === "number"
+      ) {
+        targetTs = new Date(selectedDate).getTime();
+      } else if (
+        selectedDate &&
+        typeof selectedDate === "object" &&
+        "getTime" in selectedDate
+      ) {
+        // Handle date-like objects (e.g., moment.js)
+        targetTs = selectedDate.getTime();
+      } else {
+        // Last resort: try to convert to Date
+        targetTs = new Date(selectedDate as any).getTime();
+      }
+
       // Validate that we have a valid timestamp
-      if (isNaN(targetTs) || targetTs <= 0) {
-        throw new Error("Invalid voting end date selected");
+      if (isNaN(targetTs) || targetTs <= 0 || !isFinite(targetTs)) {
+        throw new Error(`Invalid voting end date: ${selectedDate}`);
       }
 
       const min25hMs = Date.now() + 25 * 60 * 60 * 1000;
@@ -295,12 +336,33 @@ const CreateProposalModal = () => {
       // Prepare contract outcomes array [approved, rejected, cancelled]
       // Contract execution data stays onchain, null values are allowed
       const contractOutcomes: (OutcomeContract | null)[] = [
-        approveMode === "contract" && approveContract?.address?.trim() ? approveContract : null,
-        rejectMode === "contract" && rejectContract?.address?.trim() ? rejectContract : null,
-        cancelledMode === "contract" && cancelledContract?.address?.trim() ? cancelledContract : null,
+        approveMode === "contract" && approveContract?.address?.trim()
+          ? approveContract
+          : null,
+        rejectMode === "contract" && rejectContract?.address?.trim()
+          ? rejectContract
+          : null,
+        cancelledMode === "contract" && cancelledContract?.address?.trim()
+          ? cancelledContract
+          : null,
       ];
 
       const { createProposalFlow } = await import("@service/FlowService");
+
+      console.log("🔍 DEBUG: createProposalFlow parameters:");
+      console.log("projectName:", projectName);
+      console.log("proposalName:", proposalName);
+      console.log("files:", files);
+      console.log("votingEndsAt:", votingEndsAt, typeof votingEndsAt);
+      console.log("publicVoting:", !isAnonymousVoting ? true : false);
+      console.log(
+        "outcomeContracts:",
+        JSON.stringify(contractOutcomes, null, 2),
+      );
+      console.log(
+        "contractOutcomes types:",
+        contractOutcomes.map((oc) => typeof oc),
+      );
 
       const proposalId = await createProposalFlow({
         projectName: projectName!,
@@ -387,8 +449,12 @@ const CreateProposalModal = () => {
       // If contract address is provided but function is not selected, that's okay for submission
       // The user can submit with a contract address but no function selected
       // Only validate that if both address and function are provided, args should be valid
-      if (approveContract?.address?.trim() && approveContract?.execute_fn?.trim() &&
-          approveContract.args && approveContract.args.length === 0) {
+      if (
+        approveContract?.address?.trim() &&
+        approveContract?.execute_fn?.trim() &&
+        approveContract.args &&
+        approveContract.args.length === 0
+      ) {
         // If function is selected but no args, that's potentially an issue
         // But we'll allow it for now as the contract might not need args
       }
@@ -1093,27 +1159,33 @@ const CreateProposalModal = () => {
                 ];
 
                 // Check if all outcomes are empty/unconfigured
-                const allEmpty = outcomes.every(outcome =>
-                  !outcome.show ||
-                  (outcome.mode === "none" && !outcome.desc?.trim()) ||
-                  (outcome.mode === "contract" && !outcome.contract?.address?.trim()) ||
-                  (outcome.mode === "xdr" && !outcome.xdr?.trim())
+                const allEmpty = outcomes.every(
+                  (outcome) =>
+                    !outcome.show ||
+                    (outcome.mode === "none" && !outcome.desc?.trim()) ||
+                    (outcome.mode === "contract" &&
+                      !outcome.contract?.address?.trim()) ||
+                    (outcome.mode === "xdr" && !outcome.xdr?.trim()),
                 );
 
                 if (allEmpty) {
                   return (
                     <Label label="Contract Calls">
-                      <p className="text-base sm:text-lg text-secondary">None</p>
+                      <p className="text-base sm:text-lg text-secondary">
+                        None
+                      </p>
                     </Label>
                   );
                 }
 
                 // Show configured outcomes
                 return outcomes
-                  .filter(outcome => outcome.show)
+                  .filter((outcome) => outcome.show)
                   .map(({ type, desc, xdr, contract, mode }, index) => (
                     <div key={index} className="flex flex-col gap-4">
-                      <p className={`text-lg sm:text-xl font-medium text-${type}`}>
+                      <p
+                        className={`text-lg sm:text-xl font-medium text-${type}`}
+                      >
                         {capitalizeFirstLetter(type)} Outcome
                       </p>
                       <Label label="Description">
@@ -1139,53 +1211,64 @@ const CreateProposalModal = () => {
                       )}
 
                       {/* Show Contract details for contract mode */}
-                      {mode === "contract" && contract?.address?.trim() && contract?.execute_fn?.trim() && (
-                        <>
+                      {mode === "contract" &&
+                        contract?.address?.trim() &&
+                        contract?.execute_fn?.trim() && (
+                          <>
+                            <Label label="Contract Address">
+                              <p className="text-base sm:text-lg text-primary break-all font-mono">
+                                {contract.address}
+                              </p>
+                            </Label>
+                            <Label label="Function Call">
+                              <div className="space-y-2">
+                                <p className="text-base sm:text-lg text-primary font-medium">
+                                  {contract.execute_fn}()
+                                </p>
+                                {contract.args && contract.args.length > 0 && (
+                                  <div>
+                                    <p className="text-sm text-secondary mb-1">
+                                      Parameters:
+                                    </p>
+                                    <div className="text-sm bg-gray-50 p-2 rounded border space-y-1">
+                                      {contract.args.map((arg, i) => (
+                                        <div
+                                          key={i}
+                                          className="flex justify-between items-center"
+                                        >
+                                          <span className="font-medium text-primary">
+                                            {getParamName(
+                                              contract.execute_fn,
+                                              i,
+                                            )}
+                                            :
+                                          </span>
+                                          <span className="font-mono text-secondary ml-2 break-all text-right">
+                                            {formatContractValue(arg)}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </Label>
+                          </>
+                        )}
+
+                      {/* Show contract address only when entered but no function selected */}
+                      {mode === "contract" &&
+                        contract?.address?.trim() &&
+                        !contract?.execute_fn?.trim() && (
                           <Label label="Contract Address">
                             <p className="text-base sm:text-lg text-primary break-all font-mono">
                               {contract.address}
                             </p>
+                            <p className="text-sm text-secondary mt-1">
+                              (Function not selected)
+                            </p>
                           </Label>
-                          <Label label="Function Call">
-                            <div className="space-y-2">
-                              <p className="text-base sm:text-lg text-primary font-medium">
-                                {contract.execute_fn}()
-                              </p>
-                              {contract.args && contract.args.length > 0 && (
-                                <div>
-                                  <p className="text-sm text-secondary mb-1">
-                                    Parameters:
-                                  </p>
-                                  <div className="text-sm bg-gray-50 p-2 rounded border space-y-1">
-                                    {contract.args.map((arg, i) => (
-                                      <div key={i} className="flex justify-between items-center">
-                                        <span className="font-medium text-primary">
-                                          {getParamName(contract.execute_fn, i)}:
-                                        </span>
-                                        <span className="font-mono text-secondary ml-2 break-all text-right">
-                                          {formatContractValue(arg)}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </Label>
-                        </>
-                      )}
-
-                      {/* Show contract address only when entered but no function selected */}
-                      {mode === "contract" && contract?.address?.trim() && !contract?.execute_fn?.trim() && (
-                        <Label label="Contract Address">
-                          <p className="text-base sm:text-lg text-primary break-all font-mono">
-                            {contract.address}
-                          </p>
-                          <p className="text-sm text-secondary mt-1">
-                            (Function not selected)
-                          </p>
-                        </Label>
-                      )}
+                        )}
                     </div>
                   ));
               })()}

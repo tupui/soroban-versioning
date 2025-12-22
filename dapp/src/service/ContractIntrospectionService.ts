@@ -33,7 +33,10 @@ export async function getContractFunctions(
     const client = await StellarSdk.contract.Client.from({
       contractId: contractAddress,
       rpcUrl: serverUrl,
-      networkPassphrase: network === "testnet" ? StellarSdk.Networks.TESTNET : StellarSdk.Networks.PUBLIC,
+      networkPassphrase:
+        network === "testnet"
+          ? StellarSdk.Networks.TESTNET
+          : StellarSdk.Networks.PUBLIC,
     });
 
     // Extract functions from the real contract specification
@@ -47,7 +50,11 @@ export async function getContractFunctions(
 
     // Filter for function entries in the contract spec
     const functionEntries = spec.entries.filter((entry: any) => {
-      return entry.switch && entry.switch() === StellarSdk.xdr.ScSpecEntryKind.scSpecEntryFunctionV0();
+      return (
+        entry.switch &&
+        entry.switch() ===
+          StellarSdk.xdr.ScSpecEntryKind.scSpecEntryFunctionV0()
+      );
     });
 
     // Parse each function specification
@@ -57,7 +64,7 @@ export async function getContractFunctions(
         const funcName = funcSpec.name().toString();
 
         // Skip constructor
-        if (funcName === '__constructor') {
+        if (funcName === "__constructor") {
           continue;
         }
 
@@ -108,11 +115,11 @@ function getMethodNamesFromClient(client: any): ContractFunction[] {
   for (const methodName of methodNames) {
     // Skip non-method properties and internal methods
     if (
-      methodName === 'constructor' ||
-      methodName.startsWith('_') ||
-      methodName === 'options' ||
-      methodName === 'fromJSON' ||
-      typeof client[methodName] !== 'function'
+      methodName === "constructor" ||
+      methodName.startsWith("_") ||
+      methodName === "options" ||
+      methodName === "fromJSON" ||
+      typeof client[methodName] !== "function"
     ) {
       continue;
     }
@@ -172,8 +179,6 @@ function getScSpecTypeName(specType: any): string {
     return "unknown";
   }
 }
-
-
 
 /**
  * Validate if a contract address is valid

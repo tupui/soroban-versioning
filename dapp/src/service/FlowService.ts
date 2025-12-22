@@ -145,24 +145,51 @@ async function createSignedProposalTransaction(
   Tansu.options.publicKey = publicKey;
   const project_key = deriveProjectKey(projectName);
 
+  console.log(
+    "🔍 DEBUG FlowService: outcomeContracts received:",
+    outcomeContracts,
+  );
+  console.log(
+    "outcomeContracts types:",
+    outcomeContracts?.map((oc) => typeof oc),
+  );
+
   // Convert OutcomeContract[] to contract format expected by Soroban
-  // Filter out null/empty contracts but preserve the array structure
-  const convertedContracts = outcomeContracts
-    ?.map((oc) => oc && oc.address && oc.address.trim() !== "" ? {
-      address: oc.address, // Contract expects string, not Address object
-      execute_fn: oc.execute_fn, // Contract expects string, not ScVal
-      args: oc.args, // Contract expects raw values, not ScVal
-    } : null)
-    .filter((oc) => oc !== null) || [];
+  // Keep exactly 3 elements: [approved, rejected, cancelled]
+  // Keep null values for missing outcomes
+  const convertedContracts =
+    outcomeContracts?.map(
+      (oc) =>
+        oc && oc.address && oc.address.trim() !== ""
+          ? {
+              address: oc.address,
+              execute_fn: oc.execute_fn,
+              args: (oc.args || []).map(convertToScVal), // Convert each arg to ScVal
+            }
+          : null, // Keep as null for missing outcomes
+    ) || [];
+
+  // Pass the array directly, keeping nulls for missing outcomes
+  const finalOutcomeContracts = convertedContracts;
+  console.log("finalOutcomeContracts:", finalOutcomeContracts);
+
+  console.log("🔍 DEBUG: Tansu.create_proposal parameters:");
+  console.log("proposer:", publicKey);
+  console.log("project_key:", project_key);
+  console.log("title:", title);
+  console.log("ipfs:", ipfs);
+  console.log("voting_ends_at:", votingEndsAt, typeof votingEndsAt);
+  console.log("public_voting:", publicVoting);
+  console.log("outcome_contracts:", finalOutcomeContracts);
 
   const tx = await Tansu.create_proposal({
     proposer: publicKey,
     project_key: project_key,
     title: title,
     ipfs: ipfs,
-    voting_ends_at: BigInt(votingEndsAt),
+    voting_ends_at: votingEndsAt,
     public_voting: publicVoting,
-    outcome_contracts: convertedContracts || null,
+    outcome_contracts: finalOutcomeContracts,
   });
 
   // Check for simulation errors (contract errors) before signing
