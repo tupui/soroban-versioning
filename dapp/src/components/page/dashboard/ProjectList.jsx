@@ -5,7 +5,6 @@ import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
   getMember,
-  getProjectPages,
   getAllProjects,
 } from "../../../service/ReadContractService.ts";
 import { loadConfigData } from "../../../service/StateService.ts";
@@ -38,7 +37,6 @@ const ProjectList = () => {
 
   const [onChainProjects, setOnChainProjects] = useState([]);
   const [isLoadingOnChain, setIsLoadingOnChain] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentUIPage, setCurrentUIPage] = useState(1);
 
@@ -286,48 +284,38 @@ const ProjectList = () => {
   const fetchOnChainProjects = async () => {
     setIsLoadingOnChain(true);
     try {
-      // Get total pages
-      const pages = await getProjectPages();
-      if (pages !== null && pages > 0) {
-        // Fetch all projects from all pages
-        const allProjects = [];
-        for (let page = 0; page < pages; page++) {
-          const pageProjects = await getAllProjects(page);
-          if (pageProjects && pageProjects.length > 0) {
-            // Convert each project to config format
-            for (const project of pageProjects) {
-              try {
-                const tomlData = await fetchTomlFromCid(project.config.ipfs);
-                if (tomlData) {
-                  const configData = extractConfigData(tomlData, project);
-                  allProjects.push(configData);
-                } else {
-                  // Fallback if no TOML data
-                  allProjects.push({
-                    projectName: project.name,
-                    logoImageLink: undefined,
-                    thumbnailImageLink: "",
-                    description: "",
-                    organizationName: "",
-                    officials: {
-                      githubLink: project.config.url,
-                    },
-                    socialLinks: {},
-                    authorGithubNames: [],
-                    maintainersAddresses: project.maintainers,
-                  });
-                }
-              } catch (error) {
-                if (import.meta.env.DEV) {
-                  console.error("Error loading project:", project.name, error);
-                }
-              }
-            }
+      const projects = await getAllProjects();
+      
+      // Convert projects to config format
+      const configuredProjects = [];
+      for (const project of projects) {
+        try {
+          const tomlData = await fetchTomlFromCid(project.config.ipfs);
+          const configData = tomlData
+            ? extractConfigData(tomlData, project)
+            : {
+                projectName: project.name,
+                logoImageLink: undefined,
+                thumbnailImageLink: "",
+                description: "",
+                organizationName: "",
+                officials: {
+                  githubLink: project.config.url,
+                },
+                socialLinks: {},
+                authorGithubNames: [],
+                maintainersAddresses: project.maintainers,
+              };
+          configuredProjects.push(configData);
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error("Error loading project:", project.name, error);
           }
         }
-        setOnChainProjects(allProjects);
-        setTotalPages(Math.ceil(allProjects.length / 10));
       }
+      
+      setOnChainProjects(configuredProjects);
+      setTotalPages(Math.ceil(configuredProjects.length / 10));
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error("Error fetching on-chain projects:", error);

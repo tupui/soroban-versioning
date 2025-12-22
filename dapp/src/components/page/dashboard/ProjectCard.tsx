@@ -91,7 +91,7 @@ const ProjectCard = ({ config }: { config: ProjectConfig }) => {
               : "/fallback-image.jpg"
           }
           alt={config.projectName}
-          className="thumbnail aspect-[3/2] object-fill transition-transform duration-300 ease-in-out group-hover:scale-125"
+          className={`thumbnail w-30 h-30 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110 ${config.logoImageLink ? "object-cover" : "object-fill"}`}
         />
       </div>
       <div className="flex-grow bg-white p-4 sm:p-6 flex flex-col gap-4 sm:gap-[30px] justify-between">

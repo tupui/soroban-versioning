@@ -242,53 +242,33 @@ async function getBadges(): Promise<Badges | null> {
   }
 }
 
-async function getProjectPages(): Promise<number | null> {
+async function getAllProjects(): Promise<Project[]> {
   try {
-    const checkPageExist = async (page: number) => {
+    const allProjects: Project[] = [];
+    let page = 0;
+
+    // Fetch pages sequentially until we get an empty page
+    while (true) {
       try {
-        const res = await Tansu.get_projects({
-          page,
-        });
-
-        // Check for simulation errors
+        const res = await Tansu.get_projects({ page });
         checkSimulationError(res);
-
-        return res.result.length > 0;
+        
+        // If page is empty, we've reached the end
+        if (!res.result || res.result.length === 0) {
+          break;
+        }
+        
+        allProjects.push(...res.result);
+        page++;
       } catch {
-        return false;
+        // If we get an error, stop fetching
+        break;
       }
-    };
-
-    for (let page = 1; ; page *= 2) {
-      const isPageExist = await checkPageExist(page);
-      if (isPageExist) continue;
-      if (page <= 2) return 1;
-      let f = page / 2,
-        t = page;
-      while (t - f > 1) {
-        const m = Math.floor((f + t) / 2);
-        const isPageExist = await checkPageExist(m);
-        if (isPageExist) f = m;
-        else t = m;
-      }
-      return f;
     }
+
+    return allProjects;
   } catch {
-    return null;
-  }
-}
-
-async function getAllProjects(page: number): Promise<Project[] | null> {
-  try {
-    const res = await Tansu.get_projects({
-      page: page,
-    });
-
-    checkSimulationError(res);
-
-    return res.result;
-  } catch {
-    return null;
+    return [];
   }
 }
 
@@ -302,7 +282,6 @@ export {
   getProposal,
   getMember,
   getBadges,
-  getProjectPages,
   getAllProjects,
 };
 
