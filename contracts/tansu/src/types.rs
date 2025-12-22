@@ -2,6 +2,7 @@ use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
 
 // Constants
 pub const TIMELOCK_DELAY: u64 = 24 * 3600; // 24 hours in seconds
+pub const MAX_PROJECTS_PER_PAGE: u32 = 10;
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
