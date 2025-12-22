@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contracttype};
+use soroban_sdk::{Address, Bytes, BytesN, String, Symbol, Val, Vec, contracttype};
 
 // Constants
 pub const TIMELOCK_DELAY: u64 = 24 * 3600; // 24 hours in seconds
@@ -69,6 +69,15 @@ pub enum ProposalStatus {
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
+pub struct OutcomeContract {
+    pub address: Address,
+    pub execute_fn: Symbol,
+    pub args: Vec<Val>,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+#[allow(clippy::large_enum_variant)]
 pub enum Vote {
     PublicVote(PublicVote),
     AnonymousVote(AnonymousVote),
@@ -141,7 +150,7 @@ pub struct Proposal {
     pub ipfs: String,
     pub vote_data: VoteData,
     pub status: ProposalStatus,
-    pub outcomes_contract: Option<Address>,
+    pub outcome_contracts: Option<Vec<OutcomeContract>>,
 }
 
 #[contracttype]

@@ -1,4 +1,4 @@
-use crate::{Tansu, TansuClient, domain_contract, outcomes_contract, types};
+use crate::{Tansu, TansuClient, domain_contract, types};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{Address, Bytes, Env, Executable, String, Vec, token, vec};
 
@@ -7,7 +7,6 @@ pub struct TestSetup {
     pub contract: TansuClient<'static>,
     pub contract_id: Address,
     pub domain_id: Address,
-    pub outcomes_id: Address,
     pub token_stellar: token::StellarAssetClient<'static>,
     pub grogu: Address,
     pub mando: Address,
@@ -22,8 +21,6 @@ pub fn create_env() -> Env {
 
 pub fn create_test_data() -> TestSetup {
     let env = create_env();
-
-    let outcomes_id = env.register(outcomes_contract::WASM, ());
 
     let domain_id = env.register(domain_contract::WASM, ());
     let domain = domain_contract::Client::new(&env, &domain_id);
@@ -85,7 +82,6 @@ pub fn create_test_data() -> TestSetup {
         contract,
         contract_id,
         domain_id,
-        outcomes_id,
         token_stellar,
         grogu,
         mando,

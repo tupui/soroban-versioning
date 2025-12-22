@@ -1,10 +1,26 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::{
     errors::ContractErrors,
-    types::{AnonymousVote, Badge, Dao, ProposalStatus, PublicVote, Vote, VoteChoice},
+    types::{
+        AnonymousVote, Badge, Dao, OutcomeContract, ProposalStatus, PublicVote, Vote, VoteChoice,
+    },
 };
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
-use soroban_sdk::{Address, BytesN, IntoVal, Map, String, Symbol, Val, vec};
+use soroban_sdk::{
+    Address, BytesN, Env, IntoVal, Map, String, Symbol, Val, contract, contractimpl, vec,
+};
+
+#[contract]
+pub struct TestOutcomeContract;
+
+#[contractimpl]
+impl TestOutcomeContract {
+    pub fn execute_approve(_env: Env, maintainer: Address, _value: u32) {
+        maintainer.require_auth();
+    }
+
+    pub fn execute_reject(_env: Env, _maintainer: Address, _value: u32) {}
+}
 
 #[test]
 fn proposal_flow() {
@@ -821,6 +837,9 @@ fn outcomes_execution() {
     let setup = create_test_data();
     let id = init_contract(&setup);
 
+    // Register a simple test outcome contract
+    let outcome_contract_id = setup.env.register(TestOutcomeContract, ());
+
     setup.env.ledger().set_timestamp(1234567890);
     let voting_ends_at = 1234567890 + 3600 * 24 * 2;
 
@@ -830,6 +849,38 @@ fn outcomes_execution() {
         "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
     );
 
+    // Create outcome contracts with approve and reject functions
+    let approve_outcome = OutcomeContract {
+        address: outcome_contract_id.clone(),
+        execute_fn: Symbol::new(&setup.env, "execute_approve"),
+        args: vec![
+            &setup.env,
+            setup.mando.clone().into_val(&setup.env),
+            100u32.into_val(&setup.env),
+        ],
+    };
+
+    let reject_outcome = OutcomeContract {
+        address: outcome_contract_id.clone(),
+        execute_fn: Symbol::new(&setup.env, "execute_reject"),
+        args: vec![
+            &setup.env,
+            setup.mando.clone().into_val(&setup.env),
+            200u32.into_val(&setup.env),
+        ],
+    };
+
+    let outcome_contracts = vec![
+        &setup.env,
+        approve_outcome,
+        reject_outcome,
+        OutcomeContract {
+            address: Address::generate(&setup.env), // dummy for abstain
+            execute_fn: Symbol::new(&setup.env, "dummy"),
+            args: vec![&setup.env],
+        },
+    ];
+
     let proposal_id = setup.contract.create_proposal(
         &setup.grogu,
         &id,
@@ -837,7 +888,7 @@ fn outcomes_execution() {
         &ipfs,
         &voting_ends_at,
         &true,
-        &Some(setup.outcomes_id),
+        &Some(outcome_contracts), // Test with outcome contracts
     );
 
     // Add member with badge

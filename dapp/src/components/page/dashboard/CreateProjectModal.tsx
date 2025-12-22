@@ -26,7 +26,7 @@ import Spinner from "components/utils/Spinner.tsx";
 // Get domain contract ID from environment with fallback
 const SOROBAN_DOMAIN_CONTRACT_ID =
   import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID ||
-  "CAXOTRU4DBR736ZG4E7VBFKGVCCHG6FOH7HFXMB3BH27VUKPHOJWO3XM"; // Fallback value
+  "CAUORQ7XOSJOV6NLUK2A7FZSZP5Z55AQPEPMWDEZPQ4DDKSTXBBEDKNF"; // Fallback value
 
 // Define ModalProps type for the modal component
 type ModalProps = {
