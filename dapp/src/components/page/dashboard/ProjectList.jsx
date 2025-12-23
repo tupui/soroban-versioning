@@ -6,7 +6,6 @@ import {
   getProjectFromName,
   getMember,
   getProjectsPage,
-  getProjectsPageCount,
 } from "../../../service/ReadContractService.ts";
 import { loadConfigData } from "../../../service/StateService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
@@ -17,7 +16,6 @@ import ProjectCard from "./ProjectCard";
 import ProjectInfoModal from "./ProjectInfoModal.jsx";
 import MemberProfileModal from "./MemberProfileModal.tsx";
 import Spinner from "components/utils/Spinner.tsx";
-import Pagination from "components/utils/Pagination.tsx";
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);
@@ -38,8 +36,8 @@ const ProjectList = () => {
 
   const [onChainProjects, setOnChainProjects] = useState([]);
   const [isLoadingOnChain, setIsLoadingOnChain] = useState(false);
-  const [totalPages, setTotalPages] = useState(0);
   const [currentUIPage, setCurrentUIPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(true);
 
   // Define the handler function at component level so it's available everywhere
   const handleCreateProjectModal = useCallback(() => {
@@ -291,6 +289,7 @@ const ProjectList = () => {
       
       if (projects.length === 0) {
         setOnChainProjects([]);
+        setHasNextPage(false);
         return;
       }
 
@@ -335,43 +334,41 @@ const ProjectList = () => {
       }
       
       setOnChainProjects(configuredProjects);
+      setHasNextPage(true);
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error("Error fetching projects for page:", uiPage, error);
       }
       setOnChainProjects([]);
+      setHasNextPage(false);
     } finally {
       setIsLoadingOnChain(false);
     }
   };
 
-  const initializeProjectsPagination = async () => {
-    setIsLoadingOnChain(true);
-    try {
-      const count = await getProjectsPageCount();
-      setTotalPages(count);
-      
-      if (count > 0) {
-        await fetchProjectsForPage(1);
-      } else {
-        setIsLoadingOnChain(false);
-      }
-    } catch (error) {
-      if (import.meta.env.DEV) {
-        console.error("Error initializing projects pagination:", error);
-      }
-      setIsLoadingOnChain(false);
+  useEffect(() => {
+    fetchProjectsForPage(1);
+  }, []);
+
+  const handleNextPage = async () => {
+    if (!hasNextPage) return;
+    
+    const nextPage = currentUIPage + 1;
+    setCurrentUIPage(nextPage);
+    await fetchProjectsForPage(nextPage);
+    
+    const allProjectsSection = document.querySelector('.all-projects-section');
+    if (allProjectsSection) {
+      allProjectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
-  useEffect(() => {
-    initializeProjectsPagination();
-  }, []);
-
-  const handlePageChange = async (page) => {
-    setCurrentUIPage(page);
+  const handlePrevPage = async () => {
+    if (currentUIPage <= 1) return;
     
-    await fetchProjectsForPage(page);
+    const prevPage = currentUIPage - 1;
+    setCurrentUIPage(prevPage);
+    await fetchProjectsForPage(prevPage);
     
     // Scroll to top of All Projects section
     const allProjectsSection = document.querySelector('.all-projects-section');
@@ -384,6 +381,28 @@ const ProjectList = () => {
   const showFeaturedHeading =
     !searchTerm ||
     (filteredProjects && filteredProjects.length > 0 && !isInOnChain);
+
+  const paginationControls = (
+    <div className="flex justify-center items-center gap-4 py-4">
+      <button
+        onClick={handlePrevPage}
+        disabled={currentUIPage <= 1 || isLoadingOnChain}
+        className="disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+      >
+        <img src="/icons/arrow-left.svg" alt="Previous page" />
+      </button>
+      <span className="text-base text-primary font-medium">
+        {currentUIPage}
+      </span>
+      <button
+        onClick={handleNextPage}
+        disabled={!hasNextPage || isLoadingOnChain}
+        className="disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
+      >
+        <img src="/icons/arrow-right.svg" alt="Next page" />
+      </button>
+    </div>
+  );
 
   return (
     <div className="project-list-container relative mx-auto w-full max-w-[984px] px-4">
@@ -461,15 +480,16 @@ const ProjectList = () => {
                   </div>
                 ))}
               </div>
-              {totalPages > 1 && (
-                <div className="flex justify-center py-4">
-                  <Pagination
-                    totalPage={totalPages}
-                    currentPage={currentUIPage}
-                    onPageChange={handlePageChange}
-                  />
-                </div>
-              )}
+              {paginationControls}
+            </div>
+          ) : currentUIPage > 1 ? (
+            <div className="flex flex-col gap-8">
+              <div className="flex flex-col items-center justify-center py-12">
+                <p className="text-xl text-center font-medium text-zinc-700">
+                  No more projects
+                </p>
+              </div>
+              {paginationControls}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12">

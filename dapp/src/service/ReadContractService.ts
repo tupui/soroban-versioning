@@ -253,31 +253,6 @@ async function getProjectsPage(page: number): Promise<Project[]> {
   }
 }
 
-async function getProjectsPageCount(): Promise<number> {
-  try {
-    let page = 0;
-
-    while (true) {
-      try {
-        const res = await Tansu.get_projects({ page });
-        checkSimulationError(res);
-        
-        if (!res.result || res.result.length === 0) {
-          break;
-        }
-        
-        page++;
-      } catch {
-        break;
-      }
-    }
-
-    return page;
-  } catch {
-    return 0;
-  }
-}
-
 export {
   getProject,
   getProjectHash,
@@ -289,7 +264,6 @@ export {
   getMember,
   getBadges,
   getProjectsPage,
-  getProjectsPageCount,
 };
 
 /**
