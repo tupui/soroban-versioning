@@ -5,7 +5,8 @@ import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
   getMember,
-  getAllProjects,
+  getProjectsPage,
+  getProjectsPageCount,
 } from "../../../service/ReadContractService.ts";
 import { loadConfigData } from "../../../service/StateService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
@@ -281,12 +282,18 @@ const ProjectList = () => {
     }
   };
 
-  const fetchOnChainProjects = async () => {
+  const fetchProjectsForPage = async (uiPage) => {
     setIsLoadingOnChain(true);
     try {
-      const projects = await getAllProjects();
+      const blockchainPage = uiPage - 1;
       
-      // Convert projects to config format
+      const projects = await getProjectsPage(blockchainPage);
+      
+      if (projects.length === 0) {
+        setOnChainProjects([]);
+        return;
+      }
+
       const configuredProjects = [];
       for (const project of projects) {
         try {
@@ -311,38 +318,66 @@ const ProjectList = () => {
           if (import.meta.env.DEV) {
             console.error("Error loading project:", project.name, error);
           }
+          configuredProjects.push({
+            projectName: project.name,
+            logoImageLink: undefined,
+            thumbnailImageLink: "",
+            description: "",
+            organizationName: "",
+            officials: {
+              githubLink: project.config.url,
+            },
+            socialLinks: {},
+            authorGithubNames: [],
+            maintainersAddresses: project.maintainers,
+          });
         }
       }
       
       setOnChainProjects(configuredProjects);
-      setTotalPages(Math.ceil(configuredProjects.length / 10));
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.error("Error fetching on-chain projects:", error);
+        console.error("Error fetching projects for page:", uiPage, error);
       }
+      setOnChainProjects([]);
     } finally {
       setIsLoadingOnChain(false);
     }
   };
 
+  const initializeProjectsPagination = async () => {
+    setIsLoadingOnChain(true);
+    try {
+      const count = await getProjectsPageCount();
+      setTotalPages(count);
+      
+      if (count > 0) {
+        await fetchProjectsForPage(1);
+      } else {
+        setIsLoadingOnChain(false);
+      }
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Error initializing projects pagination:", error);
+      }
+      setIsLoadingOnChain(false);
+    }
+  };
+
   useEffect(() => {
-    fetchOnChainProjects();
+    initializeProjectsPagination();
   }, []);
 
-  const handlePageChange = (page) => {
+  const handlePageChange = async (page) => {
     setCurrentUIPage(page);
+    
+    await fetchProjectsForPage(page);
+    
     // Scroll to top of All Projects section
     const allProjectsSection = document.querySelector('.all-projects-section');
     if (allProjectsSection) {
       allProjectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  };
-
-  // Get current projects (10 per page)
-  const getCurrentPageProjects = () => {
-    const startIndex = (currentUIPage - 1) * 10;
-    const endIndex = startIndex + 10;
-    return onChainProjects.slice(startIndex, endIndex);
   };
 
   // Determine if we should show the featured projects heading
@@ -420,8 +455,8 @@ const ProjectList = () => {
           ) : onChainProjects.length > 0 ? (
             <div className="flex flex-col gap-8">
               <div className="project-list grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 justify-items-center items-stretch">
-                {getCurrentPageProjects().map((project, index) => (
-                  <div className="w-full h-full" key={`onchain-${(currentUIPage - 1) * 10 + index}`}>
+                {onChainProjects.map((project, index) => (
+                  <div className="w-full h-full" key={`onchain-page${currentUIPage}-${project.projectName || index}`}>
                     <ProjectCard config={project} />
                   </div>
                 ))}

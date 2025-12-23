@@ -242,33 +242,39 @@ async function getBadges(): Promise<Badges | null> {
   }
 }
 
-async function getAllProjects(): Promise<Project[]> {
+async function getProjectsPage(page: number): Promise<Project[]> {
   try {
-    const allProjects: Project[] = [];
+    const res = await Tansu.get_projects({ page });
+    checkSimulationError(res);
+    
+    return res.result || [];
+  } catch {
+    return [];
+  }
+}
+
+async function getProjectsPageCount(): Promise<number> {
+  try {
     let page = 0;
 
-    // Fetch pages sequentially until we get an empty page
     while (true) {
       try {
         const res = await Tansu.get_projects({ page });
         checkSimulationError(res);
         
-        // If page is empty, we've reached the end
         if (!res.result || res.result.length === 0) {
           break;
         }
         
-        allProjects.push(...res.result);
         page++;
       } catch {
-        // If we get an error, stop fetching
         break;
       }
     }
 
-    return allProjects;
+    return page;
   } catch {
-    return [];
+    return 0;
   }
 }
 
@@ -282,7 +288,8 @@ export {
   getProposal,
   getMember,
   getBadges,
-  getAllProjects,
+  getProjectsPage,
+  getProjectsPageCount,
 };
 
 /**
