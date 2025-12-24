@@ -7,6 +7,9 @@ use crate::{
     Tansu, TansuArgs, TansuClient, TansuTrait, VersioningTrait, domain_contract, errors, events,
     types,
 };
+
+const MAX_PROJECTS_PER_PAGE: u32 = 10;
+
 #[contractimpl]
 impl VersioningTrait for Tansu {
     /// Register a new project.
@@ -98,7 +101,7 @@ impl VersioningTrait for Tansu {
                 .persistent()
                 .get(&types::ProjectKey::TotalProjects)
                 .unwrap_or(0u32);
-            let page = total_projects / types::MAX_PROJECTS_PER_PAGE;
+            let page = total_projects / MAX_PROJECTS_PER_PAGE;
 
             let mut project_keys: Vec<Bytes> = env
                 .storage()

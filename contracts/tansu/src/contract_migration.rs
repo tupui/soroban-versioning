@@ -2,6 +2,8 @@ use soroban_sdk::{Address, Bytes, Env, String, Vec, contractimpl};
 
 use crate::{MigrationTrait, Tansu, TansuArgs, TansuClient, TansuTrait, types};
 
+const MAX_PROJECTS_PER_PAGE: u32 = 10;
+
 #[contractimpl]
 impl MigrationTrait for Tansu {
     fn add_projects_to_pagination(env: Env, admin: Address, names: Vec<String>) {
@@ -14,7 +16,7 @@ impl MigrationTrait for Tansu {
             .get(&types::ProjectKey::TotalProjects)
             .unwrap_or(0u32);
 
-        let page = total_projects / types::MAX_PROJECTS_PER_PAGE;
+        let page = total_projects / MAX_PROJECTS_PER_PAGE;
 
         let mut project_keys: Vec<Bytes> = env
             .storage()
