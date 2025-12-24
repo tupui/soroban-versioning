@@ -47,7 +47,15 @@ impl VersioningTrait for Tansu {
             config: types::Config { url, ipfs },
             maintainers: maintainers.clone(),
         };
-        let name_b = crate::get_name_bytes(&env, &name);
+        let str_len = name.len() as usize;
+        if str_len > 15 {
+            // could add more checks but handled in any case with later calls
+            panic_with_error!(&env, &errors::ContractErrors::InvalidDomainError);
+        }
+        let mut slice: [u8; 15] = [0; 15];
+        name.copy_into_slice(&mut slice[..str_len]);
+        let name_b = Bytes::from_slice(&env, &slice[0..str_len]);
+
         let key: Bytes = env.crypto().keccak256(&name_b).into();
 
         let key_ = types::ProjectKey::Key(key.clone());
