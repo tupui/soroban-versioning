@@ -8,6 +8,20 @@ impl MigrationTrait for Tansu {
         Tansu::require_not_paused(env.clone());
         crate::contract_tansu::auth_admin(&env, &admin);
 
+        let mut total_projects = env
+            .storage()
+            .persistent()
+            .get(&types::ProjectKey::TotalProjects)
+            .unwrap_or(0u32);
+
+        let page = total_projects / types::MAX_PROJECTS_PER_PAGE;
+
+        let mut project_keys: Vec<Bytes> = env
+            .storage()
+            .persistent()
+            .get(&types::ProjectKey::ProjectKeys(page))
+            .unwrap_or(Vec::new(&env));
+
         for name in names {
             let str_len = name.len() as usize;
             let mut slice: [u8; 15] = [0; 15];
@@ -19,32 +33,21 @@ impl MigrationTrait for Tansu {
 
             // Only migrate if the project exists but might not be in the pagination list
             if env.storage().persistent().has(&key_) {
-                let total_projects = env
-                    .storage()
-                    .persistent()
-                    .get(&types::ProjectKey::TotalProjects)
-                    .unwrap_or(0u32);
-
-                let page = total_projects / types::MAX_PROJECTS_PER_PAGE;
-
-                let mut project_keys: Vec<Bytes> = env
-                    .storage()
-                    .persistent()
-                    .get(&types::ProjectKey::ProjectKeys(page))
-                    .unwrap_or(Vec::new(&env));
-
                 if !project_keys.contains(key.clone()) {
                     project_keys.push_back(key.clone());
-
-                    env.storage()
-                        .persistent()
-                        .set(&types::ProjectKey::ProjectKeys(page), &project_keys);
-
-                    env.storage()
-                        .persistent()
-                        .set(&types::ProjectKey::TotalProjects, &(total_projects + 1));
+                    total_projects += 1;
                 }
             }
+        }
+
+        if total_projects > 0 {
+            env.storage()
+                .persistent()
+                .set(&types::ProjectKey::ProjectKeys(page), &project_keys);
+
+            env.storage()
+                .persistent()
+                .set(&types::ProjectKey::TotalProjects, &total_projects);
         }
     }
 }
