@@ -21,11 +21,7 @@ impl MigrationTrait for Tansu {
 
         let mut total_projects_paginated = 0;
 
-        let mut project_keys_page: Vec<Bytes> = env
-            .storage()
-            .persistent()
-            .get(&types::ProjectKey::ProjectKeys(LAST_PAGE))
-            .unwrap_or(Vec::new(&env));
+        let mut project_keys_page: Vec<Bytes> = Vec::new(&env);
 
         for name in names {
             let str_len = name.len() as usize;

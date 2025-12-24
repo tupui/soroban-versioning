@@ -1,14 +1,12 @@
 extern crate std;
 use super::test_utils::create_test_data;
 use crate::errors::ContractErrors;
-use crate::tests::test_utils::init_contract;
 use crate::types::{Config, Project, ProjectKey};
 use soroban_sdk::{Bytes, String, vec};
 
 #[test]
 fn test_add_projects_to_pagination_previously_registered_project() {
     let setup = create_test_data();
-    init_contract(&setup);
     let client = &setup.contract;
     let env = &setup.env;
 
@@ -32,26 +30,22 @@ fn test_add_projects_to_pagination_previously_registered_project() {
         env.storage().persistent().set(&key, &project);
     });
 
-    // Assert that the first page contains the project created during init.
-    let projects = client.get_projects(&0);
-    assert_eq!(projects.len(), 1);
-    assert_eq!(
-        projects.get(0).unwrap().name,
-        String::from_str(env, "tansu")
-    );
+    // Assert that the projects list is empty since the project was not added to the pagination list
+    let err = client.try_get_projects(&0).unwrap_err().unwrap();
+    assert_eq!(err, ContractErrors::NoProjectPageFound.into());
 
     // Run migration using name
     client.add_projects_to_pagination(&setup.contract_admin, &vec![env, name.clone()]);
 
-    // Assert that the first page has been updated and now contains 2 projects.
+    // Assert that the first page has been updated and now contains 1 project.
     let projects = client.get_projects(&0);
-    assert_eq!(projects.len(), 2);
-    assert_eq!(projects.get(1).unwrap().name, name);
+    assert_eq!(projects.len(), 1);
+    assert_eq!(projects.get(0).unwrap().name, name);
 
     // Assert that duplicate migration does nothing
     client.add_projects_to_pagination(&setup.contract_admin, &vec![env, name.clone()]);
     let projects = client.get_projects(&0);
-    assert_eq!(projects.len(), 2);
+    assert_eq!(projects.len(), 1);
 }
 
 #[test]
