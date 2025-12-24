@@ -6,7 +6,7 @@ const LAST_PAGE: u32 = 0;
 
 #[contractimpl]
 impl MigrationTrait for Tansu {
-    /// Add projects to pagination. This is used to migrate projects when the project was created before the pagination was implemented.
+    /// Add projects to the new pagination list. This is used to migrate projects when the project was created before the pagination was implemented.
     ///
     /// # Arguments
     /// * `env` - The environment object
@@ -34,10 +34,8 @@ impl MigrationTrait for Tansu {
 
             // Only migrate if the project exists but might not be in the pagination list
             if env.storage().persistent().has(&key_) {
-                if !project_keys_page.contains(key.clone()) {
-                    project_keys_page.push_back(key.clone());
-                    total_projects_paginated += 1;
-                }
+                project_keys_page.push_back(key.clone());
+                total_projects_paginated += 1;
             }
         }
 
