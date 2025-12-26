@@ -98,3 +98,141 @@ fn test_add_projects_to_pagination_unauthorized_admin_error() {
         .unwrap();
     assert_eq!(err, ContractErrors::UnauthorizedSigner.into());
 }
+
+#[test]
+fn test_add_projects_to_pagination_multi_page_no_duplicates() {
+    let setup = create_test_data();
+    let client = &setup.contract;
+    let env = &setup.env;
+
+    // Mint tokens for grogu to register projects
+    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
+    setup.token_stellar.mint(&setup.grogu, &genesis_amount);
+
+    // Register projects until we fill the first page and start the second
+    // The max projects per page is 10, so we register 11 projects
+    let name_strs = [
+        "tansua", "tansub", "tansuc", "tansud", "tansue", "tansuf", "tansug", "tansuh", "tansui",
+        "tansuj", "tansuk",
+    ];
+
+    let mut names = std::vec::Vec::new();
+    for name_str in name_strs {
+        let name = String::from_str(env, name_str);
+        names.push(name.clone());
+        client.register(
+            &setup.grogu,
+            &name,
+            &vec![env, setup.grogu.clone()],
+            &String::from_str(env, "url"),
+            &String::from_str(env, "ipfs"),
+        );
+    }
+
+    // Verify we have 11 projects in total
+    // Page 0 should have 10, Page 1 should have 1
+    assert_eq!(client.get_projects(&0).len(), 10);
+    assert_eq!(client.get_projects(&1).len(), 1);
+
+    // Try to migrate "tansua" which is on Page 0
+    let project_0_name = names.get(0).unwrap().clone();
+    client.add_projects_to_pagination(&setup.contract_admin, &vec![env, project_0_name]);
+
+    // Verify that "tansua" was NOT added again
+    // Total projects should still be 11
+    assert_eq!(client.get_projects(&0).len(), 10);
+    assert_eq!(client.get_projects(&1).len(), 1);
+
+    // Page 1 should still only have 1 project (tansuk)
+    let page_1_projects = client.get_projects(&1);
+    assert_eq!(page_1_projects.len(), 1);
+    assert_eq!(
+        page_1_projects.get(0).unwrap().name,
+        String::from_str(env, "tansuk")
+    );
+
+    // Try to migrate "tansuk" which is on Page 1
+    let project_11_name = names.get(10).unwrap().clone();
+    client.add_projects_to_pagination(&setup.contract_admin, &vec![env, project_11_name]);
+
+    // Verify that "tansuk" was NOT added again
+    // Total projects should still be 11
+    assert_eq!(client.get_projects(&0).len(), 10);
+    assert_eq!(client.get_projects(&1).len(), 1);
+
+    // Page 1 should still only have 1 project (tansuk)
+    let page_1_projects = client.get_projects(&1);
+    assert_eq!(page_1_projects.len(), 1);
+    assert_eq!(
+        page_1_projects.get(0).unwrap().name,
+        String::from_str(env, "tansuk")
+    );
+}
+
+#[test]
+fn test_migration_creates_new_page_when_full() {
+    let setup = create_test_data();
+    let client = &setup.contract;
+    let env = &setup.env;
+
+    // Mint tokens for grogu to register the tansu projects
+    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
+    setup.token_stellar.mint(&setup.grogu, &genesis_amount);
+
+    // Register projects until we fill the first page
+    // The max projects per page is 10
+    let name_strs = [
+        "tansua", "tansub", "tansuc", "tansud", "tansue", "tansuf", "tansug", "tansuh", "tansui",
+        "tansuj",
+    ];
+
+    // Fill Page 0 exactly using registration (10 projects)
+    for name_str in name_strs {
+        let name = String::from_str(env, name_str);
+        client.register(
+            &setup.grogu,
+            &name,
+            &vec![env, setup.grogu.clone()],
+            &String::from_str(env, "url"),
+            &String::from_str(env, "ipfs"),
+        );
+    }
+
+    // Verify Page 0 is full and total_projects is 10
+    assert_eq!(client.get_projects(&0).len(), 10);
+    // Verify Page 1 doesn't exist yet
+    let err = client.try_get_projects(&1).unwrap_err().unwrap();
+    assert_eq!(err, ContractErrors::NoProjectPageFound.into());
+
+    // Manually seed an 11th project (not in pagination)
+    let migrate_name_str = "migrateme";
+    let migrate_name = String::from_str(env, migrate_name_str);
+    let name_bytes = Bytes::from_slice(env, migrate_name_str.as_bytes());
+    let key_bytes: Bytes = env.crypto().keccak256(&name_bytes).into();
+
+    let project = Project {
+        name: migrate_name.clone(),
+        config: Config {
+            url: String::from_str(env, "example.com"),
+            ipfs: String::from_str(env, "ipfs_hash"),
+        },
+        maintainers: vec![env, setup.grogu.clone()],
+    };
+
+    env.as_contract(&setup.contract_id, || {
+        env.storage()
+            .persistent()
+            .set(&ProjectKey::Key(key_bytes), &project);
+    });
+
+    // Run migration for this project
+    client.add_projects_to_pagination(&setup.contract_admin, &vec![env, migrate_name.clone()]);
+
+    // Verify that Page 1 was created and contains the migrated project
+    let page_1 = client.get_projects(&1);
+    assert_eq!(page_1.len(), 1);
+    assert_eq!(page_1.get(0).unwrap().name, migrate_name);
+
+    // Page 0 should still have 10
+    assert_eq!(client.get_projects(&0).len(), 10);
+}
