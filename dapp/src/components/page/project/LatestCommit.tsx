@@ -1,5 +1,5 @@
 import { useStore } from "@nanostores/react";
-import { getLatestCommitData } from "@service/GithubService";
+import { getLatestCommitData } from "@service/RepositoryService";
 import { getProjectHash } from "@service/ReadContractService";
 import { loadProjectInfo } from "@service/StateService";
 import Tooltip from "components/utils/Tooltip";

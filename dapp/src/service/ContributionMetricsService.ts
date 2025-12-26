@@ -1,27 +1,28 @@
 import { GitLogService } from "./GitLogService";
-import { getCommitHistory } from "./GithubService";
+import { getCommitHistory } from "./RepositoryService";
 import type { ContributionMetrics } from "../types/contributionMetrics";
 import type { FormattedCommit } from "../types/github";
+import type { RepositoryDescriptor } from "../types/repository";
 
 /**
- * Service for calculating contribution metrics from GitHub API commit data
+ * Service for calculating contribution metrics from repository commit data
  * Reuses the same data that CommitHistory component fetches (client-side only)
  */
 export class ContributionMetricsService {
   /**
-   * Fetch contribution metrics by analyzing GitHub API commit data
+   * Fetch contribution metrics by analyzing repository commit history
    * Uses the same getCommitHistory() function as CommitHistory component
    */
   static async fetchMetrics(
-    owner: string,
-    repo: string,
+    repository: RepositoryDescriptor | string,
+    repoName?: string,
   ): Promise<ContributionMetrics> {
     try {
       const allCommits: FormattedCommit[] = [];
       const maxPages = 34;
 
       for (let page = 1; page <= maxPages; page++) {
-        const history = await getCommitHistory(owner, repo, page, 30);
+        const history = await getCommitHistory(repository, repoName, page, 30);
         if (!history || history.length === 0) break;
 
         for (const dayGroup of history) {
