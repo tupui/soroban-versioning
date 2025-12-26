@@ -1,5 +1,6 @@
 extern crate std;
 use super::test_utils::create_test_data;
+use crate::contract_migration::MAX_PROJECTS_PER_PAGE;
 use crate::errors::ContractErrors;
 use crate::types::{Config, Project, ProjectKey};
 use soroban_sdk::{Bytes, String, vec};
@@ -110,7 +111,7 @@ fn test_add_projects_to_pagination_multi_page_no_duplicates() {
     setup.token_stellar.mint(&setup.grogu, &genesis_amount);
 
     // Register projects until we fill the first page and start the second
-    // The max projects per page is 10, so we register 11 projects
+    // The max projects per page is MAX_PROJECTS_PER_PAGE, so we register MAX_PROJECTS_PER_PAGE + 1 projects
     let name_strs = [
         "tansua", "tansub", "tansuc", "tansud", "tansue", "tansuf", "tansug", "tansuh", "tansui",
         "tansuj", "tansuk",
@@ -129,9 +130,9 @@ fn test_add_projects_to_pagination_multi_page_no_duplicates() {
         );
     }
 
-    // Verify we have 11 projects in total
-    // Page 0 should have 10, Page 1 should have 1
-    assert_eq!(client.get_projects(&0).len(), 10);
+    // Verify we have MAX_PROJECTS_PER_PAGE + 1 projects in total
+    // Page 0 should have MAX_PROJECTS_PER_PAGE, Page 1 should have 1
+    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
     assert_eq!(client.get_projects(&1).len(), 1);
 
     // Try to migrate "tansua" which is on Page 0
@@ -139,8 +140,8 @@ fn test_add_projects_to_pagination_multi_page_no_duplicates() {
     client.add_projects_to_pagination(&setup.contract_admin, &vec![env, project_0_name]);
 
     // Verify that "tansua" was NOT added again
-    // Total projects should still be 11
-    assert_eq!(client.get_projects(&0).len(), 10);
+    // Total projects should still be MAX_PROJECTS_PER_PAGE + 1
+    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
     assert_eq!(client.get_projects(&1).len(), 1);
 
     // Page 1 should still only have 1 project (tansuk)
@@ -152,12 +153,12 @@ fn test_add_projects_to_pagination_multi_page_no_duplicates() {
     );
 
     // Try to migrate "tansuk" which is on Page 1
-    let project_11_name = names.get(10).unwrap().clone();
+    let project_11_name = names.get(MAX_PROJECTS_PER_PAGE as usize).unwrap().clone();
     client.add_projects_to_pagination(&setup.contract_admin, &vec![env, project_11_name]);
 
     // Verify that "tansuk" was NOT added again
-    // Total projects should still be 11
-    assert_eq!(client.get_projects(&0).len(), 10);
+    // Total projects should still be MAX_PROJECTS_PER_PAGE + 1
+    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
     assert_eq!(client.get_projects(&1).len(), 1);
 
     // Page 1 should still only have 1 project (tansuk)
@@ -180,13 +181,13 @@ fn test_migration_creates_new_page_when_full() {
     setup.token_stellar.mint(&setup.grogu, &genesis_amount);
 
     // Register projects until we fill the first page
-    // The max projects per page is 10
+    // The max projects per page is MAX_PROJECTS_PER_PAGE
     let name_strs = [
         "tansua", "tansub", "tansuc", "tansud", "tansue", "tansuf", "tansug", "tansuh", "tansui",
         "tansuj",
     ];
 
-    // Fill Page 0 exactly using registration (10 projects)
+    // Fill Page 0 exactly using registration (MAX_PROJECTS_PER_PAGE projects)
     for name_str in name_strs {
         let name = String::from_str(env, name_str);
         client.register(
@@ -198,13 +199,13 @@ fn test_migration_creates_new_page_when_full() {
         );
     }
 
-    // Verify Page 0 is full and total_projects is 10
-    assert_eq!(client.get_projects(&0).len(), 10);
+    // Verify Page 0 is full and total_projects is MAX_PROJECTS_PER_PAGE
+    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
     // Verify Page 1 doesn't exist yet
     let err = client.try_get_projects(&1).unwrap_err().unwrap();
     assert_eq!(err, ContractErrors::NoProjectPageFound.into());
 
-    // Manually seed an 11th project (not in pagination)
+    // Manually seed an (MAX_PROJECTS_PER_PAGE + 1)th project (not in pagination)
     let migrate_name_str = "migrateme";
     let migrate_name = String::from_str(env, migrate_name_str);
     let name_bytes = Bytes::from_slice(env, migrate_name_str.as_bytes());
@@ -233,6 +234,6 @@ fn test_migration_creates_new_page_when_full() {
     assert_eq!(page_1.len(), 1);
     assert_eq!(page_1.get(0).unwrap().name, migrate_name);
 
-    // Page 0 should still have 10
-    assert_eq!(client.get_projects(&0).len(), 10);
+    // Page 0 should still have MAX_PROJECTS_PER_PAGE
+    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
 }
