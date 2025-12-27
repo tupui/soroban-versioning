@@ -1,4 +1,5 @@
 extern crate std;
+use super::test_utils::TestSetup;
 use super::test_utils::create_test_data;
 use crate::contract_migration::MAX_PROJECTS_PER_PAGE;
 use crate::errors::ContractErrors;
@@ -13,23 +14,8 @@ fn test_add_projects_to_pagination_previously_registered_project() {
 
     // Manually seed a project into storage without adding it to the project keys list
     let name_str = "registered";
-    let name = String::from_str(env, name_str);
-    let name_bytes = Bytes::from_slice(env, name_str.as_bytes());
-    let key_bytes: Bytes = env.crypto().keccak256(&name_bytes).into();
-    let key = ProjectKey::Key(key_bytes.clone());
-
-    let project = Project {
-        name: name.clone(),
-        config: Config {
-            url: String::from_str(env, "example.com"),
-            ipfs: String::from_str(env, "ipfs_hash"),
-        },
-        maintainers: vec![env, setup.grogu.clone()],
-    };
-
-    env.as_contract(&setup.contract_id, || {
-        env.storage().persistent().set(&key, &project);
-    });
+    let names = seed_projects(&setup, &[name_str]);
+    let name = names.get(0).unwrap();
 
     // Assert that the projects list is empty since the project was not added to the pagination list
     let err = client.try_get_projects(&0).unwrap_err().unwrap();
@@ -42,11 +28,6 @@ fn test_add_projects_to_pagination_previously_registered_project() {
     let projects = client.get_projects(&0);
     assert_eq!(projects.len(), 1);
     assert_eq!(projects.get(0).unwrap().name, name);
-
-    // Assert that duplicate migration does nothing
-    client.add_projects_to_pagination(&setup.contract_admin, &vec![env, name.clone()]);
-    let projects = client.get_projects(&0);
-    assert_eq!(projects.len(), 1);
 }
 
 #[test]
@@ -101,50 +82,38 @@ fn test_add_projects_to_pagination_unauthorized_admin_error() {
 }
 
 #[test]
-fn test_add_projects_to_pagination_multi_page_no_duplicates() {
+fn test_add_projects_to_pagination_multi_page_allows() {
     let setup = create_test_data();
     let client = &setup.contract;
     let env = &setup.env;
 
-    // Mint tokens for grogu to register projects
-    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
-    setup.token_stellar.mint(&setup.grogu, &genesis_amount);
-
-    // Register projects until we fill the first page and start the second
-    // The max projects per page is MAX_PROJECTS_PER_PAGE, so we register MAX_PROJECTS_PER_PAGE + 1 projects
+    // Seed projects until we fill the first page and start the second
+    // The max projects per page is MAX_PROJECTS_PER_PAGE, so we seed MAX_PROJECTS_PER_PAGE + 1 projects
     let name_strs = [
         "tansua", "tansub", "tansuc", "tansud", "tansue", "tansuf", "tansug", "tansuh", "tansui",
         "tansuj", "tansuk",
     ];
 
-    let mut names = std::vec::Vec::new();
-    for name_str in name_strs {
-        let name = String::from_str(env, name_str);
-        names.push(name.clone());
-        client.register(
-            &setup.grogu,
-            &name,
-            &vec![env, setup.grogu.clone()],
-            &String::from_str(env, "url"),
-            &String::from_str(env, "ipfs"),
-        );
-    }
+    let names = seed_projects(&setup, &name_strs);
+
+    // Verify Page 0 doesn't exist yet
+    let err = client.try_get_projects(&0).unwrap_err().unwrap();
+    assert_eq!(err, ContractErrors::NoProjectPageFound.into());
+
+    // Run migration for these projects
+    client.add_projects_to_pagination(&setup.contract_admin, &names);
 
     // Verify we have MAX_PROJECTS_PER_PAGE + 1 projects in total
     // Page 0 should have MAX_PROJECTS_PER_PAGE, Page 1 should have 1
-    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
-    assert_eq!(client.get_projects(&1).len(), 1);
+    let page_0_projects = client.get_projects(&0);
+    assert_eq!(page_0_projects.len(), MAX_PROJECTS_PER_PAGE);
+    for i in 0..MAX_PROJECTS_PER_PAGE {
+        assert_eq!(
+            page_0_projects.get(i).unwrap().name,
+            String::from_str(env, name_strs[i as usize])
+        );
+    }
 
-    // Try to migrate "tansua" which is on Page 0
-    let project_0_name = names.get(0).unwrap().clone();
-    client.add_projects_to_pagination(&setup.contract_admin, &vec![env, project_0_name]);
-
-    // Verify that "tansua" was NOT added again
-    // Total projects should still be MAX_PROJECTS_PER_PAGE + 1
-    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
-    assert_eq!(client.get_projects(&1).len(), 1);
-
-    // Page 1 should still only have 1 project (tansuk)
     let page_1_projects = client.get_projects(&1);
     assert_eq!(page_1_projects.len(), 1);
     assert_eq!(
@@ -152,88 +121,103 @@ fn test_add_projects_to_pagination_multi_page_no_duplicates() {
         String::from_str(env, "tansuk")
     );
 
-    // Try to migrate "tansuk" which is on Page 1
-    let project_11_name = names.get(MAX_PROJECTS_PER_PAGE as usize).unwrap().clone();
-    client.add_projects_to_pagination(&setup.contract_admin, &vec![env, project_11_name]);
+    // NOTE: This is one off run, so if the migration is run multiple times, the last page will have duplicates.
+    // Try to migrate AGAIN "tansua" which is on Page 0
+    let project_0_name = names.get(0).unwrap();
+    client.add_projects_to_pagination(&setup.contract_admin, &vec![env, project_0_name.clone()]);
 
-    // Verify that "tansuk" was NOT added again
-    // Total projects should still be MAX_PROJECTS_PER_PAGE + 1
-    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
-    assert_eq!(client.get_projects(&1).len(), 1);
+    // Verify that "tansua" WAS added again to the current last page (Page 1)
+    // Total projects should now be MAX_PROJECTS_PER_PAGE + 2
+    let page_0_projects = client.get_projects(&0);
+    assert_eq!(page_0_projects.len(), MAX_PROJECTS_PER_PAGE);
+    for i in 0..MAX_PROJECTS_PER_PAGE {
+        assert_eq!(
+            page_0_projects.get(i).unwrap().name,
+            String::from_str(env, name_strs[i as usize])
+        );
+    }
 
-    // Page 1 should still only have 1 project (tansuk)
     let page_1_projects = client.get_projects(&1);
-    assert_eq!(page_1_projects.len(), 1);
+    assert_eq!(page_1_projects.len(), 2);
     assert_eq!(
         page_1_projects.get(0).unwrap().name,
         String::from_str(env, "tansuk")
+    );
+    assert_eq!(
+        page_1_projects.get(1).unwrap().name,
+        String::from_str(env, "tansua")
     );
 }
 
 #[test]
-fn test_migration_creates_new_page_when_full() {
+fn test_add_projects_to_pagination_duplication_allows() {
     let setup = create_test_data();
     let client = &setup.contract;
     let env = &setup.env;
 
-    // Mint tokens for grogu to register the tansu projects
-    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
-    setup.token_stellar.mint(&setup.grogu, &genesis_amount);
+    // Seed a project
+    let name_strs = ["tansua"];
 
-    // Register projects until we fill the first page
-    // The max projects per page is MAX_PROJECTS_PER_PAGE
-    let name_strs = [
-        "tansua", "tansub", "tansuc", "tansud", "tansue", "tansuf", "tansug", "tansuh", "tansui",
-        "tansuj",
-    ];
+    let names = seed_projects(&setup, &name_strs);
 
-    // Fill Page 0 exactly using registration (MAX_PROJECTS_PER_PAGE projects)
-    for name_str in name_strs {
-        let name = String::from_str(env, name_str);
-        client.register(
-            &setup.grogu,
-            &name,
-            &vec![env, setup.grogu.clone()],
-            &String::from_str(env, "url"),
-            &String::from_str(env, "ipfs"),
-        );
-    }
-
-    // Verify Page 0 is full and total_projects is MAX_PROJECTS_PER_PAGE
-    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
-    // Verify Page 1 doesn't exist yet
-    let err = client.try_get_projects(&1).unwrap_err().unwrap();
+    // Verify Page 0 doesn't exist yet
+    let err = client.try_get_projects(&0).unwrap_err().unwrap();
     assert_eq!(err, ContractErrors::NoProjectPageFound.into());
 
-    // Manually seed an (MAX_PROJECTS_PER_PAGE + 1)th project (not in pagination)
-    let migrate_name_str = "migrateme";
-    let migrate_name = String::from_str(env, migrate_name_str);
-    let name_bytes = Bytes::from_slice(env, migrate_name_str.as_bytes());
-    let key_bytes: Bytes = env.crypto().keccak256(&name_bytes).into();
+    // Run migration for these projects
+    client.add_projects_to_pagination(&setup.contract_admin, &names);
 
-    let project = Project {
-        name: migrate_name.clone(),
-        config: Config {
-            url: String::from_str(env, "example.com"),
-            ipfs: String::from_str(env, "ipfs_hash"),
-        },
-        maintainers: vec![env, setup.grogu.clone()],
-    };
+    // Verify we have 1 project in total
+    // Page 0 should have 1 project
+    let page_0_projects = client.get_projects(&0);
+    assert_eq!(page_0_projects.len(), 1);
+    assert_eq!(
+        page_0_projects.get(0).unwrap().name,
+        String::from_str(env, name_strs[0])
+    );
 
-    env.as_contract(&setup.contract_id, || {
-        env.storage()
-            .persistent()
-            .set(&ProjectKey::Key(key_bytes), &project);
-    });
+    // NOTE: This is one off run, so if the migration is run multiple times, the last page will have duplicates.
+    // Try to migrate AGAIN "tansua" which is on Page 0
+    let project_0_name = names.get(0).unwrap();
+    client.add_projects_to_pagination(&setup.contract_admin, &vec![env, project_0_name.clone()]);
 
-    // Run migration for this project
-    client.add_projects_to_pagination(&setup.contract_admin, &vec![env, migrate_name.clone()]);
+    // Verify that "tansua" WAS added again to the current last page (Page 1)
+    // Total projects should now be 2
+    let page_0_projects = client.get_projects(&0);
+    assert_eq!(page_0_projects.len(), 2);
+    assert_eq!(
+        page_0_projects.get(0).unwrap().name,
+        String::from_str(env, name_strs[0])
+    );
+    assert_eq!(
+        page_0_projects.get(1).unwrap().name,
+        String::from_str(env, name_strs[0])
+    );
+}
 
-    // Verify that Page 1 was created and contains the migrated project
-    let page_1 = client.get_projects(&1);
-    assert_eq!(page_1.len(), 1);
-    assert_eq!(page_1.get(0).unwrap().name, migrate_name);
+fn seed_projects(setup: &TestSetup, name_strs: &[&str]) -> soroban_sdk::Vec<soroban_sdk::String> {
+    let env = &setup.env;
+    let mut names = soroban_sdk::Vec::new(env);
+    for name_str in name_strs {
+        let name = String::from_str(env, name_str);
+        names.push_back(name.clone());
 
-    // Page 0 should still have MAX_PROJECTS_PER_PAGE
-    assert_eq!(client.get_projects(&0).len(), MAX_PROJECTS_PER_PAGE);
+        let name_bytes = Bytes::from_slice(env, name_str.as_bytes());
+        let key_bytes: Bytes = env.crypto().keccak256(&name_bytes).into();
+        let key = ProjectKey::Key(key_bytes.clone());
+
+        let project = Project {
+            name: name.clone(),
+            config: Config {
+                url: String::from_str(env, "url"),
+                ipfs: String::from_str(env, "ipfs"),
+            },
+            maintainers: vec![env, setup.grogu.clone()],
+        };
+
+        env.as_contract(&setup.contract_id, || {
+            env.storage().persistent().set(&key, &project);
+        });
+    }
+    names
 }

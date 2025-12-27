@@ -25,6 +25,13 @@ impl MigrationTrait for Tansu {
             .get(&types::ProjectKey::TotalProjects)
             .unwrap_or(0u32);
 
+        let mut current_page = total_projects / MAX_PROJECTS_PER_PAGE;
+        let mut current_project_keys: Vec<Bytes> = env
+            .storage()
+            .persistent()
+            .get(&types::ProjectKey::ProjectKeys(current_page))
+            .unwrap_or(Vec::new(&env));
+
         for name in names {
             let str_len = name.len() as usize;
             let mut slice: [u8; 15] = [0; 15];
@@ -34,42 +41,27 @@ impl MigrationTrait for Tansu {
             let key: Bytes = env.crypto().keccak256(&name_b).into();
             let key_ = types::ProjectKey::Key(key.clone());
 
-            // Only migrate if the project exists but might not be in the pagination list
+            // Only migrate if the project exists
             if env.storage().persistent().has(&key_) {
-                let mut already_exists = false;
+                current_project_keys.push_back(key.clone());
+                total_projects += 1;
 
-                // Check all existing pages for the key to avoid duplicates
-                let num_pages =
-                    (total_projects + MAX_PROJECTS_PER_PAGE - 1) / MAX_PROJECTS_PER_PAGE;
-
-                for p in 0..num_pages {
-                    let project_keys: Vec<Bytes> = env
-                        .storage()
-                        .persistent()
-                        .get(&types::ProjectKey::ProjectKeys(p))
-                        .unwrap_or(Vec::new(&env));
-
-                    if project_keys.contains(&key) {
-                        already_exists = true;
-                        break;
-                    }
-                }
-
-                if !already_exists {
-                    let page = total_projects / MAX_PROJECTS_PER_PAGE;
-                    let mut project_keys: Vec<Bytes> = env
-                        .storage()
-                        .persistent()
-                        .get(&types::ProjectKey::ProjectKeys(page))
-                        .unwrap_or(Vec::new(&env));
-
-                    project_keys.push_back(key.clone());
-                    env.storage()
-                        .persistent()
-                        .set(&types::ProjectKey::ProjectKeys(page), &project_keys);
-                    total_projects += 1;
+                if current_project_keys.len() >= MAX_PROJECTS_PER_PAGE {
+                    env.storage().persistent().set(
+                        &types::ProjectKey::ProjectKeys(current_page),
+                        &current_project_keys,
+                    );
+                    current_page += 1;
+                    current_project_keys = Vec::new(&env);
                 }
             }
+        }
+
+        if current_project_keys.len() > 0 {
+            env.storage().persistent().set(
+                &types::ProjectKey::ProjectKeys(current_page),
+                &current_project_keys,
+            );
         }
 
         env.storage()
