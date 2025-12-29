@@ -284,9 +284,9 @@ const ProjectList = () => {
     setIsLoadingOnChain(true);
     try {
       const blockchainPage = uiPage - 1;
-      
+
       const projects = await getProjectsPage(blockchainPage);
-      
+
       if (projects.length === 0) {
         setOnChainProjects([]);
         setHasNextPage(false);
@@ -332,7 +332,7 @@ const ProjectList = () => {
           });
         }
       }
-      
+
       setOnChainProjects(configuredProjects);
       setHasNextPage(true);
     } catch (error) {
@@ -352,28 +352,28 @@ const ProjectList = () => {
 
   const handleNextPage = async () => {
     if (!hasNextPage) return;
-    
+
     const nextPage = currentUIPage + 1;
     setCurrentUIPage(nextPage);
     await fetchProjectsForPage(nextPage);
-    
-    const allProjectsSection = document.querySelector('.all-projects-section');
+
+    const allProjectsSection = document.querySelector(".all-projects-section");
     if (allProjectsSection) {
-      allProjectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      allProjectsSection.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
   const handlePrevPage = async () => {
     if (currentUIPage <= 1) return;
-    
+
     const prevPage = currentUIPage - 1;
     setCurrentUIPage(prevPage);
     await fetchProjectsForPage(prevPage);
-    
+
     // Scroll to top of All Projects section
-    const allProjectsSection = document.querySelector('.all-projects-section');
+    const allProjectsSection = document.querySelector(".all-projects-section");
     if (allProjectsSection) {
-      allProjectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      allProjectsSection.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -467,15 +467,16 @@ const ProjectList = () => {
           {isLoadingOnChain ? (
             <div className="no-projects h-80 flex flex-col gap-6 justify-center items-center text-center py-4">
               <Spinner />
-              <p className="text-base text-secondary">
-                Loading projects ...
-              </p>
+              <p className="text-base text-secondary">Loading projects ...</p>
             </div>
           ) : onChainProjects.length > 0 ? (
             <div className="flex flex-col gap-8">
               <div className="project-list grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 justify-items-center items-stretch">
                 {onChainProjects.map((project, index) => (
-                  <div className="w-full h-full" key={`onchain-page${currentUIPage}-${project.projectName || index}`}>
+                  <div
+                    className="w-full h-full"
+                    key={`onchain-page${currentUIPage}-${project.projectName || index}`}
+                  >
                     <ProjectCard config={project} />
                   </div>
                 ))}
