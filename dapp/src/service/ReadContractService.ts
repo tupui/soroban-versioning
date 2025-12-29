@@ -246,7 +246,7 @@ async function getProjectsPage(page: number): Promise<Project[]> {
   try {
     const res = await Tansu.get_projects({ page });
     checkSimulationError(res);
-    
+
     return res.result || [];
   } catch {
     return [];
