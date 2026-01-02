@@ -40,13 +40,17 @@ const FlowProgressModal: React.FC<FlowProgressModalProps> = ({
   children,
 }) => {
   const handleClose = () => {
-    // Reset all states when closing
     setIsSuccessful(false);
-    setStep(0);
+    setStep(1); // Always reset to first step
     setIsLoading(false);
     setIsUploading(false);
     setError(null);
     onClose();
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setStep(1); // Reset step so modal shows valid content
   };
 
   const handleSuccess = () => {
@@ -61,10 +65,7 @@ const FlowProgressModal: React.FC<FlowProgressModalProps> = ({
       {step >= 6 && step <= 9 ? (
         <ProgressStep step={step - 5} signLabel={signLabel} />
       ) : isSuccessful ? (
-        <div
-          className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px] p-4 sm:p-6"
-          data-testid="flow-success"
-        >
+        <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px] p-4 sm:p-6">
           <img
             src="/images/flower.svg"
             alt="Success"
@@ -86,10 +87,7 @@ const FlowProgressModal: React.FC<FlowProgressModalProps> = ({
           </div>
         </div>
       ) : error ? (
-        <div
-          className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px] p-4 sm:p-6"
-          data-testid="flow-error"
-        >
+        <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-[18px] p-4 sm:p-6">
           <img
             src="/images/wrong.svg"
             alt="Error"
@@ -104,12 +102,16 @@ const FlowProgressModal: React.FC<FlowProgressModalProps> = ({
               <Button type="secondary" onClick={handleClose}>
                 Close
               </Button>
-              <Button onClick={() => setError(null)}>Try Again</Button>
+              <Button onClick={handleRetry}>Try Again</Button>
             </div>
           </div>
         </div>
-      ) : (
+      ) : children ? (
         children
+      ) : (
+        <div className="flex items-center justify-center p-6">
+          <p className="text-sm text-secondary">No content to display.</p>
+        </div>
       )}
     </Modal>
   );
