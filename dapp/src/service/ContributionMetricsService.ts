@@ -12,16 +12,16 @@ export class ContributionMetricsService {
    * Fetch contribution metrics by analyzing GitHub API commit data
    * Uses the same getCommitHistory() function as CommitHistory component
    */
-  static async fetchMetrics(
-    owner: string,
-    repo: string,
-  ): Promise<ContributionMetrics> {
+  static async fetchMetrics(repoUrl: string): Promise<ContributionMetrics> {
     try {
+      if (!repoUrl) {
+        throw new Error("Repository URL is required");
+      }
       const allCommits: FormattedCommit[] = [];
       const maxPages = 34;
 
       for (let page = 1; page <= maxPages; page++) {
-        const history = await getCommitHistory(owner, repo, page, 30);
+        const history = await getCommitHistory(repoUrl, page, 30);
         if (!history || history.length === 0) break;
 
         for (const dayGroup of history) {

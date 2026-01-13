@@ -28,12 +28,10 @@ const projectInfo: {
   project_config_ipfs: undefined,
 };
 
-const projectRepoInfo: {
-  project_author: string | undefined;
-  project_repository: string | undefined;
+const projectRepo: {
+  project_url: string | undefined;
 } = {
-  project_author: undefined,
-  project_repository: undefined,
+  project_url: undefined,
 };
 
 const projectLatestSha: {
@@ -54,8 +52,7 @@ function refreshLocalStorage(): void {
     projectInfo.project_maintainers = undefined;
     projectInfo.project_config_url = undefined;
     projectInfo.project_config_ipfs = undefined;
-    projectRepoInfo.project_author = undefined;
-    projectRepoInfo.project_repository = undefined;
+    projectRepo.project_url = undefined;
     projectLatestSha.sha = undefined;
     configData = undefined;
   }
@@ -87,11 +84,10 @@ function setProject(project: Project): void {
   }
 }
 
-function setProjectRepoInfo(author: string, repository: string): void {
-  projectRepoInfo.project_author = author;
-  projectRepoInfo.project_repository = repository;
+function setProjectRepoUrl(url: string): void {
+  projectRepo.project_url = url;
   if (typeof window !== "undefined") {
-    projectRepoInfoStore.set(projectRepoInfo);
+    projectRepoInfoStore.set(projectRepo);
   }
 }
 
@@ -143,16 +139,8 @@ function loadProjectInfo(): Project | undefined {
   };
 }
 
-function loadProjectRepoInfo():
-  | { author: string; repository: string }
-  | undefined {
-  if (!projectRepoInfo.project_author || !projectRepoInfo.project_repository) {
-    return undefined;
-  }
-  return {
-    author: projectRepoInfo.project_author,
-    repository: projectRepoInfo.project_repository,
-  };
+function loadProjectRepoUrl(): string | undefined {
+  return projectRepo.project_url;
 }
 
 function loadProjectLatestSha(): string | undefined {
@@ -166,10 +154,10 @@ function loadConfigData(): ConfigData | undefined {
 export {
   setProjectId,
   setProject,
-  setProjectRepoInfo,
+  setProjectRepoUrl,
   loadedProjectId,
   loadProjectInfo,
-  loadProjectRepoInfo,
+  loadProjectRepoUrl,
   setProjectLatestSha,
   loadProjectLatestSha,
   loadProjectName,

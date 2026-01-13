@@ -92,19 +92,13 @@ test("execute() receives weighted tallies/seeds for anonymous proposal", async (
   // Stub walletService to provide a connected Mock wallet
   await page.route("**/src/service/walletService.ts", (route) => {
     const body = `
-    export function loadedPublicKey() { 
-      return 'G'.padEnd(56,'A'); 
-    }
-
-    export function loadedProvider() { 
-      // Simulate a Mock wallet object
-      return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; 
-    }
-
-    export function setConnection() {}
-    export function disconnect() {}
-    export function initializeConnection() {}
-  `;
+      export function loadedPublicKey(){ return 'G'.padEnd(56,'A'); }
+      export function loadedProvider(){ return 'freighter'; }
+      export function setConnection(){}
+      export function setPublicKey(){}
+      export function disconnect(){}
+      export function initializeConnection(){}
+    `;
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },

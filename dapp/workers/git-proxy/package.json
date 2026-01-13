@@ -1,0 +1,16 @@
+{
+  "name": "git-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy:testnet": "wrangler deploy --env testnet",
+    "deploy:production": "wrangler deploy --env production",
+    "dev": "wrangler dev",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^3.91.0"
+  }
+}

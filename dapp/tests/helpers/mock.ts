@@ -390,10 +390,7 @@ export async function applyAllMocks(page) {
       signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
       signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
       getNetwork: async () => ({ network: 'testnet' }),
-      setWallet: async (walletId) => {
-        console.log('Mock setWallet called with:', walletId);
-        return true;
-      }
+      setWallet: (id) => { /* no-op for tests */ }
     };`;
     route.fulfill({
       status: 200,
@@ -485,10 +482,7 @@ export async function applyAllMocks(page) {
       signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
       signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
       getNetwork: async () => ({ network: 'testnet' }),
-      setWallet: async (walletId) => {
-        console.log('Mock setWallet called with:', walletId);
-        return true;
-      }
+      setWallet: (id) => { /* no-op for tests */ }
     };`;
     route.fulfill({
       status: 200,
@@ -528,19 +522,15 @@ export async function applyAllMocks(page) {
   // Apply walletService mock before navigating to provide authenticated user for tests
   await page.route("**/src/service/walletService.ts", (route) => {
     const body = `
-    export function loadedPublicKey() { return '${WALLET_PK}'; }
-    export function loadedProvider() { return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; }
-    export function setPublicKey() {}
-    export function setConnection() {}      
-    export function disconnect() {}
-    export function initializeConnection() { return { success: true }; }
-    export async function checkAndNotifyFunding() {
-      console.log('🧪 Mocked checkAndNotifyFunding called');
-    }
-    export async function getWalletHealth() {
-      return { exists: true, balance: 100 };
-    }
-  `;
+      export function loadedPublicKey(){ return '${WALLET_PK}'; }
+      export function loadedProvider(){ return 'freighter'; }
+      export function setConnection(){ }
+      export function setPublicKey(){}
+      export function disconnect(){}
+      export function initializeConnection(){}
+      export async function checkAndNotifyFunding() {}
+      export async function getWalletHealth() { return { exists: true, balance: 100 }; }
+    `;
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },
@@ -551,19 +541,15 @@ export async function applyAllMocks(page) {
   // Also mock the wallet service with the @service alias pattern
   await page.route("**/@service/walletService*", (route) => {
     const body = `
-    export function loadedPublicKey() { return '${WALLET_PK}'; }
-    export function loadedProvider() { return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; }
-    export function setPublicKey() {}
-    export function setConnection() {}      
-    export function disconnect() {}
-    export function initializeConnection() { return { success: true }; }
-    export async function checkAndNotifyFunding() {
-      console.log('🧪 Mocked checkAndNotifyFunding called');
-    }
-    export async function getWalletHealth() {
-      return { exists: true, balance: 100 };
-    }
-  `;
+      export function loadedPublicKey(){ return '${WALLET_PK}'; }
+      export function loadedProvider(){ return 'freighter'; }
+      export function setConnection(){ }
+      export function setPublicKey(){}
+      export function disconnect(){}
+      export function initializeConnection(){}
+      export async function checkAndNotifyFunding() {}
+      export async function getWalletHealth() { return { exists: true, balance: 100 }; }
+    `;
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },

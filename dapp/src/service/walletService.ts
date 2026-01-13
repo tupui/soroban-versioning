@@ -127,6 +127,7 @@ export {
   loadedPublicKey,
   loadedProvider,
   setConnection,
+  setConnection as setPublicKey,
   disconnect,
   initializeConnection,
   getWalletHealth,
