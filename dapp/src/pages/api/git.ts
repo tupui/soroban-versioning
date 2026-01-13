@@ -9,6 +9,74 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
+/**
+ * Allow list of trusted git hosting domains.
+ * Only repositories from these domains will be cloned.
+ * Add new domains here to support additional git hosts.
+ */
+const ALLOWED_GIT_HOSTS = new Set([
+  "github.com",
+  "gitlab.com",
+  "bitbucket.org",
+  "codeberg.org",
+  "sr.ht",
+  "gitea.com",
+  "git.sr.ht",
+  // Self-hosted GitLab instances can be added via environment variable
+]);
+
+/**
+ * Additional allowed hosts from environment variable.
+ * Format: comma-separated list of domains (e.g., "gitlab.mycompany.com,git.example.org")
+ */
+const EXTRA_ALLOWED_HOSTS = (
+  import.meta.env.GIT_ALLOWED_HOSTS || ""
+)
+  .split(",")
+  .map((h: string) => h.trim().toLowerCase())
+  .filter(Boolean);
+
+EXTRA_ALLOWED_HOSTS.forEach((host: string) => ALLOWED_GIT_HOSTS.add(host));
+
+/**
+ * Validate that a repository URL is from an allowed host.
+ * Returns the normalized hostname if allowed, throws an error otherwise.
+ */
+function validateRepoUrl(repoUrl: string): string {
+  const trimmed = repoUrl.trim();
+
+  // Handle SSH URLs (git@host:path)
+  if (trimmed.startsWith("git@")) {
+    const match = trimmed.match(/^git@([^:]+):/);
+    if (match) {
+      const host = match[1].toLowerCase();
+      if (ALLOWED_GIT_HOSTS.has(host)) {
+        return host;
+      }
+    }
+    throw new Error(
+      `Repository host not allowed. Allowed hosts: ${Array.from(ALLOWED_GIT_HOSTS).join(", ")}`,
+    );
+  }
+
+  // Handle HTTPS URLs
+  try {
+    const url = new URL(trimmed);
+    const host = url.hostname.toLowerCase();
+    if (ALLOWED_GIT_HOSTS.has(host)) {
+      return host;
+    }
+    throw new Error(
+      `Repository host "${host}" not allowed. Allowed hosts: ${Array.from(ALLOWED_GIT_HOSTS).join(", ")}`,
+    );
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("not allowed")) {
+      throw e;
+    }
+    throw new Error("Invalid repository URL format");
+  }
+}
+
 interface RepoCacheEntry {
   baseDir: string;
   repoDir: string;
@@ -361,6 +429,16 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(
         JSON.stringify({ error: "Repository URL is required" }),
         { status: 400 },
+      );
+    }
+
+    // Validate that the repository is from an allowed host
+    try {
+      validateRepoUrl(repoUrl);
+    } catch (validationError: any) {
+      return new Response(
+        JSON.stringify({ error: validationError.message }),
+        { status: 403 },
       );
     }
 

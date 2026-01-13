@@ -1,0 +1,17 @@
+name = "git-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[env.testnet]
+[[env.testnet.routes]]
+pattern = "git-testnet.tansu.dev"
+custom_domain = true
+
+[env.production]
+[[env.production.routes]]
+pattern = "git.tansu.dev"
+custom_domain = true
+
+[observability]
+enabled = true

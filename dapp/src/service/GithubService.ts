@@ -18,8 +18,28 @@ interface GitCommitDetails {
   };
 }
 
+/**
+ * Get the Git API endpoint URL.
+ * Uses Cloudflare proxy if configured, otherwise uses local API.
+ *
+ * Environment variable GIT_PROXY_URL can be set to:
+ * - "https://git.tansu.dev" (production Cloudflare Worker)
+ * - "https://git-testnet.tansu.dev" (testnet Cloudflare Worker)
+ * - "" or undefined (use local /api/git endpoint)
+ */
+function getGitApiUrl(): string {
+  // Check for Cloudflare proxy URL from environment
+  const proxyUrl = import.meta.env.PUBLIC_GIT_PROXY_URL;
+  if (proxyUrl && typeof proxyUrl === "string" && proxyUrl.trim()) {
+    return proxyUrl.trim();
+  }
+  // Default to local API endpoint
+  return "/api/git";
+}
+
 async function callGitApi<T>(body: Record<string, unknown>): Promise<T> {
-  const response = await fetch("/api/git", {
+  const apiUrl = getGitApiUrl();
+  const response = await fetch(apiUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
