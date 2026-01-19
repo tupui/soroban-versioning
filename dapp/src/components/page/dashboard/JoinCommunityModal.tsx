@@ -375,7 +375,7 @@ const JoinCommunityModal: FC<{
             onVerificationComplete={setGitVerificationData}
             networkPassphrase={import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE}
             signingAccount={address}
-            contractId={import.meta.env.PUBLIC_SOROBAN_CONTRACT_ID}
+            contractId={import.meta.env.PUBLIC_TANSU_CONTRACT_ID}
           />
 
           <div className="flex justify-end gap-[18px]">

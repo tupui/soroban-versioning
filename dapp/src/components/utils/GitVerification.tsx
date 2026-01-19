@@ -27,6 +27,8 @@ const GitVerification: FC<GitVerificationProps> = ({
   signingAccount,
   contractId
 }) => {
+
+  console.log( "Showing contract id",  contractId)
   const [wantGitLink, setWantGitLink] = useState<boolean | null>(null);
   const [gitHandle, setGitHandle] = useState("");
   const [selectedKey, setSelectedKey] = useState("");
@@ -66,6 +68,11 @@ const GitVerification: FC<GitVerificationProps> = ({
       toast.error("Error", "Please select a public key");
       return;
     }
+
+    // if (!contractId) {
+    //   toast.error("Error", "Contract ID is not available. Please try again later.");
+    //   return;
+    // }
 
     const generatedEnvelope = createSEP53Envelope(
       networkPassphrase,
@@ -221,7 +228,7 @@ const GitVerification: FC<GitVerificationProps> = ({
               <div>
                 <p className="text-sm text-blue-800 mb-1">SSH Command:</p>
                 <code className="block p-2 bg-blue-100 rounded text-xs break-all">
-                  {generateSSHSignCommand(envelope)}
+                  {generateSSHSignCommand(envelope).replace(/\s*\/dev\/stdin\s*/g, "")}
                 </code>
               </div>
               <div>
