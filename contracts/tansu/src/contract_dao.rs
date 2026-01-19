@@ -94,7 +94,7 @@ impl DaoTrait for Tansu {
     /// Build vote commitments from votes and seeds for anonymous voting.
     ///
     /// Creates BLS12-381 commitments for each vote using the formula:
-    /// C = g^vote * h^seed where g and h are generator points.
+    /// C = g·vote + h·seed where g and h are generator points on BLS12-381.
     ///
     /// Note: This function does not consider voting weights, which are applied
     /// during the tallying phase. Calling this on the smart contract would reveal
@@ -103,7 +103,7 @@ impl DaoTrait for Tansu {
     /// # Arguments
     /// * `env` - The environment object
     /// * `project_key` - Unique identifier for the project
-    /// * `votes` - Vector of vote choices (0=abstain, 1=approve, 2=reject)
+    /// * `votes` - Vector of vote choices (0=approve, 1=reject, 2=abstain)
     /// * `seeds` - Vector of random seeds for each vote
     ///
     /// # Returns
@@ -712,7 +712,7 @@ impl DaoTrait for Tansu {
                     .zip(tally_commitments.iter_mut())
                 {
                     let commitment_ = G1Affine::from_bytes(commitment);
-                    // scale the commitment by the voter weight: g*v*weight + h*r*weight.
+                    // scale the commitment by the voter weight: weight * (g*v + h*r).
                     let weighted_commitment =
                         bls12_381.g1_mul(&commitment_, &weight_.clone().into());
                     *tally_commitment = bls12_381.g1_add(tally_commitment, &weighted_commitment);

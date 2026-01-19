@@ -1,6 +1,7 @@
 import { calculateDirectoryCid } from "../utils/ipfsFunctions";
-import { create } from "@web3-storage/w3up-client";
-import { extract } from "@web3-storage/w3up-client/delegation";
+import { create } from "@storacha/client";
+import * as Delegation from "@ucanto/core/delegation";
+
 //
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
@@ -15,8 +16,6 @@ import { checkSimulationError } from "../utils/contractErrors";
 
 interface UploadWithDelegationParams {
   files: File[];
-  type: "proposal" | "member" | "project";
-  projectName?: string;
   signedTxXdr: string; // The signed contract transaction
   did: string;
 }
@@ -48,19 +47,16 @@ interface CreateProjectFlowParams {
 /**
  * Upload files to IPFS using delegation
  */
-async function uploadWithDelegation({
+export async function uploadWithDelegation({
   files,
-  type,
-  projectName,
   signedTxXdr,
   did,
 }: UploadWithDelegationParams): Promise<string> {
-  const apiUrl = `/api/w3up-delegation`;
-
-  const response = await fetch(apiUrl, {
+  // Request delegation from the backend
+  const response = await fetch(import.meta.env.PUBLIC_DELEGATION_API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ signedTxXdr, did, type, projectName }),
+    body: JSON.stringify({ signedTxXdr, did }),
   });
 
   if (!response.ok) {
@@ -82,19 +78,29 @@ async function uploadWithDelegation({
     throw new Error(errorMessage);
   }
 
-  const data = await response.arrayBuffer();
+  const delegationArchive = await response.arrayBuffer();
+  const uint8 = new Uint8Array(delegationArchive);
+  const extracted = await Delegation.extract(uint8);
 
-  const delegation = await extract(new Uint8Array(data));
-  if (!delegation.ok) {
-    throw new Error("Failed to extract delegation", {
-      cause: delegation.error,
-    });
+  let delegation;
+  if ("ok" in extracted) {
+    delegation = extracted.ok;
+  } else if (Array.isArray(extracted)) {
+    delegation = extracted[0];
   }
 
+  if (!delegation) {
+    throw new Error("Failed to extract a valid delegation from archive");
+  }
+
+  // Create Storacha client
   const client = await create();
-  const space = await client.addSpace(delegation.ok);
+
+  // Create a new space for uploading files
+  const space = await client.addSpace(delegation);
   await client.setCurrentSpace(space.did());
 
+  // Upload files to IPFS
   const directoryCid = await client.uploadDirectory(files);
   if (!directoryCid) throw new Error("Failed to upload to IPFS");
 
@@ -211,8 +217,6 @@ export async function createProposalFlow({
   onProgress?.(8); // Uploading to IPFS (UI index 3)
   const uploadedCid = await uploadWithDelegation({
     files: proposalFiles,
-    type: "proposal",
-    projectName,
     signedTxXdr,
     did,
   });
@@ -289,7 +293,6 @@ export async function joinCommunityFlow({
     try {
       const uploadedCid = await uploadWithDelegation({
         files: profileFiles,
-        type: "member",
         signedTxXdr,
         did,
       });
@@ -358,7 +361,6 @@ export async function createProjectFlow({
 
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
-    type: "project",
     signedTxXdr,
     did,
   });
@@ -438,7 +440,6 @@ export async function updateConfigFlow({
   onProgress?.(8); // UI offset -4 → shows "Uploading"
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
-    type: "project",
     signedTxXdr,
     did,
   });

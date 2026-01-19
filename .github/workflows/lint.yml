@@ -40,17 +40,13 @@ jobs:
   website-dapp:
     runs-on: ubuntu-latest
     env:
-      # Default Soroban network configuration for static build & linting
+      PUBLIC_DELEGATION_API_URL: "https://ipfs-testnet.tansu.dev"
       PUBLIC_SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org:443"
       PUBLIC_SOROBAN_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
       PUBLIC_HORIZON_URL: "https://horizon-testnet.stellar.org"
       PUBLIC_TANSU_CONTRACT_ID: "CTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
       PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CAXOTRU4DBR736ZG4E7VBFKGVCCHG6FOH7HFXMB3BH27VUKPHOJWO3XM"
       PUBLIC_TANSU_OWNER_ID: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
-      PUBLIC_DEFAULT_FEE: "100"
-      PUBLIC_DEFAULT_TIMEOUT: "30"
-      STORACHA_SING_PRIVATE_KEY: ""
-      STORACHA_PROOF: ""
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5

@@ -4,14 +4,10 @@ import Button from "./utils/Button";
 import { loadedPublicKey } from "../service/walletService";
 import { toast } from "../utils/utils";
 
-interface NavbarSearchProps {
-  _onAddProject: () => void;
-}
-
 // Constants for URL handling
 const HOME_PATH = "/";
 
-const NavbarSearch = ({ _onAddProject }: NavbarSearchProps) => {
+const NavbarSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [originalUrl, setOriginalUrl] = useState("");

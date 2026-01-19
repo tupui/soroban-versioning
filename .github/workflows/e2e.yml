@@ -21,14 +21,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      # Soroban network configuration for e2e tests
+      PUBLIC_DELEGATION_API_URL: "https://ipfs-testnet.tansu.dev"
       PUBLIC_SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org:443"
       PUBLIC_SOROBAN_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+      PUBLIC_HORIZON_URL: "https://horizon-testnet.stellar.org"
       PUBLIC_TANSU_CONTRACT_ID: "CTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
       PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CAXOTRU4DBR736ZG4E7VBFKGVCCHG6FOH7HFXMB3BH27VUKPHOJWO3XM"
       PUBLIC_TANSU_OWNER_ID: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
-      PUBLIC_DEFAULT_FEE: "100"
-      PUBLIC_DEFAULT_TIMEOUT: "30"
     defaults:
       run:
         working-directory: ./dapp
@@ -80,7 +79,7 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: e2e-test-results
           path: |

@@ -1,6 +1,6 @@
 import { useStore } from "@nanostores/react";
-import { useEffect, useState, useCallback } from "react";
-import { getDemoConfigData } from "../../../constants/demoConfigData";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { getFeaturedProjectsConfigData } from "../../../constants/featuredProjectsConfigData.js";
 import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
@@ -46,7 +46,7 @@ const ProjectList = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const data = getDemoConfigData();
+      const data = getFeaturedProjectsConfigData();
       setProjects(data);
       setFilteredProjects(data);
     };
@@ -62,10 +62,11 @@ const ProjectList = () => {
     // Check for search parameters in URL
     const searchParams = new URLSearchParams(window.location.search);
     const urlSearchTerm = searchParams.get("search");
+    let searchTimeout;
     if (urlSearchTerm) {
       setSearchTerm(urlSearchTerm);
       // Set timeout to ensure projects are loaded before searching
-      setTimeout(() => handleSearch(), 300);
+      searchTimeout = setTimeout(() => handleSearch(), 300);
     }
 
     // Check if searching for a member
@@ -114,6 +115,8 @@ const ProjectList = () => {
     );
 
     return () => {
+      if (searchTimeout) clearTimeout(searchTimeout);
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
       window.removeEventListener("search-projects", handleSearchProjectEvent);
       window.removeEventListener(
         "show-member-profile",
@@ -131,12 +134,15 @@ const ProjectList = () => {
     };
   }, [handleCreateProjectModal]);
 
-  const handleSearchProjectEvent = (event) => {
+  const searchTimeoutRef = useRef(null);
+
+  const handleSearchProjectEvent = useCallback((event) => {
     const term = event.detail;
     setSearchTerm(term);
     setMemberNotFound(false);
-    setTimeout(() => handleSearch(), 100);
-  };
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => handleSearch(), 100);
+  }, []);
 
   const handleSearchMemberEvent = (event) => {
     const address = event.detail;

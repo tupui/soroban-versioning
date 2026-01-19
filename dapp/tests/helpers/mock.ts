@@ -32,42 +32,46 @@ export async function stubRpc(page) {
 }
 
 export async function stubDelegation(page) {
-  await page.route("**/api/w3up-delegation", (route) => {
-    // Create a minimal mock CAR archive that simulates a delegation
-    // This is a simplified structure that should allow tests to pass
-    const mockCarBytes = new Uint8Array([
-      // CAR v1 header
-      0x0a,
-      0xa1,
-      0x67,
-      0x76,
-      0x65,
-      0x72,
-      0x73,
-      0x69,
-      0x6f,
-      0x6e,
-      0x01,
-      // Root CID (simplified)
-      0x12,
-      0x20,
-      // Add 32 bytes for the CID hash
-      ...Array(32).fill(0x01),
-      // Add minimal block data
-      0x24, // varint for block size
-      0x12,
-      0x20, // CID prefix
-      ...Array(32).fill(0x02), // block CID
-      0x08, // block data size
-      ...Array(8).fill(0x03), // block data
-    ]);
+  // Mock delegation endpoint (Cloudflare Worker)
+  await page.route(
+    /(ipfs.*\.tansu\.dev|ipfs-delegation.*\.workers\.dev)/,
+    (route) => {
+      // Create a minimal mock CAR archive that simulates a delegation
+      // This is a simplified structure that should allow tests to pass
+      const mockCarBytes = new Uint8Array([
+        // CAR v1 header
+        0x0a,
+        0xa1,
+        0x67,
+        0x76,
+        0x65,
+        0x72,
+        0x73,
+        0x69,
+        0x6f,
+        0x6e,
+        0x01,
+        // Root CID (simplified)
+        0x12,
+        0x20,
+        // Add 32 bytes for the CID hash
+        ...Array(32).fill(0x01),
+        // Add minimal block data
+        0x24, // varint for block size
+        0x12,
+        0x20, // CID prefix
+        ...Array(32).fill(0x02), // block CID
+        0x08, // block data size
+        ...Array(8).fill(0x03), // block data
+      ]);
 
-    route.fulfill({
-      status: 200,
-      contentType: "application/octet-stream",
-      body: mockCarBytes,
-    });
-  });
+      route.fulfill({
+        status: 200,
+        contentType: "application/octet-stream",
+        body: mockCarBytes,
+      });
+    },
+  );
 }
 
 export async function stubTransactionSend(page) {
@@ -374,7 +378,11 @@ export async function applyAllMocks(page) {
       requestAccess: async () => true,
       signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
       signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
-      getNetwork: async () => ({ network: 'testnet' })
+      getNetwork: async () => ({ network: 'testnet' }),
+      setWallet: async (walletId) => {
+        console.log('Mock setWallet called with:', walletId);
+        return true;
+      }
     };`;
     route.fulfill({
       status: 200,
@@ -414,6 +422,10 @@ export async function applyAllMocks(page) {
         async getNetwork() {
           return { network: 'testnet' };
         }
+        async setWallet(walletId) {
+          console.log('Mock setWallet called with:', walletId);
+          return true;
+        }
       }
       
       export class LedgerModule {
@@ -439,6 +451,10 @@ export async function applyAllMocks(page) {
         async getNetwork() {
           return { network: 'testnet' };
         }
+        async setWallet(walletId) {
+          console.log('Mock setWallet called with:', walletId);
+          return true;
+        }
       }
     `;
     route.fulfill({
@@ -457,7 +473,11 @@ export async function applyAllMocks(page) {
       requestAccess: async () => true,
       signAuthEntry: async () => ({ signedAuthEntry: 'mock', signerAddress: '${WALLET_PK}' }),
       signMessage: async () => ({ signature: 'mock', signerAddress: '${WALLET_PK}' }),
-      getNetwork: async () => ({ network: 'testnet' })
+      getNetwork: async () => ({ network: 'testnet' }),
+      setWallet: async (walletId) => {
+        console.log('Mock setWallet called with:', walletId);
+        return true;
+      }
     };`;
     route.fulfill({
       status: 200,
@@ -487,17 +507,23 @@ export async function applyAllMocks(page) {
         signerAddress: "${WALLET_PK}",
       }),
       getNetwork: async () => ({ network: "testnet" }),
+      setWallet: async (walletId) => {
+        console.log("Mock setWallet called with:", walletId);
+        return true;
+      },
     };
   });
 
-  // Mock wallet service to provide authenticated user for tests
+  // Apply walletService mock before navigating to provide authenticated user for tests
   await page.route("**/src/service/walletService.ts", (route) => {
     const body = `
-      export function loadedPublicKey(){ return '${WALLET_PK}'; }
-      export function setPublicKey(){}
-      export function disconnect(){}
-      export function initializeConnection(){}
-    `;
+    export function loadedPublicKey() { return '${WALLET_PK}'; }
+    export function loadedProvider() { return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; }
+    export function setPublicKey() {}
+    export function setConnection() {}      
+    export function disconnect() {}
+    export function initializeConnection() { return { success: true }; }
+  `;
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },
@@ -508,11 +534,13 @@ export async function applyAllMocks(page) {
   // Also mock the wallet service with the @service alias pattern
   await page.route("**/@service/walletService*", (route) => {
     const body = `
-      export function loadedPublicKey(){ return '${WALLET_PK}'; }
-      export function setPublicKey(){}
-      export function disconnect(){}
-      export function initializeConnection(){}
-    `;
+    export function loadedPublicKey() { return '${WALLET_PK}'; }
+    export function loadedProvider() { return { id: 'mockWallet', name: 'Mock Wallet', connected: true }; }
+    export function setPublicKey() {}
+    export function setConnection() {}      
+    export function disconnect() {}
+    export function initializeConnection() { return { success: true }; }
+  `;
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },
@@ -599,45 +627,48 @@ url = "${MOCK_PROJECT.config_url}"
     route.fulfill({ status: 200, body: JSON.stringify({ status: "SUCCESS" }) });
   });
 
-  // Mock delegation endpoint for uploads
-  await page.route("**/api/w3up-delegation", (route) => {
-    // Use the same mock CAR archive as in stubDelegation
-    const mockCarBytes = new Uint8Array([
-      // CAR v1 header
-      0x0a,
-      0xa1,
-      0x67,
-      0x76,
-      0x65,
-      0x72,
-      0x73,
-      0x69,
-      0x6f,
-      0x6e,
-      0x01,
-      // Root CID (simplified)
-      0x12,
-      0x20,
-      // Add 32 bytes for the CID hash
-      ...Array(32).fill(0x01),
-      // Add minimal block data
-      0x24, // varint for block size
-      0x12,
-      0x20, // CID prefix
-      ...Array(32).fill(0x02), // block CID
-      0x08, // block data size
-      ...Array(8).fill(0x03), // block data
-    ]);
+  // Mock delegation endpoint for uploads (Cloudflare Worker)
+  await page.route(
+    /(ipfs.*\.tansu\.dev|ipfs-delegation.*\.workers\.dev)/,
+    (route) => {
+      // Use the same mock CAR archive as in stubDelegation
+      const mockCarBytes = new Uint8Array([
+        // CAR v1 header
+        0x0a,
+        0xa1,
+        0x67,
+        0x76,
+        0x65,
+        0x72,
+        0x73,
+        0x69,
+        0x6f,
+        0x6e,
+        0x01,
+        // Root CID (simplified)
+        0x12,
+        0x20,
+        // Add 32 bytes for the CID hash
+        ...Array(32).fill(0x01),
+        // Add minimal block data
+        0x24, // varint for block size
+        0x12,
+        0x20, // CID prefix
+        ...Array(32).fill(0x02), // block CID
+        0x08, // block data size
+        ...Array(8).fill(0x03), // block data
+      ]);
 
-    route.fulfill({
-      status: 200,
-      contentType: "application/octet-stream",
-      body: mockCarBytes,
-    });
-  });
+      route.fulfill({
+        status: 200,
+        contentType: "application/octet-stream",
+        body: mockCarBytes,
+      });
+    },
+  );
 
   // Stub w3up client so uploadDirectory returns the same CID as calculateDirectoryCid
-  await page.route("**/@web3-storage/w3up-client*", async (route) => {
+  await page.route("**/@storacha/client*", async (route) => {
     const js = `export const create = async () => ({ agent: { did: () => 'did:test' }, addSpace: async () => ({ did: () => 'did:test' }), setCurrentSpace: async () => {}, uploadDirectory: async () => ({ toString: () => 'bafytestcidmock' }) });`;
     route.fulfill({
       status: 200,
@@ -647,17 +678,14 @@ url = "${MOCK_PROJECT.config_url}"
   });
 
   // Stub delegation extract to always return ok
-  await page.route(
-    "**/@web3-storage/w3up-client/delegation*",
-    async (route) => {
-      const js = `export const extract = async () => ({ ok: {} });`;
-      route.fulfill({
-        status: 200,
-        headers: { "content-type": "application/javascript" },
-        body: js,
-      });
-    },
-  );
+  await page.route("**/@@storacha/client/delegation*", async (route) => {
+    const js = `export const extract = async () => ({ ok: {} });`;
+    route.fulfill({
+      status: 200,
+      headers: { "content-type": "application/javascript" },
+      body: js,
+    });
+  });
 
   // Also stub generic send/getTransaction endpoints in case rpc.Server uses relative paths
   await stubTransactionSend(page);
@@ -729,6 +757,10 @@ export async function applyMinimalMocks(page) {
         }
         return { signedTxXdr: `signed_${xdr}` };
       },
+      setWallet: async (walletId) => {
+        console.log("Mock setWallet called with:", walletId);
+        return true;
+      },
     };
   });
 }
@@ -761,15 +793,22 @@ export async function applyDiagnosticMocks(page) {
 
   // Enhanced wallet kit for debugging
   await page.addInitScript(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    window.kit = {
-      signTransaction: async (xdr) => {
-        if (!xdr || typeof xdr !== "string") {
-          throw new Error("Invalid XDR provided to wallet");
-        }
-        return { signedTxXdr: `signed_${xdr}` };
-      },
-    };
+    window.addEventListener("walletConnected", (event) => {
+      const connectBtn = document.querySelector("[data-connect] span");
+      if (connectBtn) connectBtn.textContent = "Profile";
+    });
+
+    window.addEventListener("walletDisconnected", () => {
+      const connectBtn = document.querySelector("[data-connect] span");
+      if (connectBtn) connectBtn.textContent = "Connect";
+    });
+
+    // Add setWallet to diagnostic window.kit if needed
+    if (window.kit && !window.kit.setWallet) {
+      window.kit.setWallet = async (walletId) => {
+        console.log("Mock setWallet called with:", walletId);
+        return true;
+      };
+    }
   });
 }

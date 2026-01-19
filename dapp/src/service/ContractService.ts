@@ -118,22 +118,27 @@ export async function voteToProposal(
   project_name: string,
   proposal_id: number,
   vote: VoteType,
+  customWeight?: number,
 ): Promise<boolean> {
   const client = getClient();
   const projectKey = getProjectKey(project_name);
 
   // Get voting weight
   let weight = 1;
-  try {
-    const weightTx = await client.get_max_weight({
-      project_key: projectKey,
-      member_address: client.options.publicKey!,
-    });
-    // Check for simulation errors (contract errors)
-    checkSimulationError(weightTx as any);
-    weight = Number(weightTx.result) || 1;
-  } catch {
-    // Default weight
+  if (customWeight !== undefined) {
+    weight = customWeight;
+  } else {
+    try {
+      const weightTx = await client.get_max_weight({
+        project_key: projectKey,
+        member_address: client.options.publicKey!,
+      });
+      // Check for simulation errors (contract errors)
+      checkSimulationError(weightTx as any);
+      weight = Number(weightTx.result) || 1;
+    } catch {
+      // Default weight
+    }
   }
 
   // Check if anonymous voting

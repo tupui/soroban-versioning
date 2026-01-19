@@ -55,37 +55,40 @@
 
     async function setLoggedIn(publicKey: string) {
       button.textContent = "";
+
       const textElement = document.createElement("span");
       textElement.className =
         "hidden sm:inline text-xs md:text-sm lg:text-base font-medium text-white truncate";
       textElement.textContent = "Profile";
+
       const imgElement = document.createElement("img");
       imgElement.src = "/icons/profile.svg";
       imgElement.alt = "User profile icon";
       imgElement.className = "w-4 md:w-5 h-4 md:h-5 flex-shrink-0";
       imgElement.setAttribute("width", "20");
       imgElement.setAttribute("height", "20");
+
       button.appendChild(textElement);
       button.appendChild(imgElement);
       button.title = publicKey;
       button.setAttribute("aria-label", "Open user profile");
-      button.classList.toggle("bg-white", false);
-      button.classList.toggle("bg-primary", true);
-      button.classList.toggle("text-white", true);
-      button.classList.toggle("hover:opacity-90", true);
-      button.classList.toggle("transition-opacity", true);
-      button.classList.toggle("cursor-pointer", true);
 
-      // Change click handler to open profile instead of connect wallet
+      button.classList.remove("bg-white");
+      button.classList.add(
+        "bg-primary",
+        "text-white",
+        "hover:opacity-90",
+        "transition-opacity",
+        "cursor-pointer",
+      );
+
       button.onclick = () => {
         window.dispatchEvent(new CustomEvent("openProfileModal"));
       };
     }
 
     const publicKey = loadedPublicKey();
-    if (publicKey) {
-      setLoggedIn(publicKey);
-    }
+    if (publicKey) setLoggedIn(publicKey);
 
     async function connectWallet() {
       const provider = loadedProvider();
@@ -124,7 +127,6 @@
       // First-time connection flow
       try {
         const { kit } = await import("./stellar-wallets-kit");
-
         await kit.openModal({
           onWalletSelected: async (option: { id: string }) => {
             try {
@@ -152,25 +154,23 @@
       }
     }
 
-    if (button) {
-      button.addEventListener("click", connectWallet);
-    }
+    button.addEventListener("click", connectWallet);
 
     const getStarted = document.querySelector("#get-started");
     connectedPublicKey.subscribe((publicKey) => {
-      if (publicKey) {
-        getStarted?.classList.remove("xl:flex");
-      }
+      if (publicKey) getStarted?.classList.remove("xl:flex");
     });
 
     // Handle disconnect
     window.addEventListener("walletDisconnected", () => {
       disconnect();
       button.textContent = "";
+
       const textElement = document.createElement("span");
       textElement.className =
         "text-xs md:text-sm lg:text-base font-medium text-pink truncate";
       textElement.textContent = "Connect";
+
       const imgElement = document.createElement("img");
       imgElement.src = "/icons/connect.png";
       imgElement.alt = "Connect wallet icon";
@@ -178,13 +178,14 @@
         "w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 flex-shrink-0";
       imgElement.setAttribute("width", "20");
       imgElement.setAttribute("height", "20");
+
       button.appendChild(textElement);
       button.appendChild(imgElement);
       button.title = "";
       button.setAttribute("aria-label", "Connect wallet to start using Tansu");
-      button.classList.toggle("bg-white", true);
-      button.classList.toggle("bg-primary", false);
-      button.classList.toggle("text-white", false);
+
+      button.classList.add("bg-white");
+      button.classList.remove("bg-primary", "text-white");
     });
 
     // Restore provider on reload

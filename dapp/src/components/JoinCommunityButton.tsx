@@ -39,7 +39,7 @@ const JoinCommunityButton = () => {
     }
   }, [publicKey]);
 
-  const _handleJoined = () => {
+  const handleJoined = () => {
     if (publicKey) fetchMember(publicKey);
   };
 
@@ -63,7 +63,10 @@ const JoinCommunityButton = () => {
       {showJoinModal && (
         <JoinCommunityModal
           onClose={() => setShowJoinModal(false)}
-          onJoined={() => {}}
+          onJoined={() => {
+            handleJoined();
+            setShowJoinModal(false);
+          }}
         />
       )}
     </>

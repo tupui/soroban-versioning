@@ -5,16 +5,14 @@ import Button from "components/utils/Button";
 import type { Member, Badge } from "../../../../packages/tansu";
 import { getIpfsBasicLink, fetchJSONFromIPFS } from "utils/ipfsFunctions";
 import Markdown from "markdown-to-jsx";
-import { truncateMiddle } from "../../../utils/utils";
 import { connectedPublicKey } from "../../../utils/store";
 
 import { getProjectFromId } from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
-import { getStellarExpertUrl } from "../../../utils/urls";
-import CopyButton from "components/utils/CopyButton";
 import { Buffer } from "buffer";
 import OnChainActions from "./OnChainActions";
 import { badgeName } from "../../../utils/badges";
+import AddressDisplay from "../proposal/AddressDisplay"; // use existing component
 
 interface Props extends ModalProps {
   member: Member | null;
@@ -197,42 +195,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
     );
   };
 
-  // Address display component with copy functionality
-  const AddressDisplay = ({ address }: { address: string }) => {
-    const explorerUrl = getStellarExpertUrl(address);
-
-    return (
-      <div className="mt-1 bg-zinc-50 p-2 rounded flex items-center gap-2 w-full">
-        <div className="flex-grow text-center">
-          <p className="text-sm font-mono text-primary overflow-hidden">
-            {truncateMiddle(address, 20)}
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <CopyButton
-            textToCopy={address}
-            size="sm"
-            className="hover:opacity-70 transition-opacity"
-          />
-          <a
-            href={explorerUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:opacity-70 transition-opacity"
-            title="View on Stellar Explorer"
-          >
-            <img
-              src="/icons/link.svg"
-              alt="View on Explorer"
-              width={16}
-              height={16}
-            />
-          </a>
-        </div>
-      </div>
-    );
-  };
-
   // If member is null, show registration message
   if (!member) {
     return (
@@ -403,15 +365,9 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                   <Markdown
                     options={{
                       overrides: {
-                        p: {
-                          props: {
-                            className: "text-secondary mb-2",
-                          },
-                        },
+                        p: { props: { className: "text-secondary mb-2" } },
                         a: {
-                          props: {
-                            className: "text-blue-500 hover:underline",
-                          },
+                          props: { className: "text-blue-500 hover:underline" },
                         },
                         h1: {
                           props: {

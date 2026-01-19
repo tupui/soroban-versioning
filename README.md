@@ -1,7 +1,8 @@
 # 🏛️ Tansu - Decentralized project governance on Stellar
 
 [![SCF Awards](https://img.shields.io/badge/SCF-28,30-blue)](https://github.com/your-org/tansu)
-[![Stellar Network](https://img.shields.io/badge/network-testnet-purple)](https://stellar.org)
+[![Contract on Stellar Testnet Network](https://img.shields.io/badge/network-testnet-purple)](https://stellar.expert/explorer/testnet/contract/CC2ZHMKUAPMRRRLFCPSDXR6TKPQHIBYMQCL3DDIQQRZPXCT2RK3MVQJS)
+[![Contract on Stellar Mainnet Network](https://img.shields.io/badge/network-mainnet-green)](https://stellar.expert/explorer/public/contract/CDXINK2T3P46M4LWK35FVIXXHJ2XHAS4FOVCGVPJ63YV5OVTM24IY5BI)
 
 Tansu provides cryptographic proof of code integrity and transparent governance for open-source projects. Built on
 Stellar's Soroban platform, it offers immutable commit tracking, community-driven proposals, and privacy-preserving

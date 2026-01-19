@@ -8,12 +8,12 @@ permissions:
 on:
   pull_request:
     paths:
-      - 'soroban-sdk/**'
+      - 'contracts/**'
       - '.github/workflows/cost-estimate.yml'
   push:
-    branches: [main]
+    branches: [ main ]
     paths:
-      - 'soroban-sdk/**'
+      - 'contracts/**'
       - '.github/workflows/cost-estimate.yml'
   workflow_dispatch:
 

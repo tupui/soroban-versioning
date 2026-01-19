@@ -3,8 +3,6 @@ import CommitHistory from "./CommitHistory";
 import DonateModal from "./DonateModal";
 import LatestCommit from "./LatestCommit";
 import Button from "components/utils/Button";
-import { getMember } from "@service/ReadContractService";
-import { toast } from "utils/utils";
 ---
 
 <div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
@@ -201,8 +199,8 @@ import { toast } from "utils/utils";
     // Modal state
     let isLastHashModalOpen = false;
     let isReadMoreModalOpen = false;
-    let commitData = null;
-    let projectData = null;
+    let commitData: any = null;
+    let projectData: any = null;
 
     // Render function for modals
     const renderModals = () => {
@@ -290,9 +288,9 @@ import { toast } from "utils/utils";
 
           // Build address→handle map (order-independent)
           let addrToHandle: Record<string, string> = {};
-          if (hasMapping) {
+          if (hasMapping && configData) {
             for (let i = 0; i < configData.maintainersAddresses.length; i++) {
-              addrToHandle[configData.maintainersAddresses[i]] =
+              addrToHandle[configData.maintainersAddresses[i]!] =
                 configData.authorGithubNames[i] || "";
             }
           }
@@ -701,7 +699,7 @@ import { toast } from "utils/utils";
     });
 
     // Helper to open member profile modal; attached globally for click handlers
-    async function openProfileModal(address) {
+    async function openProfileModal(address: any) {
       try {
         const memberData = await getMember(address);
 

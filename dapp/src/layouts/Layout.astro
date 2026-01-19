@@ -1,8 +1,9 @@
 ---
 import Navbar from "../components/layout/Navbar.astro";
 import Footer from "../components/layout/Footer.astro";
-import { ViewTransitions } from "astro:transitions";
+import { ClientRouter } from "astro:transitions";
 import { SEO } from "astro-seo";
+import { readFileSync } from "fs";
 
 import "../styles/global.css";
 
@@ -12,6 +13,19 @@ interface Props {
 }
 
 const { title, page } = Astro.props;
+
+// Read the terms summary JSON file
+let summaryContent = {};
+try {
+  const jsonContent = readFileSync(
+    "../website/static/legal/terms-summary.json",
+    "utf-8",
+  );
+  summaryContent = JSON.parse(jsonContent);
+} catch (error) {
+  console.error("Error reading terms summary:", error);
+  summaryContent = { introduction: "Terms of Service" };
+}
 ---
 
 <script>
@@ -163,6 +177,64 @@ const { title, page } = Astro.props;
     ) {
       document.dispatchEvent(new CustomEvent("create-project-global"));
     }
+
+    // Check Terms of Service acceptance
+    const checkTermsAcceptance = async () => {
+      try {
+        const accepted = localStorage.getItem("tansu_tos_accepted");
+        if (!accepted) {
+          // Show Terms acceptance modal
+          if (document.querySelector(".terms-modal-container")) return;
+          const container = document.createElement("div");
+          container.className = "terms-modal-container fixed inset-0 z-[9999]";
+          document.body.appendChild(container);
+
+          const [{ default: React }, { createRoot }] = await Promise.all([
+            import("react"),
+            import("react-dom/client"),
+          ]);
+          const { default: TermsAcceptanceModal } = await import(
+            "components/utils/TermsAcceptanceModal.tsx"
+          );
+          const root = createRoot(container);
+
+          const handleAccept = () => {
+            if (document.body.contains(container))
+              document.body.removeChild(container);
+            try {
+              root.unmount();
+            } catch (e) {}
+          };
+
+          const handleDecline = () => {
+            // Redirect to main website
+            window.location.href = "https://tansu.dev";
+          };
+
+          container.addEventListener("click", (e) => {
+            if (e.target === container) {
+              // Prevent closing by clicking outside
+              e.preventDefault();
+            }
+          });
+
+          root.render(
+            React.createElement(TermsAcceptanceModal, {
+              onAccept: handleAccept,
+              onDecline: handleDecline,
+              summaryContent: JSON.parse(
+                document.body.dataset.summaryContent || "{}",
+              ),
+            }),
+          );
+        }
+      } catch (e) {
+        console.error("Error checking terms acceptance:", e);
+      }
+    };
+
+    // Check terms acceptance on page load
+    checkTermsAcceptance();
   });
 </script>
 
@@ -188,18 +260,18 @@ const { title, page } = Astro.props;
       rel="stylesheet"
     />
 
-    <ViewTransitions />
+    <ClientRouter />
 
     <SEO
       title={title}
       description="Bringing open source software development onto the Stellar blockchain. Tansu enables decentralized project governance, transparent funding, and collaborative development on Stellar."
-      canonical={`https://testnet.tansu.dev${Astro.url.pathname}`}
+      canonical={`https://app.tansu.dev${Astro.url.pathname}`}
       openGraph={{
         basic: {
           title: title,
           type: "website",
-          image: "https://testnet.tansu.dev/logo-background.png",
-          url: `https://testnet.tansu.dev${Astro.url.pathname}`,
+          image: "https://app.tansu.dev/logo-background.png",
+          url: `https://app.tansu.dev${Astro.url.pathname}`,
         },
         optional: {
           description:
@@ -210,7 +282,7 @@ const { title, page } = Astro.props;
       twitter={{
         creator: "@PamphileRoy",
         card: "summary_large_image",
-        image: "https://testnet.tansu.dev/logo-background.png",
+        image: "https://app.tansu.dev/logo-background.png",
         title: title,
         description:
           "Bringing open source software development onto the Stellar blockchain",
@@ -237,12 +309,12 @@ const { title, page } = Astro.props;
     />
 
     <!-- Structured Data for SEO -->
-    <script type="application/ld+json">
+    <script type="application/ld+json" is:inline>
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "Tansu",
-        "url": "https://testnet.tansu.dev",
+        "url": "https://app.tansu.dev",
         "description": "Bringing open source software development onto the Stellar blockchain. Tansu enables decentralized project governance, transparent funding, and collaborative development.",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Web",
@@ -267,7 +339,10 @@ const { title, page } = Astro.props;
       }
     </script>
   </head>
-  <body class="font-firacode min-h-screen flex flex-col">
+  <body
+    class="font-firacode min-h-screen flex flex-col"
+    data-summary-content={JSON.stringify(summaryContent)}
+  >
     <img
       src="/logo-background.png"
       alt="Tansu background decoration"
