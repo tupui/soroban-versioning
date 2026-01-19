@@ -186,14 +186,15 @@ export function generateGPGSignCommand(envelope: string): string {
 }
 
 export function parseSSHSignature(signatureText: string): Buffer {
-  const lines = signatureText.split('\n').map(line => line.trim());
+  const lines = signatureText
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
   const startIndex = lines.findIndex(line => line === '-----BEGIN SSH SIGNATURE-----');
   const endIndex = lines.findIndex(line => line === '-----END SSH SIGNATURE-----');
-  
   if (startIndex === -1 || endIndex === -1) {
     throw new Error('Invalid SSH signature format');
   }
-  
   const base64Data = lines.slice(startIndex + 1, endIndex).join('');
   return Buffer.from(base64Data, 'base64');
 }
@@ -212,44 +213,36 @@ export async function validateGitVerification(
   expectedContractId: string
 ): Promise<{ valid: boolean; error?: string }> {
   try {
-    const parsed = parseSEP53Envelope(data.envelope);
-    
+    const parsed = parseSEP53Envelope(data.envelope.trim());
     if (parsed.networkPassphrase !== expectedNetworkPassphrase) {
       return { valid: false, error: 'Network passphrase mismatch' };
     }
-    
     if (parsed.signingAccount !== expectedSigningAccount) {
       return { valid: false, error: 'Signing account mismatch' };
     }
-    
     const payloadParts = parsed.payload.split('|');
     if (payloadParts.length !== 3 || payloadParts[0] !== 'tansu-bind') {
       return { valid: false, error: 'Invalid payload format' };
     }
-    
     if (payloadParts[1] !== expectedContractId) {
       return { valid: false, error: 'Contract ID mismatch' };
     }
-    
     if (payloadParts[2] !== data.gitHandle) {
       return { valid: false, error: 'Git handle mismatch' };
     }
-    
     const signatureValid = await verifyEd25519Signature(
       data.publicKey,
-      data.envelope,
+      data.envelope.trim(),
       data.signature
     );
-    
     if (!signatureValid) {
       return { valid: false, error: 'Invalid signature' };
     }
-    
     return { valid: true };
   } catch (error) {
-    return { 
-      valid: false, 
-      error: error instanceof Error ? error.message : 'Validation failed' 
+    return {
+      valid: false,
+      error: error instanceof Error ? error.message : 'Validation failed'
     };
   }
 }

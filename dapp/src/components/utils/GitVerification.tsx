@@ -109,6 +109,8 @@ const GitVerification: FC<GitVerificationProps> = ({
         contractId
       );
 
+      console.log("Git verification result:", validation);
+
       if (validation.valid) {
         toast.success("Success", "Git verification completed successfully!");
         onVerificationComplete(verificationData);
