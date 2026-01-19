@@ -79,9 +79,9 @@ const ProjectCard = ({ config }: { config: ProjectConfig }) => {
   };
 
   return (
-    <div className="project-card w-full flex flex-col shadow-card rounded-sm overflow-hidden hover:shadow-lg transition-shadow duration-300">
+    <div className="project-card w-full h-full flex flex-col shadow-card rounded-sm overflow-hidden hover:shadow-lg transition-shadow duration-300">
       <div
-        className="h-[200px] sm:h-[240px] md:h-[290px] bg-white/25 backdrop-blur-[9px] overflow-hidden cursor-pointer group flex justify-center items-center"
+        className="h-[200px] sm:h-[240px] md:h-[290px] bg-white/25 backdrop-blur-[9px] overflow-hidden cursor-pointer group flex justify-center items-center flex-shrink-0"
         onClick={handleCardClick}
       >
         <img
@@ -91,15 +91,15 @@ const ProjectCard = ({ config }: { config: ProjectConfig }) => {
               : "/fallback-image.jpg"
           }
           alt={config.projectName}
-          className="thumbnail aspect-[3/2] object-fill transition-transform duration-300 ease-in-out group-hover:scale-125"
+          className={`thumbnail w-30 h-30 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110 ${config.logoImageLink ? "object-cover" : "object-fill"}`}
         />
       </div>
-      <div className="flex-grow bg-white p-4 sm:p-6 flex flex-col gap-4 sm:gap-[30px]">
+      <div className="flex-grow bg-white p-4 sm:p-6 flex flex-col gap-4 sm:gap-[30px] justify-between">
         <div className="flex flex-col gap-2 sm:gap-3">
           <h3 className="project-name text-xl sm:text-2xl leading-6 font-medium font-firamono text-pink">
             {config.projectName || "No project name"}
           </h3>
-          <p className="description text-sm sm:text-base font-victormono text-zinc-800 line-clamp-2">
+          <p className="description text-sm sm:text-base font-victormono text-zinc-800 line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem]">
             {config.description || "No description"}
           </p>
         </div>

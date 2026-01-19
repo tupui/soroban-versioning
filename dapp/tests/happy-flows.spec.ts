@@ -130,6 +130,24 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
     // Wait for page to load
     await page.waitForTimeout(1000);
 
+    // Handle TermsAcceptanceModal if it appears
+    const termsModal = page.locator(".terms-modal-container");
+    const acceptButton = termsModal.getByRole("button", {
+      name: /accept terms/i,
+    });
+
+    // Wait for modal to appear
+    if (await termsModal.isVisible({ timeout: 3000 })) {
+      // Scroll to bottom to enable button
+      await termsModal.evaluate((el) => {
+        const scrollable = el.querySelector(".overflow-auto");
+        if (scrollable) scrollable.scrollTop = scrollable.scrollHeight;
+      });
+
+      // Click accept
+      await acceptButton.click();
+    }
+
     // Check if wallet is connected by inspecting the connect button text
     const connectButtonText = await page
       .locator("[data-connect] span")

@@ -99,6 +99,7 @@ export default [
       "tests/",
       "**/*.d.ts",
       "**/*.astro",
+      "**/*.wrangler",
       "**/*.js", // Skip JS files for now
     ],
   },

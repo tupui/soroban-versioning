@@ -15,6 +15,7 @@ Welcome to our community! Thank you for taking the time to read the following.
 - Development discussions happen on Discord but any request **must** be formalized in _github_. This ensures a common
   history.
 - Continuous Integration is provided by _Github actions_ and configuration is located at `.github/workflows`.
+- Netlify is also providing some CI and is useful for all dApp related changes.
 
 ## Code
 
@@ -22,8 +23,8 @@ Welcome to our community! Thank you for taking the time to read the following.
 
 After cloning the repository, see the various Makefiles.
 
-For IPFS uploads via Storacha, see the guide at `dapp/workers/ipfs-delegation/README.md` for setup instructions.
-You only need to configure this if you're working on the IPFS delegation worker itself.
+*For IPFS uploads via Storacha, see the guide at `dapp/workers/ipfs-delegation/README.md` for setup instructions.
+You only need to configure this if you're working on the IPFS delegation worker itself.*
 
 ### Testing
 
@@ -114,11 +115,25 @@ important to check the message on the squash commit.
 ## Making a release
 
 Following is the process that the development team follows in order to make
-a release:
+a release.
+
+Python:
 
 1. Update the version in the main `pyproject.toml`.
 2. Build locally using `hatch build`, and verify the content of the artifacts
 3. Submit PR, wait for tests to pass, and merge release into `main`
-4. Trigger manually the release workflows
+4. Trigger manually the release workflow.
 5. Check that release has been deployed to PyPI
-6. Upload the WASM for the smart contract
+
+dApp:
+
+1. Push on `app_prod`.
+2. Check Netlify and the deployment.
+3. Trigger manually the IPFS workflow.
+4. Update the CID on the Tansu linked address. See https://xlm.sh/
+
+Contract:
+
+1. Push on `main` with a tag `v*`.
+2. Upload the WASM for the smart contract.
+3. Propose an update of the contract, get the approvals, execute to update. See Makefile.

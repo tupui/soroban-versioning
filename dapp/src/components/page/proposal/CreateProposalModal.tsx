@@ -329,9 +329,7 @@ const CreateProposalModal = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    if (step >= 10) {
-      window.location.reload();
-    }
+    setStep(1);
   };
 
   if (!showModal) return <></>;

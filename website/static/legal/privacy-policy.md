@@ -14,7 +14,7 @@ Consulting Manao GmbH ("Company", "we", "us") operates the Tansu decentralized g
 **Contact Information**:  
 Consulting Manao GmbH  
 FN 571029z  
-Köpplingberg 124, 8561 Söding-Sankt Johann, Austria  
+Austria  
 Email: legal@consulting-manao.com
 
 **Note**: Reading our Terms of Service first will help you understand the terminology used in this Privacy Policy.
@@ -343,11 +343,6 @@ Registered in Austrian Commercial Register (Firmenbuch)
 Landesgericht Graz, FN 571029z  
 VAT ID: ATU77780135  
 Managing Director: Pamphile Tupui Christophe Roy
-
-**Address**:  
-Köpplingberg 124  
-8561 Söding-Sankt Johann  
-Austria
 
 **Contact**:  
 Email: legal@consulting-manao.com  

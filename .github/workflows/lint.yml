@@ -17,7 +17,7 @@ jobs:
   pre-commit-linters:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
@@ -45,11 +45,11 @@ jobs:
       PUBLIC_SOROBAN_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
       PUBLIC_HORIZON_URL: "https://horizon-testnet.stellar.org"
       PUBLIC_TANSU_CONTRACT_ID: "CTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
-      PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CAXOTRU4DBR736ZG4E7VBFKGVCCHG6FOH7HFXMB3BH27VUKPHOJWO3XM"
+      PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CAUORQ7XOSJOV6NLUK2A7FZSZP5Z55AQPEPMWDEZPQ4DDKSTXBBEDKNF"
       PUBLIC_TANSU_OWNER_ID: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -59,7 +59,7 @@ jobs:
         run: echo "dir=$(bun pm cache)" >> ${GITHUB_OUTPUT}
 
       - name: Cache Bun dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ${{ steps.bun-cache-dir.outputs.dir }}

@@ -11,10 +11,13 @@ const NavbarSearch = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [originalUrl, setOriginalUrl] = useState("");
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+
     saveOriginalUrl();
     initializeSearchTerm();
 
@@ -238,7 +241,7 @@ const NavbarSearch = () => {
         )}
 
         {/* Mobile: Add Project button (ONLY if connected) */}
-        {!isSearchVisible && isWalletConnected && (
+        {isClient && !isSearchVisible && (
           <Button
             type="primary"
             order="secondary"
@@ -304,19 +307,21 @@ const NavbarSearch = () => {
           </div>
         </div>
 
-        {/* Desktop: Add Project button (always visible, toast guards) */}
-        <Button
-          type="primary"
-          order="secondary"
-          className="h-10 lg:h-12 px-4 lg:px-6 whitespace-nowrap transition-all duration-200 flex items-center justify-center text-sm lg:text-base font-medium"
-          onClick={handleAddProject}
-          title={buttonTitle}
-          size="sm"
-        >
-          <span className="text-sm lg:text-base font-medium">
-            + Add Project
-          </span>
-        </Button>
+        {/* Desktop: Add Project button (only render client-side) */}
+        {isClient && (
+          <Button
+            type="primary"
+            order="secondary"
+            className="h-10 lg:h-12 px-4 lg:px-6 whitespace-nowrap transition-all duration-200 flex items-center justify-center text-sm lg:text-base font-medium"
+            onClick={handleAddProject}
+            title={buttonTitle}
+            size="sm"
+          >
+            <span className="text-sm lg:text-base font-medium">
+              + Add Project
+            </span>
+          </Button>
+        )}
       </div>
     </div>
   );

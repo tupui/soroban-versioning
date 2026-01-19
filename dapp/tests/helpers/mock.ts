@@ -128,6 +128,17 @@ export async function applyAllMocks(page) {
     (window as any).__mockAnonymousConfigMissing = true;
     // Define WALLET_PK in window context for mocks to use
     (window as any).WALLET_PK = "${WALLET_PK}";
+
+    // Mock funding-related functions
+    (window as any).checkAndNotifyFunding = async () => {
+      console.log("🧪 Mocked checkAndNotifyFunding called");
+    };
+
+    (window as any).getWalletHealth = async () => ({
+      exists: true,
+      balance: 100,
+    });
+
     // Mock getProjectFromName globally
     (window as any).getProjectFromName = async (name) => {
       const result = {
@@ -523,6 +534,12 @@ export async function applyAllMocks(page) {
     export function setConnection() {}      
     export function disconnect() {}
     export function initializeConnection() { return { success: true }; }
+    export async function checkAndNotifyFunding() {
+      console.log('🧪 Mocked checkAndNotifyFunding called');
+    }
+    export async function getWalletHealth() {
+      return { exists: true, balance: 100 };
+    }
   `;
     route.fulfill({
       status: 200,
@@ -540,6 +557,12 @@ export async function applyAllMocks(page) {
     export function setConnection() {}      
     export function disconnect() {}
     export function initializeConnection() { return { success: true }; }
+    export async function checkAndNotifyFunding() {
+      console.log('🧪 Mocked checkAndNotifyFunding called');
+    }
+    export async function getWalletHealth() {
+      return { exists: true, balance: 100 };
+    }
   `;
     route.fulfill({
       status: 200,

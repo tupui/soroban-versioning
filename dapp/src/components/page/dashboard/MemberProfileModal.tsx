@@ -6,7 +6,7 @@ import type { Member, Badge } from "../../../../packages/tansu";
 import { getIpfsBasicLink, fetchJSONFromIPFS } from "utils/ipfsFunctions";
 import Markdown from "markdown-to-jsx";
 import { connectedPublicKey } from "../../../utils/store";
-
+import { refreshLocalStorage } from "@service/StateService";
 import { getProjectFromId } from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
 import { Buffer } from "buffer";
@@ -47,6 +47,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
 
   // Navigate to project page
   const navigateToProject = (projectName: string) => {
+    refreshLocalStorage();
     navigate(`/project?name=${encodeURIComponent(projectName)}`);
   };
 

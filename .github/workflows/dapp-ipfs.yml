@@ -27,7 +27,7 @@ jobs:
         working-directory: ./dapp
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
 
       - name: Install App dependencies
@@ -35,7 +35,7 @@ jobs:
 
       - name: Build app
         env:
-          PUBLIC_DELEGATION_API_URL: ${{ secrets.PUBLIC_DELEGATION_API_URL }}
+          PUBLIC_DELEGATION_API_URL: ${{ vars.PUBLIC_DELEGATION_API_URL }}
           PUBLIC_SOROBAN_NETWORK_PASSPHRASE: ${{ vars.PUBLIC_SOROBAN_NETWORK_PASSPHRASE }}
           PUBLIC_SOROBAN_RPC_URL: ${{ vars.PUBLIC_SOROBAN_RPC_URL }}
           PUBLIC_HORIZON_URL: ${{ vars.PUBLIC_HORIZON_URL }}
@@ -45,19 +45,18 @@ jobs:
         run: bun run build
 
       - name: Generate artifact attestation for dist
-        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
+        uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8
         with:
           subject-path: "./dapp/dist/*"
 
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: dist
           path: |
             ./dapp/dist/*
 
-      # https://web3.storage/docs/how-to/ci/#github-action-add-to-web3
-      - uses: storacha/add-to-web3@afd8cba20f920c998f6d3b38db0abe64242fe042
+      - uses: storacha/add-to-web3@892505d8e70c79336721485e5500155c17a728e0
         id: storacha
         with:
           path_to_add: "./dapp/dist"
