@@ -5,7 +5,7 @@
 
 ## 1. Introduction
 
-Welcome to Tansu ("the dApp"), a decentralized governance platform operated by Consulting Manao GmbH ("Company", "we", "us"), located at Köpplingberg 124, 8561 Söding-Sankt Johann, Austria (Company Registration: FN 571029z). By accessing or using the dApp, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the dApp.
+Welcome to Tansu ("the dApp"), a decentralized governance platform operated by Consulting Manao GmbH ("Company", "we", "us"), located in Austria (Company Registration: FN 571029z). By accessing or using the dApp, you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use the dApp.
 
 Tansu is a decentralized application built on the Stellar blockchain that provides on-chain project governance, community voting, and transparent decision-making for open-source projects.
 
@@ -465,11 +465,6 @@ Registered in Austrian Commercial Register (Firmenbuch)
 Landesgericht Graz, FN 571029z  
 VAT ID: ATU77780135  
 Managing Director: Pamphile Tupui Christophe Roy
-
-**Address**:  
-Köpplingberg 124  
-8561 Söding-Sankt Johann  
-Austria
 
 **Contact**:  
 Email: legal@consulting-manao.com  

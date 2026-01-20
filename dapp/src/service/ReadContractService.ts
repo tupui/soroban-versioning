@@ -242,6 +242,17 @@ async function getBadges(): Promise<Badges | null> {
   }
 }
 
+async function getProjectsPage(page: number): Promise<Project[]> {
+  try {
+    const res = await Tansu.get_projects({ page });
+    checkSimulationError(res);
+
+    return res.result || [];
+  } catch {
+    return [];
+  }
+}
+
 export {
   getProject,
   getProjectHash,
@@ -252,6 +263,7 @@ export {
   getProposal,
   getMember,
   getBadges,
+  getProjectsPage,
 };
 
 /**
