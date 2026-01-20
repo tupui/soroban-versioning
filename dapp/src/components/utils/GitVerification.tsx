@@ -28,7 +28,6 @@ const GitVerification: FC<GitVerificationProps> = ({
   contractId
 }) => {
 
-  console.log( "Showing contract id",  contractId)
   const [wantGitLink, setWantGitLink] = useState<boolean | null>(null);
   const [gitHandle, setGitHandle] = useState("");
   const [selectedKey, setSelectedKey] = useState("");

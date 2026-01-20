@@ -186,17 +186,94 @@ export function generateGPGSignCommand(envelope: string): string {
 }
 
 export function parseSSHSignature(signatureText: string): Buffer {
-  const lines = signatureText
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
-  const startIndex = lines.findIndex(line => line === '-----BEGIN SSH SIGNATURE-----');
-  const endIndex = lines.findIndex(line => line === '-----END SSH SIGNATURE-----');
-  if (startIndex === -1 || endIndex === -1) {
-    throw new Error('Invalid SSH signature format');
+  const match = signatureText.match(
+    /-----BEGIN SSH SIGNATURE-----([\s\S]*?)-----END SSH SIGNATURE-----/i
+  );
+
+  if (!match || !match[1]?.trim()) {
+    throw new Error("Cannot find valid BEGIN/END SSH SIGNATURE markers");
   }
-  const base64Data = lines.slice(startIndex + 1, endIndex).join('');
-  return Buffer.from(base64Data, 'base64');
+
+  const base64Only = match[1]
+    .replace(/[^A-Za-z0-9+/=]/g, '')    
+    .trim();
+
+  if (base64Only.length < 100) {
+    throw new Error(`Base64 content too short after cleaning (${base64Only.length} chars)`);
+  }
+
+  let data: Buffer;
+  try {
+    data = Buffer.from(base64Only, 'base64');
+  } catch (err) {
+    throw new Error(
+      `Base64 decode failed: ${err instanceof Error ? err.message : String(err)}\n` +
+      `Base64 length was: ${base64Only.length} chars`
+    );
+  }
+
+  console.log("[DEBUG] Decoded signature size:", data.length, "bytes"); // ← helpful
+
+  if (data.length < 100 || data.length > 300) {
+    throw new Error(`Unrealistic decoded size for SSH signature: ${data.length} bytes`);
+  }
+
+  let offset = 0;
+
+  const readUint32 = () => {
+    if (offset + 4 > data.length) {
+      throw new Error(`Out of bounds reading length field at offset ${offset}`);
+    }
+    const v = data.readUInt32BE(offset);
+    offset += 4;
+    return v;
+  };
+
+  const readString = () => {
+    const len = readUint32();
+    if (offset + len > data.length) {
+      throw new Error(
+        `String length exceeds buffer at offset ${offset}: ` +
+        `claimed ${len}, remaining ${data.length - offset}`
+      );
+    }
+    const str = data.subarray(offset, offset + len).toString('utf8');
+    offset += len;
+    return str;
+  };
+
+  const readBlob = () => {
+    const len = readUint32();
+    if (offset + len > data.length) {
+      throw new Error(
+        `Blob length exceeds buffer at offset ${offset}: ` +
+        `claimed ${len}, remaining ${data.length - offset}`
+      );
+    }
+    const buf = data.subarray(offset, offset + len);
+    offset += len;
+    return buf;
+  };
+
+  const magic = readString();
+  if (magic !== "SSHSIG") {
+    throw new Error(`Wrong magic header: expected "SSHSIG", got "${magic}"`);
+  }
+
+  readUint32(); 
+
+  readBlob();         
+  readString();         
+  readBlob();           
+  readString();       
+
+  const signature = readBlob(); 
+
+  if (signature.length !== 64) {
+    throw new Error(`Expected 64-byte Ed25519 signature, got ${signature.length} bytes`);
+  }
+
+  return signature;
 }
 
 export interface GitVerificationData {
