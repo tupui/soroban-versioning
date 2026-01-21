@@ -1,12 +1,7 @@
-use soroban_sdk::{
-    Address, Bytes, Env, IntoVal, String, Vec, contractimpl, panic_with_error,
-    vec,
-};
-
 use crate::{
-    Tansu, TansuTrait, OrganizationTrait, errors, events,
-    types,
+    OrganizationTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types,
 };
+use soroban_sdk::{Address, Bytes, Env, String, Vec, contractimpl, panic_with_error};
 
 const MAX_PROJECTS_PER_PAGE: u32 = 10;
 const MAX_ORGANIZATIONS_PER_PAGE: u32 = 10;
