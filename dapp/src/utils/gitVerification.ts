@@ -24,10 +24,10 @@ export interface ParsedGitHandle {
 export function parseGitHandle(gitHandle: string): ParsedGitHandle | null {
   const match = gitHandle.match(/^([^:]+):(.+)$/);
   if (!match) return null;
-  
+
   const [, provider, username] = match;
   if (!provider || !username || !GIT_PROVIDERS[provider]) return null;
-  
+
   return { provider, username };
 }
 
@@ -88,12 +88,12 @@ export function extractEd25519PublicKey(sshKey: string): Buffer {
     if (keyType !== 'ssh-ed25519') {
       throw new Error('Key type mismatch');
     }
-    
+
     const publicKey = keyData.subarray(19, 51);
     if (publicKey.length !== 32) {
       throw new Error('Invalid Ed25519 public key length');
     }
-    
+
     return publicKey;
   } catch (error) {
     throw new Error(`Failed to extract Ed25519 public key: ${error}`);
@@ -114,7 +114,7 @@ export function createSEP53Envelope(
 ): string {
   const nonce = generateRandomNonce();
   const payload = `tansu-bind|${contractId}|${gitHandle}`;
-  
+
   return [
     "Stellar Signed Message",
     networkPassphrase,
@@ -137,7 +137,7 @@ export function parseSEP53Envelope(envelope: string): {
   }
 
   const [header, networkPassphrase, signingAccount, nonce, payload] = lines;
-  
+
   if (!header || header !== "Stellar Signed Message") {
     throw new Error('Invalid SEP-53 envelope: header must be "Stellar Signed Message"');
   }
@@ -186,95 +186,24 @@ export function generateGPGSignCommand(envelope: string): string {
 }
 
 export function parseSSHSignature(signatureText: string): Buffer {
-  const match = signatureText.match(
-    /-----BEGIN SSH SIGNATURE-----([\s\S]*?)-----END SSH SIGNATURE-----/i
-  );
-
-  if (!match || !match[1]?.trim()) {
-    throw new Error("Cannot find valid BEGIN/END SSH SIGNATURE markers");
-  }
-
-  const base64Only = match[1]
-    .replace(/[^A-Za-z0-9+/=]/g, '')    
-    .trim();
-
-  if (base64Only.length < 100) {
-    throw new Error(`Base64 content too short after cleaning (${base64Only.length} chars)`);
-  }
-
-  let data: Buffer;
   try {
-    data = Buffer.from(base64Only, 'base64');
+    const { parse } = require('sshsig');
+    const parsedSig = parse(signatureText);
+
+    const signatureBytes = parsedSig.signature.raw_signature;
+
+    if (signatureBytes.length !== 64) {
+      throw new Error(`Expected 64-byte Ed25519 signature, got ${signatureBytes.length} bytes`);
+    }
+
+    return Buffer.from(signatureBytes);
   } catch (err) {
     throw new Error(
-      `Base64 decode failed: ${err instanceof Error ? err.message : String(err)}\n` +
-      `Base64 length was: ${base64Only.length} chars`
+      `Failed to parse SSH signature: ${err instanceof Error ? err.message : String(err)}`
     );
   }
-
-  console.log("[DEBUG] Decoded signature size:", data.length, "bytes"); 
-
-  if (data.length < 100 || data.length > 300) {
-    throw new Error(`Unrealistic decoded size for SSH signature: ${data.length} bytes`);
-  }
-
-  let offset = 0;
-
-  const readUint32 = () => {
-    if (offset + 4 > data.length) {
-      throw new Error(`Out of bounds reading length field at offset ${offset}`);
-    }
-    const v = data.readUInt32BE(offset);
-    offset += 4;
-    return v;
-  };
-
-  const readString = () => {
-    const len = readUint32();
-    if (offset + len > data.length) {
-      throw new Error(
-        `String length exceeds buffer at offset ${offset}: ` +
-        `claimed ${len}, remaining ${data.length - offset}`
-      );
-    }
-    const str = data.subarray(offset, offset + len).toString('utf8');
-    offset += len;
-    return str;
-  };
-
-  const readBlob = () => {
-    const len = readUint32();
-    if (offset + len > data.length) {
-      throw new Error(
-        `Blob length exceeds buffer at offset ${offset}: ` +
-        `claimed ${len}, remaining ${data.length - offset}`
-      );
-    }
-    const buf = data.subarray(offset, offset + len);
-    offset += len;
-    return buf;
-  };
-
-  const magic = readString();
-  if (magic !== "SSHSIG") {
-    throw new Error(`Wrong magic header: expected "SSHSIG", got "${magic}"`);
-  }
-
-  readUint32(); 
-
-  readBlob();         
-  readString();         
-  readBlob();           
-  readString();       
-
-  const signature = readBlob(); 
-
-  if (signature.length !== 64) {
-    throw new Error(`Expected 64-byte Ed25519 signature, got ${signature.length} bytes`);
-  }
-
-  return signature;
 }
+
 
 export interface GitVerificationData {
   gitHandle: string;

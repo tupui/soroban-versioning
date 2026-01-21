@@ -44,6 +44,7 @@
         "react-dom": "^19.2.0",
         "react18-json-view": "^0.2.9",
         "recharts": "^3.2.1",
+        "sshsig": "^0.3.1",
         "toml": "^3.0.0",
         "typescript": "^5.9.2",
       },
@@ -3038,6 +3039,8 @@
     "split-on-first": ["split-on-first@1.1.0", "", {}, "sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw=="],
 
     "split2": ["split2@4.2.0", "", {}, "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg=="],
+
+    "sshsig": ["sshsig@0.3.1", "", {}, "sha512-+5Hohm4IFKVLRsUvSb3gdbqDk1DFPFvd513dWDmKgubno1q8ZmMmRF6kCi+IbFA5C53Xa+/9D7vNS3C0R2mjqQ=="],
 
     "stack-trace": ["stack-trace@0.0.10", "", {}, "sha512-KGzahc7puUKkzyMt+IqAep+TVNbKP+k2Lmwhub39m1AsTSkaDutx56aDCo+HLDzf/D26BIHTJWNiTG1KAJiQCg=="],
 
