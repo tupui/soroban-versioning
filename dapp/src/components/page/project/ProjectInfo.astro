@@ -374,7 +374,6 @@ import Button from "components/utils/Button";
         
         const projectNameElement = document.getElementById("project-name");
         if (projectNameElement) {
-          // Use projectFullName (from ORG_DBA) if available, else fall back to on-chain name
           projectNameElement.textContent = configData?.projectFullName || projectInfo.name;
         }
 

@@ -1,6 +1,6 @@
 export interface ConfigData {
-  projectName: string; // On-chain name (Soroban Domain identifier)
-  projectFullName: string; // Display name from IPFS (ORG_DBA), falls back to projectName
+  projectName: string;
+  projectFullName: string;
   logoImageLink: string;
   thumbnailImageLink: string;
   description: string;

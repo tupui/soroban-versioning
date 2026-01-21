@@ -222,7 +222,7 @@ const ProjectList = () => {
         } else {
           const configData = {
             projectName: project.name,
-            projectFullName: project.name, // Fallback to on-chain name
+            projectFullName: project.name,
             logoImageLink: undefined,
             thumbnailImageLink: "",
             description: "",

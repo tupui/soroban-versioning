@@ -35,8 +35,8 @@ type ModalProps = {
 
 const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [step, setStep] = useState(1);
-  const [domainName, setDomainName] = useState(""); // Soroban Domain name (on-chain identifier, max 15 chars)
-  const [displayProjectName, setDisplayProjectName] = useState(""); // Human-readable project name for IPFS
+  const [projectName, setProjectName] = useState("");
+  const [projectFullName, setProjectFullName] = useState("");
   const [maintainerAddresses, setMaintainerAddresses] = useState<string[]>([
     loadedPublicKey() || "",
   ]);
@@ -45,15 +45,15 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [domainContractId] = useState(SOROBAN_DOMAIN_CONTRACT_ID);
-  const [domainStatus, setDomainStatus] = useState<
+  const [projectNameStatus, setProjectNameStatus] = useState<
     "checking" | "available" | "unavailable" | null
   >(null);
-  const [domainCheckTimeout, setDomainCheckTimeout] =
+  const [projectNameCheckTimeout, setProjectNameCheckTimeout] =
     useState<NodeJS.Timeout | null>(null);
 
   // Form validation errors
-  const [domainNameError, setDomainNameError] = useState<string | null>(null);
-  const [displayProjectNameError, setDisplayProjectNameError] = useState<string | null>(null);
+  const [projectNameError, setProjectNameError] = useState<string | null>(null);
+  const [projectFullNameError, setProjectFullNameError] = useState<string | null>(null);
   const [maintainersErrors, setMaintainersErrors] = useState<
     Array<string | null>
   >([null]);
@@ -89,11 +89,11 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   }, [domainContractId]);
 
   // Function to check if a domain exists
-  const checkDomainExists = async (domain: string): Promise<boolean> => {
+  const checkProjectExists = async (name: string): Promise<boolean> => {
     try {
-      // Try to get the project with this name - if it exists, the domain is taken
-      const project = await getProjectFromName(domain);
-      return !!project && project.name === domain;
+      // Try to get the project with this name - if it exists, the name is taken
+      const project = await getProjectFromName(name);
+      return !!project && project.name === name;
     } catch (error: any) {
       // If we get a specific error that indicates the project doesn't exist, return false
       if (
@@ -112,24 +112,24 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
     }
   };
 
-  const validateDomainName = useCallback(async () => {
-    if (!domainName.trim()) {
-      throw new Error("Domain name cannot be empty");
+  const validateProjectNameAsync = useCallback(async () => {
+    if (!projectName.trim()) {
+      throw new Error("Project name cannot be empty");
     }
 
-    if (domainName.length < 4 || domainName.length > 15) {
-      throw new Error("The length of domain name should be between 4 and 15.");
+    if (projectName.length < 4 || projectName.length > 15) {
+      throw new Error("The length of project name should be between 4 and 15.");
     }
 
-    if (!/^[a-z]+$/.test(domainName)) {
-      throw new Error("Domain name can only contain lowercase letters (a-z)");
+    if (!/^[a-z]+$/.test(projectName)) {
+      throw new Error("Project name can only contain lowercase letters (a-z)");
     }
 
-    // Check domain availability
+    // Check project name availability
     try {
-      const domainExists = await checkDomainExists(domainName);
-      if (domainExists) {
-        throw new Error("Domain name already registered");
+      const projectExists = await checkProjectExists(projectName);
+      if (projectExists) {
+        throw new Error("Project name already registered");
       }
     } catch (err: any) {
       // Only re-throw if it's our custom "already registered" error
@@ -141,11 +141,11 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
 
     try {
       // First check in a try/catch to protect against non-existent projects
-      const project = await getProjectFromName(domainName);
+      const project = await getProjectFromName(projectName);
 
       // If we reach here, the project exists
-      if (project && project.name === domainName) {
-        throw new Error("Domain name already registered");
+      if (project && project.name === projectName) {
+        throw new Error("Project name already registered");
       }
     } catch (err: any) {
       // Check if it's a specific error that indicates the project doesn't exist
@@ -168,7 +168,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
 
     // If we get here, project exists but the name doesn't match exactly
     return true;
-  }, [domainName]);
+  }, [projectName]);
 
   // Update maintainersErrors array when maintainers change
   useEffect(() => {
@@ -179,57 +179,57 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (domainCheckTimeout) {
-        clearTimeout(domainCheckTimeout);
+      if (projectNameCheckTimeout) {
+        clearTimeout(projectNameCheckTimeout);
       }
     };
-  }, [domainCheckTimeout]);
+  }, [projectNameCheckTimeout]);
 
-  // Check domain availability with debounce
+  // Check project name availability with debounce
   useEffect(() => {
-    if (!domainName || domainName.length < 4) {
-      setDomainStatus(null);
+    if (!projectName || projectName.length < 4) {
+      setProjectNameStatus(null);
       return;
     }
 
-    setDomainStatus("checking");
+    setProjectNameStatus("checking");
 
     // Clear previous timeout if it exists
-    if (domainCheckTimeout) {
-      clearTimeout(domainCheckTimeout);
+    if (projectNameCheckTimeout) {
+      clearTimeout(projectNameCheckTimeout);
     }
 
-    // Set a new timeout to check domain availability
+    // Set a new timeout to check project name availability
     const timeout = setTimeout(async () => {
       try {
-        // Use the validateDomainName function to check availability
-        await validateDomainName();
-        // If we get here without an error, the domain is available
-        setDomainStatus("available");
+        // Use the validateProjectNameAsync function to check availability
+        await validateProjectNameAsync();
+        // If we get here without an error, the project name is available
+        setProjectNameStatus("available");
       } catch (error: any) {
-        // If the error message contains "already registered", the domain is unavailable
+        // If the error message contains "already registered", the project name is unavailable
         if (
           error.message &&
           (error.message.includes("already registered") ||
-            error.message.includes("Domain name already registered"))
+            error.message.includes("Project name already registered"))
         ) {
-          setDomainStatus("unavailable");
+          setProjectNameStatus("unavailable");
         } else {
           // Silently handle other errors
-          setDomainStatus(null);
+          setProjectNameStatus(null);
         }
       }
     }, 1000); // 1000ms (1 second) debounce
 
-    setDomainCheckTimeout(timeout);
+    setProjectNameCheckTimeout(timeout);
 
     // Cleanup on unmount
     return () => {
-      if (domainCheckTimeout) {
-        clearTimeout(domainCheckTimeout);
+      if (projectNameCheckTimeout) {
+        clearTimeout(projectNameCheckTimeout);
       }
     };
-  }, [domainName, validateDomainName]);
+  }, [projectName, validateProjectNameAsync]);
 
   const validateMaintainers = () => {
     let isValid = true;
@@ -308,8 +308,6 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
         throw new Error("Please connect your wallet first");
       }
 
-      // ── Build TOML content ───────────────────────────────────────────────
-      // Use displayProjectName for ORG_DBA (Doing Business As) - the human-readable display name
       const tomlContent =`VERSION="2.0.0"
 
 ACCOUNTS=[
@@ -317,7 +315,7 @@ ${maintainerAddresses.map((a) => `    "${a}"`).join(",\n")}
 ]
 
 [DOCUMENTATION]
-ORG_DBA="${displayProjectName.trim()}"
+ORG_DBA="${projectFullName.trim()}"
 ORG_NAME="${orgName}"
 ORG_URL="${orgUrl}"
 ORG_LOGO="${orgLogo}"
@@ -337,7 +335,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
       const { createProjectFlow } = await import("@service/FlowService");
 
       await createProjectFlow({
-        projectName: domainName, // domainName is the on-chain identifier
+        projectName, // on-chain identifier
         tomlFile,
         githubRepoUrl,
         maintainers: maintainerAddresses,
@@ -345,7 +343,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
       });
 
       // ── Continue with existing UI/state updates ───────────────────────
-      const project = await getProjectFromName(domainName);
+      const project = await getProjectFromName(projectName);
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
 
@@ -369,7 +367,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
 
       onClose();
 
-      navigate(`/project?name=${domainName}`);
+      navigate(`/project?name=${projectName}`);
     } catch (err: any) {
       toast.error("Something Went Wrong!", err.message);
       return;
@@ -378,34 +376,34 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
     }
   };
 
-  // Validate domain name and set error
-  const validateAndSetDomainNameError = async () => {
+  // Validate project name and set error
+  const validateAndSetProjectNameError = async () => {
     try {
       // First check basic validation
-      const nameError = validateProjectNameUtil(domainName);
+      const nameError = validateProjectNameUtil(projectName);
       if (nameError) {
-        setDomainNameError(nameError);
+        setProjectNameError(nameError);
         return false;
       }
 
-      // Check domain availability
+      // Check project name availability
       try {
-        const domainExists = await checkDomainExists(domainName);
-        if (domainExists) {
-          setDomainNameError("Domain name already registered");
+        const projectExists = await checkProjectExists(projectName);
+        if (projectExists) {
+          setProjectNameError("Project name already registered");
           return false;
         }
       } catch (err: any) {
         if (err.message && err.message.includes("already registered")) {
-          setDomainNameError("Domain name already registered");
+          setProjectNameError("Project name already registered");
           return false;
         }
       }
 
-      setDomainNameError(null);
+      setProjectNameError(null);
       return true;
     } catch (error: any) {
-      setDomainNameError(error.message || "Invalid domain name");
+      setProjectNameError(error.message || "Invalid project name");
       return false;
     }
   };
@@ -420,7 +418,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
       onClose={onClose}
       onSuccess={() => {
         onClose();
-        navigate(`/project?name=${domainName}`);
+        navigate(`/project?name=${projectName}`);
       }}
       step={step}
       setStep={setStep}
@@ -452,34 +450,34 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                   <Step step={step} totalSteps={5} />
                   <Title
                     title="Welcome to Your New Project!"
-                    description="Add your project's domain name and display name to get started."
+                    description="Add your project name and display name to get started."
                   />
                 </div>
                 <div className="relative">
                   <Input
-                    label="Soroban Domain Name"
-                    placeholder="Write the domain name (e.g., myproject)"
-                    value={domainName}
+                    label="Project Name (On-chain)"
+                    placeholder="Write the project name (e.g., myproject)"
+                    value={projectName}
                     onChange={(e) => {
                       // Only allow lowercase letters a-z
                       const validInput = e.target.value.replace(/[^a-z]/g, "");
-                      setDomainName(validInput);
-                      setDomainNameError(null); // Clear error when typing
+                      setProjectName(validInput);
+                      setProjectNameError(null); // Clear error when typing
                     }}
                     description={
-                      domainName.length >= 4 &&
-                      domainName.length <= 15 &&
-                      /^[a-z]+$/.test(domainName)
+                      projectName.length >= 4 &&
+                      projectName.length <= 15 &&
+                      /^[a-z]+$/.test(projectName)
                         ? "This will be your unique on-chain identifier (e.g., myproject.xlm)"
-                        : "Domain name should be between 4-15 lowercase letters (a-z)"
+                        : "Project name should be between 4-15 lowercase letters (a-z)"
                     }
-                    error={domainNameError}
+                    error={projectNameError}
                   />
-                  {domainStatus && (
+                  {projectNameStatus && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/3 flex items-center">
-                      {domainStatus === "checking" ? (
+                      {projectNameStatus === "checking" ? (
                         <Spinner />
-                      ) : domainStatus === "available" ? (
+                      ) : projectNameStatus === "available" ? (
                         <div className="flex items-center text-green-600">
                           <img
                             src="/icons/check.svg"
@@ -502,15 +500,15 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                   )}
                 </div>
                 <Input
-                  label="Project Name"
+                  label="Project Full Name"
                   placeholder="My Awesome Project"
-                  value={displayProjectName}
+                  value={projectFullName}
                   onChange={(e) => {
-                    setDisplayProjectName(e.target.value);
-                    setDisplayProjectNameError(null);
+                    setProjectFullName(e.target.value);
+                    setProjectFullNameError(null);
                   }}
                   description="Human-readable name shown in the UI (can be longer than 15 characters)."
-                  error={displayProjectNameError}
+                  error={projectFullNameError}
                 />
               </div>
             </div>
@@ -528,22 +526,22 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                 onClick={async () => {
                   setIsLoading(true);
                   try {
-                    // Validate project name (required)
-                    if (!displayProjectName.trim()) {
-                      setDisplayProjectNameError("Project name is required");
+                    // Validate project full name (required)
+                    if (!projectFullName.trim()) {
+                      setProjectFullNameError("Project full name is required");
                       setIsLoading(false);
                       return;
                     }
                     
-                    // Perform domain name validation
-                    const isValid = await validateAndSetDomainNameError();
+                    // Perform project name validation
+                    const isValid = await validateAndSetProjectNameError();
 
                     if (isValid) {
                       setStep(step + 1);
                     }
                   } catch (err: any) {
-                    setDomainNameError(
-                      err.message || "Domain name validation failed",
+                    setProjectNameError(
+                      err.message || "Project name validation failed",
                     );
                   } finally {
                     setIsLoading(false);
@@ -822,12 +820,12 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                 Back to the First Step
               </Button>
             </div>
-            <Label label="Soroban Domain Name">
-              <p className="leading-6 text-xl text-primary">{domainName}.xlm</p>
+            <Label label="Project Name (On-chain)">
+              <p className="leading-6 text-xl text-primary">{projectName}.xlm</p>
             </Label>
-            {displayProjectName && (
-              <Label label="Display Project Name">
-                <p className="leading-6 text-xl text-primary">{displayProjectName}</p>
+            {projectFullName && (
+              <Label label="Project Full Name">
+                <p className="leading-6 text-xl text-primary">{projectFullName}</p>
               </Label>
             )}
           </div>

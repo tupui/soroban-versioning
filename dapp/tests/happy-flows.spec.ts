@@ -93,10 +93,10 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
     const textElements = await page.locator(".project-modal-container *").all();
     console.log("Total elements in modal:", textElements.length);
 
-    // Wait for the first step to be fully rendered - check for domain name input
+    // Wait for the first step to be fully rendered - check for project name input
     await expect(
       page.locator(
-        ".project-modal-container input[placeholder='Write the domain name (e.g., myproject)']",
+        ".project-modal-container input[placeholder='Write the project name (e.g., myproject)']",
       ),
     ).toBeVisible();
 
