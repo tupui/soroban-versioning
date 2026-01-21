@@ -212,7 +212,7 @@ export function parseSSHSignature(signatureText: string): Buffer {
     );
   }
 
-  console.log("[DEBUG] Decoded signature size:", data.length, "bytes"); // ← helpful
+  console.log("[DEBUG] Decoded signature size:", data.length, "bytes"); 
 
   if (data.length < 100 || data.length > 300) {
     throw new Error(`Unrealistic decoded size for SSH signature: ${data.length} bytes`);

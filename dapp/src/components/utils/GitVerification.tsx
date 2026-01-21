@@ -12,6 +12,7 @@ import {
   validateGitVerification,
   type GitVerificationData
 } from "../../utils/gitVerification";
+import CopyButton from "./CopyButton";
 import { toast } from "utils/utils";
 
 interface GitVerificationProps {
@@ -226,18 +227,27 @@ const GitVerification: FC<GitVerificationProps> = ({
           <div className="bg-blue-50 p-4 rounded">
             <h4 className="font-medium text-blue-900 mb-2">Sign this envelope with your Git key:</h4>
             <div className="space-y-2">
-              <div>
-                <p className="text-sm text-blue-800 mb-1">SSH Command:</p>
-                <code className="block p-2 bg-blue-100 rounded text-xs break-all">
-                  {generateSSHSignCommand(envelope).replace(/\s*\/dev\/stdin\s*/g, "")}
-                </code>
+              <div className="flex items-start gap-2">
+                <div className="flex-1">
+                  <p className="text-sm text-blue-800 mb-1">SSH Command:</p>
+                  <code className="block p-2 bg-blue-100 rounded text-xs break-all">
+                    {generateSSHSignCommand(envelope).replace(/\s*\/dev\/stdin\s*/g, "")}
+                  </code>
+                </div>
+                <CopyButton textToCopy={generateSSHSignCommand(envelope).replace(/\s*\/dev\/stdin\s*/g, "")} size="sm" />
               </div>
-              <div>
-                <p className="text-sm text-blue-800 mb-1">GPG Command:</p>
-                <code className="block p-2 bg-blue-100 rounded text-xs break-all">
-                  {generateGPGSignCommand(envelope)}
-                </code>
+              {/* Only show GPG command if not using SSH key (future extensibility) */}
+              {/*
+              <div className="flex items-start gap-2">
+                <div className="flex-1">
+                  <p className="text-sm text-blue-800 mb-1">GPG Command:</p>
+                  <code className="block p-2 bg-blue-100 rounded text-xs break-all">
+                    {generateGPGSignCommand(envelope)}
+                  </code>
+                </div>
+                <CopyButton textToCopy={generateGPGSignCommand(envelope)} size="sm" />
               </div>
+              */}
             </div>
           </div>
 
