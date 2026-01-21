@@ -13,6 +13,7 @@ mod outcomes_contract {
 
 mod contract_dao;
 mod contract_membership;
+mod contract_organization;
 mod contract_tansu;
 mod contract_versioning;
 mod errors;
@@ -154,6 +155,42 @@ pub trait DaoTrait {
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 
     fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal;
+}
+
+pub trait OrganizationTrait {
+    fn register_organization(
+        env: Env,
+        maintainer: Address,
+        name: String,
+        maintainers: Vec<Address>,
+        ipfs: String,
+    ) -> Bytes;
+
+    fn add_project_to_organization(
+        env: Env,
+        maintainer: Address,
+        organization_key: Bytes,
+        project_key: Bytes,
+    );
+
+    fn get_organization(env: Env, organization_key: Bytes) -> types::Organization;
+
+    fn get_organization_projects(
+        env: Env,
+        organization_key: Bytes,
+        page: u32,
+    ) -> Vec<types::Project>;
+
+    fn get_organization_projects_count(env: Env, organization_key: Bytes) -> u32;
+
+    fn get_organizations(env: Env, page: u32) -> Vec<types::Organization>;
+
+    fn update_organization_config(
+        env: Env,
+        maintainer: Address,
+        organization_key: Bytes,
+        ipfs: String,
+    );
 }
 
 fn auth_maintainers(env: &Env, maintainer: &Address, project_key: &Bytes) -> types::Project {

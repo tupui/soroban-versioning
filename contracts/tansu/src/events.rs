@@ -121,3 +121,30 @@ pub struct UpgradeStatus {
     pub wasm_hash: Bytes,
     pub status: String,
 }
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct OrganizationRegistered {
+    #[topic]
+    pub organization_key: Bytes,
+    pub name: String,
+    pub maintainer: Address,
+}
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ProjectAddedToOrganization {
+    #[topic]
+    pub organization_key: Bytes,
+    #[topic]
+    pub project_key: Bytes,
+    pub maintainer: Address,
+}
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct OrganizationConfigUpdated {
+    #[topic]
+    pub organization_key: Bytes,
+    pub maintainer: Address,
+}

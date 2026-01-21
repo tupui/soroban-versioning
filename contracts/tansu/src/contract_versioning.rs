@@ -49,6 +49,7 @@ impl VersioningTrait for Tansu {
             name: name.clone(),
             config: types::Config { url, ipfs },
             maintainers: maintainers.clone(),
+            organization_key: None, // Can be set later via add_project_to_organization
         };
         let str_len = name.len() as usize;
         if str_len > 15 {
