@@ -13,6 +13,19 @@ Metadata on the projects are defined in a TOML file using the [SEP-1](https://gi
 - `ACCOUNTS`: public keys of the maintainers
 - `PRINCIPALS`: information about maintainers. At least the GitHub handle should be present.
 
+## Project Name vs Domain Name
+
+When registering a project, you specify two names:
+
+1. **Soroban Domain name** (e.g., `myproject`): The on-chain identifier limited to 15 lowercase letters, registered on [Soroban Domains](https://sorobandomains.org/).
+
+2. **Project Name** (`PROJECT_NAME` in tansu.toml): The human-readable display name shown in the UI. This is a required field and can be different from your domain name.
+
+This separation is useful for:
+- Organizations that want a more descriptive project name
+- Projects with names longer than 15 characters
+- Supporting multiple projects under the same organization domain
+
 :::note[Order matters]
 
 The order of both `ACCOUNTS` and `PRINCIPALS` is important as to link a maintainer with its public key.

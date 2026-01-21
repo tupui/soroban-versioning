@@ -34,9 +34,16 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
                 <p className="leading-4 text-base font-medium text-primary">
                   {projectInfo?.organizationName || "No organization name"}
                 </p>
-                <h2 className="leading-6 text-2xl font-medium text-primary">
-                  {projectInfo.projectName}
-                </h2>
+                <div className="flex flex-col gap-1">
+                  <h2 className="leading-6 text-2xl font-medium text-primary">
+                    {projectInfo.projectName}
+                  </h2>
+                  {projectInfo?.domainName && (
+                    <p className="text-sm font-mono text-secondary">
+                      {projectInfo.domainName}.xlm
+                    </p>
+                  )}
+                </div>
                 <p className="leading-4 text-base text-secondary">
                   {projectInfo?.description || "No description"}
                 </p>

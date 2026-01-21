@@ -7,6 +7,7 @@ ACCOUNTS=[
 ]
 
 [DOCUMENTATION]
+PROJECT_NAME="My Awesome Project"
 ORG_NAME="Organization Name"
 ORG_URL="https://www.domain.com"
 ORG_LOGO="https://www.domain.com/awesomelogo.png"

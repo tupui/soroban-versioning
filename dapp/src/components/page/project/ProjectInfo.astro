@@ -24,10 +24,13 @@ import Button from "components/utils/Button";
                   class="text-base sm:text-lg text-secondary"
                 >
                 </p>
-                <div class="flex gap-[18px]">
-                  <p id="project-name" class="text-2xl text-primary"></p>
-                  <div id="official-links" class="flex items-center gap-3">
+                <div class="flex flex-col gap-1">
+                  <div class="flex gap-[18px] items-center">
+                    <p id="project-name" class="text-2xl text-primary"></p>
+                    <div id="official-links" class="flex items-center gap-3">
+                    </div>
                   </div>
+                  <p id="project-domain-name" class="text-sm text-secondary font-mono"></p>
                 </div>
                 <p
                   id="project-description"
@@ -370,11 +373,26 @@ import Button from "components/utils/Button";
           );
         }
 
+        const configData = loadConfigData();
+        
         const projectNameElement = document.getElementById("project-name");
         if (projectNameElement) {
-          projectNameElement.textContent = projectInfo.name;
+          // Use display name from config (PROJECT_NAME from IPFS) if available, else fall back to domain name
+          projectNameElement.textContent = configData?.projectName || projectInfo.name;
         }
-        const configData = loadConfigData();
+        
+        // Show domain name if different from project name
+        const domainNameElement = document.getElementById("project-domain-name");
+        if (domainNameElement) {
+          const displayName = configData?.projectName || projectInfo.name;
+          const domainName = configData?.domainName || projectInfo.name;
+          // Only show domain name badge if it differs from the display name
+          if (displayName !== domainName) {
+            domainNameElement.textContent = `${domainName}.xlm`;
+          } else {
+            domainNameElement.textContent = `${domainName}.xlm`;
+          }
+        }
 
         const projectThumbnail = document.getElementById(
           "project-thumbnail",

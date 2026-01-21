@@ -27,8 +27,11 @@ export function truncateMiddle(str: string, maxLength: number): string {
 }
 
 export function extractConfigData(tomlData: any, project: Project) {
+  // PROJECT_NAME from IPFS metadata is the display name; falls back to on-chain domain name
+  const displayName = tomlData.DOCUMENTATION?.PROJECT_NAME || project.name;
   return {
-    projectName: project.name,
+    projectName: displayName,
+    domainName: project.name, // Soroban Domain name (on-chain identifier)
     logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
     thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
     description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",

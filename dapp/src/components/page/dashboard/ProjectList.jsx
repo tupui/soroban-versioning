@@ -222,6 +222,7 @@ const ProjectList = () => {
         } else {
           const configData = {
             projectName: project.name,
+            domainName: project.name, // Fallback: use on-chain name as both
             logoImageLink: undefined,
             thumbnailImageLink: "",
             description: "",
@@ -301,6 +302,7 @@ const ProjectList = () => {
             ? extractConfigData(tomlData, project)
             : {
                 projectName: project.name,
+                domainName: project.name, // Fallback: use on-chain name as both
                 logoImageLink: undefined,
                 thumbnailImageLink: "",
                 description: "",
@@ -319,6 +321,7 @@ const ProjectList = () => {
           }
           configuredProjects.push({
             projectName: project.name,
+            domainName: project.name, // Fallback: use on-chain name as both
             logoImageLink: undefined,
             thumbnailImageLink: "",
             description: "",
