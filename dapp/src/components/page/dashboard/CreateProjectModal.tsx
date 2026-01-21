@@ -311,7 +311,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
       // ── Build TOML content ───────────────────────────────────────────────
       // Use displayProjectName for the human-readable name; domainName for on-chain identifier
       const projectNameForToml = displayProjectName.trim();
-      const tomlContent = `VERSION="2.0.0"
+      const tomlContent =`VERSION="2.0.0"
 
 ACCOUNTS=[
 ${maintainerAddresses.map((a) => `    "${a}"`).join(",\n")}
