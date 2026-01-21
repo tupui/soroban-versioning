@@ -12,7 +12,7 @@ import Label from "components/utils/Label.tsx";
 import FlowProgressModal from "components/utils/FlowProgressModal.tsx";
 import Step from "components/utils/Step.tsx";
 import Title from "components/utils/Title.tsx";
-import { useState, type FC, useCallback, useEffect } from "react";
+import { useState, type FC, useEffect } from "react";
 import { getAuthorRepo } from "utils/editLinkFunctions";
 import { extractConfigData, toast } from "utils/utils";
 import {
@@ -23,12 +23,6 @@ import {
 import Textarea from "components/utils/Textarea.tsx";
 import Spinner from "components/utils/Spinner.tsx";
 
-// Get domain contract ID from environment with fallback
-const SOROBAN_DOMAIN_CONTRACT_ID =
-  import.meta.env.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID ||
-  "CAXOTRU4DBR736ZG4E7VBFKGVCCHG6FOH7HFXMB3BH27VUKPHOJWO3XM"; // Fallback value
-
-// Define ModalProps type for the modal component
 type ModalProps = {
   onClose: () => void;
 };
@@ -44,12 +38,9 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [maintainerGithubs, setMaintainerGithubs] = useState<string[]>([""]);
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [domainContractId] = useState(SOROBAN_DOMAIN_CONTRACT_ID);
   const [domainStatus, setDomainStatus] = useState<
     "checking" | "available" | "unavailable" | null
   >(null);
-  const [domainCheckTimeout, setDomainCheckTimeout] =
-    useState<NodeJS.Timeout | null>(null);
 
   // Form validation errors
   const [projectNameError, setProjectNameError] = useState<string | null>(null);
@@ -80,22 +71,11 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Verify domain contract ID on mount
-  useEffect(() => {
-    // Ensure it's a valid Stellar address format
-    if (!/^[A-Z0-9]{56}$/.test(domainContractId)) {
-      // Silent validation, don't log anything
-    }
-  }, [domainContractId]);
-
-  // Function to check if a domain exists
-  const checkProjectExists = async (name: string): Promise<boolean> => {
+  const checkDomainExists = async (name: string): Promise<boolean> => {
     try {
-      // Try to get the project with this name - if it exists, the name is taken
       const project = await getProjectFromName(name);
       return !!project && project.name === name;
     } catch (error: any) {
-      // If we get a specific error that indicates the project doesn't exist, return false
       if (
         error.message &&
         (error.message.includes("No project defined") ||
@@ -107,83 +87,14 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
       ) {
         return false;
       }
-      // Re-throw other errors
       throw error;
     }
   };
 
-  const validateProjectNameAsync = useCallback(async () => {
-    if (!projectName.trim()) {
-      throw new Error("Project name cannot be empty");
-    }
-
-    if (projectName.length < 4 || projectName.length > 15) {
-      throw new Error("The length of project name should be between 4 and 15.");
-    }
-
-    if (!/^[a-z]+$/.test(projectName)) {
-      throw new Error("Project name can only contain lowercase letters (a-z)");
-    }
-
-    // Check project name availability
-    try {
-      const projectExists = await checkProjectExists(projectName);
-      if (projectExists) {
-        throw new Error("Project name already registered");
-      }
-    } catch (err: any) {
-      // Only re-throw if it's our custom "already registered" error
-      if (err.message && err.message.includes("already registered")) {
-        throw err;
-      }
-      // For other errors, silently continue
-    }
-
-    try {
-      // First check in a try/catch to protect against non-existent projects
-      const project = await getProjectFromName(projectName);
-
-      // If we reach here, the project exists
-      if (project && project.name === projectName) {
-        throw new Error("Project name already registered");
-      }
-    } catch (err: any) {
-      // Check if it's a specific error that indicates the project doesn't exist
-      if (
-        err.message &&
-        (err.message.includes("No project defined") ||
-          err.message.includes("not found") ||
-          err.message.includes("record not found") ||
-          err.message.includes("Invalid Key"))
-      ) {
-        // This means the project doesn't exist, which is what we want
-        return true;
-      } else if (err.message && err.message.includes("already registered")) {
-        // Re-throw specific errors about project already being registered
-        throw err;
-      }
-      // For any other errors, assume it's safe to proceed
-      return true;
-    }
-
-    // If we get here, project exists but the name doesn't match exactly
-    return true;
-  }, [projectName]);
-
-  // Update maintainersErrors array when maintainers change
   useEffect(() => {
     setMaintainersErrors(maintainerAddresses.map(() => null));
     setGithubHandleErrors(maintainerGithubs.map(() => null));
   }, [maintainerAddresses.length]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (domainCheckTimeout) {
-        clearTimeout(domainCheckTimeout);
-      }
-    };
-  }, [domainCheckTimeout]);
 
   // Check domain availability with debounce
   useEffect(() => {
@@ -194,37 +105,22 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
 
     setDomainStatus("checking");
 
-    // Clear previous timeout if it exists
-    if (domainCheckTimeout) {
-      clearTimeout(domainCheckTimeout);
-    }
-
-    // Set a new timeout to check domain availability
     const timeout = setTimeout(async () => {
+      const nameError = validateProjectNameUtil(projectName);
+      if (nameError) {
+        setDomainStatus(null);
+        return;
+      }
       try {
-        await validateProjectNameAsync();
-        setDomainStatus("available");
-      } catch (error: any) {
-        if (
-          error.message &&
-          (error.message.includes("already registered") ||
-            error.message.includes("Project name already registered"))
-        ) {
-          setDomainStatus("unavailable");
-        } else {
-          setDomainStatus(null);
-        }
+        const exists = await checkDomainExists(projectName);
+        setDomainStatus(exists ? "unavailable" : "available");
+      } catch {
+        setDomainStatus(null);
       }
     }, 1000);
 
-    setDomainCheckTimeout(timeout);
-
-    return () => {
-      if (domainCheckTimeout) {
-        clearTimeout(domainCheckTimeout);
-      }
-    };
-  }, [projectName, validateProjectNameAsync]);
+    return () => clearTimeout(timeout);
+  }, [projectName]);
 
   const validateMaintainers = () => {
     let isValid = true;
@@ -373,34 +269,24 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
 
   // Validate project name and set error
   const validateAndSetProjectNameError = async () => {
-    try {
-      // First check basic validation
-      const nameError = validateProjectNameUtil(projectName);
-      if (nameError) {
-        setProjectNameError(nameError);
-        return false;
-      }
-
-      // Check project name availability
-      try {
-        const projectExists = await checkProjectExists(projectName);
-        if (projectExists) {
-          setProjectNameError("Project name already registered");
-          return false;
-        }
-      } catch (err: any) {
-        if (err.message && err.message.includes("already registered")) {
-          setProjectNameError("Project name already registered");
-          return false;
-        }
-      }
-
-      setProjectNameError(null);
-      return true;
-    } catch (error: any) {
-      setProjectNameError(error.message || "Invalid project name");
+    const nameError = validateProjectNameUtil(projectName);
+    if (nameError) {
+      setProjectNameError(nameError);
       return false;
     }
+
+    try {
+      const exists = await checkDomainExists(projectName);
+      if (exists) {
+        setProjectNameError("Already registered");
+        return false;
+      }
+    } catch {
+      // Continue on error
+    }
+
+    setProjectNameError(null);
+    return true;
   };
 
   const [githubHandleErrors, setGithubHandleErrors] = useState<
