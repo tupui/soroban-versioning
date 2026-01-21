@@ -1,7 +1,7 @@
 export const featuredProjectsConfigData = [
   {
-    projectName: "Tansu - Git on Stellar",
-    domainName: "tansu", // Soroban Domain name (on-chain identifier)
+    projectName: "tansu",
+    projectFullName: "Tansu - Git on Stellar",
     logoImageLink:
       "https://github.com/tupui/soroban-versioning/blob/main/website/static/img/logo.svg",
     description: "Decentralized project governance on Stellar",

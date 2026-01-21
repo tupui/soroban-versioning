@@ -19,8 +19,8 @@ import { projectCardModalOpen } from "../../../utils/store";
 import { extractConfigData, toast } from "../../../utils/utils";
 
 interface ProjectConfig {
-  projectName: string; // Display name from IPFS
-  domainName?: string; // Soroban Domain name (on-chain identifier)
+  projectName: string;
+  projectFullName?: string;
   description?: string;
   logoImageLink?: string | null;
   officials: {
@@ -32,14 +32,11 @@ interface ProjectConfig {
 }
 
 const ProjectCard = ({ config }: { config: ProjectConfig }) => {
-  // Use domainName for on-chain lookups, fall back to projectName for backwards compatibility
-  const onChainName = config.domainName || config.projectName;
-  
   const handleCardClick = async () => {
     refreshLocalStorage();
     try {
-      setProjectId(onChainName);
-      const project = await getProjectFromName(onChainName);
+      setProjectId(config.projectName);
+      const project = await getProjectFromName(config.projectName);
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
         const { username, repoName } = getAuthorRepo(project.config.url);
@@ -71,7 +68,7 @@ const ProjectCard = ({ config }: { config: ProjectConfig }) => {
       } else {
         toast.error(
           "Something Went Wrong!",
-          `There is not such project: ${onChainName}`,
+          `There is not such project: ${config.projectName}`,
         );
       }
     } catch (e: any) {
@@ -100,16 +97,9 @@ const ProjectCard = ({ config }: { config: ProjectConfig }) => {
       </div>
       <div className="flex-grow bg-white p-4 sm:p-6 flex flex-col gap-4 sm:gap-[30px] justify-between">
         <div className="flex flex-col gap-2 sm:gap-3">
-          <div className="flex flex-col gap-1">
-            <h3 className="project-name text-xl sm:text-2xl leading-6 font-medium font-firamono text-pink">
-              {config.projectName || "No project name"}
-            </h3>
-            {config.domainName && (
-              <p className="domain-name text-xs sm:text-sm font-mono text-secondary">
-                {config.domainName}.xlm
-              </p>
-            )}
-          </div>
+          <h3 className="project-name text-xl sm:text-2xl leading-6 font-medium font-firamono text-pink">
+            {config.projectFullName || config.projectName || "No project name"}
+          </h3>
           <p className="description text-sm sm:text-base font-victormono text-zinc-800 line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem]">
             {config.description || "No description"}
           </p>

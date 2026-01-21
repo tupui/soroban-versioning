@@ -27,11 +27,11 @@ export function truncateMiddle(str: string, maxLength: number): string {
 }
 
 export function extractConfigData(tomlData: any, project: Project) {
-  // PROJECT_NAME from IPFS metadata is the display name; falls back to on-chain domain name
-  const displayName = tomlData.DOCUMENTATION?.PROJECT_NAME || project.name;
+  // ORG_DBA (Doing Business As) from IPFS metadata is the full display name
+  const fullName = tomlData.DOCUMENTATION?.ORG_DBA || project.name;
   return {
-    projectName: displayName,
-    domainName: project.name, // Soroban Domain name (on-chain identifier)
+    projectName: project.name, // On-chain name
+    projectFullName: fullName, // Display name from IPFS
     logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
     thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
     description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",

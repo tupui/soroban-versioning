@@ -1,6 +1,6 @@
 export interface ConfigData {
-  projectName: string; // Display name from IPFS (PROJECT_NAME), falls back to domainName
-  domainName: string; // Soroban Domain name (on-chain identifier, max 15 chars)
+  projectName: string; // On-chain name (Soroban Domain identifier)
+  projectFullName: string; // Display name from IPFS (ORG_DBA), falls back to projectName
   logoImageLink: string;
   thumbnailImageLink: string;
   description: string;

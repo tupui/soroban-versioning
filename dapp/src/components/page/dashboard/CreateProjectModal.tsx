@@ -309,8 +309,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
       }
 
       // ── Build TOML content ───────────────────────────────────────────────
-      // Use displayProjectName for the human-readable name; domainName for on-chain identifier
-      const projectNameForToml = displayProjectName.trim();
+      // Use displayProjectName for ORG_DBA (Doing Business As) - the human-readable display name
       const tomlContent =`VERSION="2.0.0"
 
 ACCOUNTS=[
@@ -318,7 +317,7 @@ ${maintainerAddresses.map((a) => `    "${a}"`).join(",\n")}
 ]
 
 [DOCUMENTATION]
-PROJECT_NAME="${projectNameForToml}"
+ORG_DBA="${displayProjectName.trim()}"
 ORG_NAME="${orgName}"
 ORG_URL="${orgUrl}"
 ORG_LOGO="${orgLogo}"

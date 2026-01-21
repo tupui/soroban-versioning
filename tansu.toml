@@ -5,7 +5,7 @@ ACCOUNTS = [
 ]
 
 [DOCUMENTATION]
-PROJECT_NAME = "Tansu - Git on Stellar"
+ORG_DBA = "Tansu - Git on Stellar"
 ORG_NAME = "Consulting Manao GmbH"
 ORG_URL = "https://tansu.dev"
 ORG_LOGO = "https://github.com/tupui/soroban-versioning/blob/main/website/static/img/logo.svg"
