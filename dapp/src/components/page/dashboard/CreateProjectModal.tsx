@@ -45,10 +45,10 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [domainContractId] = useState(SOROBAN_DOMAIN_CONTRACT_ID);
-  const [projectNameStatus, setProjectNameStatus] = useState<
+  const [domainStatus, setDomainStatus] = useState<
     "checking" | "available" | "unavailable" | null
   >(null);
-  const [projectNameCheckTimeout, setProjectNameCheckTimeout] =
+  const [domainCheckTimeout, setDomainCheckTimeout] =
     useState<NodeJS.Timeout | null>(null);
 
   // Form validation errors
@@ -179,54 +179,49 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
-      if (projectNameCheckTimeout) {
-        clearTimeout(projectNameCheckTimeout);
+      if (domainCheckTimeout) {
+        clearTimeout(domainCheckTimeout);
       }
     };
-  }, [projectNameCheckTimeout]);
+  }, [domainCheckTimeout]);
 
-  // Check project name availability with debounce
+  // Check domain availability with debounce
   useEffect(() => {
     if (!projectName || projectName.length < 4) {
-      setProjectNameStatus(null);
+      setDomainStatus(null);
       return;
     }
 
-    setProjectNameStatus("checking");
+    setDomainStatus("checking");
 
     // Clear previous timeout if it exists
-    if (projectNameCheckTimeout) {
-      clearTimeout(projectNameCheckTimeout);
+    if (domainCheckTimeout) {
+      clearTimeout(domainCheckTimeout);
     }
 
-    // Set a new timeout to check project name availability
+    // Set a new timeout to check domain availability
     const timeout = setTimeout(async () => {
       try {
-        // Use the validateProjectNameAsync function to check availability
         await validateProjectNameAsync();
-        // If we get here without an error, the project name is available
-        setProjectNameStatus("available");
+        setDomainStatus("available");
       } catch (error: any) {
-        // If the error message contains "already registered", the project name is unavailable
         if (
           error.message &&
           (error.message.includes("already registered") ||
             error.message.includes("Project name already registered"))
         ) {
-          setProjectNameStatus("unavailable");
+          setDomainStatus("unavailable");
         } else {
-          // Silently handle other errors
-          setProjectNameStatus(null);
+          setDomainStatus(null);
         }
       }
-    }, 1000); // 1000ms (1 second) debounce
+    }, 1000);
 
-    setProjectNameCheckTimeout(timeout);
+    setDomainCheckTimeout(timeout);
 
-    // Cleanup on unmount
     return () => {
-      if (projectNameCheckTimeout) {
-        clearTimeout(projectNameCheckTimeout);
+      if (domainCheckTimeout) {
+        clearTimeout(domainCheckTimeout);
       }
     };
   }, [projectName, validateProjectNameAsync]);
@@ -473,11 +468,11 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
                     }
                     error={projectNameError}
                   />
-                  {projectNameStatus && (
+                  {domainStatus && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/3 flex items-center">
-                      {projectNameStatus === "checking" ? (
+                      {domainStatus === "checking" ? (
                         <Spinner />
-                      ) : projectNameStatus === "available" ? (
+                      ) : domainStatus === "available" ? (
                         <div className="flex items-center text-green-600">
                           <img
                             src="/icons/check.svg"
