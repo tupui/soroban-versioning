@@ -20,6 +20,9 @@ import { setupAnonymousVoting } from "@service/ContractService";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
 import Loading from "components/utils/Loading";
+import TemplateSelector from './TemplateSelector';
+import { type ProposalTemplate } from '../../../constants/proposalTemplates';
+
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -72,6 +75,10 @@ const CreateProposalModal = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+
+const [selectedTemplate, setSelectedTemplate] = useState<ProposalTemplate | null>(null);
+const [hasModifiedTemplate, setHasModifiedTemplate] = useState(false);
 
   const checkSubmitAvailability = () => {
     if (!connectedAddress) throw new Error("Please connect your wallet first");
@@ -332,6 +339,26 @@ const CreateProposalModal = () => {
     setStep(1);
   };
 
+
+  const handleTemplateSelect = (template: ProposalTemplate) => {
+    setSelectedTemplate(template);
+    setMdText(template.content);
+    setHasModifiedTemplate(false);
+    
+    // Extract proposal name from template if it follows pattern
+    const titleMatch = template.content.match(/^#\s*(.*?)(?:\n|$)/m);
+    if (titleMatch && titleMatch[1]) {
+      const extractedTitle = titleMatch[1]
+        .replace(/\[.*?\]/g, '') // Remove brackets
+        .trim();
+      
+      // Only set if proposalName is empty or matches placeholder
+      if (!proposalName || proposalName === extractedTitle || proposalName.includes('[')) {
+        setProposalName(extractedTitle || '');
+      }
+    }
+  };
+
   if (!showModal) return <></>;
 
   return (
@@ -441,6 +468,36 @@ const CreateProposalModal = () => {
               </div>
             </div>
 
+            {/* Add this after the Proposal Name input and before Description section */}
+            <TemplateSelector
+              onTemplateSelect={handleTemplateSelect}
+              currentContent={mdText}
+              disabled={!proposalName.trim()} // Only enable after proposal name is entered
+            />
+
+            {/* Template Indicator Badge */}
+            {selectedTemplate && (
+              <div className="flex items-center gap-2 mb-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span className="text-sm text-blue-700 dark:text-blue-300">
+                  Using template: <strong>{selectedTemplate.name}</strong>
+                  {hasModifiedTemplate && ' (modified)'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedTemplate(null);
+                    setHasModifiedTemplate(false);
+                  }}
+                  className="ml-auto text-xs text-red-600 dark:text-red-400 hover:text-red-800"
+                >
+                  Remove template
+                </button>
+              </div>
+            )}
+
             {/* Description Section */}
             <div className="flex flex-col gap-4 sm:gap-[18px]">
               <p className="text-base font-semibold text-primary">
@@ -449,15 +506,21 @@ const CreateProposalModal = () => {
               <div
                 className={`rounded-md border ${descriptionError ? "border-red-500" : "border-zinc-700"} overflow-hidden`}
               >
+              
                 <SimpleMarkdownEditor
                   value={mdText}
                   onChange={(value) => {
                     setMdText(value);
                     setDescriptionError(null);
+                    // Track if user modifies template content
+                    if (selectedTemplate && !hasModifiedTemplate && value !== selectedTemplate.content) {
+                      setHasModifiedTemplate(true);
+                    }
                   }}
                   placeholder="Input your proposal description here..."
                 />
               </div>
+
 
               {/* Image upload controls */}
               <div className="flex flex-col gap-3">
@@ -665,12 +728,34 @@ const CreateProposalModal = () => {
             >
               Back
             </Button>
+          
             <Button
               data-testid="proposal-next"
               onClick={() => {
                 try {
-                  if (!validateApproveOutcome())
-                    throw new Error("Invalid approved outcome");
+                  if (!validateProposalNameField() || !validateDescriptionField())
+                    throw new Error("Invalid proposal name or description");
+
+                  // Check if using template with placeholders
+                  if (selectedTemplate && mdText.includes('[') && mdText.includes(']')) {
+                    const hasUnfilledPlaceholders = /\[.*?\]/.test(mdText);
+                    if (hasUnfilledPlaceholders) {
+                      const shouldContinue = confirm(
+                        'Your proposal still contains template placeholders (text in brackets). Continue anyway?'
+                      );
+                      if (!shouldContinue) return;
+                    }
+                  }
+
+                  if (isAnonymousVoting) {
+                    if (!existingAnonConfig || resetAnonKeys) {
+                      if (!generatedKeys) {
+                        throw new Error(
+                          "Anonymous voting keys have not been generated yet.",
+                        );
+                      }
+                    }
+                  }
 
                   setStep(step + 1);
                 } catch (err: any) {
@@ -678,10 +763,11 @@ const CreateProposalModal = () => {
                   toast.error("Submit proposal", err.message);
                 }
               }}
-              className="w-full sm:w-auto"
             >
               Next
             </Button>
+
+
           </div>
         </div>
       ) : step == 3 ? (
@@ -833,8 +919,17 @@ const CreateProposalModal = () => {
                   {proposalName}
                 </p>
               </Label>
+              {/* <Label label="Proposal description">
+                <ExpandableText>{mdText}</ExpandableText>
+              </Label> */}
+
               <Label label="Proposal description">
                 <ExpandableText>{mdText}</ExpandableText>
+                {selectedTemplate && (
+                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Created using template: <span className="font-medium">{selectedTemplate.name}</span>
+                  </div>
+                )}
               </Label>
             </div>
 
