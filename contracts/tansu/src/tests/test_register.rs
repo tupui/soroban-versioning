@@ -177,3 +177,37 @@ fn test_project_listing() {
     let err = setup.contract.try_get_projects(&2).unwrap_err().unwrap();
     assert_eq!(err, ContractErrors::NoProjectPageFound.into());
 }
+
+#[test]
+fn test_sub_projects() {
+    let setup = create_test_data();
+    let client = &setup.contract;
+    let env = &setup.env;
+    let maintainer = &setup.grogu;
+
+    // Register a project
+    let project_id = init_contract(&setup);
+
+    // First get: should return empty vector
+    let sub_projects_before = client.get_sub_projects(&project_id);
+    assert_eq!(sub_projects_before.len(), 0);
+
+    // Register a second project to use as sub-project
+    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
+    setup.token_stellar.mint(maintainer, &genesis_amount);
+
+    let name2 = String::from_str(env, "subproject");
+    let url2 = String::from_str(env, "github.com/subproject");
+    let ipfs2 = String::from_str(env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710991");
+    let maintainers2 = vec![env, maintainer.clone()];
+    let sub_project_id = client.register(maintainer, &name2, &maintainers2, &url2, &ipfs2);
+
+    // Set sub-projects
+    let sub_projects = vec![env, sub_project_id.clone()];
+    client.set_sub_projects(maintainer, &project_id, &sub_projects);
+
+    // Second get: should return the sub-project we just set
+    let sub_projects_after = client.get_sub_projects(&project_id);
+    assert_eq!(sub_projects_after.len(), 1);
+    assert_eq!(sub_projects_after.get(0).unwrap(), sub_project_id);
+}
