@@ -31,6 +31,10 @@ interface CreateProposalFlowParams {
 interface JoinCommunityFlowParams {
   memberAddress: string;
   profileFiles: File[];
+  git_identity?: string;
+  git_pubkey?: string;
+  msg?: string;
+  sig?: string;
   onProgress?: (step: number) => void;
 }
 
@@ -143,6 +147,10 @@ async function createSignedProposalTransaction(
 async function createSignedAddMemberTransaction(
   memberAddress: string,
   meta: string,
+  git_identity?: string,
+  git_pubkey?: string,
+  msg?: string,
+  sig?: string,
 ): Promise<string> {
   const address = memberAddress || loadedPublicKey();
   if (!address) throw new Error("Please connect your wallet first");
@@ -157,6 +165,10 @@ async function createSignedAddMemberTransaction(
   const tx = await Tansu.add_member({
     member_address: address,
     meta: meta,
+    git_identity,
+    git_pubkey,
+    msg,
+    sig,
   });
 
   // Check for simulation errors (contract errors) before signing
@@ -253,6 +265,10 @@ export async function createProposalFlow({
 export async function joinCommunityFlow({
   memberAddress,
   profileFiles,
+  git_identity,
+  git_pubkey,
+  msg,
+  sig,
   onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
   let cid = ""; // Default for no profile - use empty string instead of single space
@@ -271,6 +287,10 @@ export async function joinCommunityFlow({
   const signedTxXdr = await createSignedAddMemberTransaction(
     memberAddress,
     cid,
+    git_identity,
+    git_pubkey,
+    msg,
+    sig,
   );
 
   if (profileFiles.length > 0) {
