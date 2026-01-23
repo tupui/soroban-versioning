@@ -3,7 +3,7 @@ use super::test_utils::{create_test_data, init_contract};
 use crate::types::Project;
 use crate::{contract_versioning::domain_register, errors::ContractErrors};
 use soroban_sdk::testutils::Events;
-use soroban_sdk::{Bytes, IntoVal, Map, String, Symbol, Val, symbol_short, vec};
+use soroban_sdk::{Bytes, IntoVal, Map, String, Symbol, Val, Vec, symbol_short, vec};
 
 #[test]
 fn register_project() {
