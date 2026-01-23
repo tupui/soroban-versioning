@@ -47,17 +47,9 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
         const isMaintainer = publicKey
           ? projectInfo.maintainers.includes(publicKey)
           : false;
-        if (import.meta.env.DEV) {
-          console.log("ManageSubProjectsModal - isMaintainer:", isMaintainer, "publicKey:", publicKey, "maintainers:", projectInfo.maintainers);
-        }
         setShowButton(isMaintainer);
       })
-      .catch((err) => {
-        if (import.meta.env.DEV) {
-          console.error("ManageSubProjectsModal - walletService error:", err);
-        }
-        setShowButton(false);
-      });
+      .catch(() => setShowButton(false));
 
     loadCurrentSubProjects();
   }, [infoLoaded]);
@@ -79,9 +71,6 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
       
       // Check if method exists (contract might not be deployed yet)
       if (typeof (Tansu as any).get_sub_projects !== "function") {
-        if (import.meta.env.DEV) {
-          console.warn("get_sub_projects method not available - contract may not be deployed yet");
-        }
         setSubProjectNames([]);
         return;
       }

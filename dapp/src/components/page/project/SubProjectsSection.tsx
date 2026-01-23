@@ -31,9 +31,6 @@ const SubProjectsSection = () => {
         
         // Check if method exists (contract might not be deployed yet)
         if (typeof (Tansu as any).get_sub_projects !== "function") {
-          if (import.meta.env.DEV) {
-            console.warn("get_sub_projects method not available - contract may not be deployed yet");
-          }
           setSubProjects([]);
           setIsLoading(false);
           // Show commit history and contribution metrics
@@ -91,14 +88,13 @@ const SubProjectsSection = () => {
                 configData,
               });
             }
-          } catch (err) {
-            console.error("Error loading sub-project:", err);
+          } catch {
+            // Silently handle errors loading individual sub-projects
           }
         }
 
         setSubProjects(projects);
-      } catch (err) {
-        console.error("Error loading sub-projects:", err);
+      } catch {
         setSubProjects([]);
         // Show commit history and contribution metrics on error
         const commitHistorySection = document.getElementById("commit-history-section");
