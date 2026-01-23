@@ -34,6 +34,13 @@ const JoinCommunityModal: FC<{
   const [step, setStep] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
 
+  // Git binding states
+  const [gitHandle, setGitHandle] = useState<string>("");
+  const [gitPublicKey, setGitPublicKey] = useState<string>("");
+  const [gitSignature, setGitSignature] = useState<string>("");
+  const [gitMessage, setGitMessage] = useState<string>("");
+  const [showGitBinding, setShowGitBinding] = useState<boolean>(false);
+
   // Validation errors
   const [addressError, setAddressError] = useState<string | null>(null);
   const [socialError, setSocialError] = useState<string | null>(null);
@@ -132,9 +139,32 @@ const JoinCommunityModal: FC<{
     return error === null;
   };
 
+  const generateMessage = () => {
+    if (!gitHandle.trim() || !gitPublicKey.trim()) {
+      toast.error("Error", "Please enter your Git handle and public key first");
+      return;
+    }
+
+    const nonce =
+      (Math.random().toString(16).substring(2, 18) + "0000000000000000").substring(0, 16) +
+      (Math.random().toString(16).substring(2, 18) + "0000000000000000").substring(0, 16);
+
+    const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID || "TANSU";
+    const passphrase = import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE;
+
+    const payload = `tansu-bind|${contractId}|${gitHandle.trim()}`;
+    const msg = `Stellar Signed Message\n${passphrase}\n${address}\n${nonce}\n${payload}`;
+    setGitMessage(msg);
+  };
+
   const validateForm = (): boolean => {
     const isAddressValid = validateAddressField();
     const isSocialValid = validateSocialField();
+
+    if (showGitBinding && gitMessage && !gitSignature.trim()) {
+      toast.error("Signature Required", "Please provide the signature for your Git handle");
+      return false;
+    }
 
     return isAddressValid && isSocialValid;
   };
@@ -155,6 +185,10 @@ const JoinCommunityModal: FC<{
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: [],
+          ...(showGitBinding && gitHandle && { git_identity: gitHandle }),
+          ...(showGitBinding && gitPublicKey && { git_pubkey: gitPublicKey }),
+          ...(showGitBinding && gitMessage && { msg: gitMessage }),
+          ...(showGitBinding && gitSignature && { sig: gitSignature }),
           onProgress: setStep,
         });
 
@@ -201,6 +235,10 @@ const JoinCommunityModal: FC<{
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: files,
+          ...(showGitBinding && gitHandle && { git_identity: gitHandle }),
+          ...(showGitBinding && gitPublicKey && { git_pubkey: gitPublicKey }),
+          ...(showGitBinding && gitMessage && { msg: gitMessage }),
+          ...(showGitBinding && gitSignature && { sig: gitSignature }),
           onProgress: setStep,
         });
 
@@ -250,7 +288,7 @@ const JoinCommunityModal: FC<{
           className="flex-none w-[200px] md:w-[360px]"
           src="/images/team.svg"
         />
-        <div className="flex flex-col gap-4 md:gap-[30px] w-full">
+        <div className="flex flex-col gap-4 md:gap-[30px] w-full items-start">
           <h2 className="text-xl md:text-2xl font-bold text-primary">
             Join the Community
           </h2>
@@ -266,7 +304,7 @@ const JoinCommunityModal: FC<{
             error={addressError}
           />
 
-          <div className="pt-2 md:pt-4">
+          <div className="pt-2 md:pt-4 w-full">
             <p className="text-base font-medium text-primary mb-3 md:mb-4">
               Profile Information
             </p>
@@ -361,10 +399,78 @@ const JoinCommunityModal: FC<{
                   />
                 </div>
               </div>
+
+              <div className="mt-4 p-4 border rounded-lg bg-zinc-200/50">
+                <div className="flex items-center justify-between mb-2 pb-2 border-b">
+                  <div>
+                    <h3 className="text-lg font-semibold text-primary">
+                      Git Handle Binding
+                    </h3>
+                    <p className="text-sm text-secondary">
+                      Link your GitHub/GitLab handle to your profile (Optional)
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    className="w-5 h-5 rounded border-zinc-300 bg-white text-blue-600"
+                    checked={showGitBinding}
+                    onChange={(e) => setShowGitBinding(e.target.checked)}
+                  />
+                </div>
+
+                {showGitBinding && (
+                  <div className="flex flex-col gap-4 py-2">
+                    <Input
+                      label="Git Handle"
+                      placeholder="e.g. github:alice"
+                      value={gitHandle}
+                      onChange={(e) => setGitHandle(e.target.value)}
+                    />
+                    <Input
+                      label="Ed25519 Public Key (Hex)"
+                      placeholder="e.g. 1a2b3c..."
+                      value={gitPublicKey}
+                      onChange={(e) => setGitPublicKey(e.target.value)}
+                    />
+
+                    {!gitMessage ? (
+                      <Button type="secondary" onClick={generateMessage}>
+                        Generate Verification Message
+                      </Button>
+                    ) : (
+                      <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="flex flex-col gap-2">
+                          <label className="text-sm font-medium text-primary">
+                            Sign this message with your Git key:
+                          </label>
+                          <pre className="p-3 bg-white rounded border border-zinc-300 text-xs overflow-x-auto whitespace-pre-wrap text-primary font-mono select-all">
+                            {gitMessage}
+                          </pre>
+                          <Button
+                            type="secondary"
+                            onClick={() => {
+                              navigator.clipboard.writeText(gitMessage);
+                              toast.success("Copied", "Message copied to clipboard");
+                            }}
+                          >
+                            Copy Message
+                          </Button>
+                        </div>
+                        <Input
+                          label="Signature (Hex)"
+                          placeholder="Paste the resulting Ed25519 signature here"
+                          value={gitSignature}
+                          onChange={(e) => setGitSignature(e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-[18px]">
+          <div className="flex justify-end gap-[18px] w-full pt-4">
             <Button type="secondary" onClick={onClose}>
               Cancel
             </Button>
