@@ -176,23 +176,5 @@ pub struct Project {
     pub name: String,
     pub config: Config,
     pub maintainers: Vec<Address>,
-    pub organization_key: Option<Bytes>, // Optional reference to parent organization
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-pub struct Organization {
-    pub name: String,
-    pub maintainers: Vec<Address>,
-    pub config: Config, // Organization-level config (IPFS CID with org metadata)
-}
-
-#[contracttype]
-#[derive(Clone, Debug, PartialEq)]
-pub enum OrganizationKey {
-    Key(Bytes),                    // UUID of the organization from keccak256(name)
-    OrganizationProjects(Bytes),   // List of project keys in organization, pagination
-    OrganizationProjectsPage(Bytes, u32), // Paginated project keys
-    TotalOrganizations,            // Total number of organizations
-    OrganizationKeys(u32),        // List of organization keys, pagination
+    pub sub_projects: Option<Vec<Bytes>>, // If not empty, this project is an organization
 }

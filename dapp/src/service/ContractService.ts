@@ -128,16 +128,16 @@ export async function voteToProposal(
   if (customWeight !== undefined) {
     weight = customWeight;
   } else {
-    try {
-      const weightTx = await client.get_max_weight({
-        project_key: projectKey,
-        member_address: client.options.publicKey!,
-      });
-      // Check for simulation errors (contract errors)
-      checkSimulationError(weightTx as any);
-      weight = Number(weightTx.result) || 1;
-    } catch {
-      // Default weight
+  try {
+    const weightTx = await client.get_max_weight({
+      project_key: projectKey,
+      member_address: client.options.publicKey!,
+    });
+    // Check for simulation errors (contract errors)
+    checkSimulationError(weightTx as any);
+    weight = Number(weightTx.result) || 1;
+  } catch {
+    // Default weight
     }
   }
 

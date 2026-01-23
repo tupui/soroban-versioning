@@ -74,13 +74,7 @@ export interface Project {
   config: Config;
   maintainers: Array<string>;
   name: string;
-  organization_key: Option<Buffer>;
-}
-
-export interface Organization {
-  config: Config;
-  maintainers: Array<string>;
-  name: string;
+  sub_projects: Option<Array<Buffer>>;
 }
 
 export interface Contract {
@@ -950,112 +944,44 @@ export interface Client {
   ) => Promise<AssembledTransaction<null>>;
 
   /**
-   * Construct and simulate a register_organization transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Register a new organization.
-   *
-   * Creates a new organization entry with maintainers and configuration.
-   * Organizations can group multiple projects together.
+   * Construct and simulate a get_sub_projects transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Get sub-projects for a project (if it's an organization).
    *
    * # Arguments
    * * `env` - The environment object
-   * * `maintainer` - The address of the maintainer calling this function
-   * * `name` - The organization name (max 15 characters)
-   * * `maintainers` - List of maintainer addresses for the organization
-   * * `ipfs` - CID of the organization's tansu.toml file with metadata
+   * * `project_key` - The project key identifier
    *
    * # Returns
-   * * `Bytes` - The organization key (keccak256 hash of the name)
+   * * `Vec<Bytes>` - List of sub-project keys, empty if not an organization
    */
-  register_organization: (
-    {
-      maintainer,
-      name,
-      maintainers,
-      ipfs,
-    }: {
-      maintainer: string;
-      name: string;
-      maintainers: Array<string>;
-      ipfs: string;
-    },
-    options?: AssembledTransactionOptions<Buffer>,
-  ) => Promise<AssembledTransaction<Buffer>>;
+  get_sub_projects: (
+    { project_key }: { project_key: Buffer },
+    options?: AssembledTransactionOptions<Array<Buffer>>,
+  ) => Promise<AssembledTransaction<Array<Buffer>>>;
 
   /**
-   * Construct and simulate a add_project_to_organization transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Add a project to an organization.
+   * Construct and simulate a set_sub_projects transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
+   * Set sub-projects for a project (making it an organization).
    *
-   * Links an existing project to an organization. The project must exist
-   * and the caller must be a maintainer of both the project and the organization.
+   * # Arguments
+   * * `env` - The environment object
+   * * `maintainer` - The maintainer address calling this function
+   * * `project_key` - The project key identifier
+   * * `sub_projects` - List of sub-project keys to associate
+   *
+   * # Panics
+   * * If the project doesn't exist
+   * * If the maintainer is not authorized
    */
-  add_project_to_organization: (
+  set_sub_projects: (
     {
       maintainer,
-      organization_key,
       project_key,
+      sub_projects,
     }: {
       maintainer: string;
-      organization_key: Buffer;
       project_key: Buffer;
-    },
-    options?: AssembledTransactionOptions<null>,
-  ) => Promise<AssembledTransaction<null>>;
-
-  /**
-   * Construct and simulate a get_organization transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Get organization information.
-   */
-  get_organization: (
-    { organization_key }: { organization_key: Buffer },
-    options?: AssembledTransactionOptions<Organization>,
-  ) => Promise<AssembledTransaction<Organization>>;
-
-  /**
-   * Construct and simulate a get_organization_projects transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Get a page of projects in an organization.
-   */
-  get_organization_projects: (
-    {
-      organization_key,
-      page,
-    }: {
-      organization_key: Buffer;
-      page: u32;
-    },
-    options?: AssembledTransactionOptions<Array<Project>>,
-  ) => Promise<AssembledTransaction<Array<Project>>>;
-
-  /**
-   * Construct and simulate a get_organization_projects_count transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Get total number of projects in an organization.
-   */
-  get_organization_projects_count: (
-    { organization_key }: { organization_key: Buffer },
-    options?: AssembledTransactionOptions<u32>,
-  ) => Promise<AssembledTransaction<u32>>;
-
-  /**
-   * Construct and simulate a get_organizations transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Get a page of organizations.
-   */
-  get_organizations: (
-    { page }: { page: u32 },
-    options?: AssembledTransactionOptions<Array<Organization>>,
-  ) => Promise<AssembledTransaction<Array<Organization>>>;
-
-  /**
-   * Construct and simulate a update_organization_config transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
-   * Update organization configuration.
-   */
-  update_organization_config: (
-    {
-      maintainer,
-      organization_key,
-      ipfs,
-    }: {
-      maintainer: string;
-      organization_key: Buffer;
-      ipfs: string;
+      sub_projects: Array<Buffer>;
     },
     options?: AssembledTransactionOptions<null>,
   ) => Promise<AssembledTransaction<null>>;
@@ -1184,12 +1110,7 @@ export class Client extends ContractClient {
     get_project: this.txFromJSON<Project>,
     get_projects: this.txFromJSON<Array<Project>>,
     update_config: this.txFromJSON<null>,
-    register_organization: this.txFromJSON<Buffer>,
-    add_project_to_organization: this.txFromJSON<null>,
-    get_organization: this.txFromJSON<Organization>,
-    get_organization_projects: this.txFromJSON<Array<Project>>,
-    get_organization_projects_count: this.txFromJSON<u32>,
-    get_organizations: this.txFromJSON<Array<Organization>>,
-    update_organization_config: this.txFromJSON<null>,
+    get_sub_projects: this.txFromJSON<Array<Buffer>>,
+    set_sub_projects: this.txFromJSON<null>,
   };
 }

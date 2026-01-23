@@ -124,27 +124,8 @@ pub struct UpgradeStatus {
 
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct OrganizationRegistered {
-    #[topic]
-    pub organization_key: Bytes,
-    pub name: String,
-    pub maintainer: Address,
-}
-
-#[contractevent]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ProjectAddedToOrganization {
-    #[topic]
-    pub organization_key: Bytes,
+pub struct SubProjectsUpdated {
     #[topic]
     pub project_key: Bytes,
-    pub maintainer: Address,
-}
-
-#[contractevent]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct OrganizationConfigUpdated {
-    #[topic]
-    pub organization_key: Bytes,
-    pub maintainer: Address,
+    pub sub_projects: Vec<Bytes>,
 }

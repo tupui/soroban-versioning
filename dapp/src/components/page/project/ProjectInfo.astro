@@ -2,6 +2,7 @@
 import CommitHistory from "./CommitHistory";
 import DonateModal from "./DonateModal";
 import LatestCommit from "./LatestCommit";
+import SubProjectsSection from "./SubProjectsSection";
 import Button from "components/utils/Button";
 ---
 
@@ -17,7 +18,7 @@ import Button from "components/utils/Button";
               src="/fallback-image.jpg"
               class="w-[220px] object-cover"
             />
-            <div class="flex flex-col gap-9">
+              <div class="flex flex-col gap-9">
               <div class="flex flex-col gap-3">
                 <p
                   id="project-organization-name"
@@ -35,7 +36,9 @@ import Button from "components/utils/Button";
                 >
                 </p>
               </div>
-              <LatestCommit client:only />
+              <div id="latest-commit-section">
+                <LatestCommit client:only />
+              </div>
             </div>
           </div>
         </div>
@@ -100,7 +103,10 @@ import Button from "components/utils/Button";
       <div class="community-content flex flex-col gap-4 p-4"></div>
     </div>
     <div id="contribution-metrics-section" class="bg-white w-full"></div>
-    <CommitHistory client:load />
+    <div id="commit-history-section">
+      <CommitHistory client:load />
+    </div>
+    <SubProjectsSection client:load />
   </div>
 </div>
 

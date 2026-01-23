@@ -38,9 +38,4 @@ pub enum ContractErrors {
     CollateralError = 25,
     // Versioning
     NoProjectPageFound = 26,
-    // Organizations
-    OrganizationAlreadyExist = 27,
-    OrganizationNotFound = 28,
-    ProjectNotInOrganization = 29,
-    NoOrganizationPageFound = 30,
 }

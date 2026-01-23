@@ -49,7 +49,7 @@ impl VersioningTrait for Tansu {
             name: name.clone(),
             config: types::Config { url, ipfs },
             maintainers: maintainers.clone(),
-            organization_key: None, // Can be set later via add_project_to_organization
+            sub_projects: None,
         };
         let str_len = name.len() as usize;
         if str_len > 15 {
@@ -278,6 +278,60 @@ impl VersioningTrait for Tansu {
         } else {
             panic_with_error!(&env, &errors::ContractErrors::NoProjectPageFound);
         }
+    }
+
+    /// Get sub-projects for a project (if it's an organization).
+    ///
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `project_key` - The project key identifier
+    ///
+    /// # Returns
+    /// * `Vec<Bytes>` - List of sub-project keys, empty if not an organization
+    fn get_sub_projects(env: Env, project_key: Bytes) -> Vec<Bytes> {
+        let key_ = types::ProjectKey::Key(project_key.clone());
+        let project = env
+            .storage()
+            .persistent()
+            .get::<types::ProjectKey, types::Project>(&key_)
+            .unwrap_or_else(|| {
+                panic_with_error!(&env, &errors::ContractErrors::InvalidKey);
+            });
+
+        project.sub_projects.unwrap_or_else(|| Vec::new(&env))
+    }
+
+    /// Set sub-projects for a project (making it an organization).
+    ///
+    /// # Arguments
+    /// * `env` - The environment object
+    /// * `maintainer` - The maintainer address calling this function
+    /// * `project_key` - The project key identifier
+    /// * `sub_projects` - List of sub-project keys to associate
+    ///
+    /// # Panics
+    /// * If the project doesn't exist
+    /// * If the maintainer is not authorized
+    fn set_sub_projects(
+        env: Env,
+        maintainer: Address,
+        project_key: Bytes,
+        sub_projects: Vec<Bytes>,
+    ) {
+        Tansu::require_not_paused(env.clone());
+        let project = crate::auth_maintainers(&env, &maintainer, &project_key);
+
+        let key_ = types::ProjectKey::Key(project_key.clone());
+        let mut updated_project = project;
+        updated_project.sub_projects = Some(sub_projects.clone());
+
+        env.storage().persistent().set(&key_, &updated_project);
+
+        events::SubProjectsUpdated {
+            project_key,
+            sub_projects,
+        }
+        .publish(&env);
     }
 }
 
