@@ -222,13 +222,15 @@ fn test_sub_projects_limit() {
     // Register a project
     let project_id = init_contract(&setup);
 
-    // Register 11 projects to test the limit
+    // Register projects to test the limit (register 11 projects)
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
     setup.token_stellar.mint(maintainer, &genesis_amount);
 
     let mut sub_project_ids = Vec::new(&env);
-    for i in 0..11 {
-        let name_str = std::format!("subproject{}", i);
+    // Register 11 projects using single character suffixes (like test_project_listing does)
+    for i in 0u32..11 {
+        let suffix = std::format!("{}", (b'a' + i as u8) as char);
+        let name_str = std::format!("sub{}", suffix);
         let name = String::from_str(env, &name_str);
         let url = String::from_str(env, &std::format!("github.com/{}", name_str));
         let ipfs = String::from_str(env, &std::format!("2ef4f49fdd8fa9dc463f1f06a094c26b8871099{}", i));
