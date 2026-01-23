@@ -321,6 +321,10 @@ impl VersioningTrait for Tansu {
         Tansu::require_not_paused(env.clone());
         let project = crate::auth_maintainers(&env, &maintainer, &project_key);
 
+        if sub_projects.len() > 10 {
+            panic_with_error!(&env, &errors::ContractErrors::TooManySubProjects);
+        }
+
         let key_ = types::ProjectKey::Key(project_key.clone());
         let mut updated_project = project;
         updated_project.sub_projects = Some(sub_projects.clone());

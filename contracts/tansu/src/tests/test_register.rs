@@ -211,3 +211,47 @@ fn test_sub_projects() {
     assert_eq!(sub_projects_after.len(), 1);
     assert_eq!(sub_projects_after.get(0).unwrap(), sub_project_id);
 }
+
+#[test]
+fn test_sub_projects_limit() {
+    let setup = create_test_data();
+    let client = &setup.contract;
+    let env = &setup.env;
+    let maintainer = &setup.grogu;
+
+    // Register a project
+    let project_id = init_contract(&setup);
+
+    // Register 11 projects to test the limit
+    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
+    setup.token_stellar.mint(maintainer, &genesis_amount);
+
+    let mut sub_project_ids = Vec::new(&env);
+    for i in 0..11 {
+        let name_str = std::format!("subproject{}", i);
+        let name = String::from_str(env, &name_str);
+        let url = String::from_str(env, &std::format!("github.com/{}", name_str));
+        let ipfs = String::from_str(env, &std::format!("2ef4f49fdd8fa9dc463f1f06a094c26b8871099{}", i));
+        let maintainers = vec![env, maintainer.clone()];
+        let sub_project_id = client.register(maintainer, &name, &maintainers, &url, &ipfs);
+        sub_project_ids.push_back(sub_project_id);
+    }
+
+    // Try to set 11 sub-projects (should fail)
+    let err = client
+        .try_set_sub_projects(maintainer, &project_id, &sub_project_ids)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(err, ContractErrors::TooManySubProjects.into());
+
+    // Set 10 sub-projects (should succeed)
+    let mut sub_project_ids_10 = Vec::new(&env);
+    for i in 0..10 {
+        sub_project_ids_10.push_back(sub_project_ids.get(i).unwrap());
+    }
+    client.set_sub_projects(maintainer, &project_id, &sub_project_ids_10);
+
+    // Verify 10 sub-projects were set
+    let sub_projects_after = client.get_sub_projects(&project_id);
+    assert_eq!(sub_projects_after.len(), 10);
+}
