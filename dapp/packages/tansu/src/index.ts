@@ -62,6 +62,11 @@ export interface Config {
 export interface Member {
   meta: string;
   projects: Array<ProjectBadges>;
+  git_identity?: string;
+  git_pubkey?: string;
+  msg?: string;
+  sig?: string;
+  signed_at?: u64;
 }
 
 export type DataKey =
@@ -667,12 +672,30 @@ export interface Client {
    * * `env` - The environment object
    * * `member_address` - The address of the member to add
    * * `meta` - Metadata string associated with the member (e.g., IPFS hash)
+   * * `git_identity` - Git identity of the member (e.g., GitHub username)
+   * * `git_pubkey` - Git public key of the member (e.g., GitHub public key)
+   * * `msg` - Message string associated with the member (e.g., signature message)
+   * * `sig` - Signature string associated with the member (e.g., signature)
    *
    * # Panics
    * * If the member already exists
    */
   add_member: (
-    { member_address, meta }: { member_address: string; meta: string },
+    {
+      member_address,
+      meta,
+      git_identity,
+      git_pubkey,
+      msg,
+      sig,
+    }: {
+      member_address: string;
+      meta: string;
+      git_identity?: string | undefined;
+      git_pubkey?: string | undefined;
+      msg?: string | undefined;
+      sig?: string | undefined;
+    },
     options?: AssembledTransactionOptions<null>,
   ) => Promise<AssembledTransaction<null>>;
 
