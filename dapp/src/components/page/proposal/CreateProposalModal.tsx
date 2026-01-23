@@ -76,10 +76,6 @@ const CreateProposalModal = () => {
   const [isSuccessful, setIsSuccessful] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
-const [selectedTemplate, setSelectedTemplate] = useState<ProposalTemplate | null>(null);
-const [hasModifiedTemplate, setHasModifiedTemplate] = useState(false);
-
   const checkSubmitAvailability = () => {
     if (!connectedAddress) throw new Error("Please connect your wallet first");
     if (!projectName) throw new Error("Project name is not provided");
@@ -341,9 +337,7 @@ const [hasModifiedTemplate, setHasModifiedTemplate] = useState(false);
 
 
   const handleTemplateSelect = (template: ProposalTemplate) => {
-    setSelectedTemplate(template);
     setMdText(template.content);
-    setHasModifiedTemplate(false);
     
     // Extract proposal name from template if it follows pattern
     const titleMatch = template.content.match(/^#\s*(.*?)(?:\n|$)/m);
@@ -472,31 +466,7 @@ const [hasModifiedTemplate, setHasModifiedTemplate] = useState(false);
             <TemplateSelector
               onTemplateSelect={handleTemplateSelect}
               currentContent={mdText}
-              disabled={!proposalName.trim()} // Only enable after proposal name is entered
             />
-
-            {/* Template Indicator Badge */}
-            {selectedTemplate && (
-              <div className="flex items-center gap-2 mb-2 p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
-                <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span className="text-sm text-blue-700 dark:text-blue-300">
-                  Using template: <strong>{selectedTemplate.name}</strong>
-                  {hasModifiedTemplate && ' (modified)'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedTemplate(null);
-                    setHasModifiedTemplate(false);
-                  }}
-                  className="ml-auto text-xs text-red-600 dark:text-red-400 hover:text-red-800"
-                >
-                  Remove template
-                </button>
-              </div>
-            )}
 
             {/* Description Section */}
             <div className="flex flex-col gap-4 sm:gap-[18px]">
@@ -512,10 +482,6 @@ const [hasModifiedTemplate, setHasModifiedTemplate] = useState(false);
                   onChange={(value) => {
                     setMdText(value);
                     setDescriptionError(null);
-                    // Track if user modifies template content
-                    if (selectedTemplate && !hasModifiedTemplate && value !== selectedTemplate.content) {
-                      setHasModifiedTemplate(true);
-                    }
                   }}
                   placeholder="Input your proposal description here..."
                 />
@@ -736,17 +702,6 @@ const [hasModifiedTemplate, setHasModifiedTemplate] = useState(false);
                   if (!validateProposalNameField() || !validateDescriptionField())
                     throw new Error("Invalid proposal name or description");
 
-                  // Check if using template with placeholders
-                  if (selectedTemplate && mdText.includes('[') && mdText.includes(']')) {
-                    const hasUnfilledPlaceholders = /\[.*?\]/.test(mdText);
-                    if (hasUnfilledPlaceholders) {
-                      const shouldContinue = confirm(
-                        'Your proposal still contains template placeholders (text in brackets). Continue anyway?'
-                      );
-                      if (!shouldContinue) return;
-                    }
-                  }
-
                   if (isAnonymousVoting) {
                     if (!existingAnonConfig || resetAnonKeys) {
                       if (!generatedKeys) {
@@ -919,17 +874,10 @@ const [hasModifiedTemplate, setHasModifiedTemplate] = useState(false);
                   {proposalName}
                 </p>
               </Label>
-              {/* <Label label="Proposal description">
-                <ExpandableText>{mdText}</ExpandableText>
-              </Label> */}
+             
 
               <Label label="Proposal description">
                 <ExpandableText>{mdText}</ExpandableText>
-                {selectedTemplate && (
-                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    Created using template: <span className="font-medium">{selectedTemplate.name}</span>
-                  </div>
-                )}
               </Label>
             </div>
 

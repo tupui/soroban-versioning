@@ -4,43 +4,25 @@ import { PROPOSAL_TEMPLATES, type ProposalTemplate } from '../../../constants/pr
 interface TemplateSelectorProps {
   onTemplateSelect: (template: ProposalTemplate) => void;
   currentContent: string;
-  disabled?: boolean;
 }
 
 export default function TemplateSelector({ 
   onTemplateSelect, 
-  currentContent,
-  disabled = false
+  currentContent
 }: TemplateSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-
-  const categories = ['all', ...new Set(PROPOSAL_TEMPLATES.map(t => t.category))];
-
-  const filteredTemplates = selectedCategory === 'all'
-    ? PROPOSAL_TEMPLATES
-    : PROPOSAL_TEMPLATES.filter(t => t.category === selectedCategory);
+  const [previewTemplate, setPreviewTemplate] = useState<ProposalTemplate | null>(null);
 
   const handleTemplateClick = (template: ProposalTemplate) => {
-    // Only apply template if current content is empty or just placeholder
-    if (!currentContent || currentContent.trim().length < 20) {
-      onTemplateSelect(template);
-    } else {
-      // Ask for confirmation before replacing
-      if (confirm('Applying a template will replace your current content. Continue?')) {
-        onTemplateSelect(template);
-      }
-    }
+    // Always apply template immediately (user can edit afterwards)
+    onTemplateSelect(template);
     setIsOpen(false);
   };
 
-  if (disabled) {
-    return (
-      <div className="template-selector-disabled p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 opacity-50">
-        <p className="text-sm text-gray-500">Templates available after entering proposal name</p>
-      </div>
-    );
-  }
+  const handlePreviewClick = (template: ProposalTemplate, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPreviewTemplate(template);
+  };
 
   return (
     <div className="template-selector mb-4">
@@ -52,8 +34,7 @@ export default function TemplateSelector({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          disabled={disabled}
-          className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           {isOpen ? 'Hide Templates' : 'Browse Templates'}
         </button>
@@ -61,43 +42,25 @@ export default function TemplateSelector({
 
       {isOpen && (
         <div className="mt-3 p-4 border rounded-lg bg-white dark:bg-gray-900 shadow-lg">
-          {/* Category Filter */}
-          <div className="mb-4">
-            <p className="text-xs font-medium text-secondary mb-2">Filter by category:</p>
-            <div className="flex flex-wrap gap-2">
-              {categories.map(category => (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-3 py-1 text-xs rounded-full capitalize ${
-                    selectedCategory === category
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Templates Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-2">
-            {filteredTemplates.map(template => (
-              <button
+            {PROPOSAL_TEMPLATES.map(template => (
+              <div
                 key={template.id}
-                type="button"
                 onClick={() => handleTemplateClick(template)}
-                className="text-left p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all group"
+                className="cursor-pointer p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md transition-all group"
               >
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-medium text-primary group-hover:text-blue-600 dark:group-hover:text-blue-400">
                     {template.name}
                   </h4>
-                  <span className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
-                    {template.category}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => handlePreviewClick(template, e)}
+                    className="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+                  >
+                    Preview
+                  </button>
                 </div>
                 <p className="text-xs text-secondary mb-3 line-clamp-2">
                   {template.description}
@@ -106,21 +69,64 @@ export default function TemplateSelector({
                   <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  Use template
+                  Click to apply template
                 </div>
-              </button>
+              </div>
             ))}
           </div>
+        </div>
+      )}
 
-          {/* Template Info */}
-          <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-xs text-secondary">
-              <strong>Tip:</strong> Templates provide structure but can be fully customized. 
-              Replace bracketed text like <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">[Proposal Title]</code> with your content.
-            </p>
+      {/* Preview Modal */}
+      {previewTemplate && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setPreviewTemplate(null)} />
+            <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+              <div className="flex justify-between items-center p-6 border-b dark:border-gray-700">
+                <div>
+                  <h3 className="text-lg font-semibold text-primary">{previewTemplate.name}</h3>
+                  <p className="text-sm text-secondary">{previewTemplate.description}</p>
+                </div>
+                <button
+                  onClick={() => setPreviewTemplate(null)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto max-h-[60vh]">
+                <div className="template-preview">
+                  <pre className="whitespace-pre-wrap font-mono text-sm">{previewTemplate.content}</pre>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 p-6 border-t dark:border-gray-700">
+                <button
+                  onClick={() => setPreviewTemplate(null)}
+                  className="px-4 py-2 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    onTemplateSelect(previewTemplate);
+                    setPreviewTemplate(null);
+                    setIsOpen(false);
+                  }}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  Use This Template
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
+

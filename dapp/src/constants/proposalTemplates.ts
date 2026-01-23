@@ -1,247 +1,189 @@
 export interface ProposalTemplate {
-    id: string;
-    name: string;
-    description: string;
-    category: 'general' | 'funding' | 'governance' | 'technical';
-    content: string;
-    includesOutcomes?: boolean; // Whether template includes outcome placeholders
+  id: string;
+  name: string;
+  description: string;
+  content: string;
+}
+
+export const PROPOSAL_TEMPLATES: ProposalTemplate[] = [
+  {
+    id: 'pep',
+    name: 'PEP Format',
+    description: 'Python Enhancement Proposal style - structured technical proposal',
+    content: `# [PEP X]: [Proposal Title]
+
+## Abstract
+A short (~200 word) description of the technical issue being addressed.
+
+## Motivation
+Clearly explain why the existing system is inadequate to address the problem.
+
+## Specification
+The technical specification should describe the syntax and semantics of any new feature.
+
+## Rationale
+The rationale fleshes out the specification by describing what motivated the design.
+
+## Backwards Compatibility
+All proposals that introduce backwards incompatibilities must include a section describing these.
+
+## Reference Implementation
+This section should contain a reference implementation of the proposal.
+
+## Discussion
+- Link to discussion thread: [Forum/Discord link]
+- Previous proposals: [Related proposals]
+
+## Copyright
+This document is placed in the public domain or under the CC0-1.0-Universal license.`
+  },
+  {
+    id: 'eip',
+    name: 'EIP Format',
+    description: 'Ethereum Improvement Proposal style - blockchain protocol change',
+    content: `# [EIP X]: [Proposal Title]
+
+## Abstract
+The abstract is a multi-sentence summary of the proposal.
+
+## Motivation
+The motivation section should describe the "why" of the proposal.
+
+## Specification
+The technical specification should describe the syntax and semantics of any new feature.
+
+## Rationale
+The rationale fleshes out the specification by describing what motivated the design.
+
+## Backwards Compatibility
+All EIPs that introduce backwards incompatibilities must include a section describing these.
+
+## Test Cases
+Test cases for an implementation are mandatory for EIPs that are affecting consensus changes.
+
+## Reference Implementation
+The reference implementation must be completed before any EIP is given status "Final".
+
+## Security Considerations
+All EIPs must contain a section that discusses the security implications.
+
+## Copyright
+Copyright and related rights waived via CC0.`
+  },
+  {
+    id: 'cap',
+    name: 'CAP Format',
+    description: 'Celo Improvement Proposal style - governance and economic changes',
+    content: `# [CAP X]: [Proposal Title]
+
+## Summary
+Provide a brief overview of the proposal and its intended outcome.
+
+## Abstract
+A short description of the proposal's purpose and scope.
+
+## Motivation
+Explain the problem this proposal aims to solve and why it's important.
+
+## Specification
+Detailed technical specification including parameters, formulas, and implementation details.
+
+## Rationale
+Justify the design decisions and chosen parameters.
+
+## Risks
+Identify potential risks and their mitigation strategies.
+
+## Success Metrics
+Define clear, measurable outcomes for evaluating success.
+
+## Timeline
+Proposed implementation timeline with milestones.
+
+## Voting
+- Voting options: For, Against, Abstain
+- Voting period: [X] days
+- Quorum: [Y]% of total supply
+
+## Copyright
+This work is licensed under the Creative Commons Zero v1.0 Universal.`
+  },
+  {
+    id: 'sep',
+    name: 'SEP Format',
+    description: 'Stellar Ecosystem Proposal style - Stellar network improvements',
+    content: `# [SEP X]: [Proposal Title]
+
+## Abstract
+Brief description of the proposed change to the Stellar ecosystem.
+
+## Motivation
+Why this change is necessary and what problems it addresses.
+
+## Specification
+Detailed technical specification including protocol changes.
+
+## Design Rationale
+Explanation of design choices and alternatives considered.
+
+## Security Considerations
+Analysis of security implications and potential attack vectors.
+
+## Implementation
+Implementation details and testing requirements.
+
+## Backwards Compatibility
+Impact on existing systems and migration path.
+
+## Reference Implementation
+Link to reference implementation if available.
+
+## Voting and Governance
+- Voting mechanism: [Description]
+- Execution: [Conditions for execution]
+
+## Copyright
+Copyright and related rights waived via CC0.`
+  },
+  {
+    id: 'simple',
+    name: 'Simple Proposal',
+    description: 'Basic proposal structure for general community decisions',
+    content: `# [Proposal Title]
+
+## Summary
+Brief description of what this proposal aims to achieve.
+
+## Problem Statement
+What problem are we trying to solve?
+
+## Proposed Solution
+Detailed explanation of the proposed solution.
+
+## Benefits
+Expected benefits and positive outcomes.
+
+## Implementation Plan
+Step-by-step plan for implementation.
+
+## Timeline
+Estimated timeline with key milestones.
+
+## Cost/Budget
+If applicable, detailed budget breakdown.
+
+## Risks and Mitigations
+Potential risks and how to address them.
+
+## Voting
+- Options: Yes, No, Abstain
+- Duration: [Number] days
+
+## Discussion
+Link to forum discussion: [URL]`
   }
-  
-  export const PROPOSAL_TEMPLATES: ProposalTemplate[] = [
-    {
-      id: 'standard',
-      name: 'Standard Proposal',
-      description: 'General purpose proposal with clear structure',
-      category: 'general',
-      content: `# [Proposal Title]
-  
-  ## Executive Summary
-  Brief overview of what this proposal aims to achieve.
-  
-  ## Motivation
-  Why is this proposal necessary? What problem does it solve?
-  
-  ## Background & Context
-  Current state and relevant background information.
-  
-  ## Proposed Solution
-  Detailed explanation of the proposed solution or change.
-  
-  ## Implementation Plan
-  Steps to implement the proposal, if applicable.
-  
-  ## Timeline
-  Estimated timeline for implementation.
-  
-  ## Success Metrics
-  How will success be measured?
-  
-  ## Discussion Link
-  [Link to forum/discussion thread]
-  
-  ## Voting Options
-  - [ ] Yes
-  - [ ] No
-  - [ ] Abstain`,
-      includesOutcomes: false
-    },
-    {
-      id: 'funding',
-      name: 'Funding Request',
-      description: 'Request funds from the treasury for a project',
-      category: 'funding',
-      content: `# Funding Request: [Project Name]
-  
-  ## Executive Summary
-  Clear description of what funding is needed for.
-  
-  ## Problem Statement
-  What problem are you solving for the community/ecosystem?
-  
-  ## Proposed Solution & Deliverables
-  Detailed description of the project and expected deliverables.
-  
-  ## Team & Experience
-  [Optional: Information about the team executing the proposal]
-  
-  ## Budget Breakdown
-  | Item | Amount (XLM) | Justification |
-  |------|--------------|---------------|
-  | Development | [Amount] | [Details] |
-  | Marketing | [Amount] | [Details] |
-  | Operations | [Amount] | [Details] |
-  | Contingency | [Amount] | [Details] |
-  | **Total** | **[Total]** | |
-  
-  ## Timeline & Milestones
-  - **Month 1**: [Milestone 1]
-  - **Month 2**: [Milestone 2]
-  - **Month 3**: [Milestone 3]
-  
-  ## Success Metrics & KPIs
-  How will success be measured? What are the key performance indicators?
-  
-  ## Risks & Mitigations
-  Potential risks and how they will be mitigated.
-  
-  ## Previous Work
-  Links to previous work or proof of concept.
-  
-  ## Discussion Link
-  [Link to pre-proposal discussion]
-  
-  ## Voting Instructions
-  - ✅ **Yes**: Approve funding for this proposal
-  - ❌ **No**: Reject this funding request
-  - 🤝 **Abstain**: No position`,
-      includesOutcomes: true
-    },
-    {
-      id: 'parameter',
-      name: 'Parameter Change',
-      description: 'Change protocol parameters or settings',
-      category: 'technical',
-      content: `# Parameter Change Proposal
-  
-  ## Parameter: [Parameter Name]
-  **Current Value:** [Current value]
-  **Proposed Value:** [Proposed value]
-  
-  ## Rationale
-  Why is this change necessary? What benefits does it bring?
-  
-  ## Technical Details
-  Technical implications of the change. Include any required upgrades.
-  
-  ## Impact Analysis
-  - **On Users:** [Impact on end users]
-  - **On Protocol:** [Impact on protocol operations]
-  - **On Economics:** [Economic implications]
-  
-  ## Risk Assessment
-  | Risk | Likelihood | Impact | Mitigation |
-  |------|------------|--------|------------|
-  | [Risk 1] | [Low/Medium/High] | [Low/Medium/High] | [Mitigation strategy] |
-  | [Risk 2] | [Low/Medium/High] | [Low/Medium/High] | [Mitigation strategy] |
-  
-  ## Implementation Details
-  Step-by-step implementation plan.
-  
-  ## Testing Plan
-  How the change will be tested before full deployment.
-  
-  ## Rollback Plan
-  Procedure to revert the change if issues arise.
-  
-  ## Discussion Link
-  [Link to technical discussion/forum thread]
-  
-  ## Voting Options
-  - ✅ **Yes**: Implement the parameter change
-  - ❌ **No**: Keep current parameter value
-  - 🤝 **Abstain**: No position`,
-      includesOutcomes: false
-    },
-    {
-      id: 'governance',
-      name: 'Governance Change',
-      description: 'Change to DAO governance structure or processes',
-      category: 'governance',
-      content: `# Governance Change Proposal
-  
-  ## Change Summary
-  What aspect of governance is being changed?
-  
-  ## Current State
-  How does governance currently work? Include relevant details.
-  
-  ## Proposed Changes
-  Detailed description of the proposed changes.
-  
-  ## Motivation
-  Why are these changes necessary? What problems do they solve?
-  
-  ## Benefits
-  Expected improvements from these changes.
-  
-  ## Implementation Plan
-  1. [Step 1]
-  2. [Step 2]
-  3. [Step 3]
-  
-  ## Transition Plan
-  How the transition will be managed.
-  
-  ## Impact Assessment
-  - **On Voting:** [Impact on voting processes]
-  - **On Participation:** [Impact on community participation]
-  - **On Operations:** [Impact on day-to-day operations]
-  
-  ## Discussion Link
-  [Link to governance forum discussion]
-  
-  ## Voting Period
-  Suggested voting duration: [Number] days
-  
-  ## Voting Options
-  - ✅ **Yes**: Adopt the governance changes
-  - ❌ **No**: Maintain current governance structure
-  - 🤝 **Abstain**: No position`,
-      includesOutcomes: false
-    },
-    {
-      id: 'partnership',
-      name: 'Partnership Proposal',
-      description: 'Propose a partnership or collaboration',
-      category: 'general',
-      content: `# Partnership Proposal: [Partner Name]
-  
-  ## Executive Summary
-  Overview of the proposed partnership.
-  
-  ## About [Partner Name]
-  Background information about the potential partner.
-  
-  ## Partnership Goals
-  What do both parties hope to achieve?
-  
-  ## Scope of Collaboration
-  Areas of collaboration and joint activities.
-  
-  ## Benefits to Our Ecosystem
-  Specific benefits for our community and token holders.
-  
-  ## Terms & Conditions
-  Key terms of the partnership agreement.
-  
-  ## Resource Requirements
-  What resources are needed from our side?
-  
-  ## Success Metrics
-  How will the success of this partnership be measured?
-  
-  ## Timeline
-  Partnership timeline and key milestones.
-  
-  ## Risks & Mitigations
-  Potential risks and how they will be addressed.
-  
-  ## Previous Discussions
-  Links to previous discussions with the partner.
-  
-  ## Voting Options
-  - ✅ **Yes**: Approve the partnership
-  - ❌ **No**: Reject the partnership
-  - 🤝 **Abstain**: No position`,
-      includesOutcomes: true
-    }
-  ];
-  
-  // Helper functions
-  export const getTemplateById = (id: string): ProposalTemplate | undefined => {
-    return PROPOSAL_TEMPLATES.find(template => template.id === id);
-  };
-  
-  export const getTemplatesByCategory = (category: string): ProposalTemplate[] => {
-    return PROPOSAL_TEMPLATES.filter(template => template.category === category);
-  };
+];
+
+export const getTemplateById = (id: string): ProposalTemplate | undefined => {
+  return PROPOSAL_TEMPLATES.find(template => template.id === id);
+};

@@ -116,49 +116,6 @@ input[type="number"]::-webkit-inner-spin-button {
   min-height: 200px;
 }
 
-/* Template Selector Styles */
-.template-selector {
-  transition: all 0.2s ease;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Template preview styling */
-.template-preview {
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  background-color: #f9fafb;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.875rem;
-  white-space: pre-wrap;
-}
-
-.template-preview code {
-  background-color: #e5e7eb;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
-  font-size: 0.75rem;
-  color: #374151;
-}
-
-/* Dark mode adjustments */
-.dark .template-preview {
-  background-color: #1f2937;
-  border-color: #374151;
-}
-
-.dark .template-preview code {
-  background-color: #374151;
-  color: #d1d5db;
-}
 
 .rotate_image {
   -webkit-animation: spin 4s linear infinite;
