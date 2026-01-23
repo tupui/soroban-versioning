@@ -92,8 +92,7 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
         }
       }
       setSubProjectNames(names);
-    } catch (err: any) {
-      console.error("Error loading sub-projects:", err);
+    } catch {
       setSubProjectNames([]);
     }
   };
