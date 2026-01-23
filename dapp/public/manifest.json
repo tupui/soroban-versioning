@@ -1,0 +1,19 @@
+{
+  "name": "Tansu - Decentralized Software Development",
+  "short_name": "Tansu",
+  "description": "Bringing open source software development onto the Stellar blockchain",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#311255",
+  "theme_color": "#311255",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["developer", "productivity", "business"],
+  "lang": "en"
+}

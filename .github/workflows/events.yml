@@ -1,0 +1,53 @@
+name: Test Events
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+#  schedule:
+#    - cron: "0 6 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    env:
+      DOCKER_BUILDKIT: "1"
+      COMPOSE_DOCKER_CLI_BUILD: "1"
+      COMPOSE_PROJECT_NAME: "tansu"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get short commit sha with length 8
+        id: get_short_sha
+        run: |
+          echo ::set-output name=sha_short::$(git rev-parse --short=8 ${{ github.sha }})
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      #      - name: Build tansu
+      #        id: docker_build_tansu
+      #        uses: docker/build-push-action@v5
+      #        with:
+      #          context: ./
+      #          file: ./Dockerfile
+      #          target: api-prod
+      #          load: true
+      #          cache-from: type=gha
+      #          cache-to: type=gha,mode=max
+      #          tags: tansu-api:${{ steps.get_short_sha.outputs.sha_short }}
+
+      - name: Run tests via docker-compose
+        timeout-minutes: 5
+        env:
+          VOLUME_BASE_PATH: ${{ github.workspace }}
+        run: |
+          make events_test

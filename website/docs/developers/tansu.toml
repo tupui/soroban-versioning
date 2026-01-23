@@ -1,0 +1,24 @@
+VERSION="2.0.0"
+
+ACCOUNTS=[
+    "GA...",
+    "GB...",
+    "GC..."
+]
+
+[DOCUMENTATION]
+ORG_DBA="My Awesome Project"
+ORG_NAME="Organization Name"
+ORG_URL="https://www.domain.com"
+ORG_LOGO="https://www.domain.com/awesomelogo.png"
+ORG_DESCRIPTION="Description of project"
+ORG_GITHUB="orgcode"
+
+[[PRINCIPALS]]
+github="Handle maintainer GA..."
+
+[[PRINCIPALS]]
+github="Handle maintainer GB..."
+
+[[PRINCIPALS]]
+github="Handle maintainer GC..."

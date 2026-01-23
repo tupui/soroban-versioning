@@ -1,0 +1,19 @@
+---
+import ProposalPageTitle from "components/page/proposal/ProposalPageTitle.astro";
+import Container from "../../components/layout/Container.astro";
+import ProposalPage from "../../components/page/proposal/ProposalPage.tsx";
+import Layout from "../../layouts/Layout.astro";
+---
+
+<script is:inline>
+  var global = global || window;
+</script>
+
+<Layout title="Tansu" page="proposal">
+  <Container>
+    <ProposalPageTitle />
+    <ProposalPage client:only />
+  </Container>
+</Layout>
+
+<script></script>

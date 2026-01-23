@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "soroban_versioning_pre_push"
+version = "1.0.0"
+dependencies = [
+    "soroban",
+]
+
+[project.scripts]
+soroban-versioning-pre-push = "soroban_versioning_pre_push:main"
+
+[tool.hatch.build]
+include = ["soroban_versioning_pre_push.py"]

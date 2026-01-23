@@ -1,0 +1,71 @@
+name: dApp upload to IPFS
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ app_prod ]
+
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  ipds:
+    name: Publish dApp on IPFS
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+    environment:
+      name: dapp-ipfs
+    defaults:
+      run:
+        working-directory: ./dapp
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install App dependencies
+        run: bun install
+
+      - name: Build app
+        env:
+          PUBLIC_DELEGATION_API_URL: ${{ vars.PUBLIC_DELEGATION_API_URL }}
+          PUBLIC_SOROBAN_NETWORK_PASSPHRASE: ${{ vars.PUBLIC_SOROBAN_NETWORK_PASSPHRASE }}
+          PUBLIC_SOROBAN_RPC_URL: ${{ vars.PUBLIC_SOROBAN_RPC_URL }}
+          PUBLIC_HORIZON_URL: ${{ vars.PUBLIC_HORIZON_URL }}
+          PUBLIC_TANSU_CONTRACT_ID: ${{ vars.PUBLIC_TANSU_CONTRACT_ID }}
+          PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: ${{ vars.PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID }}
+          PUBLIC_TANSU_OWNER_ID: ${{ vars.PUBLIC_TANSU_OWNER_ID }}
+        run: bun run build
+
+      - name: Generate artifact attestation for dist
+        uses: actions/attest-build-provenance@00014ed6ed5efc5b1ab7f7f34a39eb55d41aa4f8
+        with:
+          subject-path: "./dapp/dist/*"
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: dist
+          path: |
+            ./dapp/dist/*
+
+      - uses: storacha/add-to-web3@892505d8e70c79336721485e5500155c17a728e0
+        id: storacha
+        with:
+          path_to_add: "./dapp/dist"
+          secret_key: ${{ secrets.STORACHA_PRINCIPAL }}
+          proof: ${{ secrets.STORACHA_PROOF }}
+
+      - name: Job summary
+        run: |
+          echo "### Shipping to IPFS! :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- CID: ${{ steps.storacha.outputs.cid }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: ${{ steps.storacha.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"

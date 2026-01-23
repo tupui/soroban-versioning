@@ -1,0 +1,17 @@
+name = "ipfs-delegation"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[env.testnet]
+[[env.testnet.routes]]
+pattern = "ipfs-testnet.tansu.dev"
+custom_domain = true
+
+[env.production]
+[[env.production.routes]]
+pattern = "ipfs.tansu.dev"
+custom_domain = true
+
+[observability]
+enabled = true

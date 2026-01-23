@@ -1,0 +1,88 @@
+name: Linting
+
+permissions:
+  contents: read
+
+on:
+  # TODO adjust once we do PR
+  push:
+    branches: [ main ]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit-linters:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      #      - uses: oven-sh/setup-bun@v2
+      #
+      #      - name: Install deps
+      #        run: bun install --global prettier @stellar/prettier-config prettier-plugin-astro
+
+      - name: Install pre-commit
+        run: python -m pip install pre-commit
+
+      - name: Run pre-commit
+        run: |
+          pre-commit run --show-diff-on-failure --color=always ruff
+          pre-commit run --show-diff-on-failure --color=always ruff-format
+          pre-commit run --show-diff-on-failure --color=always clippy
+          pre-commit run --show-diff-on-failure --color=always rustfmt
+
+  website-dapp:
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_DELEGATION_API_URL: "https://ipfs-testnet.tansu.dev"
+      PUBLIC_SOROBAN_RPC_URL: "https://soroban-testnet.stellar.org:443"
+      PUBLIC_SOROBAN_NETWORK_PASSPHRASE: "Test SDF Network ; September 2015"
+      PUBLIC_HORIZON_URL: "https://horizon-testnet.stellar.org"
+      PUBLIC_TANSU_CONTRACT_ID: "CTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT"
+      PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID: "CAUORQ7XOSJOV6NLUK2A7FZSZP5Z55AQPEPMWDEZPQ4DDKSTXBBEDKNF"
+      PUBLIC_TANSU_OWNER_ID: "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Get Bun cache directory
+        id: bun-cache-dir
+        run: echo "dir=$(bun pm cache)" >> ${GITHUB_OUTPUT}
+
+      - name: Cache Bun dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            ${{ steps.bun-cache-dir.outputs.dir }}
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-lint-${{ hashFiles('**/bun.lockb', '**/package.json', '**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-lint-
+            ${{ runner.os }}-bun-
+
+      - name: Install website dependencies
+        run: cd website && bun install --frozen-lockfile
+
+      - name: Check MDX
+        run: cd website && bun linter
+
+      - name: Build website
+        run: cd website && bun run build
+
+      - name: Install App dependencies
+        run: cd dapp && bun install --frozen-lockfile
+
+      - name: Lint dApp
+        run: cd dapp && bun run lint
+
+      - name: Build app (static for lighthouse)
+        run: cd dapp && bun run build:lighthouse

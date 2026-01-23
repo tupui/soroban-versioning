@@ -1,0 +1,67 @@
+---
+const year = new Date().getFullYear();
+const horizonUrl = import.meta.env.PUBLIC_HORIZON_URL;
+const network = horizonUrl.includes("testnet") ? "testnet" : "public";
+const contractId = import.meta.env.PUBLIC_TANSU_CONTRACT_ID;
+---
+
+<footer class="bg-pink bg-fixed bg-bottom text-white">
+  <div class="max-w-screen-xl mx-auto px-6 md:px-14 xl:px-14">
+    <div class="py-5 md:py-8">
+      <div
+        class="flex flex-col sm:flex-row gap-y-4 sm:justify-between sm:items-center"
+      >
+        <div
+          class="flex items-center gap-[18px] md:gap-[30px] sm:max-w-[calc(100%-82px)]"
+        >
+          <a href="https://tansu.dev">
+            <img
+              src="/icons/logos/logo_white.svg"
+              alt="(//)"
+              class="h-6 md:h-12"
+            />
+          </a>
+          <div
+            class="text-xs md:text-lg text-center sm:max-w-[calc(100%-36px)]"
+          >
+            © <span id="currentYear">{year}</span> Tansu, <a
+              href="https://consulting-manao.com">Consulting Manao GmbH</a
+            >
+          </div>
+        </div>
+        <div class="flex items-center gap-5 md:gap-[30px]">
+          <div class="flex gap-4 text-xs md:text-sm">
+            <a href="/terms" class="hover:underline">Terms of Service</a>
+            <span>|</span>
+            <a href="/privacy" class="hover:underline">Privacy Policy</a>
+          </div>
+          <a href="https://github.com/tupui/soroban-versioning">
+            <img
+              src="/icons/logos/github_white.svg"
+              alt="github"
+              class="w-7 md:w-9"
+            />
+          </a>
+          <a
+            href={`https://stellar.expert/explorer/${network}/contract/${contractId}`}
+          >
+            <img
+              src="/icons/logos/stellar-expert_white.svg"
+              alt="stellar explorer"
+              class="w-7 md:w-9"
+            />
+          </a>
+          <a
+            href="https://discord.com/channels/897514728459468821/1262501866915237908"
+          >
+            <img
+              src="/icons/logos/discord_white.svg"
+              alt="stellar explorer"
+              class="w-7 md:w-9"
+            />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

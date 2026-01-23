@@ -1,0 +1,57 @@
+---
+slug: v1
+title: v1 on testnet
+authors: pamphile
+tags: [soroban, dapp, scf]
+---
+
+We have a v1! 🎉
+
+Tansu is not officially available on testnet and people can register their project and explore our dApp.
+
+https://testnet.tansu.dev/
+
+<!-- truncate -->
+
+![V1 dApp landing page](/assets/blog/v1_landing.png)
+
+This v1 mark the end of our [SCF28](https://dashboard.communityfund.stellar.org/scfawards/scf-28_43/activationawardreview/suggestion/1150) activation award. It has been a fantastic experience with its up and downs, but thanks to Stellar's awesome community, we are happy to say that we exceeded expectations by delivering more than we planned!
+
+Let's recap what we set ourselves to:
+
+> Deliverable 1: Soroban Smart Contract
+>
+> - Description: Soroban smart contract to register, edit, view and push new commits. And infrastructure to handle events.
+> - How to measure: GitHub, contract deployed on testnet and tools to use the contract.
+>
+> Deliverable 2: dApp
+>
+> - Description: dApp which allows to register a project, get information, view the Git history pushed on-chain and compare it to the off-chain version.
+> - How to measure: GitHub and functional dApp publicly available.
+
+Done ✅and as promised, everything is open source and available on GitHub: https://github.com/tupui/soroban-versioning
+
+## Stellar smart contract
+
+The smart contract is foundational to our project. We iterated to get this right with how we would consume it from both the dApp and other developers tool.
+
+One major extra, we spent time on, was to add support for Soroban Domains. This was marked as a thought in our original proposal, but we thought it was important to have it as soon as possible. Thanks to this integration, all projects which are registered on Tansu need to have a domain. The domain registration is done automagically for you. This is great as it offers a way for projects to have their own domain (e.g. useful for fund-raising, something we will add support for) and also safeguard malicious activities.
+
+## Tooling
+
+- We developed a pre-push commit hook which can be used by maintainers who are used to push on their main branch locally.
+- A lot of work was put into developing a backend and ingestion system for the events. There is still some work to do but this is more than a good starting point for the next phase of the project.
+- The tools around event handling have been released as a Python package https://pypi.org/project/tansu/
+- Let's not forget the comprehensive CI/CD setup which helped us develop with confidence. We have linters, pre-commit hooks, tests and release workflows.
+
+## dApp
+
+We had a slow start with the dApp development. But the team did a great push in last 2 weeks to deliver what we think is a great user experience. We still have a lot of ideas to make this even simpler to use and we will put some focus on writing more documentation.
+
+## Wrap up!
+
+Tansu is ready to be tested. Head over to https://testnet.tansu.dev/ and register your project.
+
+We would like to thank everyone for their help and support along the way. We are happy and grateful to be part of the Stellar community and cannot wait to show you what we have in store for Tansu. If you have feedbacks or requests for Tansu, please reach out to the team, we would love to hear from you.
+
+Now, on to the next step: a Build award!

@@ -1,0 +1,43 @@
+# Rust's output directory
+target
+
+# Local Soroban settings
+.stellar
+.soroban
+
+
+# The following is from the Frontend Template's .gitignore
+
+# build output
+dist/
+!packages/**/dist
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# tests
+test-results/
+
+# macOS-specific files
+.DS_Store
+
+# Local Netlify folder
+.netlify
+
+# Workers build artifacts
+dapp/workers/**/.wrangler
+dapp/workers/**/dist
+dapp/workers/**/node_modules

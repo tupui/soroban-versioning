@@ -1,0 +1,16 @@
+VERSION = "2.0.0"
+
+ACCOUNTS = [
+    "GCMFQP44AR32S7IRIUKNOEJW5PNWOCLRHLQWSHUCSV4QZOMUXZOVA7Q2"
+]
+
+[DOCUMENTATION]
+ORG_DBA = "Tansu - Git on Stellar"
+ORG_NAME = "Consulting Manao GmbH"
+ORG_URL = "https://tansu.dev"
+ORG_LOGO = "https://github.com/tupui/soroban-versioning/blob/main/website/static/img/logo.svg"
+ORG_DESCRIPTION = "Bringing Git hashes onto Stellar's blockchain"
+ORG_GITHUB = "https://github.com/tupui/soroban-versioning"
+
+[[PRINCIPALS]]
+github = "tupui"

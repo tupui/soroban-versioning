@@ -1,0 +1,53 @@
+import Button from "components/utils/Button";
+import type { ProposalView } from "types/proposal";
+import { truncateMiddle } from "utils/utils";
+import ProposalStatusSection from "../proposal/ProposalStatusSection";
+
+interface Props {
+  proposal: ProposalView;
+  onVoteClick?: () => void;
+}
+
+const ProposalCard: React.FC<Props> = ({ proposal, onVoteClick }) => {
+  const projectName =
+    new URLSearchParams(window.location.search).get("name") || "";
+
+  return (
+    <a
+      href={`/proposal?id=${proposal.id}&name=${projectName}`}
+      className="p-[30px] flex flex-col gap-6 bg-white cursor-pointer"
+    >
+      <div className="flex flex-col gap-3">
+        <div className="flex justify-between">
+          <p className="text-xl font-medium text-primary">{proposal.title}</p>
+          <div className="flex gap-[18px] text-xl">
+            <span className="text-tertiary">ID:</span>
+            <span className="text-primary">{proposal.id}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-secondary">
+          <span>Proposer:</span>
+          <span className="font-mono">
+            {truncateMiddle(proposal.proposer, 16)}
+          </span>
+        </div>
+      </div>
+      <div className="flex justify-between">
+        <ProposalStatusSection proposal={proposal} />
+        {proposal.status == "active" && (
+          <Button
+            icon="/icons/vote.svg"
+            onClick={(e) => {
+              e.preventDefault();
+              onVoteClick?.();
+            }}
+          >
+            Vote
+          </Button>
+        )}
+      </div>
+    </a>
+  );
+};
+
+export default ProposalCard;

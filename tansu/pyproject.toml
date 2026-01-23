@@ -1,0 +1,81 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tansu"
+version = "1.1.0"
+description = "Tansu - Soroban Versioning"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "BSD-3-Clause"
+authors = [
+    { name = "Pamphile Roy" },
+]
+maintainers = [
+    { name = "Tansu contributors" },
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+
+keywords = [
+    "stellar",
+    "stellar.org",
+    "blockchain",
+    "git",
+    "cryptocurrency",
+    "soroban",
+    "soroban-rpc"
+]
+
+dependencies = [
+    "sqlalchemy[postgresql-psycopgbinary,postgresql-asyncpg]",
+    "pydantic",
+    "pydantic-settings",
+    "stellar-sdk",
+    "alembic[tz]",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
+    "locust",
+    "respx",
+]
+
+backend = [
+    "fastapi",
+    "uvicorn[standard]",
+]
+
+dev = [
+    "tansu[test,backend]",
+    "pre-commit",
+    "hatch",
+    "ruff",
+]
+
+[project.urls]
+homepage = "https://github.com/tupui/soroban-versioning"
+documentation = "https://github.com/tupui/soroban-versioning"
+source = "https://github.com/tupui/soroban-versioning"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tansu"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/__init__.py" = ["F403", "F405"]
+"**/tests/**" = ["E402"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"

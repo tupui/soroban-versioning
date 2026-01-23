@@ -1,0 +1,15 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Container from "../components/layout/Container.astro";
+import ProjectList from "../components/page/dashboard/ProjectList.jsx";
+---
+
+<!-- text-active text-rejected text-cancelled text-voted text-approved text-approve text-reject text-abstain -->
+<script is:inline>
+  var global = global || window;
+</script>
+<Layout title="Tansu" page="home">
+  <Container>
+    <ProjectList client:load />
+  </Container>
+</Layout>

@@ -1,0 +1,332 @@
+---
+sidebar_position: 2
+---
+
+# User Flows
+
+Technical documentation of user flows in the Tansu protocol.
+
+## System Architecture Overview
+
+```mermaid
+flowchart TD
+  subgraph Client
+    A["User Browser"]
+    B["Wallet Extension / Kit"]
+  end
+  subgraph Frontend
+    C["Astro / React UI Components"]
+    D["StateService"]
+    E["ReadContractService"]
+    F["WriteContractService"]
+    G["FlowService"]
+  end
+  subgraph Backend_API
+    H["Events FastAPI"]
+    I["Database"]
+  end
+  subgraph Blockchain
+    J["Soroban Smart Contracts"]
+    K["Horizon / RPC"]
+  end
+  subgraph External
+    L["GitHub Raw Content"]
+    M["IPFS"]
+  end
+
+  A--"Connect Wallet"-->B
+  A--"UI Interactions"-->C
+  B--"Signed Tx / Address"-->D
+  C-->D
+  C--"Reads"-->E
+  D--"Invoke"-->F
+  F--"Transactions"-->K
+  E--"RPC Calls"-->K
+  K--"Calls"-->J
+  J--"Events"-->H
+  H--"Store"-->I
+  C--"Fetch README / TOML"-->L
+  C--"Fetch Assets"-->M
+  H--"Webhooks"-->C
+```
+
+## 1. Project Registration Flow
+
+### Overview
+
+Maintainers register projects with domain verification and metadata storage.
+
+### Flow Diagram
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant W as Wallet
+  participant D as dApp
+  participant SD as SorobanDomains
+  participant IPFS as IPFS
+  participant SC as SorobanContract
+  participant DB as Database
+
+  U->>W: Connect Wallet
+  W->>D: Provide Address
+  U->>D: Fill Project Form
+  D->>SD: Check Domain Availability
+  SD-->>D: Domain Status
+  U->>D: Submit Registration
+  D->>IPFS: Upload tansu.toml
+  IPFS-->>D: Return CID
+  D->>W: Sign register() Transaction
+  W-->>D: Signed Transaction
+  D->>SC: Submit Transaction
+  SC->>SD: Verify Domain Ownership
+  SC-->>D: Registration Success
+  SC->>DB: Emit Registration Event
+  D->>U: Show Success
+```
+
+### Technical Components
+
+#### Frontend Components
+
+- **CreateProjectModal**: Multi-step form with validation
+- **FlowService.createProjectFlow()**: Orchestrates the registration process
+- **Domain Validation**: Real-time domain availability checking
+
+#### Validation Steps
+
+1. **Project Name**: 4-15 lowercase letters, unique check via contract
+2. **Maintainers**: Valid Stellar addresses (G...) and GitHub handles
+3. **GitHub Repository**: Valid GitHub URL format validation
+4. **Organization Info**: Required fields with URL format validation
+
+#### Security Features
+
+- **Domain Squatting Prevention**: Integration with Soroban Domains
+- **Input Sanitization**: All user inputs sanitized against XSS
+- **Transaction Simulation**: All contract calls simulated before signing
+- **IPFS Integrity**: CID verification ensures uploaded content matches
+
+### Error Handling
+
+- **Network Failures**: Graceful retry mechanisms with exponential backoff
+- **Domain Conflicts**: Clear error messages with alternative suggestions
+- **Transaction Failures**: Detailed error parsing from contract responses
+- **IPFS Failures**: Automatic retries with fallback error states
+
+---
+
+## 2. Governance Flow
+
+### Overview
+
+Decentralized governance through proposals and voting. Optional anonymous voting uses Pedersen commitments over BLS12-381.
+
+### Detailed Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant Admin as Admin/Maintainer
+    participant Voter as Voter Client
+    participant Contract as Smart Contract
+    participant Storage as Contract Storage
+    participant Executor as Executor
+
+    rect rgb(230, 240, 255)
+    Note over Admin,Storage: PHASE 1: ANONYMOUS VOTING SETUP
+
+    Admin->>Contract: anonymous_voting_setup(maintainer, project_key, rsa_public_key)
+    activate Contract
+    Note over Contract: Generate BLS12-381 generator points
+    Contract->>Storage: Store AnonymousVoteConfig {g, h, RSA_pub}
+    Contract-->>Admin: Setup Complete
+    deactivate Contract
+    end
+
+    rect rgb(240, 255, 240)
+    Note over Admin,Storage: PHASE 2: PROPOSAL CREATION
+
+    Admin->>Contract: create_proposal(project_key, title, ipfs, voting_ends_at, public_voting=false)
+    activate Contract
+    Note over Contract: Deposit PROPOSAL_COLLATERAL (100 XLM)
+    Contract->>Storage: Store Proposal (status: Active)
+    Contract-->>Admin: Proposal ID
+    deactivate Contract
+    end
+
+    rect rgb(255, 245, 230)
+    Note over Voter,Storage: PHASE 3: ANONYMOUS VOTING
+
+    Voter->>Voter: Select vote choice (approve/reject/abstain)
+    Note over Voter: Create vote array:<br/>approve=[1,0,0], reject=[0,1,0], abstain=[0,0,1]<br/>Generate random seeds: crypto.getRandomValues()
+
+    Voter->>Contract: get_anonymous_voting_config(project_key)
+    Contract->>Storage: Retrieve config
+    Storage-->>Voter: {g, h, RSA_pub}
+
+    Note over Voter: RSA-OAEP encrypt votes & seeds
+    Voter->>Contract: build_commitments_from_votes(votes, seeds) [SIMULATION]
+    Note over Contract: Build commitments using Pedersen scheme
+    Contract-->>Voter: commitments [C0, C1, C2]
+
+    Voter->>Contract: vote(voter, proposal_id, AnonymousVote)
+    activate Contract
+    Note over Contract: Validate commitment structure (3 G1 points)<br/>Check voter eligibility & weight<br/>Deposit VOTE_COLLATERAL (10 XLM)
+    Contract->>Storage: Store encrypted votes, seeds, commitments
+    Contract-->>Voter: Vote Recorded
+    deactivate Contract
+    end
+
+    rect rgb(255, 240, 245)
+    Note over Executor,Storage: PHASE 4: DECRYPTION & TALLYING
+
+    Executor->>Contract: get_proposal(project_key, proposal_id)
+    Contract->>Storage: Retrieve proposal with all votes
+    Storage-->>Executor: Proposal with AnonymousVotes
+
+    Note over Executor: For each vote:<br/>1. RSA-decrypt votes & seeds<br/>2. Apply voting weight<br/>3. Accumulate tallies & seed tallies
+    Executor->>Executor: tallies = [Σ(v[i]×w), ...] for i in {approve, reject, abstain}<br/>seeds = [Σ(r[i]×w), ...]
+    end
+
+    rect rgb(245, 240, 255)
+    Note over Executor,Storage: PHASE 5: PROOF VERIFICATION & EXECUTION
+
+    Executor->>Contract: execute(maintainer, proposal_id, tallies, seeds)
+    activate Contract
+    Note over Contract: Return collaterals to proposer & voters
+
+    Note over Contract: PROOF VERIFICATION:<br/>Verify proof using homomorphic properties
+
+    Contract->>Contract: proof(project_key, proposal, tallies, seeds)
+
+    alt Proof Valid
+        Note over Contract: Determine outcome (supermajority):<br/>Approved: approve > (reject + abstain)<br/>Rejected: reject > (approve + abstain)<br/>Cancelled: otherwise
+        Contract->>Storage: Update proposal status
+        Contract-->>Executor: Proposal Executed (status)
+    else Proof Invalid
+        Contract-->>Executor: Error: InvalidProof
+    end
+    deactivate Contract
+    end
+```
+
+### Technical Details
+
+For complete cryptographic details, security considerations, and trust model explanations, see the [Governance & Proposals](./governance.mdx) documentation.
+
+---
+
+## 3. Membership Flow
+
+### Overview
+
+Community members can join projects and receive role-based badges from maintainers.
+
+### Flow Diagram
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant D as dApp
+  participant IPFS as IPFS
+  participant SC as SorobanContract
+  participant M as Maintainer
+
+  U->>D: Join Community
+  U->>D: Fill Profile (Optional)
+  opt Profile Data Provided
+    D->>IPFS: Upload profile.json + image
+    IPFS-->>D: Return CID
+  end
+  D->>SC: Submit add_member() with meta
+  SC-->>D: Member Added
+
+  M->>D: Assign Badges
+  M->>SC: Submit set_badges() with badge list
+  SC->>SC: Replace existing badges for project
+  SC-->>D: Badges Assigned
+  D->>U: Show Updated Profile
+```
+
+### Profile Data Structure
+
+```json
+{
+  "name": "User Display Name",
+  "description": "User bio in markdown",
+  "social": "https://twitter.com/handle",
+  "image": "profile-image.jpg"
+}
+```
+
+### Badge System
+
+- **Role Badges**: Developer, Designer, Auditor, Community Manager
+- **Achievement Badges**: Contributor, Reviewer, Bug Hunter
+- **Custom Badges**: Project-specific roles and achievements
+
+---
+
+## 4. Version Control Flow
+
+### Overview
+
+Maintainers can update project commit hashes to track code versions on-chain.
+
+### Flow Diagram
+
+```mermaid
+sequenceDiagram
+  participant M as Maintainer
+  participant D as dApp
+  participant GH as GitHub
+  participant SC as SorobanContract
+  participant DB as Database
+
+  M->>D: Update Commit Hash
+  D->>GH: Verify Commit Exists
+  GH-->>D: Commit Verification
+  M->>SC: Submit commit()
+  SC-->>D: Commit Updated
+  SC->>DB: Emit Commit Event
+  D->>M: Show Success
+```
+
+### Commit Verification
+
+- **GitHub API Integration**: Verify commit hashes exist in specified repository
+- **Hash Format Validation**: Ensure 40-character hexadecimal format
+- **Authorization Check**: Only project maintainers can update commits
+
+### Historical Tracking
+
+- **Immutable History**: All commits stored permanently on-chain
+- **Event Indexing**: Backend indexes all commit events for efficient querying
+- **Timestamp Accuracy**: Ledger timestamps provide precise commit timing
+
+---
+
+## 5. Donation Flow
+
+### Overview
+
+Community members can donate XLM to support projects and their maintainers.
+
+### Flow Diagram
+
+```mermaid
+sequenceDiagram
+  participant D as Donor
+  participant dApp as dApp
+  participant W as Wallet
+  participant H as Horizon
+  participant R as Recipient
+
+  D->>dApp: Enter Donation Amount
+  dApp->>W: Create Payment Transaction
+  W-->>dApp: Signed Transaction
+  dApp->>H: Submit Payment
+  H-->>R: Transfer XLM
+  H-->>dApp: Transaction Success
+  dApp->>D: Show Confirmation
+```

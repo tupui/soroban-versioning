@@ -1,0 +1,40 @@
+name: Test Contract
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    paths:
+      - 'contracts/**'
+
+  workflow_dispatch:
+#  schedule:
+#    - cron: "0 6 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  RUSTFLAGS: -C debuginfo=0 # Do not produce debug symbols to keep memory usage down
+  RUST_BACKTRACE: 1
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+      - uses: stellar/actions/rust-cache@main
+
+      - run: rustup update
+
+      # soroban target
+      - run: rustup target add wasm32v1-none
+
+      - run: cargo build
+
+      - run: cargo test

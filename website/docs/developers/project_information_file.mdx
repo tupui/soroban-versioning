@@ -1,0 +1,33 @@
+---
+sidebar_position: 6
+---
+
+import CodeBlock from "@theme/CodeBlock";
+import tansu_toml from "!!raw-loader!./tansu.toml";
+
+# Tansu information file
+
+Metadata on the projects are defined in a TOML file using the [SEP-1](https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0001.md) specification-which standardize the Stellar Info File. This file is to be named `tansu.toml` as to avoid the confusion and collision with `stellar.toml`.
+
+- `DOCUMENTATION`: information about the project
+- `ACCOUNTS`: public keys of the maintainers
+- `PRINCIPALS`: information about maintainers. At least the GitHub handle should be present.
+
+## Display Name (ORG_DBA)
+
+When registering a project, you specify a **Soroban Domain name** (e.g., `myproject`) which is the on-chain identifier limited to 15 lowercase letters.
+
+The `ORG_DBA` field (Doing Business As) in your `tansu.toml` allows you to specify a **display name** that can be different from your domain name. This is useful for:
+- Organizations that want a more descriptive project name
+- Projects with names longer than 15 characters
+- Supporting multiple projects under the same organization
+
+:::note[Order matters]
+
+The order of both `ACCOUNTS` and `PRINCIPALS` is important as to link a maintainer with its public key.
+
+:::
+
+Bellow is a complete example of a project information file:
+
+<CodeBlock language="toml">{tansu_toml}</CodeBlock>

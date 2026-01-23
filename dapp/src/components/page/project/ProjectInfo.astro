@@ -1,0 +1,768 @@
+---
+import CommitHistory from "./CommitHistory";
+import DonateModal from "./DonateModal";
+import LatestCommit from "./LatestCommit";
+import Button from "components/utils/Button";
+---
+
+<div class="mx-auto w-full max-w-[1048px] flex flex-col gap-6">
+  <div class="py-12 flex flex-col gap-12 bg-[#FFFFFFB8]">
+    <div class="px-[16px] lg:px-[72px] flex flex-col gap-9">
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-12">
+          <div class="flex max-lg:flex-col gap-6 items-center">
+            <img
+              id="project-thumbnail"
+              alt="Project Thumbnail"
+              src="/fallback-image.jpg"
+              class="w-[220px] object-cover"
+            />
+            <div class="flex flex-col gap-9">
+              <div class="flex flex-col gap-3">
+                <p
+                  id="project-organization-name"
+                  class="text-base sm:text-lg text-secondary"
+                >
+                </p>
+                <div class="flex gap-[18px]">
+                  <p id="project-name" class="text-2xl text-primary"></p>
+                  <div id="official-links" class="flex items-center gap-3">
+                  </div>
+                </div>
+                <p
+                  id="project-description"
+                  class="text-base sm:text-lg text-secondary"
+                >
+                </p>
+              </div>
+              <LatestCommit client:only />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="flex flex-col gap-[18px] sm:flex-row sm:flex-wrap md:flex-nowrap"
+      >
+        <Button
+          id="goto-dao"
+          icon="/icons/gear-white.svg"
+          size="xl"
+          className="w-full sm:w-auto"
+        >
+          <p class="leading-5 text-base sm:text-xl text-white">Governance</p>
+        </Button>
+        <DonateModal client:only>
+          <Button
+            icon="/icons/heart.svg"
+            size="xl"
+            type="secondary"
+            className="w-full sm:w-auto"
+          >
+            Support
+          </Button>
+        </DonateModal>
+        <Button
+          id="read-more-button"
+          icon="/icons/book.svg"
+          size="xl"
+          type="secondary"
+          className="w-full sm:w-auto"
+        >
+          Read More
+        </Button>
+        <Button
+          id="last-hash-button"
+          icon="/icons/eye.svg"
+          size="xl"
+          type="secondary"
+          className="w-full sm:w-auto"
+        >
+          Last Hash
+        </Button>
+      </div>
+    </div>
+    <div
+      id="project-maintainers"
+      class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
+    >
+      <p class="leading-4 text-base text-secondary">Maintainers</p>
+      <ul
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9 p-4"
+      >
+      </ul>
+      <div class="flex view-all"></div>
+    </div>
+    <div
+      id="project-community"
+      class="p-[15px_16px] lg:p-[30px_72px] bg-white flex flex-col gap-5"
+    >
+      <p class="leading-4 text-base text-secondary">Community badges</p>
+      <div class="community-content flex flex-col gap-4 p-4"></div>
+    </div>
+    <div id="contribution-metrics-section" class="bg-white w-full"></div>
+    <CommitHistory client:load />
+  </div>
+</div>
+
+<div id="last-hash-modal-container"></div>
+<div id="read-more-modal-container"></div>
+
+<script>
+  import { getLatestCommitData } from "@service/GithubService";
+  import { getIpfsBasicLink } from "utils/ipfsFunctions";
+  import { navigate } from "astro:transitions/client";
+  import type { ConfigData } from "types/projectConfig";
+  import { formatDateTime } from "utils/formatTimeFunctions";
+  import {
+    loadConfigData,
+    loadProjectInfo,
+    loadProjectLatestSha,
+    loadProjectName,
+  } from "../../../service/StateService";
+  import {
+    convertGitHubLink,
+    getAuthorRepo,
+  } from "../../../utils/editLinkFunctions";
+  import { projectInfoLoaded } from "../../../utils/store";
+  import { getBadges, getMember } from "@service/ReadContractService";
+
+  document.addEventListener("astro:page-load", async () => {
+    // Wait for DOM to be fully ready
+    await new Promise((resolve) => {
+      if (document.readyState === "complete") {
+        resolve(null);
+      } else {
+        window.addEventListener("load", () => resolve(null));
+      }
+    });
+
+    // Dynamically import React components
+    const [
+      { default: React },
+      { createRoot },
+      { default: LastHashModal },
+      { default: ReadMoreModal },
+      { default: ContributionMetrics },
+    ] = await Promise.all([
+      import("react"),
+      import("react-dom/client"),
+      import("./LastHashModal"),
+      import("./ReadMoreModal"),
+      import("./ContributionMetrics"),
+    ]);
+
+    // Create React roots for modals and components with retry logic
+    let lastHashContainer = document.getElementById(
+      "last-hash-modal-container",
+    );
+    let readMoreContainer = document.getElementById(
+      "read-more-modal-container",
+    );
+    let contributionMetricsContainer = document.getElementById(
+      "contribution-metrics-section",
+    );
+
+    // Retry finding containers if not immediately available
+    if (
+      !lastHashContainer ||
+      !readMoreContainer ||
+      !contributionMetricsContainer
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      lastHashContainer = document.getElementById("last-hash-modal-container");
+      readMoreContainer = document.getElementById("read-more-modal-container");
+      contributionMetricsContainer = document.getElementById(
+        "contribution-metrics-section",
+      );
+    }
+
+    if (
+      !lastHashContainer ||
+      !readMoreContainer ||
+      !contributionMetricsContainer
+    ) {
+      if (import.meta.env.DEV) {
+        console.error("Containers not found", {
+          lastHashContainer: !!lastHashContainer,
+          readMoreContainer: !!readMoreContainer,
+          contributionMetricsContainer: !!contributionMetricsContainer,
+          documentReady: document.readyState,
+        });
+      }
+      return;
+    }
+
+    const lastHashRoot = createRoot(lastHashContainer);
+    const readMoreRoot = createRoot(readMoreContainer);
+    const contributionMetricsRoot = createRoot(contributionMetricsContainer);
+
+    // Modal state
+    let isLastHashModalOpen = false;
+    let isReadMoreModalOpen = false;
+    let commitData: any = null;
+    let projectData: any = null;
+
+    // Render function for modals
+    const renderModals = () => {
+      lastHashRoot.render(
+        React.createElement(LastHashModal, {
+          isOpen: isLastHashModalOpen,
+          onClose: () => {
+            isLastHashModalOpen = false;
+            renderModals();
+          },
+          commitData,
+        }),
+      );
+
+      readMoreRoot.render(
+        React.createElement(ReadMoreModal, {
+          isOpen: isReadMoreModalOpen,
+          onClose: () => {
+            isReadMoreModalOpen = false;
+            renderModals();
+          },
+          projectData,
+        }),
+      );
+    };
+
+    // Initial render
+    renderModals();
+    const updateConfigButton = document.querySelector("[data-update-config]");
+    const udpateConfigModal = document.getElementById(
+      "update-config-modal",
+    ) as HTMLDialogElement;
+
+    if (updateConfigButton) {
+      updateConfigButton.addEventListener("click", () => {
+        udpateConfigModal.showModal();
+      });
+    }
+
+    const readMoreButton = document.getElementById("read-more-button");
+    if (readMoreButton) {
+      readMoreButton.addEventListener("click", () => {
+        isReadMoreModalOpen = true;
+        renderModals();
+      });
+    }
+
+    const lastHashButton = document.getElementById("last-hash-button");
+    if (lastHashButton) {
+      lastHashButton.addEventListener("click", () => {
+        isLastHashModalOpen = true;
+        renderModals();
+      });
+    }
+
+    const updateMaintainerList = (
+      projectInfo: any,
+      configData?: ConfigData,
+      viewAll?: boolean,
+    ) => {
+      const maintainersList = document.getElementById("project-maintainers");
+      if (maintainersList) {
+        const viewAllButtonContainer =
+          maintainersList.querySelector(".view-all");
+        if (viewAllButtonContainer) viewAllButtonContainer.innerHTML = "";
+        const viewAllButton = document.createElement("button");
+        viewAllButton.className =
+          "leading-[18px] text-lg font-[450] text-primary underline";
+        viewAllButton.textContent = viewAll ? "Less" : "View All";
+        if (viewAll) {
+          viewAllButton.addEventListener("click", () =>
+            updateMaintainerList(projectInfo, configData, !viewAll),
+          );
+        }
+        const ul = maintainersList.querySelector("ul");
+        if (ul) {
+          ul.innerHTML = "";
+          // Prefer the order straight from tansu.toml (guaranteed 1-1)
+          const hasMapping =
+            configData &&
+            Array.isArray(configData.maintainersAddresses) &&
+            Array.isArray(configData.authorGithubNames) &&
+            configData.maintainersAddresses.length ===
+              configData.authorGithubNames.length;
+
+          // Build address→handle map (order-independent)
+          let addrToHandle: Record<string, string> = {};
+          if (hasMapping && configData) {
+            for (let i = 0; i < configData.maintainersAddresses.length; i++) {
+              addrToHandle[configData.maintainersAddresses[i]!] =
+                configData.authorGithubNames[i] || "";
+            }
+          }
+
+          // Use on-chain list for authoritative membership
+          const addrArr = projectInfo.maintainers;
+
+          for (let idx = 0; idx < addrArr.length; idx++) {
+            if (!viewAll && idx > 5) continue;
+            const maintainer = addrArr[idx];
+
+            const li = document.createElement("li");
+            li.className = "flex flex-col gap-2 mb-4 p-3 bg-gray-50 rounded-md";
+
+            const displayName = addrToHandle[maintainer] || "";
+
+            if (displayName) {
+              const nameP = document.createElement("p");
+              nameP.className = "leading-6 text-xl text-primary";
+              nameP.textContent = `@${displayName}`;
+              li.appendChild(nameP);
+            }
+
+            // always show address (with tooltip if no displayName)
+            const addrP = document.createElement("p");
+            addrP.className = displayName
+              ? "leading-[14px] text-sm text-secondary cursor-pointer underline"
+              : "leading-6 text-xl text-primary truncate cursor-pointer underline";
+            addrP.textContent = displayName
+              ? `(${maintainer.length > 16 ? maintainer.slice(0, 16) + "..." : maintainer})`
+              : maintainer.length > 20
+                ? maintainer.slice(0, 20) + "..."
+                : maintainer;
+            li.appendChild(addrP);
+
+            if (!displayName) {
+              // no mapping, show address only with tooltip
+              const popup = document.createElement("p");
+              popup.className =
+                "absolute left-0 bottom-full mb-1 p-1 bg-black text-center text-xs text-white rounded hidden max-w-[240px] sm:max-w-[320px] md:max-w-none break-words";
+              popup.textContent = maintainer;
+              li.appendChild(popup);
+
+              li.addEventListener("mouseenter", () =>
+                popup.classList.remove("hidden"),
+              );
+              li.addEventListener("mouseleave", () =>
+                popup.classList.add("hidden"),
+              );
+            }
+
+            li.onclick = (e) => {
+              e.stopPropagation();
+              openProfileModal(maintainer);
+            };
+
+            ul.appendChild(li);
+          }
+
+          // view-all display logic
+          if (viewAllButtonContainer && addrArr.length > 5) {
+            viewAllButtonContainer.append(viewAllButton);
+          }
+        }
+      }
+    };
+
+    let projectInfo: any;
+
+    async function updateProjectInfo() {
+      projectInfo = loadProjectInfo();
+      if (projectInfo) {
+        const gotoDaoButton = document.getElementById("goto-dao");
+        if (gotoDaoButton) {
+          gotoDaoButton.addEventListener("click", () =>
+            navigate(`/governance?name=${projectInfo.name}`),
+          );
+        }
+
+        const configData = loadConfigData();
+        
+        const projectNameElement = document.getElementById("project-name");
+        if (projectNameElement) {
+          projectNameElement.textContent = configData?.projectFullName || projectInfo.name;
+        }
+
+        const projectThumbnail = document.getElementById(
+          "project-thumbnail",
+        ) as HTMLImageElement;
+        const projectDescription = document.getElementById(
+          "project-description",
+        );
+
+        if (projectThumbnail) {
+          if (configData && configData.logoImageLink) {
+            projectThumbnail.src =
+              convertGitHubLink(configData.logoImageLink) ||
+              "/fallback-image.jpg";
+          } else projectThumbnail.src = "/fallback-image.jpg";
+        }
+
+        if (projectDescription) {
+          if (configData) {
+            projectDescription.textContent = configData.description || "";
+          }
+        }
+
+        updateMaintainerList(projectInfo, configData, false);
+
+        const organizationElement = document.getElementById(
+          "project-organization-name",
+        );
+        if (organizationElement) {
+          if (configData) {
+            organizationElement.textContent =
+              configData.organizationName || "Not available";
+          }
+        }
+
+        const officialLinks = document.getElementById("official-links");
+        if (officialLinks) {
+          officialLinks.innerHTML = "";
+          if (configData && configData.officials) {
+            if (configData.officials.githubLink) {
+              addLinkButton(
+                officialLinks,
+                configData.officials.githubLink,
+                "github",
+              );
+            }
+            if (configData.officials.websiteLink) {
+              addLinkButton(
+                officialLinks,
+                configData.officials.websiteLink,
+                "web",
+              );
+            }
+          } else {
+            addLinkButton(officialLinks, projectInfo.config.url, "github");
+          }
+        }
+
+        //Support modal content
+        const loadedName = loadProjectName();
+        if (loadedName) {
+          const projectNameSpan = document.getElementById("contribute-text");
+          if (projectNameSpan) {
+            // Safe DOM manipulation instead of innerHTML
+            projectNameSpan.textContent = "";
+            projectNameSpan.appendChild(
+              document.createTextNode("Contribute to "),
+            );
+            const nameSpan = document.createElement("span");
+            nameSpan.id = "project-name";
+            nameSpan.textContent = loadedName;
+            projectNameSpan.appendChild(nameSpan);
+            projectNameSpan.appendChild(document.createTextNode(".xlm"));
+          }
+
+          const donateTipPopup = document.getElementById("donate-tip-popup");
+          if (donateTipPopup) {
+            donateTipPopup.innerHTML = `Help us run the Tansu platform sustainability
+                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>`;
+          }
+        }
+
+        const syncStatusContainer = document.getElementById(
+          "project-sync-status",
+        );
+        if (syncStatusContainer) {
+          syncStatusContainer.innerHTML = "";
+
+          // Replace configuration badge with direct link to tansu.toml on IPFS
+          const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.ipfs)}/tansu.toml`;
+
+          const link = document.createElement("a");
+          link.href = ipfsUrl;
+          link.target = "_blank";
+          link.className = "flex items-center space-x-2 hover:underline";
+
+          const icon = document.createElement("img");
+          icon.className = "w-5 h-5";
+          icon.src = "/icons/ipfs.svg";
+          icon.alt = "IPFS";
+
+          const text = document.createElement("span");
+          text.className = "text-sm sm:text-base";
+          text.textContent = "tansu.toml";
+
+          link.appendChild(icon);
+          link.appendChild(text);
+
+          syncStatusContainer.appendChild(link);
+
+          // Add commit badge
+          const latestSha = loadProjectLatestSha();
+          const commitComponent = document.createElement("div");
+          commitComponent.className =
+            "flex items-center space-x-2 rounded-full relative group";
+
+          const commitIcon = document.createElement("img");
+          commitIcon.className = "w-5 h-5";
+
+          const commitText = document.createElement("span");
+          commitText.className = "text-sm sm:text-base";
+          commitText.textContent = "Commit";
+
+          const commitPopup = document.createElement("div");
+          commitPopup.className =
+            "absolute bottom-full left-1/2 sm:left-1/4 transform -translate-x-1/2 mb-2 p-2 bg-black text-white rounded hidden group-hover:inline";
+
+          const commitTriangle = document.createElement("div");
+          commitTriangle.className =
+            "absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-black";
+
+          try {
+            if (projectInfo.config.url && latestSha) {
+              const latestCommit = await getLatestCommitData(
+                projectInfo.config.url,
+                latestSha,
+              );
+
+              if (
+                latestCommit &&
+                latestCommit.sha &&
+                latestCommit.sha === latestSha
+              ) {
+                commitIcon.src = "/icons/check.svg";
+                commitIcon.alt = "Check";
+                commitPopup.innerHTML =
+                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain exists on GitHub</p>';
+              } else {
+                commitIcon.src = "/icons/check.svg";
+                commitIcon.alt = "Failed";
+                commitPopup.innerHTML =
+                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain cannot be found on GitHub</p>';
+              }
+            } else {
+              commitIcon.src = "/icons/failed.svg";
+              commitIcon.alt = "Failed";
+              commitPopup.innerHTML =
+                '<p class="text-sm w-36 sm:w-max">No commit SHA on-chain yet</p>';
+            }
+          } catch (error) {
+            commitIcon.src = "/icons/failed.svg";
+            commitIcon.alt = "Failed";
+            commitPopup.innerHTML =
+              '<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on GitHub</p>';
+          }
+        }
+
+        // Set up project data for ReadMoreModal
+        projectData = {
+          name: projectInfo.name,
+          description: configData?.description || "",
+          organization: configData?.organizationName || "",
+          logoImageLink: configData?.logoImageLink
+            ? convertGitHubLink(configData.logoImageLink)
+            : "",
+          githubUrl:
+            configData?.officials?.githubLink || projectInfo.config.url,
+          websiteUrl: configData?.officials?.websiteLink,
+        };
+
+        // Set up commit data for LastHashModal
+        const latestSha = loadProjectLatestSha();
+        if (latestSha) {
+          try {
+            const latestCommit = await getLatestCommitData(
+              projectInfo.config.url,
+              latestSha,
+            );
+
+            if (latestCommit) {
+              commitData = {
+                sha: latestCommit.sha,
+                html_url: latestCommit.html_url,
+                date: formatDateTime(latestCommit.commit.committer.date),
+                author: latestCommit.commit.author.name,
+              };
+            }
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error("Error loading commit data:", error);
+            }
+          }
+        }
+
+        if (projectInfo?.name && projectInfo?.config?.url) {
+          const { username, repoName } = getAuthorRepo(projectInfo.config.url);
+          if (username && repoName) {
+            contributionMetricsRoot.render(
+              React.createElement(ContributionMetrics, {
+                projectName: projectInfo.name,
+                owner: username,
+                repo: repoName,
+              }),
+            );
+          }
+        }
+
+        // Re-render modals with the updated data
+        renderModals();
+      }
+    }
+
+    projectInfoLoaded.subscribe((loaded) => {
+      if (loaded) {
+        updateProjectInfo();
+      }
+    });
+
+    function addLinkButton(
+      container: HTMLElement,
+      url: string,
+      iconName: string,
+    ) {
+      const button = document.createElement("a");
+      button.href = url;
+      button.target = "_blank";
+      button.rel = "noopener noreferrer";
+
+      const icon = document.createElement("img");
+      icon.src = getIconSVG(iconName);
+      icon.alt = iconName;
+      icon.className = "w-4 h-4";
+
+      button.appendChild(icon);
+      container.appendChild(button);
+    }
+
+    function getIconSVG(iconName: string) {
+      const icons: { [key: string]: string } = {
+        web: "/icons/logos/web.svg",
+        github: "/icons/logos/github.svg",
+        twitter: "/icons/logos/twitter-x.svg",
+        telegram: "/icons/logos/telegram.svg",
+        discord: "/icons/logos/discord.svg",
+      };
+      return icons[iconName] || "";
+    }
+
+    const updateCommunityList = async () => {
+      try {
+        const badgeData = await getBadges();
+        if (!badgeData) return;
+
+        const communityContainer = document.getElementById("project-community");
+        if (!communityContainer) return;
+        const contentDiv =
+          communityContainer.querySelector(".community-content");
+        if (!contentDiv) return;
+        contentDiv.innerHTML = "";
+
+        const sections = [
+          { key: "developer", label: "Developer", list: badgeData.developer },
+          { key: "triage", label: "Triage", list: badgeData.triage },
+          { key: "community", label: "Community", list: badgeData.community },
+        ];
+
+        sections.forEach((sec) => {
+          if (sec.list && sec.list.length > 0) {
+            const secDiv = document.createElement("div");
+            const title = document.createElement("p");
+            title.className = "leading-4 text-base text-secondary";
+            title.textContent = sec.label;
+            secDiv.appendChild(title);
+
+            const ul = document.createElement("ul");
+            ul.className =
+              "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-9";
+            sec.list.forEach((addr) => {
+              const li = document.createElement("li");
+              li.className =
+                "relative cursor-pointer p-3 bg-gray-50 rounded-md";
+              li.onclick = (e) => {
+                e.stopPropagation();
+                openProfileModal(addr);
+              };
+              const addrP = document.createElement("p");
+              addrP.className =
+                "leading-[14px] text-sm text-primary truncate underline";
+              addrP.textContent =
+                addr.length > 20 ? addr.slice(0, 20) + "..." : addr;
+              li.appendChild(addrP);
+              ul.appendChild(li);
+            });
+            secDiv.appendChild(ul);
+            contentDiv.appendChild(secDiv);
+          }
+        });
+      } catch (e) {
+        if (import.meta.env.DEV) {
+          console.error("Error fetching badges", e);
+        }
+      }
+    };
+
+    // initial community load
+    updateCommunityList();
+
+    window.addEventListener("badgesUpdated", updateCommunityList);
+
+    // refresh community list when project info finished loading
+    projectInfoLoaded.subscribe((loaded) => {
+      if (loaded) updateCommunityList();
+    });
+
+    // Helper to open member profile modal; attached globally for click handlers
+    async function openProfileModal(address: any) {
+      try {
+        const memberData = await getMember(address);
+
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: MemberProfileModal } = await import(
+          "components/page/dashboard/MemberProfileModal.tsx"
+        );
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        // Use setTimeout to ensure the modal is opened after the current click event completes
+        setTimeout(() => {
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: memberData,
+              address: address,
+              onClose: handleClose,
+            }),
+          );
+        }, 0);
+      } catch (e) {
+        // Show the member not registered modal instead of an error toast
+        const container = document.createElement("div");
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+
+        const { default: MemberProfileModal } = await import(
+          "components/page/dashboard/MemberProfileModal.tsx"
+        );
+
+        const root = createRoot(container);
+        const handleClose = () => {
+          root.unmount();
+          document.body.removeChild(container);
+        };
+
+        // Use setTimeout to ensure the modal is opened after the current click event completes
+        setTimeout(() => {
+          root.render(
+            React.createElement(MemberProfileModal, {
+              member: null,
+              address: address,
+              onClose: handleClose,
+            }),
+          );
+        }, 0);
+      }
+    }
+  });
+</script>

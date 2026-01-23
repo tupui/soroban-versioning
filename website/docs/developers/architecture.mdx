@@ -1,0 +1,107 @@
+---
+sidebar_position: 1
+---
+
+# Architecture
+
+![General diagram flow](/assets/docs/architecture.png)
+
+:::note[Maintainer]
+
+A person which is part of a project's team. This is not necessarily tight to any specific role nor commit rights.
+
+:::
+
+## System Overview
+
+1. Using the dApp, a maintainer registers a project providing a unique name, some metadata and a list of maintainers.
+2. The project's registration triggers an event which can be listened to by anyone on the network. As part of our dApp infrastructure, we listen to all events and store them in our database;
+3. Either using the dApp, or from tools provided to directly call the contract, maintainers can update projects data. Most notably, the last commit hash;
+4. Users can use the dApp to easily get insights on a project. They see the project history, can click on specific commits to have more information and link to the centralized platform used by the project itself.
+
+## Soroban Contract
+
+The Soroban contract handles all on-chain features of the projects from registration, administration, to pushing new code versions.
+
+When maintainers register their projects, a unique hash based on the project name is created. This serves as a `project_key` to uniquely identify a project and is stored as a data entry on the ledger.
+
+Behind the scene, it uses [Soroban Domain](https://sorobandomains.org/) to prevent name squatting and malicious registrations. The community has tools to report issues and prevent contract misuse.
+
+Each project stores 3 elements on-chain:
+
+- a commit hash: the last commit hash which was set by a maintainer;
+- a list of maintainers: authorized maintainers who can administer the project. They can update everything besides the project name itself;
+- the hash of a configuration file and its location: similar to a Stellar info file, as described in SEP-1. It defines meta information such as a more digestible list of maintainers, official resources for a project, etc.
+
+Maintainers can call the contract to update the commit hash as they develop their code. This contract call triggers an event containing the project_key and the commit hash.
+
+Everyone can get a project's commit hash at any time by either making a simulation or even making a cross-contract call.
+
+## Smart Contract Features
+
+### Core Functions
+
+- **Project Management**: Registration, updates, and configuration
+- **Governance**: Proposal creation, voting, and execution
+- **Membership**: Member registration and badge management
+- **Anonymous Voting**: BLS12-381 cryptographic voting system
+
+### Security Features
+
+- **Access Control**: Role-based permissions for maintainers
+- **Input Validation**: Comprehensive validation of all contract inputs
+- **Event Emission**: All state changes emit verifiable events
+- **Upgrade Mechanism**: Controlled contract upgrade system
+
+### Event System
+
+The contract emits events for all state changes:
+
+**Project Events:**
+
+- `ProjectRegistered` - New project created
+- `ProjectUpdated` - Metadata or maintainers changed
+- `CommitUpdated` - New commit hash set
+
+**Governance Events:**
+
+- `AnonymousVotingSetup` - Anonymous voting configured
+- `ProposalCreated` - New proposal submitted
+- `VoteCast` - Vote recorded
+- `ProposalExecuted` - Proposal finalized
+
+**Membership Events:**
+
+- `MemberAdded` - New member registered
+- `BadgesSet` - Badges assigned/updated
+
+Events are indexed by the backend API for efficient querying.
+
+## Backend Infrastructure
+
+Backend infrastructure bridges the contract and dApp. The backend API is open for custom infrastructure or extensions.
+
+A PostgreSQL database stores all events using FastAPI and SQLAlchemy. The database caches events to reduce contract calls. Contract calls are made in Python using py-stellar-base and soroban-cli-python.
+
+Git hooks automate commit tracking. Upon specific Git actions, maintainers trigger hooks that call the contract to update the commit hash. Future enhancements will warn users of hash mismatches.
+
+## IPFS Integration
+
+Tansu uses IPFS for decentralized content storage:
+
+- **Proposal Content**: Rich text descriptions and metadata
+- **Member Profiles**: Profile images and biographical information
+- **Project Metadata**: Configuration files and documentation
+- **Content Addressing**: Immutable content hashes for verification
+
+## dApp
+
+The dApp provides essential project management features.
+
+Built with Astro, `stellar-wallets-kit`, and `sorobandomains-sdk`. The dApp is fully non-custodial and never accesses private keys.
+
+Maintainers can handle all aspects of their projects: add or remove maintainers, update metadata, and set commit hashes.
+
+Users can view project details and current state. Each commit hash links to the project's code repository. The metadata file (similar to SEP-1) renders project information.
+
+The interface clearly shows data sources for both on-chain and off-chain information.

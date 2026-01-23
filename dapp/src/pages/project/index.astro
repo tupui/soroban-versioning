@@ -1,0 +1,86 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Container from "../../components/layout/Container.astro";
+import ProjectInfo from "../../components/page/project/ProjectInfo.astro";
+import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.astro";
+---
+
+<script is:inline>
+  var global = global || window;
+</script>
+
+<Layout title="Tansu" page="project">
+  <Container>
+    <ProjectInfoTitle />
+    <ProjectInfo />
+  </Container>
+</Layout>
+
+<script>
+  import { fetchTomlFromCid } from "../../utils/ipfsFunctions";
+  import {
+    getProjectFromName,
+    getProjectHash,
+  } from "../../service/ReadContractService";
+  import {
+    refreshLocalStorage,
+    setConfigData,
+    setProject,
+    setProjectId,
+    setProjectLatestSha,
+    setProjectRepoInfo,
+  } from "../../service/StateService";
+  import { getAuthorRepo } from "../../utils/editLinkFunctions";
+  import { projectInfoLoaded } from "../../utils/store";
+  import { extractConfigData, toast } from "../../utils/utils";
+
+  document.addEventListener("astro:page-load", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectName = urlParams.get("name") || "";
+    if (projectName) {
+      setProjectId(projectName);
+      try {
+        const project = await getProjectFromName(projectName);
+        if (project && project.name && project.config && project.maintainers) {
+          setProject(project);
+          const { username, repoName } = getAuthorRepo(project.config.url);
+          if (username && repoName) {
+            setProjectRepoInfo(username, repoName);
+          }
+          const tomlData = await fetchTomlFromCid(project.config.ipfs);
+          if (tomlData) {
+            const configData = extractConfigData(tomlData, project);
+            setConfigData(configData);
+          } else {
+            setConfigData({});
+          }
+          try {
+            const latestSha = await getProjectHash();
+            if (
+              latestSha &&
+              typeof latestSha === "string" &&
+              latestSha.match(/^[a-f0-9]{40}$/)
+            ) {
+              setProjectLatestSha(latestSha);
+            } else {
+              setProjectLatestSha("");
+            }
+          } catch (error: any) {
+            toast.error("Something Went Wrong!", error.message);
+          }
+          projectInfoLoaded.set(true);
+        } else {
+          refreshLocalStorage();
+          window.location.href = "/";
+        }
+      } catch (error: any) {
+        if (import.meta.env.DEV) {
+          console.error("Error fetching project info:", error);
+        }
+        toast.error("Something Went Wrong!", error.message);
+        refreshLocalStorage();
+        window.location.href = "/";
+      }
+    }
+  });
+</script>

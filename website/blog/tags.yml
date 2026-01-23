@@ -1,0 +1,19 @@
+dapp:
+  label: dapp
+  permalink: /dapp
+  description: Decentralized Application
+
+dao:
+  label: dao
+  permalink: /dao
+  description: Decentralized Autonomous Organization
+
+scf:
+  label: scf
+  permalink: /scf
+  description: Stellar Community Fund
+
+soroban:
+  label: soroban
+  permalink: /soroban
+  description: Stellar Smart Contract

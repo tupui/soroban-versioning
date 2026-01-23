@@ -1,0 +1,27 @@
+---
+slug: build_award_tranche_1
+title: Tranche 1 approved!
+authors: pamphile
+tags: [scf]
+---
+
+Tansu validated the deliverable for the first tranche of its Stellar Community Fund build Award!
+
+![Award illustration](/assets/blog/tansu_awarded.png)
+
+<!-- truncate -->
+
+As defined in our proposal we set ourselves to complete the following 3 milestones during that tranche. We have successfully delivered them.
+
+1. Decentralized organization backend: we added a DAO interface to our Soroban contract. Maintainers can create a new proposal, anyone can cast a vote and then maintainers can execute the vote at the end of the voting period. A suite of tests is covering the contract API.
+2. Decentralized organization frontend: we added three pages to manage the DAO. (i) lists proposals showing their status; (ii) create a new proposal; and (iii) view a proposal and its details. Once a proposal voting period ends, we can trigger custom outcomes by the mean of custom XDR transactions.
+3. Maintenance before Testnet tranche: we did a complete refactor of the contracts and frontend code to make it more maintainable; improved our CI/CD tooling; added better tools for testnet automatic deployment which is handy with the testnet resets; added support for Ledger wallets; and did a lot of small bug fixes.
+
+Additionally, we have been working on these extras-not part of the proposal:
+
+- IPFS integration: the dApp itself is also hosted on IPFS; DAO proposals are hosted on IPFS. All that in an effort to truly stay decentralized.
+- Design: we have a new logo and are working on a whole new UX with a design studio.
+- Anonymous votes: we are evaluating the use of the new BLS curve and homomorphic encryption as to preserve voters' anonymity.
+- GitHub dependency: we are also looking at ways to remove our dependency towards GitHub or any other external system in an effort to be as decentralized as possible.
+
+We have put in a lot of effort so far to not have a backend and will continue to do so. This is the only way to be truly decentralized, be able to host the dApp itself on IPFS, have everything running client side so that users can really trust our system. It would be far easier and faster for us to make use of a traditional backend but this to us is a compromise we are striving to avoid as much as we technically can. We need to fully embrace web3 and work our way out of web2 solutions.

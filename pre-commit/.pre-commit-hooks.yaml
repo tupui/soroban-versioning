@@ -1,0 +1,11 @@
+- id: tansu
+  name: Send hash to Tansu contract before push
+  language: python
+  additional_dependencies:
+    - soroban
+  entry: tansu-pre-push
+  pass_filenames: false
+  always_run: true
+  require_serial: true
+  stages:
+    - pre-push

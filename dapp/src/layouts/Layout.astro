@@ -1,0 +1,359 @@
+---
+import Navbar from "../components/layout/Navbar.astro";
+import Footer from "../components/layout/Footer.astro";
+import { ClientRouter } from "astro:transitions";
+import { SEO } from "astro-seo";
+import { readFileSync } from "fs";
+
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  page: string;
+}
+
+const { title, page } = Astro.props;
+
+// Read the terms summary JSON file
+let summaryContent = {};
+try {
+  const jsonContent = readFileSync(
+    "../website/static/legal/terms-summary.json",
+    "utf-8",
+  );
+  summaryContent = JSON.parse(jsonContent);
+} catch (error) {
+  console.error("Error reading terms summary:", error);
+  summaryContent = { introduction: "Terms of Service" };
+}
+---
+
+<script>
+  import { Buffer } from "buffer";
+  global.Buffer = Buffer;
+
+  // Add these event listeners to handle the new button events
+  document.addEventListener("astro:page-load", () => {
+    // Handle Add Project button on any page
+    document.addEventListener("show-create-project-modal", async () => {
+      // Modal code kept inline for better performance
+      try {
+        if (document.querySelector(".project-modal-container")) return;
+        const container = document.createElement("div");
+        container.className = "project-modal-container fixed inset-0 z-[9999]";
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+        const { default: CreateProjectModal } = await import(
+          "components/page/dashboard/CreateProjectModal.tsx"
+        );
+        const root = createRoot(container);
+        const handleClose = () => {
+          if (document.body.contains(container))
+            document.body.removeChild(container);
+          try {
+            root.unmount();
+          } catch (e) {}
+        };
+        container.addEventListener("click", (e) => {
+          if (e.target === container) handleClose();
+        });
+        root.render(
+          React.createElement(CreateProjectModal, { onClose: handleClose }),
+        );
+      } catch (e) {
+        console.error("Error opening modal:", e);
+      }
+    });
+
+    // Simplified inline handlers for better performance
+    window.addEventListener("openJoinCommunity", async (event) => {
+      try {
+        if (document.querySelector(".join-modal-container")) return;
+        const container = document.createElement("div");
+        container.className = "join-modal-container fixed inset-0 z-[9999]";
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+        const { default: JoinCommunityModal } = await import(
+          "components/page/dashboard/JoinCommunityModal.tsx"
+        );
+        const root = createRoot(container);
+        const handleClose = () => {
+          if (document.body.contains(container))
+            document.body.removeChild(container);
+          try {
+            root.unmount();
+          } catch (e) {}
+        };
+        container.addEventListener("click", (e) => {
+          if (e.target === container) handleClose();
+        });
+
+        const address =
+          event && typeof event === "object" && "detail" in event
+            ? // @ts-ignore - runtime check above
+              event.detail?.address || ""
+            : "";
+
+        root.render(
+          React.createElement(JoinCommunityModal, {
+            onClose: handleClose,
+            prefillAddress: address,
+          }),
+        );
+      } catch (e) {
+        console.error("Error opening join community modal:", e);
+      }
+    });
+
+    window.addEventListener("openProfileModal", async () => {
+      try {
+        if (document.querySelector(".profile-modal-container")) return;
+        const container = document.createElement("div");
+        container.className = "profile-modal-container fixed inset-0 z-[9999]";
+        document.body.appendChild(container);
+
+        const [{ default: React }, { createRoot }] = await Promise.all([
+          import("react"),
+          import("react-dom/client"),
+        ]);
+        const { default: MemberProfileModal } = await import(
+          "components/page/dashboard/MemberProfileModal.tsx"
+        );
+        const root = createRoot(container);
+        const handleClose = () => {
+          if (document.body.contains(container))
+            document.body.removeChild(container);
+          try {
+            root.unmount();
+          } catch (e) {}
+        };
+        container.addEventListener("click", (e) => {
+          if (e.target === container) handleClose();
+        });
+
+        // Get current connected wallet address
+        const { loadedPublicKey } = await import("service/walletService");
+        const currentAddress = loadedPublicKey();
+
+        if (currentAddress) {
+          // Fetch member data from the blockchain
+          const { getMember } = await import("service/ReadContractService");
+          let memberData = null;
+
+          try {
+            memberData = await getMember(currentAddress);
+          } catch (error) {
+            // Expected for non-members - getMember will return null
+            memberData = null;
+          }
+
+          root.render(
+            React.createElement(MemberProfileModal, {
+              onClose: handleClose,
+              address: currentAddress,
+              member: memberData,
+            }),
+          );
+        }
+      } catch (e) {
+        console.error("Error opening profile modal:", e);
+      }
+    });
+
+    // Check URL params
+    if (
+      window.location.pathname === "/" &&
+      new URLSearchParams(window.location.search).get(
+        "openCreateProjectModal",
+      ) === "true"
+    ) {
+      document.dispatchEvent(new CustomEvent("create-project-global"));
+    }
+
+    // Check Terms of Service acceptance
+    const checkTermsAcceptance = async () => {
+      try {
+        const accepted = localStorage.getItem("tansu_tos_accepted");
+        if (!accepted) {
+          // Show Terms acceptance modal
+          if (document.querySelector(".terms-modal-container")) return;
+          const container = document.createElement("div");
+          container.className = "terms-modal-container fixed inset-0 z-[9999]";
+          document.body.appendChild(container);
+
+          const [{ default: React }, { createRoot }] = await Promise.all([
+            import("react"),
+            import("react-dom/client"),
+          ]);
+          const { default: TermsAcceptanceModal } = await import(
+            "components/utils/TermsAcceptanceModal.tsx"
+          );
+          const root = createRoot(container);
+
+          const handleAccept = () => {
+            if (document.body.contains(container))
+              document.body.removeChild(container);
+            try {
+              root.unmount();
+            } catch (e) {}
+          };
+
+          const handleDecline = () => {
+            // Redirect to main website
+            window.location.href = "https://tansu.dev";
+          };
+
+          container.addEventListener("click", (e) => {
+            if (e.target === container) {
+              // Prevent closing by clicking outside
+              e.preventDefault();
+            }
+          });
+
+          root.render(
+            React.createElement(TermsAcceptanceModal, {
+              onAccept: handleAccept,
+              onDecline: handleDecline,
+              summaryContent: JSON.parse(
+                document.body.dataset.summaryContent || "{}",
+              ),
+            }),
+          );
+        }
+      } catch (e) {
+        console.error("Error checking terms acceptance:", e);
+      }
+    };
+
+    // Check terms acceptance on page load
+    checkTermsAcceptance();
+  });
+</script>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Critical resource hints -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+    <!-- Preload critical resources -->
+    <link rel="preload" as="image" href="/logo-background.png" />
+    <link rel="preload" as="image" href="/logo.svg" />
+
+    <!-- Load fonts with font-display swap for performance -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+
+    <ClientRouter />
+
+    <SEO
+      title={title}
+      description="Bringing open source software development onto the Stellar blockchain. Tansu enables decentralized project governance, transparent funding, and collaborative development on Stellar."
+      canonical={`https://app.tansu.dev${Astro.url.pathname}`}
+      openGraph={{
+        basic: {
+          title: title,
+          type: "website",
+          image: "https://app.tansu.dev/logo-background.png",
+          url: `https://app.tansu.dev${Astro.url.pathname}`,
+        },
+        optional: {
+          description:
+            "Bringing open source software development onto the Stellar blockchain. Tansu enables decentralized project governance, transparent funding, and collaborative development on Stellar.",
+          siteName: "Tansu",
+        },
+      }}
+      twitter={{
+        creator: "@PamphileRoy",
+        card: "summary_large_image",
+        image: "https://app.tansu.dev/logo-background.png",
+        title: title,
+        description:
+          "Bringing open source software development onto the Stellar blockchain",
+      }}
+      extend={{
+        // extending the default link tags
+        link: [
+          { rel: "icon", href: "/logo.svg" },
+          { rel: "apple-touch-icon", href: "/logo.svg" },
+          { rel: "manifest", href: "/manifest.json" },
+        ],
+        // extending the default meta tags
+        meta: [
+          { name: "author", content: "Tansu Team" },
+          {
+            name: "keywords",
+            content:
+              "stellar, blockchain, open source, decentralized, governance, funding, collaboration",
+          },
+          { name: "theme-color", content: "#311255" },
+          { name: "application-name", content: "Tansu" },
+        ],
+      }}
+    />
+
+    <!-- Structured Data for SEO -->
+    <script type="application/ld+json" is:inline>
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Tansu",
+        "url": "https://app.tansu.dev",
+        "description": "Bringing open source software development onto the Stellar blockchain. Tansu enables decentralized project governance, transparent funding, and collaborative development.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "creator": {
+          "@type": "Organization",
+          "name": "Tansu Team"
+        }
+      }
+    </script>
+
+    <!-- Register service worker for caching (silent) -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js").catch(() => {});
+        });
+      }
+    </script>
+  </head>
+  <body
+    class="font-firacode min-h-screen flex flex-col"
+    data-summary-content={JSON.stringify(summaryContent)}
+  >
+    <img
+      src="/logo-background.png"
+      alt="Tansu background decoration"
+      class="background-image hidden md:block"
+      loading="lazy"
+      decoding="async"
+      width="1200"
+      height="800"
+    />
+    <Navbar page={page} />
+    <slot />
+    <Footer />
+  </body>
+</html>

@@ -1,0 +1,76 @@
+---
+import ReadmeViewer from "./ReadmeViewer";
+---
+
+<div class="relative flex flex-col items-center w-full">
+  <div class="flex flex-col gap-4 sm:gap-6 w-full">
+    <div class="flex max-sm:flex-col gap-2 sm:gap-4">
+      <div id="copy-repo-container" class="w-full sm:w-auto"></div>
+      <a
+        id="move-to-releases"
+        class="p-2 sm:p-[9px_30px] lg:p-[18px_30px] bg-[#F5F1F9] flex items-center justify-center sm:justify-start gap-2 sm:gap-3 w-full sm:w-auto"
+      >
+        <img src="/icons/link.svg" class="w-4 h-4 sm:w-auto sm:h-auto" />
+        <span
+          class="leading-5 text-base sm:text-xl text-primary cursor-pointer"
+        >
+          Go to Releases
+        </span>
+      </a>
+    </div>
+    <div class="w-full">
+      <ReadmeViewer client:load />
+    </div>
+  </div>
+</div>
+
+<script>
+  import { loadProjectInfo } from "../../../service/StateService";
+  import { projectInfoLoaded } from "../../../utils/store";
+
+  document.addEventListener("astro:page-load", async () => {
+    // Dynamically import React and CopyButton
+    const [{ default: React }, { createRoot }, { default: CopyButton }] =
+      await Promise.all([
+        import("react"),
+        import("react-dom/client"),
+        import("components/utils/CopyButton"),
+      ]);
+
+    const copyRepoContainer = document.getElementById("copy-repo-container");
+    if (!copyRepoContainer) return;
+
+    const root = createRoot(copyRepoContainer);
+
+    async function updateProjectInfo() {
+      const projectInfo = loadProjectInfo();
+      if (projectInfo) {
+        const repositoryUrl = projectInfo.config.url;
+
+        // Render the CopyButton React component
+        root.render(
+          React.createElement(CopyButton, {
+            textToCopy: `git clone ${repositoryUrl}`,
+            showText: true,
+            text: "Clone Repository",
+            className:
+              "w-full sm:w-auto p-2 sm:p-[9px_30px] lg:p-[18px_30px] bg-[#F5F1F9]",
+          }),
+        );
+
+        const moveToReleases = document.getElementById("move-to-releases");
+        if (moveToReleases instanceof HTMLAnchorElement) {
+          moveToReleases.href = `${repositoryUrl}/releases`;
+          moveToReleases.target = "_blank";
+          moveToReleases.rel = "noopener noreferrer";
+        }
+      }
+    }
+
+    projectInfoLoaded.subscribe((loaded) => {
+      if (loaded) {
+        updateProjectInfo();
+      }
+    });
+  });
+</script>

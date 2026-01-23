@@ -1,0 +1,104 @@
+---
+slug: ipfs
+title: A dApp on a distributed network
+authors: pamphile
+tags: [dapp]
+---
+
+After enabling contract validation, we continued our security journey are we are now serving our dApp on IPFS too! Head over to https://tansu.xlm.sh to try it out.
+
+Diving into IPFS can be daunting. The documentation and information out there is at time very sparse or confusing for newcomers. Let me walk you through how we did that and hopefully help you cut some corners if you are new to IPFS as we are.
+
+<!-- truncate -->
+
+### (Super short) Primer on IPFS
+
+[IPFS](https://ipfs.tech) is an open source platform to manage data in a decentralized fashion. IPFS is a kind of peer to peer network for web3 applications where data is not stored on a specific cloud provider but rather is on a distributed network of nodes. Files on the network get a unique identifier called CID-for content identifier, a flavour of hash. Once connected to the network, anyone can ask for this CID and see the underlying data. Doing so, they will also automagically broadcast the content in a peer to peer fashion.
+
+To bridge the gap between the IPFS network and the "normal" web, we have gateways. These gateways don't require us to host a node to see data on the IPFS network. We can access anything from an image to a complex dApp from any web browser.
+
+All right, let's get some data on IPFS!
+
+### Store something on IPFS
+
+There are basically two options: spin up your own node or use a third party node. Having your node is quite easy, just install the official app and off you go. You have a node on IPFS for free and the app has a nice UI to let you upload files, explore the network, etc. But there is a catch, if your node is down and your files have not been "caught" (or pinned) by other nodes, then your data will be offline if you are offline. Oups.
+
+With all things internet, there is a SAAS to help us Quick Start things. Here we picked web3.storage (rebranding to Storacha):
+
+https://storacha.network
+
+They are running nodes for us and you can start for free with a few GB.
+
+:::info[Your node, your way]
+
+In the long run, as for the Stellar network and Soroban, you will want to spin up your own infrastructure. Not just to save costs, but also to contribute to the health of the network, it's decentralization and have better performances for your application.
+
+:::
+
+After creating an account, we can start uploading files. We have to create a "space" first, which is a sort of project ID. Then we can use the UI to upload anything.
+
+![Storacha](/assets/blog/storacha.png)
+
+Once the upload is completed, our upload get assigned a CID which can be used with a gateway. E.g. with Tansu:
+
+https://bafybeid2ertorypgvxmabjltzxovha5z2tbjawc3646wh4cqscbha3i6wu.ipfs.w3s.link
+
+:::tip[Uploading subfolders]
+
+If you upload a folder which contains subfolders, the UI upload will remove all hierarchy. Use the CLI tools if you want to preserve your subfolders.
+
+:::
+
+The files are not only accessible through Storacha's gateway, they are on IPFS and you can use any node or gateway. There are explorers, akin to Stellar's explorers, which provide additional information on a CID.
+
+![IPLD Explorer](/assets/blog/ipld.png)
+
+:::note[Web browser security]
+
+When you are developing your website/dApp and want to try it with a gateway, you might see `Content Security Policy` errors in the console. This is because of the default configuration of some gateways which prevents any calls to web2 websites from an IPFS website. In our case this is a problem as we at least need to call Soroban RPC which is not hosted on IPFS. To mitigate that security measure, you can either manually edit your `meta` and add exceptions for CSP or use a custom gateway. Like xlm.sh, see bellow!
+
+:::
+
+### A Stellar Gateway
+
+There are many gateways to chose from. All the storage providers have their own, even cloudflare has one. But there is a new and better way on Stellar thanks to @overcat. (Thank you for your invaluable help!)
+
+https://xlm.sh
+
+This is not your normal IFPS gateway. Instead of resolving IPFS CID, it resolves Stellar addresses and Soroban Domains. Cherry on top, we don't have CSP issues.
+
+```
+https://{G... or domain}.xlm.sh
+```
+
+It's a simple concept, a Stellar address can hold arbitrary data on-chain using the [manage data operation](https://developers.stellar.org/docs/learn/fundamentals/transactions/list-of-operations#manage-data). xlm.sh simply look if an address has a `ipfs` field.
+
+![Manage data](/assets/blog/ipfs_transaction.png)
+
+If you have a domain, it will first resolve the address it belongs to, and then get the IPFS CID from the address.
+
+And there you have it. Our dApp is hosted on a decentralized network and made available thanks to a public gateway which understands Stellar and Soroban Domains.
+
+https://tansu.xlm.sh
+
+:::warning[Trust in the gateway]
+
+Moving from hosting platform like Netlify or our own servers to IPFS makes it possible to link a live deployment to code. This is the equivalent of contract validation or trusted-publisher. What we are missing is a way to ensure that the content served by a gateway is authentic. You can always use your own node and eventually if the technology picks up we would all have our own node. We are not there yet. For now, @overcat is known to be a great member of the community (DYOR as they say), hence xlm.sh should be trustworthy.
+
+:::
+
+### Updating the dApp
+
+A CID is no more than a hash which is calculated based on the data. Hence, if you update your dApp, the CID changes. IPFS has a concept of DNS called IPNS. And xlm.sh also understands IPNS values. The catch is that while the IPNS value is fixed, you still need to update the underlying CID it is pointing to. Instead, we can simply update the CID stored on Stellar's blockchain.
+
+### IPFS and Git
+
+You might be wondering if Tansu could leverage IPFS to replace GitHub and-alike to host code. It could, maybe, but things seem a bit too rough at the moment as other project experimented with the idea. We will do some tests and evaluate the possibility, in the end it does not really matter where the code is hosted if we can validate its authenticity, which Tansu is here for. Even if we did manage to make things great (serving PB of data at scale non-trivial and costly) people might still want to stick on GitHub for convenience and its pricing.
+
+What we could store on IPFS is DAO artifacts. Stay tuned!
+
+### Closing thoughts
+
+All of that is awesome. There is still quite some friction to get all of this rolling and much reading to do even if you pick an on-the-shelf SAAS like Storacha. We need more documentation and leading app getting on the rocket of IPFS.
+
+Builders are very active and the tooling is getting better every day. xlm.sh is a more than welcome addition to the ecosystem. On the Soroban Domain side, we have been discussing the possibility to link a domain to some metadata. Similarly to a domain record table, this allows to set any arbitrary field like a Tansu information file, IPFS CID, etc. xlm.sh could in the future make use of that feature.

@@ -1,0 +1,130 @@
+---
+slug: annonymous_voting
+title: "Anonymous Voting in Soroban"
+date: 2025-06-17
+authors: pamphile
+tags: ["dao", "soroban"]
+---
+
+Tansu now supports **anonymous voting** for proposals, allowing members to cast votes without revealing their choices on-chain. This post details the cryptographic protocol, smart contract interface, and how to interact with the feature manually.
+
+<!-- truncate -->
+
+## (Super short) Primer on zero-knowledge
+
+Annonimity on-chain is synonym of zero-knowledge (ZK) schemes. The key concept is to be able to prove something without revealing enough information about it so that it would be compromised. The classic example is to prove your age without giving your birth date while still giving the verifier the certainty that the information your give as a proof is enough.
+
+Since protocol 22, Soroban gained some cryptographic primitives which can be used as building blocks to build ZK protocols. Specifically, the elliptic curve BLS12-381. This curve allows to generate a sort of hash called a point (we make a projection of a value to a point on a curve) and, this is the key part, we can do mathematical operations between points. These mathematical operations, like an addition, are called a homomorphic operations. Thanks to that extra property, we can do `a + b = c` without revealing the values or `a` nor `b` nor `c`. But what we can do is to project `a`, `b` and `c` and get the same points on the curve.
+
+In case this is not clear, this is not a trivial problem and there are a thousand ways you can make this go booooommm.
+
+## ZK and voting
+
+Back to Tansu and voting. We want to store vote on-chain for transparency. If we want to keep votes annonymous, we can map votes to a point on the curve and store that point instead. The issue is that someone can easily pre-compute that mapping. This is commonly called a Rainbow table attack. To this common problem, salting is often used.
+
+In the ZK + voting world, a version of that is a Pedersen commitment scheme. From each vote, we generate a hidden point on a curve which is called commitment and follow:
+
+$$
+C = G(v) \cdot H(r),
+$$
+
+- `G`, `H`: generator points, the magic part which maps a value to a point-on-a-curve,
+- `v`: the vote value, can be multiplied by a weighting factor,
+- `r`: a random seed, unique per vote to prevent Raibow table-like attacks.
+
+The vote commitments can be safely stored on-chain. We can only brute force its value. At the end of the voting period, we can sum individual commitments and compare the final commitment during the tally/reveal phase thanks to homomorphic encryption properties:
+
+$$
+\sum_i C_i = \sum_i {G(v_i) \cdot H(r_i)} = G\left(\sum_i v_i\right) \cdot H\left(\sum_i r_i \right),
+$$
+
+## Smart Contract Interface
+
+### 1. Setup
+
+Before using anonymous voting, a maintainer has to setup an asymmetric keypair. Then they have to share the public key as a contract data:
+
+```bash
+stellar contract invoke \
+  --source-account <ADMIN_G...> \
+  --network testnet \
+  --id <TANSU_CONTRACT_ID> \
+  -- \
+  anonymous_voting_setup \
+  --project_key <project_key> \
+  --public_key <public-key>
+```
+
+### 2. Creating a Proposal
+
+When creating a proposal, set `public_voting` to `false`:
+
+```bash
+stellar contract invoke \
+  --source-account <MAINTAINER_G...> \
+  --network testnet \
+  --id <TANSU_CONTRACT_ID> \
+  -- \
+  create_proposal \
+  --proposer <MAINTAINER_G...> \
+  --project_key <project_key> \
+  --title "Upgrade protocol" \
+  --ipfs <ipfs_cid> \
+  --voting_ends_at <timestamp> \
+  --public_voting false
+```
+
+### 3. Submitting a Vote
+
+Votes are submitted as `AnonymousVote` structs, which include:
+
+- `encrypted_seeds`: Encrypted random seeds (off-chain, using the DAO's public key),
+- `encrypted_votes`: Encrypted vote values (off-chain),
+- `commitments`: Commitments for each choice (Approve, Reject, Abstain).
+
+Call:
+
+```bash
+stellar contract invoke \
+  --source-account <VOTER_G...> \
+  --network testnet \
+  --id <TANSU_CONTRACT_ID> \
+  -- \
+  vote \
+  --voter <VOTER_G...> \
+  --project_key <project_key> \
+  --proposal_id <proposal_id> \
+  --vote '{"AnonymousVote": {"address": "<VOTER_G...>", "weight": <VOTER_WEIGHT>, "encrypted_seeds": ["..."], "encrypted_votes": ["..."], "commitments": ["...", "...", "..."]}}'
+```
+
+:::warning[Generating commitments] You must handle encryption, decryption, and commitment calculation off-chain. You should use `build_commitments_from_votes` but only simulate the transaction. If you submit the transaction, the data would be publicly disclosed publicly. :::
+
+### 4. Tallying and Execution
+
+After the voting period, a maintainer calls:
+
+```bash
+stellar contract invoke \
+  --source-account <MAINTAINER_G...> \
+  --network testnet \
+  --id <TANSU_CONTRACT_ID> \
+  -- \
+  execute \
+  --maintainer <MAINTAINER_G...> \
+  --project_key <project_key> \
+  --proposal_id <proposal_id> \
+  --tallies '[<approve_sum>,<reject_sum>,<abstain_sum>]' \
+  --seeds '[<approve_seed_sum>,<reject_seed_sum>,<abstain_seed_sum>]'
+```
+
+The contract verifies the commitments using:
+
+```rust
+proof(env, project_key, proposal, tallies, seeds)
+```
+
+If the proof passes, the proposal is executed and the result is finalized.
+
+### Closing thoughts
+
+That's it! We have anonymous votes on Soroban! In the following weeks, we will focus on adding some UI components to make this usable to anyone.

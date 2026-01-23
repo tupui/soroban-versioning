@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+@theme {
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 976px;
+  --breakpoint-xl: 1440px;
+
+  --font-firacode: "Fira Code", monospace;
+  --font-victormono: "Victor Mono", monospace;
+  --font-firamono: "Fira Mono", monospace;
+
+  --color-primary: #311255;
+  --color-secondary: #4c4354;
+  --color-tertiary: #5d4e6b;
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-pink: #311255;
+  --color-gray: #b4b4b4;
+  --color-stone: #231f20;
+  --color-lime: #b9ff66;
+  --color-blue: #0b32f6;
+  --color-red: #ff3b30;
+  --color-yellow: #e0d911;
+  --color-active: #22a142;
+  --color-rejected: #de2020;
+  --color-cancelled: #d47901;
+  --color-voted: #096bc7;
+  --color-approved: #22a142;
+  --color-approve: #22a142;
+  --color-reject: #de2020;
+  --color-abstain: #d47901;
+  --color-zinc-100: #f3f3f3;
+  --color-zinc-200: #f0f0f0;
+  --color-zinc-300: #d9d9d9;
+  --color-zinc-400: #d5d5d5;
+  --color-zinc-500: #cbcbcb;
+  --color-zinc-600: #a3a3a3;
+  --color-zinc-700: #787878;
+  --color-zinc-800: #494949;
+  --color-zinc-900: #1c1c1c;
+
+  --shadow-card: 1px 2px 12px rgba(45, 15, 81, 0.06);
+  --shadow-vote: 0px 0px 4px 4px #acff75;
+  --shadow-button: 1px 3px 18px rgba(45, 15, 81, 0.08);
+  --shadow-modal: 4px 8px 36px rgba(49, 18, 85, 0.12);
+}
+
+@layer base {
+  .font-outline {
+    -webkit-text-stroke: 2.5px black;
+    background-color: transparent;
+  }
+  .font-outline-sm {
+    -webkit-text-stroke: 1.2px black;
+    background-color: transparent;
+  }
+}
+
+body {
+  max-width: 1920px;
+  margin: 0 auto 0 auto;
+  padding: 0;
+  background: linear-gradient(180deg, #fbfbfb 0%, #e2e2e2 100%);
+}
+
+.background-image {
+  position: fixed;
+  left: 90px;
+  top: 120px;
+  z-index: -1;
+  width: 738px;
+  object-fit: contain;
+}
+
+/* Adjust the background size for screens less than 1920px */
+@media (max-width: 1919px) {
+  .background-image {
+    width: calc(738 * 100vw / 1920);
+  }
+}
+
+/* custom scrollbar */
+/* For Webkit-based browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 2px !important;
+}
+
+::-webkit-scrollbar:horizontal {
+  height: 2px !important;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px !important;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #aaa !important;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #999 !important;
+}
+
+/* Custom number input */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+._contentEditable_uazmk_379 {
+  background-color: white;
+  min-height: 200px;
+}
+
+.rotate_image {
+  -webkit-animation: spin 4s linear infinite;
+  -moz-animation: spin 4s linear infinite;
+  animation: spin 4s linear infinite;
+}
+@-moz-keyframes spin {
+  100% {
+    -moz-transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+@keyframes spin {
+  100% {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}

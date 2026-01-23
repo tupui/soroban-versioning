@@ -1,0 +1,74 @@
+---
+sidebar_position: 3
+---
+
+# On-Chain
+
+The Stellar smart contract can be directly used and inspected either using an explorer or via the convenient [Stellar CLI](https://github.com/stellar/stellar-cli). See the [contract address](./dapps_and_contracts.mdx).
+
+## Typical flow
+
+The first step is to register a project by providing some information. This will notably check that the maintainer doing this action owns a [Soroban Domain](https://sorobandomains.org/) for the project's name. If that's not the case, it will attempt to register one for a year.
+
+```bash
+stellar contract invoke \
+	--source-account G... \
+	--network testnet \
+	--id C... \
+	-- \
+	register \
+	--maintainer G... \
+	--name tansu \
+	--maintainers '[G...,G...]' \
+	--url https://github.com/your_project/tansu.toml \
+	--hash toml_hash \
+	--domain_contract_id C...
+```
+
+![Contract on-chain](/assets/docs/contract.png)
+
+Then maintainers can commit changes on-chain as they push new commits.
+
+```bash
+stellar contract invoke \
+    --source-account G... \
+    --network testnet \
+    --id C... \
+    -- \
+    commit \
+    --maintainer G... \
+    --project_key ... \
+    --hash ...
+```
+
+![Contract on-chain](/assets/docs/storage.png)
+
+![transactions](/assets/docs/transactions.png)
+
+Later on, anyone can fetch on-chain data about a project and verify the last commit hash for themselves.
+
+```bash
+stellar contract invoke \
+    --source-account G... \
+    --network testnet \
+    --id C... \
+    -- \
+    get_commit \
+    --project_key ...
+```
+
+## Events
+
+Registering a project or committing a new hash sends a contract event.
+
+![Contract events off-chain](/assets/docs/events.png)
+
+These events are ingested by a backend to make them easily consumable off-chain.
+
+## Git Hooks
+
+A pre-push hook is available to ensure commits are recorded on-chain before pushing:
+
+```bash
+pre-commit install -t pre-push
+```
