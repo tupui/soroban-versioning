@@ -68,7 +68,7 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
       if (!projectInfo) return;
 
       const projectKey = deriveProjectKey(projectInfo.name);
-      
+
       // Check if method exists (contract might not be deployed yet)
       if (typeof (Tansu as any).get_sub_projects !== "function") {
         setSubProjectNames([]);
@@ -150,7 +150,9 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
 
       // Check if method exists (contract might not be deployed yet)
       if (typeof (Tansu as any).set_sub_projects !== "function") {
-        throw new Error("set_sub_projects method not available. The contract needs to be deployed with the new methods first.");
+        throw new Error(
+          "set_sub_projects method not available. The contract needs to be deployed with the new methods first.",
+        );
       }
 
       const tx = await (Tansu as any).set_sub_projects({
@@ -203,8 +205,8 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
                 Manage Sub-Projects
               </h6>
               <p className="text-sm sm:text-base text-secondary">
-                Add or remove sub-projects to group them under this project. If this
-                project has sub-projects, it acts as an organization.
+                Add or remove sub-projects to group them under this project. If
+                this project has sub-projects, it acts as an organization.
               </p>
 
               {error && (
@@ -248,7 +250,9 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
                           key={index}
                           className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-md"
                         >
-                          <span className="text-sm sm:text-base text-primary">{name}</span>
+                          <span className="text-sm sm:text-base text-primary">
+                            {name}
+                          </span>
                           <Button
                             onClick={() => handleRemoveProject(index)}
                             disabled={isLoading}
@@ -264,10 +268,18 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
                 )}
 
                 <div className="flex justify-end gap-3 mt-4">
-                  <Button onClick={handleClose} disabled={isLoading} type="secondary">
+                  <Button
+                    onClick={handleClose}
+                    disabled={isLoading}
+                    type="secondary"
+                  >
                     Cancel
                   </Button>
-                  <Button onClick={handleSubmit} disabled={isLoading} isLoading={isLoading}>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={isLoading}
+                    isLoading={isLoading}
+                  >
                     Save Changes
                   </Button>
                 </div>

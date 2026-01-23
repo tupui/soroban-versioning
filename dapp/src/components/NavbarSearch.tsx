@@ -310,18 +310,18 @@ const NavbarSearch = () => {
         {/* Desktop: Add Project button (only render client-side) */}
         {isClient && (
           <>
-          <Button
-            type="primary"
-            order="secondary"
-            className="h-10 lg:h-12 px-4 lg:px-6 whitespace-nowrap transition-all duration-200 flex items-center justify-center text-sm lg:text-base font-medium"
-            onClick={handleAddProject}
-            title={buttonTitle}
-            size="sm"
-          >
-            <span className="text-sm lg:text-base font-medium">
-              + Add Project
-            </span>
-          </Button>
+            <Button
+              type="primary"
+              order="secondary"
+              className="h-10 lg:h-12 px-4 lg:px-6 whitespace-nowrap transition-all duration-200 flex items-center justify-center text-sm lg:text-base font-medium"
+              onClick={handleAddProject}
+              title={buttonTitle}
+              size="sm"
+            >
+              <span className="text-sm lg:text-base font-medium">
+                + Add Project
+              </span>
+            </Button>
           </>
         )}
       </div>

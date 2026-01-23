@@ -28,17 +28,25 @@ const SubProjectsSection = () => {
         }
 
         const projectKey = deriveProjectKey(projectInfo.name);
-        
+
         // Check if method exists (contract might not be deployed yet)
         if (typeof (Tansu as any).get_sub_projects !== "function") {
           setSubProjects([]);
           setIsLoading(false);
           // Show commit history and contribution metrics
-          const commitHistorySection = document.getElementById("commit-history-section");
-          const contributionMetricsSection = document.getElementById("contribution-metrics-section");
-          const latestCommitSection = document.getElementById("latest-commit-section");
-          if (commitHistorySection) commitHistorySection.style.display = "block";
-          if (contributionMetricsSection) contributionMetricsSection.style.display = "block";
+          const commitHistorySection = document.getElementById(
+            "commit-history-section",
+          );
+          const contributionMetricsSection = document.getElementById(
+            "contribution-metrics-section",
+          );
+          const latestCommitSection = document.getElementById(
+            "latest-commit-section",
+          );
+          if (commitHistorySection)
+            commitHistorySection.style.display = "block";
+          if (contributionMetricsSection)
+            contributionMetricsSection.style.display = "block";
           if (latestCommitSection) latestCommitSection.style.display = "block";
           return;
         }
@@ -53,27 +61,44 @@ const SubProjectsSection = () => {
           setSubProjects([]);
           setIsLoading(false);
           // Show commit history and contribution metrics
-          const commitHistorySection = document.getElementById("commit-history-section");
-          const contributionMetricsSection = document.getElementById("contribution-metrics-section");
-          const latestCommitSection = document.getElementById("latest-commit-section");
-          if (commitHistorySection) commitHistorySection.style.display = "block";
-          if (contributionMetricsSection) contributionMetricsSection.style.display = "block";
+          const commitHistorySection = document.getElementById(
+            "commit-history-section",
+          );
+          const contributionMetricsSection = document.getElementById(
+            "contribution-metrics-section",
+          );
+          const latestCommitSection = document.getElementById(
+            "latest-commit-section",
+          );
+          if (commitHistorySection)
+            commitHistorySection.style.display = "block";
+          if (contributionMetricsSection)
+            contributionMetricsSection.style.display = "block";
           if (latestCommitSection) latestCommitSection.style.display = "block";
           return;
         }
 
         // Hide commit history and contribution metrics when sub-projects exist
-        const commitHistorySection = document.getElementById("commit-history-section");
-        const contributionMetricsSection = document.getElementById("contribution-metrics-section");
-        const latestCommitSection = document.getElementById("latest-commit-section");
+        const commitHistorySection = document.getElementById(
+          "commit-history-section",
+        );
+        const contributionMetricsSection = document.getElementById(
+          "contribution-metrics-section",
+        );
+        const latestCommitSection = document.getElementById(
+          "latest-commit-section",
+        );
         if (commitHistorySection) commitHistorySection.style.display = "none";
-        if (contributionMetricsSection) contributionMetricsSection.style.display = "none";
+        if (contributionMetricsSection)
+          contributionMetricsSection.style.display = "none";
         if (latestCommitSection) latestCommitSection.style.display = "none";
 
         const projects: any[] = [];
         for (const key of subProjectKeys) {
           try {
-            const keyBuffer = Buffer.isBuffer(key) ? key : Buffer.from(key, "hex");
+            const keyBuffer = Buffer.isBuffer(key)
+              ? key
+              : Buffer.from(key, "hex");
             const project = await Tansu.get_project({
               project_key: keyBuffer,
             });
@@ -97,11 +122,18 @@ const SubProjectsSection = () => {
       } catch {
         setSubProjects([]);
         // Show commit history and contribution metrics on error
-        const commitHistorySection = document.getElementById("commit-history-section");
-        const contributionMetricsSection = document.getElementById("contribution-metrics-section");
-        const latestCommitSection = document.getElementById("latest-commit-section");
+        const commitHistorySection = document.getElementById(
+          "commit-history-section",
+        );
+        const contributionMetricsSection = document.getElementById(
+          "contribution-metrics-section",
+        );
+        const latestCommitSection = document.getElementById(
+          "latest-commit-section",
+        );
         if (commitHistorySection) commitHistorySection.style.display = "block";
-        if (contributionMetricsSection) contributionMetricsSection.style.display = "block";
+        if (contributionMetricsSection)
+          contributionMetricsSection.style.display = "block";
         if (latestCommitSection) latestCommitSection.style.display = "block";
       } finally {
         setIsLoading(false);
@@ -140,7 +172,9 @@ const SubProjectsSection = () => {
               logoImageLink: project.configData?.logoImageLink || null,
               officials: {
                 websiteLink: project.configData?.officials?.websiteLink,
-                githubLink: project.config?.url || project.configData?.officials?.githubLink,
+                githubLink:
+                  project.config?.url ||
+                  project.configData?.officials?.githubLink,
               },
               socialLinks: project.configData?.socialLinks || {},
               organizationName: project.configData?.organizationName,

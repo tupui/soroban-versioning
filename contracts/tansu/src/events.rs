@@ -1,6 +1,6 @@
 //! Event definitions for the Tansu contract.
 
-use soroban_sdk::{Address, Bytes, BytesN, String, contractevent};
+use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contractevent};
 
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
