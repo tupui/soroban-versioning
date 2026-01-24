@@ -269,7 +269,9 @@ fn dao_anonymous() {
     let kuiil = Address::generate(&setup.env);
     setup.token_stellar.mint(&kuiil, &(10 * 10_000_000));
     let meta = String::from_str(&setup.env, "abcd");
-    setup.contract.add_member(&kuiil, &meta);
+    setup
+        .contract
+        .add_member(&kuiil, &meta, &None, &None, &None, &None);
     let badges = vec![&setup.env, Badge::Community];
     setup
         .contract
@@ -496,7 +498,9 @@ fn voting_errors() {
     // Cannot vote for someone else
     let kuiil = Address::generate(&setup.env);
     let meta = String::from_str(&setup.env, "test");
-    setup.contract.add_member(&kuiil, &meta);
+    setup
+        .contract
+        .add_member(&kuiil, &meta, &None, &None, &None, &None);
 
     let err = setup
         .contract
@@ -610,7 +614,9 @@ fn proposal_execution() {
     let kuiil = Address::generate(&setup.env);
     setup.token_stellar.mint(&kuiil, &(10 * 10_000_000));
     let meta = String::from_str(&setup.env, "test");
-    setup.contract.add_member(&kuiil, &meta);
+    setup
+        .contract
+        .add_member(&kuiil, &meta, &None, &None, &None, &None);
     let badges = vec![&setup.env, Badge::Community];
     setup
         .contract
@@ -757,7 +763,9 @@ fn voter_weight_validation() {
     let kuiil = Address::generate(&setup.env);
     setup.token_stellar.mint(&kuiil, &(10 * 10_000_000));
     let meta = String::from_str(&setup.env, "test");
-    setup.contract.add_member(&kuiil, &meta);
+    setup
+        .contract
+        .add_member(&kuiil, &meta, &None, &None, &None, &None);
 
     // Cannot vote with weight higher than max allowed
     let err = setup
@@ -844,7 +852,9 @@ fn outcomes_execution() {
     let kuiil = Address::generate(&setup.env);
     setup.token_stellar.mint(&kuiil, &(10 * 10_000_000));
     let meta = String::from_str(&setup.env, "test");
-    setup.contract.add_member(&kuiil, &meta);
+    setup
+        .contract
+        .add_member(&kuiil, &meta, &None, &None, &None, &None);
     let badges = vec![&setup.env, Badge::Community];
     setup
         .contract

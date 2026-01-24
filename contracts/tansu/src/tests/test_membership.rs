@@ -11,7 +11,9 @@ fn membership_badges() {
 
     let member = Address::generate(&setup.env);
     let meta = String::from_str(&setup.env, "abcd");
-    setup.contract.add_member(&member, &meta);
+    setup
+        .contract
+        .add_member(&member, &meta, &None, &None, &None, &None);
 
     // Verify member added event
     let all_events = setup.env.events().all();
@@ -120,7 +122,9 @@ fn membership_double_set_badges() {
 
     let member = Address::generate(&setup.env);
     let meta = String::from_str(&setup.env, "abcd");
-    setup.contract.add_member(&member, &meta);
+    setup
+        .contract
+        .add_member(&member, &meta, &None, &None, &None, &None);
 
     let badges = vec![&setup.env, Badge::Community];
     setup
@@ -157,7 +161,9 @@ fn membership_multiple_different_badges() {
 
     let member = Address::generate(&setup.env);
     let meta = String::from_str(&setup.env, "abcd");
-    setup.contract.add_member(&member, &meta);
+    setup
+        .contract
+        .add_member(&member, &meta, &None, &None, &None, &None);
 
     // Set both Community and Triage badges in a single call
     let both_badges = vec![&setup.env, Badge::Community, Badge::Triage];
@@ -227,12 +233,14 @@ fn membership_errors() {
 
     let member = Address::generate(&setup.env);
     let meta = String::from_str(&setup.env, "abcd");
-    setup.contract.add_member(&member, &meta);
+    setup
+        .contract
+        .add_member(&member, &meta, &None, &None, &None, &None);
 
     // Adding the same twice
     let error = setup
         .contract
-        .try_add_member(&member, &meta)
+        .try_add_member(&member, &meta, &None, &None, &None, &None)
         .unwrap_err()
         .unwrap();
     assert_eq!(error, ContractErrors::MemberAlreadyExist.into());
