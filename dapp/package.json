@@ -1,8 +1,8 @@
 {
   "dependencies": {
     "@astrojs/check": "^0.9.5",
-    "@astrojs/netlify": "6.6.0",
-    "@astrojs/react": "4.4.2",
+    "@astrojs/netlify": "^6.6.0",
+    "@astrojs/react": "^4.4.2",
     "@creit.tech/sorobandomains-sdk": "^0.1.6",
     "@creit.tech/stellar-wallets-kit": "^1.9.5",
     "@ipld/dag-ucan": "^3.4.5",
@@ -10,7 +10,7 @@
     "@noble/curves": "^2.0.1",
     "@stellar/stellar-sdk": "^14.3.2",
     "@stellar/stellar-xdr-json": "^23.0.0",
-    "@storacha/client": "^1.8.16",
+    "@storacha/client": "^2.0.0",
     "@ucanto/core": "^10.4.6",
     "@web3-storage/access": "^20.3.0",
     "astro": "^5.16.2",
@@ -81,5 +81,6 @@
   "version": "0.0.1",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "private": true
 }

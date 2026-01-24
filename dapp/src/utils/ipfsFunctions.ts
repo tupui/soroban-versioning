@@ -4,7 +4,7 @@
  * This file contains all utility functions for working with IPFS links and data.
  */
 
-import toml from "toml";
+import * as toml from "toml";
 
 // Cache for IPFS content to avoid repeated network requests
 const ipfsCache: Record<string, any> = {};
@@ -108,22 +108,20 @@ export const calculateDirectoryCid = async (
       const client = await create();
 
       // Convert the files array to the format expected by the uploadDirectory method
+      // Convert the files array to the format expected by the uploadDirectory method
       const filesArray =
         Array.isArray(files) && files.length > 0 && files[0] instanceof File
-          ? (files as File[]).map((file) => ({
-              name: file.name,
-              stream: () => file.stream(),
-            }))
+          ? (files as File[])
           : (files as { path: string; content: Uint8Array }[]).map((file) => ({
-              name: file.path,
-              stream: () =>
-                new ReadableStream({
-                  start(controller) {
-                    controller.enqueue(file.content);
-                    controller.close();
-                  },
-                }),
-            }));
+            name: file.path,
+            stream: () =>
+              new ReadableStream({
+                start(controller) {
+                  controller.enqueue(file.content);
+                  controller.close();
+                },
+              }),
+          }));
 
       // Calculate CID without uploading
       const dirCid = await client.uploadDirectory(filesArray);

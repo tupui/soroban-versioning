@@ -1,12 +1,19 @@
 {
-  "extends": "astro/tsconfigs/strictest",
+  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
-      "@service/*": ["service/*"]
+      "@service/*": [
+        "service/*"
+      ]
     },
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   },
-  "exclude": ["packages", "dist", "node_modules"]
+  "exclude": [
+    "packages",
+    "dist",
+    "node_modules"
+  ]
 }
