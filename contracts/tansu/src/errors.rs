@@ -38,4 +38,7 @@ pub enum ContractErrors {
     CollateralError = 25,
     // Versioning
     NoProjectPageFound = 26,
+    // Git Handle Flow
+    InvalidEnvelope = 27,
+    InvalidSignature = 28,
 }

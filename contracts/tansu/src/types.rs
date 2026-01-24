@@ -55,6 +55,11 @@ pub struct ProjectBadges {
 pub struct Member {
     pub projects: Vec<ProjectBadges>,
     pub meta: String,
+    pub git_identity: Option<String>,
+    pub git_pubkey: Option<String>,
+    pub msg: Option<String>,
+    pub sig: Option<String>,
+    pub signed_at: Option<u64>,
 }
 
 #[contracttype]
