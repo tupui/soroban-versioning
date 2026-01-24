@@ -462,7 +462,6 @@ const CreateProposalModal = () => {
               </div>
             </div>
 
-            {/* Add this after the Proposal Name input and before Description section */}
             <TemplateSelector
               onTemplateSelect={handleTemplateSelect}
               currentContent={mdText}

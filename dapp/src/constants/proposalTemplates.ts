@@ -7,183 +7,222 @@ export interface ProposalTemplate {
 
 export const PROPOSAL_TEMPLATES: ProposalTemplate[] = [
   {
-    id: 'pep',
-    name: 'PEP Format',
-    description: 'Python Enhancement Proposal style - structured technical proposal',
-    content: `# [PEP X]: [Proposal Title]
+    id: 'code-change',
+    name: 'Code Implementation',
+    description: 'For proposing code changes, feature implementations, or technical upgrades with on-chain commit tracking',
+    content: `# [Implementation Name]
 
-## Abstract
-A short (~200 word) description of the technical issue being addressed.
+## Commit Hash
+[Paste your commit hash here]
+**Repository:** [Link to GitHub/GitLab repository]
+**Branch:** [Branch name]
 
-## Motivation
-Clearly explain why the existing system is inadequate to address the problem.
+## Technical Summary
+Brief description of the code changes and their purpose.
 
-## Specification
-The technical specification should describe the syntax and semantics of any new feature.
+## Implementation Details
+### Changes Made:
+- [ ] Function/Module 1 updates
+- [ ] Function/Module 2 modifications
+- [ ] New features added
 
-## Rationale
-The rationale fleshes out the specification by describing what motivated the design.
+### Testing Strategy:
+- [ ] Unit tests updated/added
+- [ ] Integration tests
+- [ ] Security audit considerations
 
-## Backwards Compatibility
-All proposals that introduce backwards incompatibilities must include a section describing these.
+## On-Chain Verification
+- **Commit Hash:** [Hash to be stored on-chain]
+- **Verification Method:** [How commit will be verified]
+- **Immutable Proof:** [Link to blockchain explorer when live]
 
-## Reference Implementation
-This section should contain a reference implementation of the proposal.
-
-## Discussion
-- Link to discussion thread: [Forum/Discord link]
-- Previous proposals: [Related proposals]
-
-## Copyright
-This document is placed in the public domain or under the CC0-1.0-Universal license.`
+## Voting Parameters
+- **Voting Type:** [Public/Anonymous]
+- **Duration:** [Number] days
+- **Quorum:** [Percentage]% of maintainers`
   },
   {
-    id: 'eip',
-    name: 'EIP Format',
-    description: 'Ethereum Improvement Proposal style - blockchain protocol change',
-    content: `# [EIP X]: [Proposal Title]
+    id: 'governance-update',
+    name: 'Governance Rules',
+    description: 'For updating project governance rules, voting parameters, or membership requirements',
+    content: `# Governance Update: [Rule Name]
 
-## Abstract
-The abstract is a multi-sentence summary of the proposal.
+## Current Rule
+Describe the current governance rule or parameter.
 
-## Motivation
-The motivation section should describe the "why" of the proposal.
-
-## Specification
-The technical specification should describe the syntax and semantics of any new feature.
+## Proposed Change
+Detailed description of the proposed update.
 
 ## Rationale
-The rationale fleshes out the specification by describing what motivated the design.
+Why this change is necessary for the project's governance.
 
-## Backwards Compatibility
-All EIPs that introduce backwards incompatibilities must include a section describing these.
+## Impact Analysis
+### Affected Parties:
+- [ ] Project Maintainers
+- [ ] Community Members
+- [ ] Token Holders
 
-## Test Cases
-Test cases for an implementation are mandatory for EIPs that are affecting consensus changes.
+### System Changes:
+- [ ] Contract parameter updates
+- [ ] Voting mechanism modifications
+- [ ] Membership requirements
 
-## Reference Implementation
-The reference implementation must be completed before any EIP is given status "Final".
+## Implementation Steps
+1. Smart contract update
+2. Community notification period
+3. On-chain execution
 
-## Security Considerations
-All EIPs must contain a section that discusses the security implications.
-
-## Copyright
-Copyright and related rights waived via CC0.`
+## Voting Strategy
+- **Voting Method:** Anonymous recommended for sensitive governance changes
+- **Duration:** 5-7 days for community feedback
+- **Threshold:** [Percentage]% majority required`
   },
   {
-    id: 'cap',
-    name: 'CAP Format',
-    description: 'Celo Improvement Proposal style - governance and economic changes',
-    content: `# [CAP X]: [Proposal Title]
+    id: 'grant-request',
+    name: 'Grant Funding',
+    description: 'For requesting development grants, bounties, or ecosystem funding with transparent milestones',
+    content: `# Grant Request: [Project Name]
 
-## Summary
-Provide a brief overview of the proposal and its intended outcome.
+## Applicant Information
+- **Developer Address:** [Stellar address]
+- **Soroban Domain:** [Optional domain name]
+- **Previous Contributions:** [Links to prior work]
 
-## Abstract
-A short description of the proposal's purpose and scope.
+## Project Scope
+Detailed description of what will be built or improved.
 
-## Motivation
-Explain the problem this proposal aims to solve and why it's important.
+## Deliverables & Milestones
+### Milestone 1: [Name]
+- [ ] Deliverable 1
+- [ ] Deliverable 2
+- [ ] Estimated completion: [Date]
 
-## Specification
-Detailed technical specification including parameters, formulas, and implementation details.
+### Milestone 2: [Name]
+- [ ] Deliverable 3
+- [ ] Deliverable 4
+- [ ] Estimated completion: [Date]
 
-## Rationale
-Justify the design decisions and chosen parameters.
-
-## Risks
-Identify potential risks and their mitigation strategies.
+## Budget Request
+- **Total Amount:** [X] XLM
+- **Breakdown:**
+  - Development: [Amount]
+  - Testing/Audit: [Amount]
+  - Documentation: [Amount]
 
 ## Success Metrics
-Define clear, measurable outcomes for evaluating success.
+How success will be measured and verified on-chain.
 
-## Timeline
-Proposed implementation timeline with milestones.
-
-## Voting
-- Voting options: For, Against, Abstain
-- Voting period: [X] days
-- Quorum: [Y]% of total supply
-
-## Copyright
-This work is licensed under the Creative Commons Zero v1.0 Universal.`
+## IPFS Storage
+All deliverables will be stored on IPFS with on-chain verification.`
   },
   {
-    id: 'sep',
-    name: 'SEP Format',
-    description: 'Stellar Ecosystem Proposal style - Stellar network improvements',
-    content: `# [SEP X]: [Proposal Title]
+    id: 'membership-change',
+    name: 'Membership Update',
+    description: 'For adding/removing maintainers, assigning roles, or updating achievement badges',
+    content: `# Membership Update
 
-## Abstract
-Brief description of the proposed change to the Stellar ecosystem.
+## Action Requested
+- [ ] Add New Maintainer
+- [ ] Remove Maintainer
+- [ ] Update Role Permissions
+- [ ] Award Achievement Badge
 
-## Motivation
-Why this change is necessary and what problems it addresses.
+## Candidate Information
+- **Address:** [Stellar public key]
+- **Soroban Domain:** [If applicable]
+- **GitHub/Portfolio:** [Link to work]
 
-## Specification
-Detailed technical specification including protocol changes.
+## Justification
+Why this membership change benefits the project.
 
-## Design Rationale
-Explanation of design choices and alternatives considered.
+## Role Permissions
+### If Adding Maintainer:
+- [ ] Can create proposals
+- [ ] Can merge code changes
+- [ ] Can manage grants
+- [ ] Voting weight: [Percentage]
 
-## Security Considerations
-Analysis of security implications and potential attack vectors.
+### If Awarding Badge:
+- **Badge Type:** [Contributor/Reviewer/Builder]
+- **Achievement:** [Description of accomplishment]
+- **On-chain Proof:** [Link to verified contributions]
 
-## Implementation
-Implementation details and testing requirements.
-
-## Backwards Compatibility
-Impact on existing systems and migration path.
-
-## Reference Implementation
-Link to reference implementation if available.
-
-## Voting and Governance
-- Voting mechanism: [Description]
-- Execution: [Conditions for execution]
-
-## Copyright
-Copyright and related rights waived via CC0.`
+## Voting Consideration
+- **Privacy:** Anonymous voting recommended
+- **Duration:** 3-5 days for maintainer consensus`
   },
   {
-    id: 'simple',
-    name: 'Simple Proposal',
-    description: 'Basic proposal structure for general community decisions',
-    content: `# [Proposal Title]
+    id: 'emergency-response',
+    name: 'Emergency Fix',
+    description: 'For urgent security patches, bug fixes, or critical system updates requiring fast-track voting',
+    content: `# ⚠️ EMERGENCY: [Issue Name]
 
-## Summary
-Brief description of what this proposal aims to achieve.
+## Severity Level
+- [ ] Critical Security Vulnerability
+- [ ] System Downtime
+- [ ] Data Integrity Issue
+- [ ] Other: [Specify]
 
-## Problem Statement
-What problem are we trying to solve?
+## Issue Description
+Detailed explanation of the emergency situation.
 
-## Proposed Solution
-Detailed explanation of the proposed solution.
+## Immediate Impact
+What systems/users are affected and how.
 
-## Benefits
-Expected benefits and positive outcomes.
+## Proposed Fix
+### Technical Solution:
+[Describe the fix]
 
-## Implementation Plan
-Step-by-step plan for implementation.
+### Commit Hash:
+[Hash of emergency fix]
 
-## Timeline
-Estimated timeline with key milestones.
+### Testing Completed:
+- [ ] Basic functionality test
+- [ ] Security impact assessment
+- [ ] Rollback plan verification
 
-## Cost/Budget
-If applicable, detailed budget breakdown.
+## Fast-Track Voting Request
+**Reason for urgency:** [Why this cannot wait for normal cycle]
+**Expected resolution time:** [Hours/days]
 
-## Risks and Mitigations
-Potential risks and how to address them.
+## Post-Resolution Review
+Commitment to full review and documentation after resolution.`
+  },
+  {
+    id: 'community-proposal',
+    name: 'Community Initiative',
+    description: 'For general community suggestions, ecosystem improvements, or non-technical changes',
+    content: `# Community Proposal: [Initiative Name]
 
-## Voting
-- Options: Yes, No, Abstain
-- Duration: [Number] days
+## Proposal Overview
+What the community is suggesting and why.
 
-## Discussion
-Link to forum discussion: [URL]`
+## Background Context
+Relevant history and current situation.
+
+## Detailed Plan
+Step-by-step implementation plan if applicable.
+
+## Community Impact
+How this benefits the broader ecosystem.
+
+## Resource Requirements
+If any resources are needed from the treasury.
+
+## Success Measurement
+How we'll know if this initiative is successful.
+
+## Discussion Link
+[Link to forum/discussion thread for community feedback]
+
+## Voting Parameters
+- **Voting Type:** Public (for community visibility)
+- **Duration:** 7 days for maximum participation
+- **Quorum:** Based on community engagement`
   }
 ];
 
 export const getTemplateById = (id: string): ProposalTemplate | undefined => {
   return PROPOSAL_TEMPLATES.find(template => template.id === id);
 };
+
