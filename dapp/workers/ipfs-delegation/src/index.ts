@@ -66,6 +66,17 @@ export default {
       });
     }
 
+    // Only allow POST requests for delegation
+    if (request.method !== "POST") {
+      return new Response("Method not allowed", {
+        status: 405,
+        headers: {
+          ...corsHeaders,
+          "Allow": "POST, OPTIONS"
+        },
+      });
+    }
+
     try {
       const body = (await request.json()) as DelegationRequest;
       const { signedTxXdr, did } = body;
