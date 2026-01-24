@@ -56,12 +56,12 @@ impl MembershipTrait for Tansu {
                 panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
             }
 
-            // 0. Header
+            // Header
             if lines_bytes.get(0).unwrap() != Bytes::from_slice(&env, b"Stellar Signed Message") {
                 panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
             }
 
-            // 1. Network Passphrase
+            // Network Passphrase
             // env.ledger().network_id() is the hash of the passphrase
             let passphrase_bytes = lines_bytes.get(1).unwrap();
             let passphrase_hash: [u8; 32] = env.crypto().sha256(&passphrase_bytes).into();
@@ -70,7 +70,7 @@ impl MembershipTrait for Tansu {
                 panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
             }
 
-            // 2. Signing Account
+            // Signing Account
             let addr_str = member_address.to_string();
             let addr_len = addr_str.len();
             let mut addr_buf = [0u8; 128];
@@ -81,12 +81,12 @@ impl MembershipTrait for Tansu {
                 panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
             }
 
-            // 3. Nonce (16-byte hex = 32 chars)
+            // Nonce (16-byte hex = 32 chars)
             if lines_bytes.get(3).unwrap().len() != 32 {
                 panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
             }
 
-            // 4. Payload
+            // Payload
             let payload = lines_bytes.get(4).unwrap();
             let prefix = Bytes::from_slice(&env, b"tansu-bind|");
             if payload.len() < prefix.len() || payload.slice(0..prefix.len()) != prefix {
