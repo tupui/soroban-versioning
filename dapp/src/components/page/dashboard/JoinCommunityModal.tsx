@@ -4,6 +4,8 @@ import Button from "components/utils/Button";
 import FlowProgressModal from "components/utils/FlowProgressModal";
 import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { Buffer } from "buffer";
 import { validateStellarAddress, validateUrl } from "utils/validations";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 
@@ -164,6 +166,23 @@ const JoinCommunityModal: FC<{
     if (showGitBinding && gitMessage && !gitSignature.trim()) {
       toast.error("Signature Required", "Please provide the signature for your Git handle");
       return false;
+    }
+
+    if (showGitBinding && gitMessage && gitSignature.trim() && gitPublicKey.trim()) {
+      try {
+        const pubKeyBytes = new Uint8Array(Buffer.from(gitPublicKey.replace(/^0x/, ""), "hex"));
+        const sigBytes = new Uint8Array(Buffer.from(gitSignature.replace(/^0x/, ""), "hex"));
+        const msgBytes = new Uint8Array(Buffer.from(gitMessage));
+
+        const isValid = ed25519.verify(sigBytes, msgBytes, pubKeyBytes);
+        if (!isValid) {
+          toast.error("Invalid Signature", "The signature does not match the public key and message.");
+          return false;
+        }
+      } catch (e) {
+        toast.error("Verification Error", "Failed to verify signature. Ensure public key and signature are valid format.");
+        return false;
+      }
     }
 
     return isAddressValid && isSocialValid;

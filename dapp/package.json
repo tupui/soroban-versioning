@@ -8,6 +8,7 @@
     "@ipld/dag-ucan": "^3.4.5",
     "@nanostores/react": "^1.0.0",
     "@noble/curves": "^2.0.1",
+    "@noble/ed25519": "^3.0.0",
     "@stellar/stellar-sdk": "^14.3.2",
     "@stellar/stellar-xdr-json": "^23.0.0",
     "@storacha/client": "^1.8.16",

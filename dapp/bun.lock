@@ -12,6 +12,7 @@
         "@ipld/dag-ucan": "^3.4.5",
         "@nanostores/react": "^1.0.0",
         "@noble/curves": "^2.0.1",
+        "@noble/ed25519": "^3.0.0",
         "@stellar/stellar-sdk": "^14.3.2",
         "@stellar/stellar-xdr-json": "^23.0.0",
         "@storacha/client": "^1.8.16",
@@ -525,7 +526,7 @@
 
     "@noble/curves": ["@noble/curves@2.0.1", "", { "dependencies": { "@noble/hashes": "2.0.1" } }, "sha512-vs1Az2OOTBiP4q0pwjW5aF0xp9n4MxVrmkFBxc6EKZc6ddYx5gaZiAsZoq0uRRXWbi3AT/sBqn05eRPtn1JCPw=="],
 
-    "@noble/ed25519": ["@noble/ed25519@1.7.5", "", {}, "sha512-xuS0nwRMQBvSxDa7UxMb61xTiH3MxTgUfhyPUALVIe0FlOAz4sjELwyDRyUvqeEYfRSG9qNjFIycqLZppg4RSA=="],
+    "@noble/ed25519": ["@noble/ed25519@3.0.0", "", {}, "sha512-QyteqMNm0GLqfa5SoYbSC3+Pvykwpn95Zgth4MFVSMKBB75ELl9tX1LAVsN4c3HXOrakHsF2gL4zWDAYCcsnzg=="],
 
     "@noble/hashes": ["@noble/hashes@2.0.1", "", {}, "sha512-XlOlEbQcE9fmuXxrVTXCTlG2nlRXa9Rj3rr5Ue/+tX+nmkgbX720YHh0VR3hBF9xDvwnb8D2shVGOwNx+ulArw=="],
 
@@ -3775,6 +3776,8 @@
 
     "@ucanto/principal/@noble/curves": ["@noble/curves@1.9.7", "", { "dependencies": { "@noble/hashes": "1.8.0" } }, "sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw=="],
 
+    "@ucanto/principal/@noble/ed25519": ["@noble/ed25519@1.7.5", "", {}, "sha512-xuS0nwRMQBvSxDa7UxMb61xTiH3MxTgUfhyPUALVIe0FlOAz4sjELwyDRyUvqeEYfRSG9qNjFIycqLZppg4RSA=="],
+
     "@ucanto/principal/@noble/hashes": ["@noble/hashes@1.8.0", "", {}, "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="],
 
     "@ucanto/principal/@ucanto/interface": ["@ucanto/interface@10.3.0", "", { "dependencies": { "@ipld/dag-ucan": "^3.4.5", "multiformats": "^13.3.1" } }, "sha512-97929CGr3AM4Y01CLZ3wwhzrlth5pq8eJCbd/hUMxD62nyG9eRsyvt3RSOtBNtu4jTdMH580x0oAF2D1XKcPvw=="],
@@ -4353,6 +4356,8 @@
 
     "@storacha/access/@ucanto/principal/@noble/curves": ["@noble/curves@1.9.7", "", { "dependencies": { "@noble/hashes": "1.8.0" } }, "sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw=="],
 
+    "@storacha/access/@ucanto/principal/@noble/ed25519": ["@noble/ed25519@1.7.5", "", {}, "sha512-xuS0nwRMQBvSxDa7UxMb61xTiH3MxTgUfhyPUALVIe0FlOAz4sjELwyDRyUvqeEYfRSG9qNjFIycqLZppg4RSA=="],
+
     "@storacha/access/@ucanto/principal/@noble/hashes": ["@noble/hashes@1.8.0", "", {}, "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="],
 
     "@storacha/access/@ucanto/transport/@ucanto/core": ["@ucanto/core@10.4.5", "", { "dependencies": { "@ipld/car": "^5.1.0", "@ipld/dag-cbor": "^9.0.0", "@ipld/dag-ucan": "^3.4.5", "@ucanto/interface": "^11.0.1", "multiformats": "^13.3.1" } }, "sha512-NKVgAFjpPu1QFyKjYHlaeJbSvst3oA79S7XNSFFQGhNKhGJ45ro67Fa5zxdy5jlU5jhSox3+T81VsmsszfBRYw=="],
@@ -4360,6 +4365,8 @@
     "@storacha/access/@ucanto/validator/@ucanto/core": ["@ucanto/core@10.4.5", "", { "dependencies": { "@ipld/car": "^5.1.0", "@ipld/dag-cbor": "^9.0.0", "@ipld/dag-ucan": "^3.4.5", "@ucanto/interface": "^11.0.1", "multiformats": "^13.3.1" } }, "sha512-NKVgAFjpPu1QFyKjYHlaeJbSvst3oA79S7XNSFFQGhNKhGJ45ro67Fa5zxdy5jlU5jhSox3+T81VsmsszfBRYw=="],
 
     "@storacha/capabilities/@ucanto/principal/@noble/curves": ["@noble/curves@1.9.7", "", { "dependencies": { "@noble/hashes": "1.8.0" } }, "sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw=="],
+
+    "@storacha/capabilities/@ucanto/principal/@noble/ed25519": ["@noble/ed25519@1.7.5", "", {}, "sha512-xuS0nwRMQBvSxDa7UxMb61xTiH3MxTgUfhyPUALVIe0FlOAz4sjELwyDRyUvqeEYfRSG9qNjFIycqLZppg4RSA=="],
 
     "@storacha/capabilities/@ucanto/principal/@noble/hashes": ["@noble/hashes@1.8.0", "", {}, "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="],
 
@@ -4370,6 +4377,8 @@
     "@storacha/client/@ucanto/client/@ucanto/core": ["@ucanto/core@10.4.5", "", { "dependencies": { "@ipld/car": "^5.1.0", "@ipld/dag-cbor": "^9.0.0", "@ipld/dag-ucan": "^3.4.5", "@ucanto/interface": "^11.0.1", "multiformats": "^13.3.1" } }, "sha512-NKVgAFjpPu1QFyKjYHlaeJbSvst3oA79S7XNSFFQGhNKhGJ45ro67Fa5zxdy5jlU5jhSox3+T81VsmsszfBRYw=="],
 
     "@storacha/client/@ucanto/principal/@noble/curves": ["@noble/curves@1.9.7", "", { "dependencies": { "@noble/hashes": "1.8.0" } }, "sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw=="],
+
+    "@storacha/client/@ucanto/principal/@noble/ed25519": ["@noble/ed25519@1.7.5", "", {}, "sha512-xuS0nwRMQBvSxDa7UxMb61xTiH3MxTgUfhyPUALVIe0FlOAz4sjELwyDRyUvqeEYfRSG9qNjFIycqLZppg4RSA=="],
 
     "@storacha/client/@ucanto/principal/@noble/hashes": ["@noble/hashes@1.8.0", "", {}, "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="],
 
