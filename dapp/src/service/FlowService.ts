@@ -13,15 +13,14 @@ import { deriveProjectKey } from "../utils/projectKey";
 //
 import { sendSignedTransaction, signAssembledTransaction } from "./TxService";
 import { checkSimulationError } from "../utils/contractErrors";
-import * as StellarSdk from "@stellar/stellar-sdk";
+import { xdr } from "@stellar/stellar-sdk";
 import { Buffer } from "buffer";
 
 // Convert JavaScript values to Soroban ScVal format with optional type hints
-function convertToScVal(rawValue: any): StellarSdk.xdr.ScVal {
-  // If it's already an ScVal (XDR object), return it as-is
-  if (rawValue && typeof rawValue === "object" && "_switch" in rawValue) {
-    // This is likely an XDR ScVal object - return it directly
-    return rawValue as StellarSdk.xdr.ScVal;
+function convertToScVal(rawValue: any): xdr.ScVal {
+  // If it's already an ScVal-like object, return it as-is
+  if (rawValue instanceof xdr.ScVal) {
+    return rawValue;
   }
 
   // Handle objects shaped like { type, value } coming from the contract function selector
@@ -37,105 +36,95 @@ function convertToScVal(rawValue: any): StellarSdk.xdr.ScVal {
   return convertToScValWithType(rawValue);
 }
 
-function convertToScValWithType(
-  value: any,
-  typeHint?: string,
-): StellarSdk.xdr.ScVal {
+function convertToScValWithType(value: any, typeHint?: string): xdr.ScVal {
   const lowerType = typeHint?.toLowerCase();
-  
-  // Helper function to extract numeric value from various formats
-  const getNumericValue = (val: any): string => {
-    // If it's already a string that looks like a number, use it as-is
-    if (typeof val === "string") {
-      return val;
+
+  const typeDefFromHint = (hint?: string): xdr.ScSpecTypeDef | null => {
+    switch (hint) {
+      case "u32":
+        return xdr.ScSpecTypeDef.scSpecTypeU32();
+      case "i32":
+        return xdr.ScSpecTypeDef.scSpecTypeI32();
+      case "u64":
+        return xdr.ScSpecTypeDef.scSpecTypeU64();
+      case "i64":
+        return xdr.ScSpecTypeDef.scSpecTypeI64();
+      case "u128":
+        return xdr.ScSpecTypeDef.scSpecTypeU128();
+      case "i128":
+        return xdr.ScSpecTypeDef.scSpecTypeI128();
+      case "u256":
+        return xdr.ScSpecTypeDef.scSpecTypeU256();
+      case "i256":
+        return xdr.ScSpecTypeDef.scSpecTypeI256();
+      case "bool":
+        return xdr.ScSpecTypeDef.scSpecTypeBool();
+      case "address":
+        return xdr.ScSpecTypeDef.scSpecTypeAddress();
+      case "symbol":
+        return xdr.ScSpecTypeDef.scSpecTypeSymbol();
+      case "string":
+        return xdr.ScSpecTypeDef.scSpecTypeString();
+      case "bytes":
+        return xdr.ScSpecTypeDef.scSpecTypeBytes();
+      default:
+        return null;
     }
-    // If it's a number, convert to string
-    if (typeof val === "number") {
-      return String(Math.floor(val));
-    }
-    // If it's a BigInt, convert to string
-    if (typeof val === "bigint") {
-      return String(val);
-    }
-    // If it's an object with a toString method that's not the default Object.toString
-    if (val && typeof val === "object") {
-      // Check if it's a Uint64/Int64 XDR object with _value property
-      if (val._value !== undefined) {
-        return String(val._value);
-      }
-      // Check for toString that's been customized
-      const toStringResult = Object.prototype.toString.call(val);
-      if (toStringResult === "[object Object]") {
-        // Last resort: try to get any numeric property
-        if (val.low !== undefined && val.high !== undefined) {
-          return String(val.low); // Some XDR libraries use low/high for 64-bit numbers
-        }
-      }
-    }
-    // Fallback: convert to string and hope for the best
-    return String(val);
   };
 
-  try {
-    switch (lowerType) {
-      case "u32":
-        return StellarSdk.xdr.ScVal.scvU32(Number(value));
-      case "i32":
-        return StellarSdk.xdr.ScVal.scvI32(Number(value));
-      case "u64":
-        return StellarSdk.xdr.ScVal.scvU64(
-          StellarSdk.xdr.Uint64.fromString(getNumericValue(value)),
-        );
-      case "i64":
-        return StellarSdk.xdr.ScVal.scvI64(
-          StellarSdk.xdr.Int64.fromString(getNumericValue(value)),
-        );
-      case "u128":
-        return StellarSdk.xdr.ScVal.scvU128(BigInt(value) as any);
-      case "i128":
-        return StellarSdk.xdr.ScVal.scvI128(BigInt(value) as any);
-      case "u256":
-        return StellarSdk.xdr.ScVal.scvU256(BigInt(value) as any);
-      case "i256":
-        return StellarSdk.xdr.ScVal.scvI256(BigInt(value) as any);
-      case "bool":
-        return StellarSdk.xdr.ScVal.scvBool(Boolean(value));
-      case "address":
-        return StellarSdk.xdr.ScVal.scvAddress(
-          new StellarSdk.Address(String(value)).toScAddress(),
-        );
-      case "symbol":
-        return StellarSdk.xdr.ScVal.scvSymbol(String(value));
-      case "bytes":
-        return StellarSdk.xdr.ScVal.scvBytes(Buffer.from(String(value)));
-      case "string":
-        return StellarSdk.xdr.ScVal.scvString(String(value));
-      default:
-        break;
+  const hintedType = typeDefFromHint(lowerType);
+  if (hintedType) {
+    let normalized = value;
+    if (lowerType === "bytes") {
+      normalized = Buffer.from(String(value ?? ""));
+    } else if (
+      lowerType === "u64" ||
+      lowerType === "i64" ||
+      lowerType === "u128" ||
+      lowerType === "i128" ||
+      lowerType === "u256" ||
+      lowerType === "i256"
+    ) {
+      normalized = typeof value === "bigint" ? value : BigInt(value ?? 0);
+    } else if (lowerType === "u32" || lowerType === "i32") {
+      normalized = Number(value ?? 0);
+    } else if (lowerType === "bool") {
+      normalized = Boolean(value);
+    } else if (
+      lowerType === "string" ||
+      lowerType === "symbol" ||
+      lowerType === "address"
+    ) {
+      normalized = String(value ?? "");
     }
-  } catch (err) {
-    console.warn("Falling back to generic ScVal conversion:", err);
+    return Tansu.spec.nativeToScVal(normalized, hintedType);
   }
 
-  // Fallbacks when no type hint is provided
   if (typeof value === "string") {
-    return StellarSdk.xdr.ScVal.scvString(value);
+    return Tansu.spec.nativeToScVal(value, xdr.ScSpecTypeDef.scSpecTypeString());
   }
   if (typeof value === "number") {
-    return StellarSdk.xdr.ScVal.scvU64(
-      StellarSdk.xdr.Uint64.fromString(String(Math.floor(value))),
+    return Tansu.spec.nativeToScVal(
+      value,
+      xdr.ScSpecTypeDef.scSpecTypeU64(),
     );
   }
   if (typeof value === "boolean") {
-    return StellarSdk.xdr.ScVal.scvBool(value);
-  }
-  if (value && typeof value === "object" && value._isAddress) {
-    return StellarSdk.xdr.ScVal.scvAddress(
-      new StellarSdk.Address(value.publicKey).toScAddress(),
+    return Tansu.spec.nativeToScVal(
+      value,
+      xdr.ScSpecTypeDef.scSpecTypeBool(),
     );
   }
-  // For complex types, try to serialize as bytes
-  return StellarSdk.xdr.ScVal.scvBytes(Buffer.from(JSON.stringify(value)));
+  if (value && typeof value === "object" && value._isAddress) {
+    return Tansu.spec.nativeToScVal(
+      String(value.publicKey),
+      xdr.ScSpecTypeDef.scSpecTypeAddress(),
+    );
+  }
+  return Tansu.spec.nativeToScVal(
+    Buffer.from(JSON.stringify(value)),
+    xdr.ScSpecTypeDef.scSpecTypeBytes(),
+  );
 }
 
 interface UploadWithDelegationParams {
@@ -273,7 +262,13 @@ async function createSignedProposalTransaction(
           args: (oc.args || []).map((arg, idx) => {
             try {
               const converted = convertToScVal(arg);
-              console.log(`  Arg ${idx} (${typeof arg}):`, arg, "->", converted);
+              // Just a debug log
+              console.log(
+                `DEBUG: Arg ${idx} (${typeof arg}):`,
+                arg,
+                "->",
+                converted,
+              );
               return converted;
             } catch (err) {
               console.error(`  ERROR converting arg ${idx}:`, arg, err);
