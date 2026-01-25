@@ -1,6 +1,7 @@
 import { calculateDirectoryCid } from "../utils/ipfsFunctions";
 import { create } from "@storacha/client";
 import * as Delegation from "@ucanto/core/delegation";
+import type { OutcomeContract } from "../types/proposal";
 
 //
 import Tansu from "../contracts/soroban_tansu";
@@ -12,6 +13,130 @@ import { deriveProjectKey } from "../utils/projectKey";
 //
 import { sendSignedTransaction, signAssembledTransaction } from "./TxService";
 import { checkSimulationError } from "../utils/contractErrors";
+import * as StellarSdk from "@stellar/stellar-sdk";
+import { Buffer } from "buffer";
+
+// Convert JavaScript values to Soroban ScVal format with optional type hints
+function convertToScVal(rawValue: any): StellarSdk.xdr.ScVal {
+  // If it's already an ScVal (XDR object), return it as-is
+  if (rawValue && typeof rawValue === "object" && "_switch" in rawValue) {
+    // This is likely an XDR ScVal object - return it directly
+    return rawValue as StellarSdk.xdr.ScVal;
+  }
+
+  // Handle objects shaped like { type, value } coming from the contract function selector
+  if (
+    rawValue &&
+    typeof rawValue === "object" &&
+    "type" in rawValue &&
+    "value" in rawValue
+  ) {
+    return convertToScValWithType(rawValue.value, String(rawValue.type));
+  }
+
+  return convertToScValWithType(rawValue);
+}
+
+function convertToScValWithType(
+  value: any,
+  typeHint?: string,
+): StellarSdk.xdr.ScVal {
+  const lowerType = typeHint?.toLowerCase();
+  
+  // Helper function to extract numeric value from various formats
+  const getNumericValue = (val: any): string => {
+    // If it's already a string that looks like a number, use it as-is
+    if (typeof val === "string") {
+      return val;
+    }
+    // If it's a number, convert to string
+    if (typeof val === "number") {
+      return String(Math.floor(val));
+    }
+    // If it's a BigInt, convert to string
+    if (typeof val === "bigint") {
+      return String(val);
+    }
+    // If it's an object with a toString method that's not the default Object.toString
+    if (val && typeof val === "object") {
+      // Check if it's a Uint64/Int64 XDR object with _value property
+      if (val._value !== undefined) {
+        return String(val._value);
+      }
+      // Check for toString that's been customized
+      const toStringResult = Object.prototype.toString.call(val);
+      if (toStringResult === "[object Object]") {
+        // Last resort: try to get any numeric property
+        if (val.low !== undefined && val.high !== undefined) {
+          return String(val.low); // Some XDR libraries use low/high for 64-bit numbers
+        }
+      }
+    }
+    // Fallback: convert to string and hope for the best
+    return String(val);
+  };
+
+  try {
+    switch (lowerType) {
+      case "u32":
+        return StellarSdk.xdr.ScVal.scvU32(Number(value));
+      case "i32":
+        return StellarSdk.xdr.ScVal.scvI32(Number(value));
+      case "u64":
+        return StellarSdk.xdr.ScVal.scvU64(
+          StellarSdk.xdr.Uint64.fromString(getNumericValue(value)),
+        );
+      case "i64":
+        return StellarSdk.xdr.ScVal.scvI64(
+          StellarSdk.xdr.Int64.fromString(getNumericValue(value)),
+        );
+      case "u128":
+        return StellarSdk.xdr.ScVal.scvU128(BigInt(value) as any);
+      case "i128":
+        return StellarSdk.xdr.ScVal.scvI128(BigInt(value) as any);
+      case "u256":
+        return StellarSdk.xdr.ScVal.scvU256(BigInt(value) as any);
+      case "i256":
+        return StellarSdk.xdr.ScVal.scvI256(BigInt(value) as any);
+      case "bool":
+        return StellarSdk.xdr.ScVal.scvBool(Boolean(value));
+      case "address":
+        return StellarSdk.xdr.ScVal.scvAddress(
+          new StellarSdk.Address(String(value)).toScAddress(),
+        );
+      case "symbol":
+        return StellarSdk.xdr.ScVal.scvSymbol(String(value));
+      case "bytes":
+        return StellarSdk.xdr.ScVal.scvBytes(Buffer.from(String(value)));
+      case "string":
+        return StellarSdk.xdr.ScVal.scvString(String(value));
+      default:
+        break;
+    }
+  } catch (err) {
+    console.warn("Falling back to generic ScVal conversion:", err);
+  }
+
+  // Fallbacks when no type hint is provided
+  if (typeof value === "string") {
+    return StellarSdk.xdr.ScVal.scvString(value);
+  }
+  if (typeof value === "number") {
+    return StellarSdk.xdr.ScVal.scvU64(
+      StellarSdk.xdr.Uint64.fromString(String(Math.floor(value))),
+    );
+  }
+  if (typeof value === "boolean") {
+    return StellarSdk.xdr.ScVal.scvBool(value);
+  }
+  if (value && typeof value === "object" && value._isAddress) {
+    return StellarSdk.xdr.ScVal.scvAddress(
+      new StellarSdk.Address(value.publicKey).toScAddress(),
+    );
+  }
+  // For complex types, try to serialize as bytes
+  return StellarSdk.xdr.ScVal.scvBytes(Buffer.from(JSON.stringify(value)));
+}
 
 interface UploadWithDelegationParams {
   files: File[];
@@ -25,6 +150,7 @@ interface CreateProposalFlowParams {
   proposalFiles: File[];
   votingEndsAt: number;
   publicVoting?: boolean;
+  outcomeContracts?: OutcomeContract[]; // New parameter for contract outcomes
   onProgress?: (step: number) => void;
 }
 
@@ -114,12 +240,61 @@ async function createSignedProposalTransaction(
   ipfs: string,
   votingEndsAt: number,
   publicVoting: boolean,
+  outcomeContracts?: OutcomeContract[],
 ): Promise<string> {
   const publicKey = loadedPublicKey();
   if (!publicKey) throw new Error("Please connect your wallet first");
 
   Tansu.options.publicKey = publicKey;
   const project_key = deriveProjectKey(projectName);
+
+  console.log(
+    "🔍 DEBUG FlowService: outcomeContracts received:",
+    outcomeContracts,
+  );
+  console.log(
+    "outcomeContracts types:",
+    outcomeContracts?.map((oc) => typeof oc),
+  );
+
+  // Convert OutcomeContract[] to contract format expected by Soroban.
+  // We do not allow gaps (e.g. reject without approve) and skip any empty entries.
+  const convertedContracts =
+    outcomeContracts
+      ?.filter(
+        (oc): oc is OutcomeContract =>
+          !!oc && !!oc.address && oc.address.trim() !== "",
+      )
+      .map((oc) => {
+        console.log(`🔍 DEBUG: Converting contract args for function ${oc.execute_fn}:`, oc.args);
+        return {
+          address: oc.address,
+          execute_fn: oc.execute_fn,
+          args: (oc.args || []).map((arg, idx) => {
+            try {
+              const converted = convertToScVal(arg);
+              console.log(`  Arg ${idx} (${typeof arg}):`, arg, "->", converted);
+              return converted;
+            } catch (err) {
+              console.error(`  ERROR converting arg ${idx}:`, arg, err);
+              throw err;
+            }
+          }), // Convert each arg to ScVal
+        };
+      }) || [];
+
+  const finalOutcomeContracts =
+    convertedContracts.length > 0 ? convertedContracts : undefined;
+  console.log("finalOutcomeContracts:", finalOutcomeContracts);
+
+  console.log("🔍 DEBUG: Tansu.create_proposal parameters:");
+  console.log("proposer:", publicKey);
+  console.log("project_key:", project_key);
+  console.log("title:", title);
+  console.log("ipfs:", ipfs);
+  console.log("voting_ends_at:", votingEndsAt, typeof votingEndsAt);
+  console.log("public_voting:", publicVoting);
+  console.log("outcome_contracts:", finalOutcomeContracts);
 
   const tx = await Tansu.create_proposal({
     proposer: publicKey,
@@ -128,7 +303,7 @@ async function createSignedProposalTransaction(
     ipfs: ipfs,
     voting_ends_at: BigInt(votingEndsAt),
     public_voting: publicVoting,
-    outcomes_contract: undefined,
+    outcome_contracts: finalOutcomeContracts,
   });
 
   // Check for simulation errors (contract errors) before signing
@@ -192,6 +367,7 @@ export async function createProposalFlow({
   proposalFiles,
   votingEndsAt,
   publicVoting = true,
+  outcomeContracts,
   onProgress,
 }: CreateProposalFlowParams): Promise<number> {
   // Step 1: Calculate the CID
@@ -209,6 +385,7 @@ export async function createProposalFlow({
     expectedCid,
     votingEndsAt,
     publicVoting,
+    outcomeContracts,
   );
 
   // Step 3: Upload to IPFS using the signed transaction as authentication
