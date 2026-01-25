@@ -7,6 +7,7 @@ import CopyButton from "components/utils/CopyButton";
 import { useMemo, useState, useEffect } from "react";
 import {
   VoteResultType,
+  type Proposal,
   type ProposalOutcome,
   type VoteStatus,
 } from "types/proposal";
@@ -20,6 +21,7 @@ import AnonymousTalliesDisplay from "./AnonymousTalliesDisplay";
 interface ExecuteProposalModalProps extends ModalProps {
   projectName: string;
   proposalId: number | undefined;
+  proposal: Proposal | undefined; // Add proposal data
   outcome: ProposalOutcome | null;
   voteStatus: VoteStatus | undefined;
 }
@@ -27,6 +29,7 @@ interface ExecuteProposalModalProps extends ModalProps {
 const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   projectName,
   proposalId,
+  proposal,
   outcome,
   voteStatus,
   onClose,
@@ -68,6 +71,13 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
 
   const executionXdr = useMemo(() => {
     if (!outcome || !computedResult) return null;
+
+    // Check if we have contract outcomes (takes precedence)
+    if (proposal?.outcome_contracts && proposal.outcome_contracts.length > 0) {
+      return null; // Contract execution handled by smart contract
+    }
+
+    // Fall back to XDR execution
     switch (computedResult) {
       case VoteResultType.APPROVE:
         return outcome.approved?.xdr || null;
@@ -78,7 +88,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       default:
         return null;
     }
-  }, [outcome, computedResult]);
+  }, [outcome, computedResult, proposal?.outcome_contracts]);
 
   useEffect(() => {
     if (
@@ -99,9 +109,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   useEffect(() => {
     const checkMaintainer = async () => {
       try {
-        const { getProjectFromName } = await import(
-          "@service/ReadContractService"
-        );
+        const { getProjectFromName } =
+          await import("@service/ReadContractService");
         const project = await getProjectFromName(projectName);
         const addr = loadedPublicKey();
         if (project && addr) {
@@ -127,9 +136,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       if (!parsed.privateKey)
         throw new Error("Invalid key-file – missing privateKey field");
       // Validate uploaded key against on-chain config (centralized helper)
-      const { validateAnonymousKeyForProject } = await import(
-        "../../../utils/anonymousVoting"
-      );
+      const { validateAnonymousKeyForProject } =
+        await import("../../../utils/anonymousVoting");
       await validateAnonymousKeyForProject(projectName!, parsed.publicKey);
       setPrivateKey(parsed.privateKey);
       await computeTallies(parsed.privateKey);
