@@ -123,7 +123,12 @@ export const OutcomeDetail: React.FC<{
         <Button
           type="secondary"
           icon="/icons/code.svg"
-          onClick={() => setShowModal(true)}
+          onClick={() =>
+            window.open(
+              `https://stellar.expert/explorer/testnet/contract/${detail.contract?.address}`,
+              "_blank"
+            )
+          }
         >
           <p className="text-xl text-primary">View Contract</p>
         </Button>

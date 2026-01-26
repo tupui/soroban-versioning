@@ -49,9 +49,12 @@ export const EnhancedContractFunctionSelector: React.FC<
     if (selectedFunction && functions.length > 0) {
       const func = functions.find((f) => f.name === selectedFunction);
       if (func) {
+        const shouldUseInitialArgs =
+          initialSelectedFunction === selectedFunction &&
+          initialArgs.length > 0;
         // Initialize args array with proper length and types
         const newArgs = func.inputs.map((input, index) => {
-          const existing = initialArgs[index];
+          const existing = shouldUseInitialArgs ? initialArgs[index] : undefined;
           if (existing !== undefined) {
             if (
               existing &&
@@ -63,33 +66,7 @@ export const EnhancedContractFunctionSelector: React.FC<
             }
             return { type: input.type, value: existing };
           }
-          // Default values based on type
-          const defaultValue = (() => {
-            switch (input.type.toLowerCase()) {
-            case "u64":
-            case "u32":
-            case "u128":
-            case "u256":
-                return 0;
-            case "i64":
-            case "i32":
-            case "i128":
-            case "i256":
-                return 0;
-            case "bool":
-                return false;
-            case "string":
-            case "symbol":
-                return "";
-            case "address":
-                return "";
-            case "bytes":
-                return "";
-            default:
-                return "";
-            }
-          })();
-          return { type: input.type, value: defaultValue };
+          return { type: input.type, value: "" };
         });
         setArgs(newArgs);
       }
@@ -309,6 +286,14 @@ interface ArgInputProps {
 }
 
 const ArgInput: React.FC<ArgInputProps> = ({ type, value, onChange }) => {
+  const normalizedValue =
+    value &&
+    typeof value === "object" &&
+    "value" in value &&
+    (value as { value: unknown }).value !== undefined
+      ? (value as { value: unknown }).value
+      : value;
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
@@ -322,8 +307,12 @@ const ArgInput: React.FC<ArgInputProps> = ({ type, value, onChange }) => {
       case "i32":
       case "i128":
       case "i256":
+        if (inputValue.trim() === "") {
+          onChange("");
+          return;
+        }
         const numValue = parseInt(inputValue, 10);
-        onChange(isNaN(numValue) ? 0 : numValue);
+        onChange(isNaN(numValue) ? "" : numValue);
         break;
       case "bool":
         onChange(inputValue.toLowerCase() === "true");
@@ -381,10 +370,17 @@ const ArgInput: React.FC<ArgInputProps> = ({ type, value, onChange }) => {
   if (type.toLowerCase() === "bool") {
     return (
       <select
-        value={value ? "true" : "false"}
-        onChange={(e) => onChange(e.target.value === "true")}
+        value={normalizedValue === "" ? "" : normalizedValue ? "true" : "false"}
+        onChange={(e) => {
+          if (e.target.value === "") {
+            onChange("");
+            return;
+          }
+          onChange(e.target.value === "true");
+        }}
         className="w-full p-3 border border-gray-300 rounded-md"
       >
+        <option value="">Select true/false</option>
         <option value="false">false</option>
         <option value="true">true</option>
       </select>
@@ -395,7 +391,11 @@ const ArgInput: React.FC<ArgInputProps> = ({ type, value, onChange }) => {
     <Input
       type={getInputType()}
       placeholder={getPlaceholder()}
-      value={value === undefined || value === null ? "" : value}
+      value={
+        normalizedValue === undefined || normalizedValue === null
+          ? ""
+          : normalizedValue
+      }
       onChange={handleChange}
       className="font-mono text-sm"
     />
