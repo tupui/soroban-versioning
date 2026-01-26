@@ -13,6 +13,8 @@ import { deriveProjectKey } from "../utils/projectKey";
 import { sendSignedTransaction, signAssembledTransaction } from "./TxService";
 import { checkSimulationError } from "../utils/contractErrors";
 
+import type { GitVerificationData } from "../utils/gitVerification";
+
 interface UploadWithDelegationParams {
   files: File[];
   signedTxXdr: string; // The signed contract transaction
@@ -31,10 +33,7 @@ interface CreateProposalFlowParams {
 interface JoinCommunityFlowParams {
   memberAddress: string;
   profileFiles: File[];
-  git_identity?: string;
-  git_pubkey?: string;
-  msg?: string;
-  sig?: string;
+  gitVerificationData?: GitVerificationData | null;
   onProgress?: (step: number) => void;
 }
 
@@ -265,10 +264,7 @@ export async function createProposalFlow({
 export async function joinCommunityFlow({
   memberAddress,
   profileFiles,
-  git_identity,
-  git_pubkey,
-  msg,
-  sig,
+  gitVerificationData,
   onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
   let cid = ""; // Default for no profile - use empty string instead of single space
@@ -287,10 +283,10 @@ export async function joinCommunityFlow({
   const signedTxXdr = await createSignedAddMemberTransaction(
     memberAddress,
     cid,
-    git_identity,
-    git_pubkey,
-    msg,
-    sig,
+    gitVerificationData?.gitHandle,
+    gitVerificationData?.publicKey?.toString(),
+    gitVerificationData?.envelope,
+    gitVerificationData?.signature.toString(),
   );
 
   if (profileFiles.length > 0) {
