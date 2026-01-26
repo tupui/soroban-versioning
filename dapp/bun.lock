@@ -72,7 +72,7 @@
       "name": "tansu",
       "version": "0.0.0",
       "dependencies": {
-        "@stellar/stellar-sdk": "^14.3.1",
+        "@stellar/stellar-sdk": "^14.1.1",
         "buffer": "6.0.3",
       },
       "devDependencies": {
