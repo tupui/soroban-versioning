@@ -298,6 +298,30 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 </a>
               )}
 
+              {member?.git_identity ? (
+                <div className="flex items-center justify-center gap-2 mt-2 p-2 bg-green-50 rounded-lg">
+                  <img 
+                    src="/icons/check-circle.svg" 
+                    alt="Verified" 
+                    className="w-4 h-4 text-green-600"
+                  />
+                  <span className="text-sm text-green-700 font-medium">
+                    Git: {member?.git_identity} ✓
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2 mt-2 p-2 bg-gray-50 rounded-lg">
+                  <img 
+                    src="/icons/x-circle.svg" 
+                    alt="Not linked" 
+                    className="w-4 h-4 text-gray-500"
+                  />
+                  <span className="text-sm text-gray-600">
+                    No Git handle linked
+                  </span>
+                </div>
+              )}
+
               {/* IPFS metadata link */}
               {member?.meta && hasValidMetadata && (
                 <a

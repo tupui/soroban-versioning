@@ -62,6 +62,8 @@ export interface Config {
 export interface Member {
   meta: string;
   projects: Array<ProjectBadges>;
+  git_identity?: string; 
+  git_pubkey?: Buffer;   
 }
 
 export type DataKey =
