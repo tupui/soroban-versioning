@@ -20,6 +20,9 @@ import { setupAnonymousVoting } from "@service/ContractService";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
 import Loading from "components/utils/Loading";
+import TemplateSelector from './TemplateSelector';
+import { type ProposalTemplate } from '../../../constants/proposalTemplates';
+
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -552,6 +555,24 @@ const CreateProposalModal = () => {
     setStep(1);
   };
 
+
+  const handleTemplateSelect = (template: ProposalTemplate) => {
+    setMdText(template.content);
+    
+    // Extract proposal name from template if it follows pattern
+    const titleMatch = template.content.match(/^#\s*(.*?)(?:\n|$)/m);
+    if (titleMatch && titleMatch[1]) {
+      const extractedTitle = titleMatch[1]
+        .replace(/\[.*?\]/g, '') // Remove brackets
+        .trim();
+      
+      // Only set if proposalName is empty or matches placeholder
+      if (!proposalName || proposalName === extractedTitle || proposalName.includes('[')) {
+        setProposalName(extractedTitle || '');
+      }
+    }
+  };
+
   if (!showModal) return <></>;
 
   return (
@@ -956,16 +977,22 @@ const CreateProposalModal = () => {
             >
               Back
             </Button>
+          
             <Button
               data-testid="proposal-next"
               onClick={() => {
                 try {
-                  // Validate basic information (step 1)
-                  if (!validateProposalNameField()) {
-                    throw new Error("Invalid proposal name");
-                  }
-                  if (!validateDescriptionField()) {
-                    throw new Error("Invalid proposal description");
+                  if (!validateProposalNameField() || !validateDescriptionField())
+                    throw new Error("Invalid proposal name or description");
+
+                  if (isAnonymousVoting) {
+                    if (!existingAnonConfig || resetAnonKeys) {
+                      if (!generatedKeys) {
+                        throw new Error(
+                          "Anonymous voting keys have not been generated yet.",
+                        );
+                      }
+                    }
                   }
 
                   setStep(step + 1);
@@ -974,10 +1001,11 @@ const CreateProposalModal = () => {
                   toast.error("Submit proposal", err.message);
                 }
               }}
-              className="w-full sm:w-auto"
             >
               Next
             </Button>
+
+
           </div>
         </div>
       ) : step == 3 ? (
@@ -1129,6 +1157,8 @@ const CreateProposalModal = () => {
                   {proposalName}
                 </p>
               </Label>
+             
+
               <Label label="Proposal description">
                 <ExpandableText>{mdText}</ExpandableText>
               </Label>
