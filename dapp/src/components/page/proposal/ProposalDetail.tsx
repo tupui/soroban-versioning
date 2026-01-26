@@ -3,7 +3,7 @@ import Modal from "components/utils/Modal";
 import Markdown from "markdown-to-jsx";
 import React, { useEffect, useState } from "react";
 import JsonView from "react18-json-view";
-import type { ProposalOutcome } from "types/proposal";
+import type { ProposalOutcome, OutcomeContract } from "types/proposal";
 import { parseToLosslessJson } from "utils/passToLosslessJson";
 import * as StellarXdr from "utils/stellarXdr";
 import { capitalizeFirstLetter } from "utils/utils";
@@ -90,11 +90,11 @@ export default ProposalDetail;
 
 export const OutcomeDetail: React.FC<{
   type: string;
-  detail: { description: string; xdr: string };
+  detail: { description: string; xdr?: string; contract?: OutcomeContract };
   isXdrInit: boolean;
 }> = ({ type, detail, isXdrInit }) => {
   const [content, setContent] = useState<any>(null);
-  const [showXDRModal, setShowXDRModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const getContentFromXdr = async (_xdr: string) => {
     try {
@@ -112,8 +112,93 @@ export const OutcomeDetail: React.FC<{
   };
 
   useEffect(() => {
-    getContentFromXdr(detail.xdr);
+    if (detail.xdr) {
+      getContentFromXdr(detail.xdr);
+    }
   }, [detail, isXdrInit]);
+
+  const renderActionButton = () => {
+    if (detail.contract) {
+      return (
+        <Button
+          type="secondary"
+          icon="/icons/code.svg"
+          onClick={() =>
+            window.open(
+              `https://stellar.expert/explorer/testnet/contract/${detail.contract?.address}`,
+              "_blank"
+            )
+          }
+        >
+          <p className="text-xl text-primary">View Contract</p>
+        </Button>
+      );
+    }
+
+    if (content) {
+      return (
+        <Button
+          type="secondary"
+          icon="/icons/eye.svg"
+          onClick={() => setShowModal(true)}
+        >
+          <p className="text-xl text-primary">View XDR</p>
+        </Button>
+      );
+    }
+
+    return null;
+  };
+
+  const renderModalContent = () => {
+    if (detail.contract) {
+      return (
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-primary">
+            Contract Execution Details
+          </h3>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-secondary mb-1">
+                Contract Address
+              </label>
+              <p className="font-mono text-sm bg-gray-50 p-2 rounded break-all">
+                {detail.contract.address}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-secondary mb-1">
+                Function Name
+              </label>
+              <p className="font-mono text-sm bg-gray-50 p-2 rounded">
+                {detail.contract.execute_fn}
+              </p>
+            </div>
+            {detail.contract.args && detail.contract.args.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-1">
+                  Arguments
+                </label>
+                <pre className="text-xs bg-gray-50 p-2 rounded overflow-x-auto">
+                  {JSON.stringify(detail.contract.args, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    if (content) {
+      return (
+        <div className="max-h-[75vh] overflow-y-auto">
+          <JsonView src={content} theme="vscode" />
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="p-[30px] flex justify-between items-center bg-white">
@@ -124,21 +209,23 @@ export const OutcomeDetail: React.FC<{
         <p className="text-base font-semibold text-primary">
           {detail.description}
         </p>
-      </div>
-      {content && (
-        <Button
-          type="secondary"
-          icon="/icons/eye.svg"
-          onClick={() => setShowXDRModal(true)}
-        >
-          <p className="text-xl text-primary">View XDR</p>
-        </Button>
-      )}
-      {showXDRModal && (
-        <Modal onClose={() => setShowXDRModal(false)}>
-          <div className="max-h-[75vh] overflow-y-auto">
-            <JsonView src={content} theme="vscode" />
+        {detail.contract && (
+          <div className="text-sm text-secondary">
+            <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+            Contract-based execution
           </div>
+        )}
+        {detail.xdr && (
+          <div className="text-sm text-secondary">
+            <span className="inline-block w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+            XDR-based execution
+          </div>
+        )}
+      </div>
+      {renderActionButton()}
+      {showModal && (
+        <Modal onClose={() => setShowModal(false)}>
+          {renderModalContent()}
         </Modal>
       )}
     </div>
