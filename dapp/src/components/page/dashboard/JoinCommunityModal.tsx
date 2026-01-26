@@ -37,6 +37,7 @@ const JoinCommunityModal: FC<{
   const [error, setError] = useState<string | null>(null);
 
   // Git binding state
+  const [showGitVerification, setShowGitVerification] = useState(false);
   const [gitVerificationData, setGitVerificationData] = useState<GitVerificationData | null>(null);
 
   // Validation errors
@@ -140,6 +141,10 @@ const JoinCommunityModal: FC<{
   const validateForm = (): boolean => {
     const isAddressValid = validateAddressField();
     const isSocialValid = validateSocialField();
+    if (showGitVerification && !gitVerificationData) {
+      setError("Git verification process not completed");
+      return false;
+    }
 
     return isAddressValid && isSocialValid;
   };
@@ -370,6 +375,7 @@ const JoinCommunityModal: FC<{
               </div>
               <GitVerification
                 onVerificationComplete={setGitVerificationData}
+                onShowGitVerification={setShowGitVerification}
                 networkPassphrase={import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE}
                 signingAccount={address}
                 contractId={import.meta.env.PUBLIC_TANSU_CONTRACT_ID}

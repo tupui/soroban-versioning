@@ -7,7 +7,6 @@ import {
     extractEd25519PublicKey,
     createSEP53Envelope,
     generateSSHSignCommand,
-    generateGPGSignCommand,
     parseSSHSignature,
     validateGitVerification,
     type GitVerificationData
@@ -16,6 +15,7 @@ import CopyButton from "./CopyButton";
 import { toast } from "utils/utils";
 
 interface GitVerificationProps {
+    onShowGitVerification: (show: boolean) => void;
     onVerificationComplete: (data: GitVerificationData | null) => void;
     networkPassphrase: string;
     signingAccount: string;
@@ -24,6 +24,7 @@ interface GitVerificationProps {
 }
 
 const GitVerification: FC<GitVerificationProps> = ({
+    onShowGitVerification,
     onVerificationComplete,
     networkPassphrase,
     signingAccount,
@@ -39,6 +40,8 @@ const GitVerification: FC<GitVerificationProps> = ({
     const [signature, setSignature] = useState("");
     const [isLoadingKeys, setIsLoadingKeys] = useState(false);
     const [isVerifying, setIsVerifying] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
+    const [verificationError, setVerificationError] = useState<string | null>(null);
     const [step, setStep] = useState<"choice" | "handle" | "key" | "sign" | "verify">("choice");
 
     const handleGitHandleSubmit = async () => {
@@ -88,11 +91,12 @@ const GitVerification: FC<GitVerificationProps> = ({
 
     const handleVerifySignature = async () => {
         if (!signature.trim()) {
-            toast.error("Error", "Please paste your signature");
+            setVerificationError("Please paste your signature");
             return;
         }
 
         setIsVerifying(true);
+        setVerificationError(null);
         try {
             const publicKey = extractEd25519PublicKey(selectedKey);
             const { signature: parsedSignature, hashAlgorithm, namespace } = parseSSHSignature(signature.trim());
@@ -117,12 +121,13 @@ const GitVerification: FC<GitVerificationProps> = ({
 
             if (validation.valid) {
                 toast.success("Success", "Git verification completed successfully!");
+                setIsVerified(true);
                 onVerificationComplete(verificationData);
             } else {
-                toast.error("Verification Failed", validation.error || "Unknown error");
+                setVerificationError(validation.error || "Unknown error");
             }
         } catch (error) {
-            toast.error("Error", error instanceof Error ? error.message : "Verification failed");
+            setVerificationError(error instanceof Error ? error.message : "Verification failed");
         } finally {
             setIsVerifying(false);
         }
@@ -130,6 +135,7 @@ const GitVerification: FC<GitVerificationProps> = ({
 
     const handleSkip = () => {
         setWantGitLink(false);
+        onShowGitVerification(false);
         onVerificationComplete(null);
     };
 
@@ -147,7 +153,7 @@ const GitVerification: FC<GitVerificationProps> = ({
                         Would you like to link a Git handle to your account for verification?
                     </p>
                     <div className="flex gap-3">
-                        <Button type="primary" onClick={() => { setWantGitLink(true); setStep("handle"); }}>
+                        <Button type="primary" onClick={() => { setWantGitLink(true); setStep("handle"); onShowGitVerification(true); }}>
                             Yes, Link Git Handle
                         </Button>
                         <Button type="secondary" onClick={handleSkip}>
@@ -259,22 +265,33 @@ const GitVerification: FC<GitVerificationProps> = ({
                         label="Paste Signature"
                         placeholder="Paste the signature output here..."
                         value={signature}
-                        onChange={(e) => setSignature(e.target.value)}
+                        onChange={(e) => {
+                            setSignature(e.target.value);
+                            if (verificationError) setVerificationError(null);
+                        }}
                         multiline
                         rows={6}
+                        disabled={isVerified}
                     />
 
-                    <div className="flex gap-3">
+                    {verificationError && (
+                        <p className="text-sm text-red-500 mt-2">{verificationError}</p>
+                    )}
+
+                    <div className="flex gap-3 mt-4">
                         <Button
                             type="primary"
                             onClick={handleVerifySignature}
                             isLoading={isVerifying}
+                            disabled={isVerified}
                         >
-                            Verify Signature
+                            {isVerified ? "Verified ✓" : "Verify Signature"}
                         </Button>
-                        <Button type="secondary" onClick={() => setStep("key")}>
-                            Back
-                        </Button>
+                        {!isVerified && (
+                            <Button type="secondary" onClick={() => setStep("key")}>
+                                Back
+                            </Button>
+                        )}
                     </div>
                 </div>
             )}

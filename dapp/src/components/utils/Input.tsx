@@ -11,6 +11,7 @@ interface Props {
   helpText?: string;
   multiline?: boolean;
   rows?: number;
+  disabled?: boolean;
 }
 
 const Input: FC<Props> = ({
@@ -24,11 +25,12 @@ const Input: FC<Props> = ({
   multiline = false,
   rows = 3,
   error,
+  disabled,
 }) => {
   return (
     <div className="flex-grow flex flex-col gap-[18px]">
       {label && (
-        <p className="leading-4 text-base font-semibold text-primary">
+        <p className={`leading-4 text-base font-semibold ${disabled ? "text-gray-400" : "text-primary"}`}>
           {label}
         </p>
       )}
@@ -38,14 +40,16 @@ const Input: FC<Props> = ({
           value={value}
           onChange={onChange}
           rows={rows}
-          className={`p-[18px] border ${error ? "border-red-500" : "border-[#978AA1]"} outline-none resize-vertical ${className}`}
+          disabled={disabled}
+          className={`p-[18px] border ${error ? "border-red-500" : "border-[#978AA1]"} outline-none resize-vertical ${disabled ? "bg-gray-100 text-gray-400" : ""} ${className}`}
         />
       ) : (
         <input
           placeholder={placeholder}
           value={value}
           onChange={onChange}
-          className={`p-[18px] border ${error ? "border-red-500" : "border-[#978AA1]"} outline-none ${className}`}
+          disabled={disabled}
+          className={`p-[18px] border ${error ? "border-red-500" : "border-[#978AA1]"} outline-none ${disabled ? "bg-gray-100 text-gray-400" : ""} ${className}`}
         />
       )}
       {helpText && (
