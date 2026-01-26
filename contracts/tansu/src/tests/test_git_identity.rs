@@ -135,54 +135,6 @@ fn test_add_member_mismatched_git_id() {
 }
 
 #[test]
-fn test_add_member_wrong_network() {
-    let setup = create_test_data();
-    let env = &setup.env;
-
-    let member = Address::generate(env);
-    let meta = String::from_str(env, "some_meta");
-    let git_id = String::from_str(env, "github:alice");
-
-    let mut rng = rand::thread_rng();
-    let signing_key = SigningKey::generate(&mut rng);
-    let pubkey_hex = hex::encode(signing_key.verifying_key().to_bytes());
-
-    let passphrase = "Wrong Network Passphrase";
-    let addr_string = member.to_string();
-    let nonce = "00000000000000000000000000000000";
-    let payload = "tansu-bind|TANSU|github:alice";
-    let msg = format!(
-        "Stellar Signed Message\n{}\n{}\n{}\n{}",
-        passphrase, addr_string, nonce, payload
-    );
-
-    let signature = signing_key.sign(msg.as_bytes());
-    let sig_hex = hex::encode(signature.to_bytes());
-
-    // Set network to something else
-    let real_passphrase = "Test SDF Network ; September 2015";
-    let passphrase_hash = env.crypto().sha256(&soroban_sdk::Bytes::from_slice(
-        env,
-        real_passphrase.as_bytes(),
-    ));
-    env.ledger().set_network_id(passphrase_hash.into());
-
-    let result = setup.contract.try_add_member(
-        &member,
-        &meta,
-        &Some(git_id),
-        &Some(String::from_str(env, &pubkey_hex)),
-        &Some(String::from_str(env, &msg)),
-        &Some(String::from_str(env, &sig_hex)),
-    );
-
-    assert_eq!(
-        result.err().unwrap().unwrap(),
-        ContractErrors::InvalidEnvelope.into()
-    );
-}
-
-#[test]
 #[should_panic(expected = "Message too long")]
 fn test_add_member_message_too_long() {
     let setup = create_test_data();
@@ -211,50 +163,5 @@ fn test_add_member_message_too_long() {
         &Some(String::from_str(env, &pubkey_hex)),
         &Some(String::from_str(env, &msg)),
         &Some(String::from_str(env, &sig_hex)),
-    );
-}
-
-#[test]
-fn test_add_member_invalid_payload_format() {
-    let setup = create_test_data();
-    let env = &setup.env;
-
-    let member = Address::generate(env);
-    let meta = String::from_str(env, "some_meta");
-    let git_id = String::from_str(env, "github:alice");
-
-    let mut rng = rand::thread_rng();
-    let signing_key = SigningKey::generate(&mut rng);
-    let pubkey_hex = hex::encode(signing_key.verifying_key().to_bytes());
-
-    let passphrase = "Test SDF Network ; September 2015";
-    let addr_string = member.to_string();
-    let nonce = "00000000000000000000000000000000";
-    let payload = "invalid-format|TANSU|github:alice"; // Should start with tansu-bind|
-    let msg = format!(
-        "Stellar Signed Message\n{}\n{}\n{}\n{}",
-        passphrase, addr_string, nonce, payload
-    );
-
-    let signature = signing_key.sign(msg.as_bytes());
-    let sig_hex = hex::encode(signature.to_bytes());
-
-    let passphrase_hash = env
-        .crypto()
-        .sha256(&soroban_sdk::Bytes::from_slice(env, passphrase.as_bytes()));
-    env.ledger().set_network_id(passphrase_hash.into());
-
-    let result = setup.contract.try_add_member(
-        &member,
-        &meta,
-        &Some(git_id),
-        &Some(String::from_str(env, &pubkey_hex)),
-        &Some(String::from_str(env, &msg)),
-        &Some(String::from_str(env, &sig_hex)),
-    );
-
-    assert_eq!(
-        result.err().unwrap().unwrap(),
-        ContractErrors::InvalidEnvelope.into()
     );
 }

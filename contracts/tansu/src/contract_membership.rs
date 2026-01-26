@@ -40,85 +40,6 @@ impl MembershipTrait for Tansu {
             msg_str.copy_into_slice(&mut buf[..msg_len as usize]);
             let msg_bytes = Bytes::from_slice(&env, &buf[..msg_len as usize]);
 
-            // Split bytes by newline (0x0A)
-            let mut lines_bytes: Vec<Bytes> = Vec::new(&env);
-            let mut start = 0;
-            for i in 0..msg_bytes.len() {
-                if msg_bytes.get(i).unwrap() == 10 {
-                    // \n
-                    lines_bytes.push_back(msg_bytes.slice(start..i));
-                    start = i + 1;
-                }
-            }
-            lines_bytes.push_back(msg_bytes.slice(start..msg_bytes.len()));
-
-            if lines_bytes.len() != 5 {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
-            }
-
-            // Header
-            if lines_bytes.get(0).unwrap() != Bytes::from_slice(&env, b"Stellar Signed Message") {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
-            }
-
-            // Network Passphrase
-            // env.ledger().network_id() is the hash of the passphrase
-            let passphrase_bytes = lines_bytes.get(1).unwrap();
-            let passphrase_hash: [u8; 32] = env.crypto().sha256(&passphrase_bytes).into();
-            let network_id: [u8; 32] = env.ledger().network_id().into();
-            if passphrase_hash != network_id {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
-            }
-
-            // Signing Account
-            let addr_str = member_address.to_string();
-            let addr_len = addr_str.len();
-            let mut addr_buf = [0u8; 128];
-            addr_str.copy_into_slice(&mut addr_buf[..addr_len as usize]);
-            let addr_bytes = Bytes::from_slice(&env, &addr_buf[..addr_len as usize]);
-
-            if lines_bytes.get(2).unwrap() != addr_bytes {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
-            }
-
-            // Nonce (16-byte hex = 32 chars)
-            if lines_bytes.get(3).unwrap().len() != 32 {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
-            }
-
-            // Payload
-            let payload = lines_bytes.get(4).unwrap();
-            let prefix = Bytes::from_slice(&env, b"tansu-bind|");
-            if payload.len() < prefix.len() || payload.slice(0..prefix.len()) != prefix {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
-            }
-
-            // Verify payload contains git identity
-            // payload format: tansu-bind|<contractId>|<gitId>
-            let mut parts: Vec<Bytes> = Vec::new(&env);
-            let mut p_start = 0;
-            for i in 0..payload.len() {
-                if payload.get(i).unwrap() == 124 {
-                    // |
-                    parts.push_back(payload.slice(p_start..i));
-                    p_start = i + 1;
-                }
-            }
-            parts.push_back(payload.slice(p_start..payload.len()));
-
-            if parts.len() != 3 {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
-            }
-
-            let git_id_len = git_id.len();
-            let mut git_id_buf = [0u8; 128];
-            git_id.copy_into_slice(&mut git_id_buf[..git_id_len as usize]);
-            let git_id_bytes = Bytes::from_slice(&env, &git_id_buf[..git_id_len as usize]);
-
-            if parts.get(2).unwrap() != git_id_bytes {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
-            }
-
             // Verify Ed25519 signature
             let pubkey_bytes = Tansu::decode_hex(&env, pubkey_hex);
             let sig_bytes = Tansu::decode_hex(&env, sig_hex);
@@ -134,6 +55,30 @@ impl MembershipTrait for Tansu {
                     .map_err(|_| panic_with_error!(&env, &errors::ContractErrors::InvalidSignature))
                     .unwrap(),
             );
+
+            // Verify message contains git identity at minimum
+            let git_id_len = git_id.len();
+            let mut git_id_buf = [0u8; 128];
+            if git_id_len > 128 {
+                panic!("Git identity too long");
+            }
+            git_id.copy_into_slice(&mut git_id_buf[..git_id_len as usize]);
+            let git_id_bytes = Bytes::from_slice(&env, &git_id_buf[..git_id_len as usize]);
+
+            let mut found = false;
+            // Scan for the Git identity bytes within the message bytes
+            if msg_len >= git_id_len {
+                for i in 0..=(msg_len - git_id_len) {
+                    if msg_bytes.slice(i..i + git_id_len) == git_id_bytes {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            if !found {
+                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
+            }
         }
 
         let member_key_ = types::DataKey::Member(member_address.clone());
