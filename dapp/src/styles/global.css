@@ -116,6 +116,7 @@ input[type="number"]::-webkit-inner-spin-button {
   min-height: 200px;
 }
 
+
 .rotate_image {
   -webkit-animation: spin 4s linear infinite;
   -moz-animation: spin 4s linear infinite;
