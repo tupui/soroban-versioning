@@ -334,12 +334,6 @@ export const OutcomeDetail: React.FC<{
             )}
           </div>
         )}
-        {detail.contract && (
-          <div className="text-sm text-secondary">
-            <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-            Contract-based execution
-          </div>
-        )}
         {detail.xdr && (
           <div className="text-sm text-secondary">
             <span className="inline-block w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
