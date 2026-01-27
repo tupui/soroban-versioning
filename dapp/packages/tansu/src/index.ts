@@ -30,15 +30,13 @@ if (typeof window !== "undefined") {
   window.Buffer = window.Buffer || Buffer;
 }
 
-
-
-
-
 export interface Dao {
   proposals: Array<Proposal>;
 }
 
-export type Vote = {tag: "PublicVote", values: readonly [PublicVote]} | {tag: "AnonymousVote", values: readonly [AnonymousVote]};
+export type Vote =
+  | { tag: "PublicVote"; values: readonly [PublicVote] }
+  | { tag: "AnonymousVote"; values: readonly [AnonymousVote] };
 
 export enum Badge {
   Developer = 10000000,
@@ -48,7 +46,6 @@ export enum Badge {
   Default = 1,
 }
 
-
 export interface Badges {
   community: Array<string>;
   developer: Array<string>;
@@ -56,20 +53,21 @@ export interface Badges {
   verified: Array<string>;
 }
 
-
 export interface Config {
   ipfs: string;
   url: string;
 }
-
 
 export interface Member {
   meta: string;
   projects: Array<ProjectBadges>;
 }
 
-export type DataKey = {tag: "Member", values: readonly [string]} | {tag: "Paused", values: void} | {tag: "UpgradeProposal", values: void} | {tag: "AdminsConfig", values: void};
-
+export type DataKey =
+  | { tag: "Member"; values: readonly [string] }
+  | { tag: "Paused"; values: void }
+  | { tag: "UpgradeProposal"; values: void }
+  | { tag: "AdminsConfig"; values: void };
 
 export interface Project {
   config: Config;
@@ -77,12 +75,10 @@ export interface Project {
   name: string;
 }
 
-
 export interface Contract {
   address: string;
   wasm_hash: Option<Buffer>;
 }
-
 
 export interface Proposal {
   id: u32;
@@ -94,15 +90,21 @@ export interface Proposal {
   vote_data: VoteData;
 }
 
-
 export interface VoteData {
   public_voting: boolean;
   votes: Array<Vote>;
   voting_ends_at: u64;
 }
 
-export type ProjectKey = {tag: "Key", values: readonly [Buffer]} | {tag: "Badges", values: readonly [Buffer]} | {tag: "LastHash", values: readonly [Buffer]} | {tag: "Dao", values: readonly [Buffer, u32]} | {tag: "DaoTotalProposals", values: readonly [Buffer]} | {tag: "AnonymousVoteConfig", values: readonly [Buffer]} | {tag: "ProjectKeys", values: readonly [u32]} | {tag: "TotalProjects", values: void};
-
+export type ProjectKey =
+  | { tag: "Key"; values: readonly [Buffer] }
+  | { tag: "Badges"; values: readonly [Buffer] }
+  | { tag: "LastHash"; values: readonly [Buffer] }
+  | { tag: "Dao"; values: readonly [Buffer, u32] }
+  | { tag: "DaoTotalProposals"; values: readonly [Buffer] }
+  | { tag: "AnonymousVoteConfig"; values: readonly [Buffer] }
+  | { tag: "ProjectKeys"; values: readonly [u32] }
+  | { tag: "TotalProjects"; values: void };
 
 export interface PublicVote {
   address: string;
@@ -110,16 +112,19 @@ export interface PublicVote {
   weight: u32;
 }
 
-export type VoteChoice = {tag: "Approve", values: void} | {tag: "Reject", values: void} | {tag: "Abstain", values: void};
+export type VoteChoice =
+  | { tag: "Approve"; values: void }
+  | { tag: "Reject"; values: void }
+  | { tag: "Abstain"; values: void };
 
-export type ContractKey = {tag: "DomainContract", values: void} | {tag: "CollateralContract", values: void};
-
+export type ContractKey =
+  | { tag: "DomainContract"; values: void }
+  | { tag: "CollateralContract"; values: void };
 
 export interface AdminsConfig {
   admins: Array<string>;
   threshold: u32;
 }
-
 
 export interface AnonymousVote {
   address: string;
@@ -129,14 +134,17 @@ export interface AnonymousVote {
   weight: u32;
 }
 
-
 export interface ProjectBadges {
   badges: Array<Badge>;
   project: Buffer;
 }
 
-export type ProposalStatus = {tag: "Active", values: void} | {tag: "Approved", values: void} | {tag: "Rejected", values: void} | {tag: "Cancelled", values: void} | {tag: "Malicious", values: void};
-
+export type ProposalStatus =
+  | { tag: "Active"; values: void }
+  | { tag: "Approved"; values: void }
+  | { tag: "Rejected"; values: void }
+  | { tag: "Cancelled"; values: void }
+  | { tag: "Malicious"; values: void };
 
 export interface UpgradeProposal {
   admins_config: AdminsConfig;
@@ -145,7 +153,6 @@ export interface UpgradeProposal {
   wasm_hash: Buffer;
 }
 
-
 export interface AnonymousVoteConfig {
   public_key: string;
   seed_generator_point: Buffer;
@@ -153,66 +160,52 @@ export interface AnonymousVoteConfig {
 }
 
 export const ContractErrors = {
-  0: {message:"UnexpectedError"},
-  1: {message:"InvalidKey"},
-  2: {message:"ProjectAlreadyExist"},
-  3: {message:"UnauthorizedSigner"},
-  4: {message:"NoHashFound"},
-  5: {message:"InvalidDomainError"},
-  6: {message:"MaintainerNotDomainOwner"},
-  7: {message:"ProposalInputValidation"},
-  8: {message:"NoProposalorPageFound"},
-  9: {message:"AlreadyVoted"},
-  10: {message:"ProposalVotingTime"},
-  11: {message:"ProposalActive"},
-  12: {message:"WrongVoteType"},
-  13: {message:"WrongVoter"},
-  14: {message:"TallySeedError"},
-  15: {message:"InvalidProof"},
-  16: {message:"NoAnonymousVotingConfig"},
-  17: {message:"BadCommitment"},
-  18: {message:"UnknownMember"},
-  19: {message:"MemberAlreadyExist"},
-  20: {message:"VoterWeight"},
-  21: {message:"VoteLimitExceeded"},
-  22: {message:"ContractPaused"},
-  23: {message:"UpgradeError"},
-  24: {message:"ContractValidation"},
-  25: {message:"CollateralError"},
-  26: {message:"NoProjectPageFound"}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  0: { message: "UnexpectedError" },
+  1: { message: "InvalidKey" },
+  2: { message: "ProjectAlreadyExist" },
+  3: { message: "UnauthorizedSigner" },
+  4: { message: "NoHashFound" },
+  5: { message: "InvalidDomainError" },
+  6: { message: "MaintainerNotDomainOwner" },
+  7: { message: "ProposalInputValidation" },
+  8: { message: "NoProposalorPageFound" },
+  9: { message: "AlreadyVoted" },
+  10: { message: "ProposalVotingTime" },
+  11: { message: "ProposalActive" },
+  12: { message: "WrongVoteType" },
+  13: { message: "WrongVoter" },
+  14: { message: "TallySeedError" },
+  15: { message: "InvalidProof" },
+  16: { message: "NoAnonymousVotingConfig" },
+  17: { message: "BadCommitment" },
+  18: { message: "UnknownMember" },
+  19: { message: "MemberAlreadyExist" },
+  20: { message: "VoterWeight" },
+  21: { message: "VoteLimitExceeded" },
+  22: { message: "ContractPaused" },
+  23: { message: "UpgradeError" },
+  24: { message: "ContractValidation" },
+  25: { message: "CollateralError" },
+  26: { message: "NoProjectPageFound" },
+};
 
 export interface Client {
   /**
    * Construct and simulate a vote transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Cast a vote on a proposal.
-   * 
+   *
    * Allows a member to vote on a proposal.
    * The vote can be either public or anonymous depending on the proposal configuration.
    * For public votes, the choice and weight are visible. For anonymous votes, only
    * the weight is visible, and the choice is encrypted.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `voter` - The address of the voter
    * * `project_key` - The project key identifier
    * * `proposal_id` - The ID of the proposal to vote on
    * * `vote` - The vote data (public or anonymous)
-   * 
+   *
    * # Panics
    * * If the voter has already voted
    * * If the voting period has ended
@@ -221,47 +214,68 @@ export interface Client {
    * * If the voter's weight exceeds their maximum allowed weight
    * * If the voter is not a member of the project
    */
-  vote: ({voter, project_key, proposal_id, vote}: {voter: string, project_key: Buffer, proposal_id: u32, vote: Vote}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  vote: (
+    {
+      voter,
+      project_key,
+      proposal_id,
+      vote,
+    }: { voter: string; project_key: Buffer; proposal_id: u32; vote: Vote },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a proof transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Verify vote commitment proof for anonymous voting.
-   * 
+   *
    * Validates that the provided tallies and seeds match the vote commitments
    * without revealing individual votes. This ensures the integrity of anonymous
    * voting results.
-   * 
+   *
    * The commitment is:
-   * 
+   *
    * C = g^v * h^r (in additive notation: g*v + h*r),
-   * 
+   *
    * where g, h are BLS12-381 generator points and v is the vote choice,
    * r is the seed. Voting weight is introduced during the tallying phase.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - The project key identifier
    * * `proposal` - The proposal containing vote commitments
    * * `tallies` - Decoded tally values [approve, reject, abstain] (scaled by weights)
    * * `seeds` - Decoded seed values [approve, reject, abstain] (scaled by weights)
-   * 
+   *
    * # Returns
    * * `bool` - True if all commitments match the provided tallies and seeds
-   * 
+   *
    * # Panics
    * * If no anonymous voting configuration exists for the project
    */
-  proof: ({project_key, proposal, tallies, seeds}: {project_key: Buffer, proposal: Proposal, tallies: Array<u128>, seeds: Array<u128>}, options?: MethodOptions) => Promise<AssembledTransaction<boolean>>
+  proof: (
+    {
+      project_key,
+      proposal,
+      tallies,
+      seeds,
+    }: {
+      project_key: Buffer;
+      proposal: Proposal;
+      tallies: Array<u128>;
+      seeds: Array<u128>;
+    },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<boolean>>;
 
   /**
    * Construct and simulate a execute transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Execute a vote after the voting period ends.
-   * 
+   *
    * Processes the voting results and determines the final status of the proposal.
    * For public votes, the results are calculated directly from vote counts.
    * For anonymous votes, tallies and seeds are validated against vote commitments
    * to ensure the results are correct.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `maintainer` - The address of the maintainer executing the proposal
@@ -269,10 +283,10 @@ export interface Client {
    * * `proposal_id` - The ID of the proposal to execute
    * * [`Option<tallies>`] - decoded tally values (scaled by weights), respectively Approve, reject and abstain
    * * [`Option<seeds>`] - decoded seed values (scaled by weights), respectively Approve, reject and abstain
-   * 
+   *
    * # Returns
    * * `types::ProposalStatus` - The final status of the proposal (Approved, Rejected, or Cancelled)
-   * 
+   *
    * # Panics
    * * If the voting period hasn't ended
    * * If the proposal doesn't exist
@@ -280,51 +294,72 @@ export interface Client {
    * * If tallies/seeds are missing for anonymous votes
    * * If commitment
    */
-  execute: ({maintainer, project_key, proposal_id, tallies, seeds}: {maintainer: string, project_key: Buffer, proposal_id: u32, tallies: Option<Array<u128>>, seeds: Option<Array<u128>>}, options?: MethodOptions) => Promise<AssembledTransaction<ProposalStatus>>
+  execute: (
+    {
+      maintainer,
+      project_key,
+      proposal_id,
+      tallies,
+      seeds,
+    }: {
+      maintainer: string;
+      project_key: Buffer;
+      proposal_id: u32;
+      tallies: Option<Array<u128>>;
+      seeds: Option<Array<u128>>;
+    },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<ProposalStatus>>;
 
   /**
    * Construct and simulate a get_dao transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Returns a page of proposals (0 to MAX_PROPOSALS_PER_PAGE proposals per page).
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - The project key identifier
    * * `page` - The page number (0-based)
-   * 
+   *
    * # Returns
    * * `types::Dao` - The DAO object containing a page of proposals
-   * 
+   *
    * # Panics
    * * If the page number is out of bounds
    */
-  get_dao: ({project_key, page}: {project_key: Buffer, page: u32}, options?: MethodOptions) => Promise<AssembledTransaction<Dao>>
+  get_dao: (
+    { project_key, page }: { project_key: Buffer; page: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Dao>>;
 
   /**
    * Construct and simulate a get_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get a single proposal by ID.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - The project key identifier
    * * `proposal_id` - The ID of the proposal to retrieve
-   * 
+   *
    * # Returns
    * * `types::Proposal` - The proposal object
-   * 
+   *
    * # Panics
    * * If the proposal doesn't exist
    */
-  get_proposal: ({project_key, proposal_id}: {project_key: Buffer, proposal_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<Proposal>>
+  get_proposal: (
+    { project_key, proposal_id }: { project_key: Buffer; proposal_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Proposal>>;
 
   /**
    * Construct and simulate a create_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Create a new proposal for a project.
-   * 
+   *
    * The proposer is automatically added to the abstain group.
    * By creating a proposal, the proposer incur a collateral which is
    * repaid upon execution of the proposal unless the proposal is revoked.
    * This is a deterrent mechanism.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `proposer` - Address of the proposal creator
@@ -334,331 +369,444 @@ export interface Client {
    * * `voting_ends_at` - UNIX timestamp when voting ends
    * * `public_voting` - Whether voting is public or anonymous
    * * [`Option<outcomes_contract>`] - Outcome contract address
-   * 
+   *
    * # Returns
    * * `u32` - The ID of the created proposal.
-   * 
+   *
    * # Panics
    * * If the title is too long
    * * If the voting period is invalid
    * * If the project doesn't exist
    */
-  create_proposal: ({proposer, project_key, title, ipfs, voting_ends_at, public_voting, outcomes_contract}: {proposer: string, project_key: Buffer, title: string, ipfs: string, voting_ends_at: u64, public_voting: boolean, outcomes_contract: Option<string>}, options?: MethodOptions) => Promise<AssembledTransaction<u32>>
+  create_proposal: (
+    {
+      proposer,
+      project_key,
+      title,
+      ipfs,
+      voting_ends_at,
+      public_voting,
+      outcomes_contract,
+    }: {
+      proposer: string;
+      project_key: Buffer;
+      title: string;
+      ipfs: string;
+      voting_ends_at: u64;
+      public_voting: boolean;
+      outcomes_contract: Option<string>;
+    },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<u32>>;
 
   /**
    * Construct and simulate a revoke_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Revoke a proposal.
-   * 
+   *
    * Useful if there was some spam or bad intent. That will prevent the
    * collateral to be claimed back.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `maintainer` - Address of the proposal creator
    * * `project_key` - The project key identifier
    * * `proposal_id` - The ID of the proposal to vote on
-   * 
+   *
    * # Panics
    * * If the proposal is not active anymore
    * * If the maintainer is not authorized
    */
-  revoke_proposal: ({maintainer, project_key, proposal_id}: {maintainer: string, project_key: Buffer, proposal_id: u32}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  revoke_proposal: (
+    {
+      maintainer,
+      project_key,
+      proposal_id,
+    }: { maintainer: string; project_key: Buffer; proposal_id: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a anonymous_voting_setup transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Setup anonymous voting for a project.
-   * 
+   *
    * Configures BLS12-381 cryptographic primitives for anonymous voting.
    * Only the contract admin can call this function.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - Unique identifier for the project
    * * `public_key` - Asymmetric public key to be used for vote encryption
-   * 
+   *
    * # Panics
    * * If the caller is not the contract admin
    */
-  anonymous_voting_setup: ({maintainer, project_key, public_key}: {maintainer: string, project_key: Buffer, public_key: string}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  anonymous_voting_setup: (
+    {
+      maintainer,
+      project_key,
+      public_key,
+    }: { maintainer: string; project_key: Buffer; public_key: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a get_anonymous_voting_config transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get the anonymous voting configuration for a project.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - The project key identifier
-   * 
+   *
    * # Returns
    * * `types::AnonymousVoteConfig` - The anonymous voting configuration
-   * 
+   *
    * # Panics
    * * If no anonymous voting configuration exists for the project
    */
-  get_anonymous_voting_config: ({project_key}: {project_key: Buffer}, options?: MethodOptions) => Promise<AssembledTransaction<AnonymousVoteConfig>>
+  get_anonymous_voting_config: (
+    { project_key }: { project_key: Buffer },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<AnonymousVoteConfig>>;
 
   /**
    * Construct and simulate a build_commitments_from_votes transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Build vote commitments from votes and seeds for anonymous voting.
-   * 
+   *
    * Creates BLS12-381 commitments for each vote using the formula:
    * C = g·vote + h·seed where g and h are generator points on BLS12-381.
-   * 
+   *
    * Note: This function does not consider voting weights, which are applied
    * during the tallying phase. Calling this on the smart contract would reveal
    * the votes and seeds, so it must be run either in simulation or client-side.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - Unique identifier for the project
    * * `votes` - Vector of vote choices (0=approve, 1=reject, 2=abstain)
    * * `seeds` - Vector of random seeds for each vote
-   * 
+   *
    * # Returns
    * * `Vec<BytesN<96>>` - Vector of vote commitments (one per vote)
-   * 
+   *
    * # Panics
    * * If no anonymous voting configuration exists for the project
    */
-  build_commitments_from_votes: ({project_key, votes, seeds}: {project_key: Buffer, votes: Array<u128>, seeds: Array<u128>}, options?: MethodOptions) => Promise<AssembledTransaction<Array<Buffer>>>
+  build_commitments_from_votes: (
+    {
+      project_key,
+      votes,
+      seeds,
+    }: { project_key: Buffer; votes: Array<u128>; seeds: Array<u128> },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Array<Buffer>>>;
 
   /**
    * Construct and simulate a pause transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Pause or unpause the contract (emergency stop.)
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `admin` - The admin address
    * * `paused` - Pause or unpause the contract operations which change
    * ledger states.
    */
-  pause: ({admin, paused}: {admin: string, paused: boolean}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  pause: (
+    { admin, paused }: { admin: string; paused: boolean },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a version transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get the current version of the contract.
-   * 
+   *
    * # Returns
    * * `u32` - The contract version number
    */
-  version: (options?: MethodOptions) => Promise<AssembledTransaction<u32>>
+  version: (options?: MethodOptions) => Promise<AssembledTransaction<u32>>;
 
   /**
    * Construct and simulate a approve_upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Approve an upgrade proposal
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `admin` - An admin address
-   * 
+   *
    * # Panics
    * * If the admin is not authorized
    * * If the admin already approved
    * * If there is no upgrade to approve
    */
-  approve_upgrade: ({admin}: {admin: string}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  approve_upgrade: (
+    { admin }: { admin: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a propose_upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Propose a contract upgrade.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `admin` - An admin address
    * * `new_wasm_hash` - The new WASM hash
    * * `new_admins_config` - Optional new admin configuration (None to keep current)
-   * 
+   *
    * # Panics
    * * If the admin is not authorized
    * * If there is already an existing proposal (cancel the previous first)
    */
-  propose_upgrade: ({admin, new_wasm_hash, new_admins_config}: {admin: string, new_wasm_hash: Buffer, new_admins_config: Option<AdminsConfig>}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  propose_upgrade: (
+    {
+      admin,
+      new_wasm_hash,
+      new_admins_config,
+    }: {
+      admin: string;
+      new_wasm_hash: Buffer;
+      new_admins_config: Option<AdminsConfig>;
+    },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a finalize_upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Execute or cancel upgrade proposal
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `admin` - An admin address
    * * `accept` - true to accept and false to reject.
-   * 
+   *
    * Upgrades can always be cancelled but only executed if there are enough
    * approvals and the timelock period is over.
-   * 
+   *
    * # Panics
    * * If the admin is not authorized
    * * If it is too early to execute
    * * If there are not enough approvals
    * * If there is no upgrade to execute
    */
-  finalize_upgrade: ({admin, accept}: {admin: string, accept: boolean}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  finalize_upgrade: (
+    { admin, accept }: { admin: string; accept: boolean },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a get_admins_config transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get current administrators configuration.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
-   * 
+   *
    * # Returns
    * * `types::AdminsConfig` - The administrators configuration
    */
-  get_admins_config: (options?: MethodOptions) => Promise<AssembledTransaction<AdminsConfig>>
+  get_admins_config: (
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<AdminsConfig>>;
 
   /**
    * Construct and simulate a require_not_paused transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Require that the contract is not paused, panic if it is
-   * 
+   *
    * # Panics
    * * If the contract is paused.
    */
-  require_not_paused: (options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  require_not_paused: (
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a set_domain_contract transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Set the Soroban Domain contract.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `admin` - The admin address
    * * `domain_contract` - The new domain contract
    */
-  set_domain_contract: ({admin, domain_contract}: {admin: string, domain_contract: Contract}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  set_domain_contract: (
+    { admin, domain_contract }: { admin: string; domain_contract: Contract },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a get_upgrade_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get upgrade proposal details
    */
-  get_upgrade_proposal: (options?: MethodOptions) => Promise<AssembledTransaction<UpgradeProposal>>
+  get_upgrade_proposal: (
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<UpgradeProposal>>;
 
   /**
    * Construct and simulate a set_collateral_contract transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Set the Collateral contract.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `admin` - The admin address
    * * `collateral_contract` - The new collateral contract
    */
-  set_collateral_contract: ({admin, collateral_contract}: {admin: string, collateral_contract: Contract}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  set_collateral_contract: (
+    {
+      admin,
+      collateral_contract,
+    }: { admin: string; collateral_contract: Contract },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a add_member transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Add a new member to the system with metadata.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `member_address` - The address of the member to add
    * * `meta` - Metadata string associated with the member (e.g., IPFS hash)
-   * 
+   *
    * # Panics
    * * If the member already exists
    */
-  add_member: ({member_address, meta}: {member_address: string, meta: string}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  add_member: (
+    { member_address, meta }: { member_address: string; meta: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a get_badges transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get all badges for a specific project, organized by badge type.
-   * 
+   *
    * Returns a structure containing vectors of member addresses for each badge type
    * (Developer, Triage, Community, Verified).
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `key` - The project key identifier
-   * 
+   *
    * # Returns
    * * `types::Badges` - Structure containing member addresses for each badge type
    */
-  get_badges: ({key}: {key: Buffer}, options?: MethodOptions) => Promise<AssembledTransaction<Badges>>
+  get_badges: (
+    { key }: { key: Buffer },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Badges>>;
 
   /**
    * Construct and simulate a get_member transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get member information including all project badges.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `member_address` - The address of the member to retrieve
-   * 
+   *
    * # Returns
    * * `types::Member` - Member information including metadata and project badges
-   * 
+   *
    * # Panics
    * * If the member doesn't exist
    */
-  get_member: ({member_address}: {member_address: string}, options?: MethodOptions) => Promise<AssembledTransaction<Member>>
+  get_member: (
+    { member_address }: { member_address: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Member>>;
 
   /**
    * Construct and simulate a set_badges transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Set badges for a member in a specific project.
-   * 
+   *
    * This function replaces all existing badges for the member in the specified project
    * with the new badge list. The member's maximum voting
    * weight is calculated as the sum of all assigned badge weights.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `maintainer` - The address of the maintainer (must be authorized)
    * * `key` - The project key identifier
    * * `member` - The address of the member to set badges for
    * * `badges` - Vector of badges to assign
-   * 
+   *
    * # Panics
    * * If the maintainer is not authorized
    * * If the member doesn't exist
    * * If the project doesn't exist
    */
-  set_badges: ({maintainer, key, member, badges}: {maintainer: string, key: Buffer, member: string, badges: Array<Badge>}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  set_badges: (
+    {
+      maintainer,
+      key,
+      member,
+      badges,
+    }: {
+      maintainer: string;
+      key: Buffer;
+      member: string;
+      badges: Array<Badge>;
+    },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a get_max_weight transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get the maximum voting weight for a member in a specific project.
-   * 
+   *
    * Calculates the sum of all badge weights for the member in the project.
    * If no badges are assigned, returns the Default badge weight (1).
    * This weight determines the maximum number of votes the member can cast
    * in a single voting transaction.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - The project key identifier
    * * `member_address` - The address of the member
-   * 
+   *
    * # Returns
    * * `u32` - The maximum voting weight for the member
-   * 
+   *
    * # Panics
    * * If the member doesn't exist
    */
-  get_max_weight: ({project_key, member_address}: {project_key: Buffer, member_address: string}, options?: MethodOptions) => Promise<AssembledTransaction<u32>>
+  get_max_weight: (
+    {
+      project_key,
+      member_address,
+    }: { project_key: Buffer; member_address: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<u32>>;
 
   /**
    * Construct and simulate a commit transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Set the latest commit hash for a project.
-   * 
+   *
    * Updates the current commit hash for the specified project.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `maintainer` - The address of the maintainer calling this function
    * * `project_key` - The project key identifier
    * * `hash` - The new commit hash
-   * 
+   *
    * # Panics
    * * If the project doesn't exist
    * * If the maintainer is not authorized
    */
-  commit: ({maintainer, project_key, hash}: {maintainer: string, project_key: Buffer, hash: string}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
+  commit: (
+    {
+      maintainer,
+      project_key,
+      hash,
+    }: { maintainer: string; project_key: Buffer; hash: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a register transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Register a new project.
-   * 
+   *
    * Creates a new project entry with maintainers, URL, and commit hash.
    * Also registers the project name in the domain contract if not already registered.
    * The project key is generated using keccak256 hash of the project name.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `maintainer` - The address of the maintainer calling this function
@@ -666,10 +814,10 @@ export interface Client {
    * * `maintainers` - List of maintainer addresses for the project
    * * `url` - The project's Git repository URL
    * * `ipfs` - CID of the tansu.toml file with associated metadata
-   * 
+   *
    * # Returns
    * * `Bytes` - The project key (keccak256 hash of the name)
-   * 
+   *
    * # Panics
    * * If the project name is longer than 15 characters
    * * If the project already exists
@@ -677,60 +825,84 @@ export interface Client {
    * * If the domain registration fails
    * * If the maintainer doesn't own an existing domain
    */
-  register: ({maintainer, name, maintainers, url, ipfs}: {maintainer: string, name: string, maintainers: Array<string>, url: string, ipfs: string}, options?: MethodOptions) => Promise<AssembledTransaction<Buffer>>
+  register: (
+    {
+      maintainer,
+      name,
+      maintainers,
+      url,
+      ipfs,
+    }: {
+      maintainer: string;
+      name: string;
+      maintainers: Array<string>;
+      url: string;
+      ipfs: string;
+    },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Buffer>>;
 
   /**
    * Construct and simulate a get_commit transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get the last commit hash
    * Get the latest commit hash for a project.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - The project key identifier
-   * 
+   *
    * # Returns
    * * `String` - The current commit hash
-   * 
+   *
    * # Panics
    * * If the project doesn't exist
    */
-  get_commit: ({project_key}: {project_key: Buffer}, options?: MethodOptions) => Promise<AssembledTransaction<string>>
+  get_commit: (
+    { project_key }: { project_key: Buffer },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<string>>;
 
   /**
    * Construct and simulate a get_project transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get project information including configuration and maintainers.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `project_key` - The project key identifier
-   * 
+   *
    * # Returns
    * * `types::Project` - Project information including name, config, and maintainers
-   * 
+   *
    * # Panics
    * * If the project doesn't exist
    */
-  get_project: ({project_key}: {project_key: Buffer}, options?: MethodOptions) => Promise<AssembledTransaction<Project>>
+  get_project: (
+    { project_key }: { project_key: Buffer },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Project>>;
 
   /**
    * Construct and simulate a get_projects transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get a page of projects.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `page` - The page number (0-based)
-   * 
+   *
    * # Returns
    * * `Vec<types::Project>` - List of projects on the requested page
    */
-  get_projects: ({page}: {page: u32}, options?: MethodOptions) => Promise<AssembledTransaction<Array<Project>>>
+  get_projects: (
+    { page }: { page: u32 },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<Array<Project>>>;
 
   /**
    * Construct and simulate a update_config transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Update the configuration of an existing project.
-   * 
+   *
    * Allows maintainers to change the project's URL, commit hash, and maintainer list.
-   * 
+   *
    * # Arguments
    * * `env` - The environment object
    * * `maintainer` - The address of the maintainer calling this function
@@ -738,18 +910,32 @@ export interface Client {
    * * `maintainers` - New list of maintainer addresses
    * * `url` - New Git repository URL
    * * `hash` - New commit hash
-   * 
+   *
    * # Panics
    * * If the project doesn't exist
    * * If the maintainer is not authorized
    */
-  update_config: ({maintainer, key, maintainers, url, ipfs}: {maintainer: string, key: Buffer, maintainers: Array<string>, url: string, ipfs: string}, options?: MethodOptions) => Promise<AssembledTransaction<null>>
-
+  update_config: (
+    {
+      maintainer,
+      key,
+      maintainers,
+      url,
+      ipfs,
+    }: {
+      maintainer: string;
+      key: Buffer;
+      maintainers: Array<string>;
+      url: string;
+      ipfs: string;
+    },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 }
 export class Client extends ContractClient {
   static async deploy<T = Client>(
-        /** Constructor/Initialization Args for the contract's `__constructor` method */
-        {admin}: {admin: string},
+    /** Constructor/Initialization Args for the contract's `__constructor` method */
+    { admin }: { admin: string },
     /** Options for initializing a Client as well as for calling a method, with extras specific to deploying. */
     options: MethodOptions &
       Omit<ContractClientOptions, "contractId"> & {
@@ -759,13 +945,14 @@ export class Client extends ContractClient {
         salt?: Buffer | Uint8Array;
         /** The format used to decode `wasmHash`, if it's provided as a string. */
         format?: "hex" | "base64";
-      }
+      },
   ): Promise<AssembledTransaction<T>> {
-    return ContractClient.deploy({admin}, options)
+    return ContractClient.deploy({ admin }, options);
   }
   constructor(public readonly options: ContractClientOptions) {
     super(
-      new ContractSpec([ "AAAAAAAAAvtDYXN0IGEgdm90ZSBvbiBhIHByb3Bvc2FsLgoKQWxsb3dzIGEgbWVtYmVyIHRvIHZvdGUgb24gYSBwcm9wb3NhbC4KVGhlIHZvdGUgY2FuIGJlIGVpdGhlciBwdWJsaWMgb3IgYW5vbnltb3VzIGRlcGVuZGluZyBvbiB0aGUgcHJvcG9zYWwgY29uZmlndXJhdGlvbi4KRm9yIHB1YmxpYyB2b3RlcywgdGhlIGNob2ljZSBhbmQgd2VpZ2h0IGFyZSB2aXNpYmxlLiBGb3IgYW5vbnltb3VzIHZvdGVzLCBvbmx5CnRoZSB3ZWlnaHQgaXMgdmlzaWJsZSwgYW5kIHRoZSBjaG9pY2UgaXMgZW5jcnlwdGVkLgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgdm90ZXJgIC0gVGhlIGFkZHJlc3Mgb2YgdGhlIHZvdGVyCiogYHByb2plY3Rfa2V5YCAtIFRoZSBwcm9qZWN0IGtleSBpZGVudGlmaWVyCiogYHByb3Bvc2FsX2lkYCAtIFRoZSBJRCBvZiB0aGUgcHJvcG9zYWwgdG8gdm90ZSBvbgoqIGB2b3RlYCAtIFRoZSB2b3RlIGRhdGEgKHB1YmxpYyBvciBhbm9ueW1vdXMpCgojIFBhbmljcwoqIElmIHRoZSB2b3RlciBoYXMgYWxyZWFkeSB2b3RlZAoqIElmIHRoZSB2b3RpbmcgcGVyaW9kIGhhcyBlbmRlZAoqIElmIHRoZSBwcm9wb3NhbCBpcyBub3QgYWN0aXZlIGFueW1vcmUKKiBJZiB0aGUgcHJvcG9zYWwgZG9lc24ndCBleGlzdAoqIElmIHRoZSB2b3RlcidzIHdlaWdodCBleGNlZWRzIHRoZWlyIG1heGltdW0gYWxsb3dlZCB3ZWlnaHQKKiBJZiB0aGUgdm90ZXIgaXMgbm90IGEgbWVtYmVyIG9mIHRoZSBwcm9qZWN0AAAAAAR2b3RlAAAABAAAAAAAAAAFdm90ZXIAAAAAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAtwcm9wb3NhbF9pZAAAAAAEAAAAAAAAAAR2b3RlAAAH0AAAAARWb3RlAAAAAA==",
+      new ContractSpec([
+        "AAAAAAAAAvtDYXN0IGEgdm90ZSBvbiBhIHByb3Bvc2FsLgoKQWxsb3dzIGEgbWVtYmVyIHRvIHZvdGUgb24gYSBwcm9wb3NhbC4KVGhlIHZvdGUgY2FuIGJlIGVpdGhlciBwdWJsaWMgb3IgYW5vbnltb3VzIGRlcGVuZGluZyBvbiB0aGUgcHJvcG9zYWwgY29uZmlndXJhdGlvbi4KRm9yIHB1YmxpYyB2b3RlcywgdGhlIGNob2ljZSBhbmQgd2VpZ2h0IGFyZSB2aXNpYmxlLiBGb3IgYW5vbnltb3VzIHZvdGVzLCBvbmx5CnRoZSB3ZWlnaHQgaXMgdmlzaWJsZSwgYW5kIHRoZSBjaG9pY2UgaXMgZW5jcnlwdGVkLgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgdm90ZXJgIC0gVGhlIGFkZHJlc3Mgb2YgdGhlIHZvdGVyCiogYHByb2plY3Rfa2V5YCAtIFRoZSBwcm9qZWN0IGtleSBpZGVudGlmaWVyCiogYHByb3Bvc2FsX2lkYCAtIFRoZSBJRCBvZiB0aGUgcHJvcG9zYWwgdG8gdm90ZSBvbgoqIGB2b3RlYCAtIFRoZSB2b3RlIGRhdGEgKHB1YmxpYyBvciBhbm9ueW1vdXMpCgojIFBhbmljcwoqIElmIHRoZSB2b3RlciBoYXMgYWxyZWFkeSB2b3RlZAoqIElmIHRoZSB2b3RpbmcgcGVyaW9kIGhhcyBlbmRlZAoqIElmIHRoZSBwcm9wb3NhbCBpcyBub3QgYWN0aXZlIGFueW1vcmUKKiBJZiB0aGUgcHJvcG9zYWwgZG9lc24ndCBleGlzdAoqIElmIHRoZSB2b3RlcidzIHdlaWdodCBleGNlZWRzIHRoZWlyIG1heGltdW0gYWxsb3dlZCB3ZWlnaHQKKiBJZiB0aGUgdm90ZXIgaXMgbm90IGEgbWVtYmVyIG9mIHRoZSBwcm9qZWN0AAAAAAR2b3RlAAAABAAAAAAAAAAFdm90ZXIAAAAAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAtwcm9wb3NhbF9pZAAAAAAEAAAAAAAAAAR2b3RlAAAH0AAAAARWb3RlAAAAAA==",
         "AAAAAAAAA3hWZXJpZnkgdm90ZSBjb21taXRtZW50IHByb29mIGZvciBhbm9ueW1vdXMgdm90aW5nLgoKVmFsaWRhdGVzIHRoYXQgdGhlIHByb3ZpZGVkIHRhbGxpZXMgYW5kIHNlZWRzIG1hdGNoIHRoZSB2b3RlIGNvbW1pdG1lbnRzCndpdGhvdXQgcmV2ZWFsaW5nIGluZGl2aWR1YWwgdm90ZXMuIFRoaXMgZW5zdXJlcyB0aGUgaW50ZWdyaXR5IG9mIGFub255bW91cwp2b3RpbmcgcmVzdWx0cy4KClRoZSBjb21taXRtZW50IGlzOgoKQyA9IGdediAqIGheciAoaW4gYWRkaXRpdmUgbm90YXRpb246IGcqdiArIGgqciksCgp3aGVyZSBnLCBoIGFyZSBCTFMxMi0zODEgZ2VuZXJhdG9yIHBvaW50cyBhbmQgdiBpcyB0aGUgdm90ZSBjaG9pY2UsCnIgaXMgdGhlIHNlZWQuIFZvdGluZyB3ZWlnaHQgaXMgaW50cm9kdWNlZCBkdXJpbmcgdGhlIHRhbGx5aW5nIHBoYXNlLgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgcHJvamVjdF9rZXlgIC0gVGhlIHByb2plY3Qga2V5IGlkZW50aWZpZXIKKiBgcHJvcG9zYWxgIC0gVGhlIHByb3Bvc2FsIGNvbnRhaW5pbmcgdm90ZSBjb21taXRtZW50cwoqIGB0YWxsaWVzYCAtIERlY29kZWQgdGFsbHkgdmFsdWVzIFthcHByb3ZlLCByZWplY3QsIGFic3RhaW5dIChzY2FsZWQgYnkgd2VpZ2h0cykKKiBgc2VlZHNgIC0gRGVjb2RlZCBzZWVkIHZhbHVlcyBbYXBwcm92ZSwgcmVqZWN0LCBhYnN0YWluXSAoc2NhbGVkIGJ5IHdlaWdodHMpCgojIFJldHVybnMKKiBgYm9vbGAgLSBUcnVlIGlmIGFsbCBjb21taXRtZW50cyBtYXRjaCB0aGUgcHJvdmlkZWQgdGFsbGllcyBhbmQgc2VlZHMKCiMgUGFuaWNzCiogSWYgbm8gYW5vbnltb3VzIHZvdGluZyBjb25maWd1cmF0aW9uIGV4aXN0cyBmb3IgdGhlIHByb2plY3QAAAAFcHJvb2YAAAAAAAAEAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAhwcm9wb3NhbAAAB9AAAAAIUHJvcG9zYWwAAAAAAAAAB3RhbGxpZXMAAAAD6gAAAAoAAAAAAAAABXNlZWRzAAAAAAAD6gAAAAoAAAABAAAAAQ==",
         "AAAAAAAABABFeGVjdXRlIGEgdm90ZSBhZnRlciB0aGUgdm90aW5nIHBlcmlvZCBlbmRzLgoKUHJvY2Vzc2VzIHRoZSB2b3RpbmcgcmVzdWx0cyBhbmQgZGV0ZXJtaW5lcyB0aGUgZmluYWwgc3RhdHVzIG9mIHRoZSBwcm9wb3NhbC4KRm9yIHB1YmxpYyB2b3RlcywgdGhlIHJlc3VsdHMgYXJlIGNhbGN1bGF0ZWQgZGlyZWN0bHkgZnJvbSB2b3RlIGNvdW50cy4KRm9yIGFub255bW91cyB2b3RlcywgdGFsbGllcyBhbmQgc2VlZHMgYXJlIHZhbGlkYXRlZCBhZ2FpbnN0IHZvdGUgY29tbWl0bWVudHMKdG8gZW5zdXJlIHRoZSByZXN1bHRzIGFyZSBjb3JyZWN0LgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgbWFpbnRhaW5lcmAgLSBUaGUgYWRkcmVzcyBvZiB0aGUgbWFpbnRhaW5lciBleGVjdXRpbmcgdGhlIHByb3Bvc2FsCiogYHByb2plY3Rfa2V5YCAtIFRoZSBwcm9qZWN0IGtleSBpZGVudGlmaWVyCiogYHByb3Bvc2FsX2lkYCAtIFRoZSBJRCBvZiB0aGUgcHJvcG9zYWwgdG8gZXhlY3V0ZQoqIFtgT3B0aW9uPHRhbGxpZXM+YF0gLSBkZWNvZGVkIHRhbGx5IHZhbHVlcyAoc2NhbGVkIGJ5IHdlaWdodHMpLCByZXNwZWN0aXZlbHkgQXBwcm92ZSwgcmVqZWN0IGFuZCBhYnN0YWluCiogW2BPcHRpb248c2VlZHM+YF0gLSBkZWNvZGVkIHNlZWQgdmFsdWVzIChzY2FsZWQgYnkgd2VpZ2h0cyksIHJlc3BlY3RpdmVseSBBcHByb3ZlLCByZWplY3QgYW5kIGFic3RhaW4KCiMgUmV0dXJucwoqIGB0eXBlczo6UHJvcG9zYWxTdGF0dXNgIC0gVGhlIGZpbmFsIHN0YXR1cyBvZiB0aGUgcHJvcG9zYWwgKEFwcHJvdmVkLCBSZWplY3RlZCwgb3IgQ2FuY2VsbGVkKQoKIyBQYW5pY3MKKiBJZiB0aGUgdm90aW5nIHBlcmlvZCBoYXNuJ3QgZW5kZWQKKiBJZiB0aGUgcHJvcG9zYWwgZG9lc24ndCBleGlzdAoqIElmIHRoZSBwcm9wb3NhbCBpcyBub3QgYWN0aXZlIGFueW1vcmUKKiBJZiB0YWxsaWVzL3NlZWRzIGFyZSBtaXNzaW5nIGZvciBhbm9ueW1vdXMgdm90ZXMKKiBJZiBjb21taXRtZW50AAAAB2V4ZWN1dGUAAAAABQAAAAAAAAAKbWFpbnRhaW5lcgAAAAAAEwAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAAAAAALcHJvcG9zYWxfaWQAAAAABAAAAAAAAAAHdGFsbGllcwAAAAPoAAAD6gAAAAoAAAAAAAAABXNlZWRzAAAAAAAD6AAAA+oAAAAKAAAAAQAAB9AAAAAOUHJvcG9zYWxTdGF0dXMAAA==",
         "AAAAAAAAAUdSZXR1cm5zIGEgcGFnZSBvZiBwcm9wb3NhbHMgKDAgdG8gTUFYX1BST1BPU0FMU19QRVJfUEFHRSBwcm9wb3NhbHMgcGVyIHBhZ2UpLgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgcHJvamVjdF9rZXlgIC0gVGhlIHByb2plY3Qga2V5IGlkZW50aWZpZXIKKiBgcGFnZWAgLSBUaGUgcGFnZSBudW1iZXIgKDAtYmFzZWQpCgojIFJldHVybnMKKiBgdHlwZXM6OkRhb2AgLSBUaGUgREFPIG9iamVjdCBjb250YWluaW5nIGEgcGFnZSBvZiBwcm9wb3NhbHMKCiMgUGFuaWNzCiogSWYgdGhlIHBhZ2UgbnVtYmVyIGlzIG91dCBvZiBib3VuZHMAAAAAB2dldF9kYW8AAAAAAgAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAAAAAAEcGFnZQAAAAQAAAABAAAH0AAAAANEYW8A",
@@ -832,41 +1019,42 @@ export class Client extends ContractClient {
         "AAAABQAAAAAAAAAAAAAAEFByb3Bvc2FsRXhlY3V0ZWQAAAABAAAAEXByb3Bvc2FsX2V4ZWN1dGVkAAAAAAAABAAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAEAAAAAAAAAC3Byb3Bvc2FsX2lkAAAAAAQAAAAAAAAAAAAAAAZzdGF0dXMAAAAAABAAAAAAAAAAAAAAAAptYWludGFpbmVyAAAAAAATAAAAAAAAAAI=",
         "AAAABQAAAAAAAAAAAAAAEVByb2plY3RSZWdpc3RlcmVkAAAAAAAAAQAAABJwcm9qZWN0X3JlZ2lzdGVyZWQAAAAAAAMAAAAAAAAAC3Byb2plY3Rfa2V5AAAAAA4AAAABAAAAAAAAAARuYW1lAAAAEAAAAAAAAAAAAAAACm1haW50YWluZXIAAAAAABMAAAAAAAAAAg==",
         "AAAABQAAAAAAAAAAAAAAFEFub255bW91c1ZvdGluZ1NldHVwAAAAAQAAABZhbm9ueW1vdXNfdm90aW5nX3NldHVwAAAAAAADAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAQAAAAAAAAAKbWFpbnRhaW5lcgAAAAAAEwAAAAAAAAAAAAAACnB1YmxpY19rZXkAAAAAABAAAAAAAAAAAg==",
-        "AAAABQAAAAAAAAAAAAAAFFByb2plY3RDb25maWdVcGRhdGVkAAAAAQAAABZwcm9qZWN0X2NvbmZpZ191cGRhdGVkAAAAAAACAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAQAAAAAAAAAKbWFpbnRhaW5lcgAAAAAAEwAAAAAAAAAC" ]),
-      options
-    )
+        "AAAABQAAAAAAAAAAAAAAFFByb2plY3RDb25maWdVcGRhdGVkAAAAAQAAABZwcm9qZWN0X2NvbmZpZ191cGRhdGVkAAAAAAACAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAQAAAAAAAAAKbWFpbnRhaW5lcgAAAAAAEwAAAAAAAAAC",
+      ]),
+      options,
+    );
   }
   public readonly fromJSON = {
     vote: this.txFromJSON<null>,
-        proof: this.txFromJSON<boolean>,
-        execute: this.txFromJSON<ProposalStatus>,
-        get_dao: this.txFromJSON<Dao>,
-        get_proposal: this.txFromJSON<Proposal>,
-        create_proposal: this.txFromJSON<u32>,
-        revoke_proposal: this.txFromJSON<null>,
-        anonymous_voting_setup: this.txFromJSON<null>,
-        get_anonymous_voting_config: this.txFromJSON<AnonymousVoteConfig>,
-        build_commitments_from_votes: this.txFromJSON<Array<Buffer>>,
-        pause: this.txFromJSON<null>,
-        version: this.txFromJSON<u32>,
-        approve_upgrade: this.txFromJSON<null>,
-        propose_upgrade: this.txFromJSON<null>,
-        finalize_upgrade: this.txFromJSON<null>,
-        get_admins_config: this.txFromJSON<AdminsConfig>,
-        require_not_paused: this.txFromJSON<null>,
-        set_domain_contract: this.txFromJSON<null>,
-        get_upgrade_proposal: this.txFromJSON<UpgradeProposal>,
-        set_collateral_contract: this.txFromJSON<null>,
-        add_member: this.txFromJSON<null>,
-        get_badges: this.txFromJSON<Badges>,
-        get_member: this.txFromJSON<Member>,
-        set_badges: this.txFromJSON<null>,
-        get_max_weight: this.txFromJSON<u32>,
-        commit: this.txFromJSON<null>,
-        register: this.txFromJSON<Buffer>,
-        get_commit: this.txFromJSON<string>,
-        get_project: this.txFromJSON<Project>,
-        get_projects: this.txFromJSON<Array<Project>>,
-        update_config: this.txFromJSON<null>
-  }
+    proof: this.txFromJSON<boolean>,
+    execute: this.txFromJSON<ProposalStatus>,
+    get_dao: this.txFromJSON<Dao>,
+    get_proposal: this.txFromJSON<Proposal>,
+    create_proposal: this.txFromJSON<u32>,
+    revoke_proposal: this.txFromJSON<null>,
+    anonymous_voting_setup: this.txFromJSON<null>,
+    get_anonymous_voting_config: this.txFromJSON<AnonymousVoteConfig>,
+    build_commitments_from_votes: this.txFromJSON<Array<Buffer>>,
+    pause: this.txFromJSON<null>,
+    version: this.txFromJSON<u32>,
+    approve_upgrade: this.txFromJSON<null>,
+    propose_upgrade: this.txFromJSON<null>,
+    finalize_upgrade: this.txFromJSON<null>,
+    get_admins_config: this.txFromJSON<AdminsConfig>,
+    require_not_paused: this.txFromJSON<null>,
+    set_domain_contract: this.txFromJSON<null>,
+    get_upgrade_proposal: this.txFromJSON<UpgradeProposal>,
+    set_collateral_contract: this.txFromJSON<null>,
+    add_member: this.txFromJSON<null>,
+    get_badges: this.txFromJSON<Badges>,
+    get_member: this.txFromJSON<Member>,
+    set_badges: this.txFromJSON<null>,
+    get_max_weight: this.txFromJSON<u32>,
+    commit: this.txFromJSON<null>,
+    register: this.txFromJSON<Buffer>,
+    get_commit: this.txFromJSON<string>,
+    get_project: this.txFromJSON<Project>,
+    get_projects: this.txFromJSON<Array<Project>>,
+    update_config: this.txFromJSON<null>,
+  };
 }
