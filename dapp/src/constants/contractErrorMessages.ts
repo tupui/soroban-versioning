@@ -38,6 +38,7 @@ export const contractErrorMessages = {
   24: "Contract validation error.",
   25: "Collateral error.",
   26: "Project page could not be found.",
+  27: "Too many sub-projects. Maximum allowed is 10.",
 };
 
 export type ContractErrorMessageKey = keyof typeof contractErrorMessages;
