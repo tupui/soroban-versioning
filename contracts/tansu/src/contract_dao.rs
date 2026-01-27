@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)]
+
 use crate::{
     DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events,
     outcomes_contract, types,
@@ -173,6 +175,7 @@ impl DaoTrait for Tansu {
         ipfs: String,
         voting_ends_at: u64,
         public_voting: bool,
+        token_contract: Option<Address>,
         outcomes_contract: Option<Address>,
     ) -> u32 {
         Tansu::require_not_paused(env.clone());
@@ -195,11 +198,23 @@ impl DaoTrait for Tansu {
         proposer.require_auth();
         let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
         let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
-        token_stellar.transfer(
-            &proposer.clone(),
+
+        // Token-based: proposer only pays PROPOSAL_COLLATERAL
+        // Badge-based: proposer pays PROPOSAL_COLLATERAL + VOTE_COLLATERAL
+        let collateral_amount = if token_contract.is_some() {
+            PROPOSAL_COLLATERAL
+        } else {
+            PROPOSAL_COLLATERAL + VOTE_COLLATERAL
+        };
+
+        match token_stellar.try_transfer(
+            &proposer,
             env.current_contract_address(),
-            &(PROPOSAL_COLLATERAL + VOTE_COLLATERAL),
-        );
+            &collateral_amount,
+        ) {
+            Ok(..) => (),
+            _ => panic_with_error!(&env, &errors::ContractErrors::CollateralError),
+        }
 
         let proposal_id = env
             .storage()
@@ -210,7 +225,12 @@ impl DaoTrait for Tansu {
         // proposer is automatically in the abstain group
         // use the first level to not block a vote from proposer with
         // a very high level of trust
-        let abstain_weight = types::Badge::Verified as u32;
+        // For token-based proposals, use weight 0 since tokens aren't transferred for auto-vote
+        let abstain_weight = if token_contract.is_some() {
+            0
+        } else {
+            types::Badge::Verified as u32
+        };
         let vote_ = match public_voting {
             true => types::Vote::PublicVote(types::PublicVote {
                 address: proposer.clone(),
@@ -245,6 +265,7 @@ impl DaoTrait for Tansu {
         let vote_data = types::VoteData {
             voting_ends_at,
             public_voting,
+            token_contract: token_contract.clone(),
             votes,
         };
         let proposal = types::Proposal {
@@ -285,6 +306,7 @@ impl DaoTrait for Tansu {
             proposer,
             voting_ends_at,
             public_voting,
+            token_contract: token_contract.clone(),
         }
         .publish(&env);
 
@@ -436,23 +458,40 @@ impl DaoTrait for Tansu {
             types::Vote::AnonymousVote(vote_choice) => &vote_choice.weight,
         };
 
-        let voter_max_weight = <Tansu as MembershipTrait>::get_max_weight(
-            env.clone(),
-            project_key.clone(),
-            vote_address.clone(),
-        );
+        // For badge-based proposals, validate voting weight against badges
+        // For token-based proposals, the token transfer will validate the balance
+        if proposal.vote_data.token_contract.is_none() {
+            let voter_max_weight = <Tansu as MembershipTrait>::get_max_weight(
+                env.clone(),
+                project_key.clone(),
+                vote_address.clone(),
+            );
 
-        if voter_max_weight == 0 {
-            panic_with_error!(&env, &errors::ContractErrors::UnknownMember);
+            if voter_max_weight == 0 {
+                panic_with_error!(&env, &errors::ContractErrors::UnknownMember);
+            }
+
+            if vote_weight > &voter_max_weight {
+                panic_with_error!(&env, &errors::ContractErrors::VoterWeight);
+            }
         }
 
-        if vote_weight > &voter_max_weight {
-            panic_with_error!(&env, &errors::ContractErrors::VoterWeight);
-        }
+        // Lock collateral: tokens or xlm
+        let (token_address, amount) = match &proposal.vote_data.token_contract {
+            Some(token_contract) => (token_contract.clone(), *vote_weight as i128),
+            None => {
+                let sac_contract =
+                    crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
+                (sac_contract.address, VOTE_COLLATERAL)
+            }
+        };
 
-        let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
-        let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
-        match token_stellar.try_transfer(&voter, env.current_contract_address(), &VOTE_COLLATERAL) {
+        // Execute the transfer using the determined parameters
+        match token::TokenClient::new(&env, &token_address).try_transfer(
+            &voter,
+            env.current_contract_address(),
+            &amount,
+        ) {
             Ok(..) => (),
             _ => panic_with_error!(&env, &errors::ContractErrors::CollateralError),
         }
@@ -529,7 +568,7 @@ impl DaoTrait for Tansu {
             panic_with_error!(&env, &errors::ContractErrors::ProposalVotingTime);
         }
 
-        // proposers get its collateral back
+        // Return proposal collateral to proposer
         let sac_contract = crate::retrieve_contract(&env, types::ContractKey::CollateralContract);
         let token_stellar = token::StellarAssetClient::new(&env, &sac_contract.address);
         match token_stellar.try_transfer(
@@ -541,16 +580,24 @@ impl DaoTrait for Tansu {
             _ => panic_with_error!(&env, &errors::ContractErrors::CollateralError),
         }
 
-        // all voters get their collateral back
+        // Return voting collateral to all voters
         for vote_ in &proposal.vote_data.votes {
-            let vote_address = match &vote_ {
-                types::Vote::PublicVote(vote_choice) => &vote_choice.address,
-                types::Vote::AnonymousVote(vote_choice) => &vote_choice.address,
+            let (vote_address, vote_weight) = match &vote_ {
+                types::Vote::PublicVote(vote_choice) => (&vote_choice.address, vote_choice.weight),
+                types::Vote::AnonymousVote(vote_choice) => {
+                    (&vote_choice.address, vote_choice.weight)
+                }
             };
-            match token_stellar.try_transfer(
+
+            let (transfer_contract, amount) = match &proposal.vote_data.token_contract {
+                Some(token_address) => (token_address.clone(), vote_weight as i128), // token
+                None => (sac_contract.address.clone(), VOTE_COLLATERAL),             // xlm
+            };
+
+            match token::TokenClient::new(&env, &transfer_contract).try_transfer(
                 &env.current_contract_address(),
                 vote_address,
-                &VOTE_COLLATERAL,
+                &amount,
             ) {
                 Ok(..) => (),
                 _ => panic_with_error!(&env, &errors::ContractErrors::CollateralError),

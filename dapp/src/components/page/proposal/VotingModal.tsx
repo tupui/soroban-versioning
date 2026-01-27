@@ -68,7 +68,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
     return () => {
       ignore = true;
     };
-  }, [projectName]);
+  }, [projectName, proposalId]);
 
   const validateVote = (): boolean => {
     if (!selectedOption) {
