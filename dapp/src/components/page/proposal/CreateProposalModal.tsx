@@ -20,9 +20,6 @@ import { setupAnonymousVoting } from "@service/ContractService";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
 import Loading from "components/utils/Loading";
-import TemplateSelector from './TemplateSelector';
-import { type ProposalTemplate } from '../../../constants/proposalTemplates';
-
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -64,9 +61,9 @@ const CreateProposalModal = () => {
     useState<OutcomeContract | null>({ address: "", execute_fn: "", args: [] });
 
   // Mode selection state (new)
-  const [approveMode, setApproveMode] = useState<
-    "xdr" | "contract" | "none"
-  >("contract"); // Default to contract
+  const [approveMode, setApproveMode] = useState<"xdr" | "contract" | "none">(
+    "contract",
+  ); // Default to contract
   const [rejectMode, setRejectMode] = useState<"xdr" | "contract" | "none">(
     "contract",
   );
@@ -507,8 +504,9 @@ const CreateProposalModal = () => {
     if (!projectName) return;
 
     try {
-      const { hasAnonymousVotingConfig } =
-        await import("@service/ReadContractService");
+      const { hasAnonymousVotingConfig } = await import(
+        "@service/ReadContractService"
+      );
 
       const exists = await hasAnonymousVotingConfig(projectName);
 
@@ -553,24 +551,6 @@ const CreateProposalModal = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setStep(1);
-  };
-
-
-  const handleTemplateSelect = (template: ProposalTemplate) => {
-    setMdText(template.content);
-    
-    // Extract proposal name from template if it follows pattern
-    const titleMatch = template.content.match(/^#\s*(.*?)(?:\n|$)/m);
-    if (titleMatch && titleMatch[1]) {
-      const extractedTitle = titleMatch[1]
-        .replace(/\[.*?\]/g, '') // Remove brackets
-        .trim();
-      
-      // Only set if proposalName is empty or matches placeholder
-      if (!proposalName || proposalName === extractedTitle || proposalName.includes('[')) {
-        setProposalName(extractedTitle || '');
-      }
-    }
   };
 
   if (!showModal) return <></>;
@@ -977,12 +957,15 @@ const CreateProposalModal = () => {
             >
               Back
             </Button>
-          
+
             <Button
               data-testid="proposal-next"
               onClick={() => {
                 try {
-                  if (!validateProposalNameField() || !validateDescriptionField())
+                  if (
+                    !validateProposalNameField() ||
+                    !validateDescriptionField()
+                  )
                     throw new Error("Invalid proposal name or description");
 
                   if (isAnonymousVoting) {
@@ -1004,8 +987,6 @@ const CreateProposalModal = () => {
             >
               Next
             </Button>
-
-
           </div>
         </div>
       ) : step == 3 ? (
@@ -1157,7 +1138,6 @@ const CreateProposalModal = () => {
                   {proposalName}
                 </p>
               </Label>
-             
 
               <Label label="Proposal description">
                 <ExpandableText>{mdText}</ExpandableText>

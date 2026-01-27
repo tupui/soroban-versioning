@@ -92,14 +92,14 @@ export async function getContractFunctions(
           inputs,
           outputs,
         });
-      } catch (e) {
+      } catch {
         // Skip malformed function entries
         continue;
       }
     }
 
     return functions;
-  } catch (error) {
+  } catch {
     // Return empty array when introspection fails - user will need manual input
     return [];
   }
@@ -175,7 +175,7 @@ function getScSpecTypeName(specType: any): string {
       default:
         return "unknown";
     }
-  } catch (error) {
+  } catch {
     return "unknown";
   }
 }

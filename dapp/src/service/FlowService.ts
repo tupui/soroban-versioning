@@ -101,19 +101,16 @@ function convertToScValWithType(value: any, typeHint?: string): xdr.ScVal {
   }
 
   if (typeof value === "string") {
-    return Tansu.spec.nativeToScVal(value, xdr.ScSpecTypeDef.scSpecTypeString());
+    return Tansu.spec.nativeToScVal(
+      value,
+      xdr.ScSpecTypeDef.scSpecTypeString(),
+    );
   }
   if (typeof value === "number") {
-    return Tansu.spec.nativeToScVal(
-      value,
-      xdr.ScSpecTypeDef.scSpecTypeU64(),
-    );
+    return Tansu.spec.nativeToScVal(value, xdr.ScSpecTypeDef.scSpecTypeU64());
   }
   if (typeof value === "boolean") {
-    return Tansu.spec.nativeToScVal(
-      value,
-      xdr.ScSpecTypeDef.scSpecTypeBool(),
-    );
+    return Tansu.spec.nativeToScVal(value, xdr.ScSpecTypeDef.scSpecTypeBool());
   }
   if (value && typeof value === "object" && value._isAddress) {
     return Tansu.spec.nativeToScVal(
@@ -255,7 +252,10 @@ async function createSignedProposalTransaction(
           !!oc && !!oc.address && oc.address.trim() !== "",
       )
       .map((oc) => {
-        console.log(`🔍 DEBUG: Converting contract args for function ${oc.execute_fn}:`, oc.args);
+        console.log(
+          `🔍 DEBUG: Converting contract args for function ${oc.execute_fn}:`,
+          oc.args,
+        );
         return {
           address: oc.address,
           execute_fn: oc.execute_fn,
