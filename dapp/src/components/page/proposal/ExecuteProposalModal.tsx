@@ -109,9 +109,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   useEffect(() => {
     const checkMaintainer = async () => {
       try {
-        const { getProjectFromName } = await import(
-          "@service/ReadContractService"
-        );
+        const { getProjectFromName } =
+          await import("@service/ReadContractService");
         const project = await getProjectFromName(projectName);
         const addr = loadedPublicKey();
         if (project && addr) {
@@ -137,9 +136,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       if (!parsed.privateKey)
         throw new Error("Invalid key-file – missing privateKey field");
       // Validate uploaded key against on-chain config (centralized helper)
-      const { validateAnonymousKeyForProject } = await import(
-        "../../../utils/anonymousVoting"
-      );
+      const { validateAnonymousKeyForProject } =
+        await import("../../../utils/anonymousVoting");
       await validateAnonymousKeyForProject(projectName!, parsed.publicKey);
       setPrivateKey(parsed.privateKey);
       await computeTallies(parsed.privateKey);

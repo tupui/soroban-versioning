@@ -210,9 +210,8 @@ test.describe("🚨 Regression Prevention - Critical Error Detection", () => {
     const transactionTest = await page.evaluate(async () => {
       try {
         // Test the exact flow that was failing
-        const { commitHash } = await import(
-          "../src/service/ContractService.ts"
-        );
+        const { commitHash } =
+          await import("../src/service/ContractService.ts");
 
         // Use commitHash to avoid unused variable error
         const isFunction = typeof commitHash === "function";

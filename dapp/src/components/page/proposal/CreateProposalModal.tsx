@@ -20,6 +20,8 @@ import { setupAnonymousVoting } from "@service/ContractService";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 import { navigate } from "astro:transitions/client";
 import Loading from "components/utils/Loading";
+import TemplateSelector from "./TemplateSelector";
+import { type ProposalTemplate } from "../../../constants/proposalTemplates";
 
 const CreateProposalModal = () => {
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
@@ -79,6 +81,7 @@ const CreateProposalModal = () => {
   const [proposalId, setProposalId] = useState<number | null>(null);
   const [_ipfsLink, setIpfsLink] = useState("");
   const [isAnonymousVoting, setIsAnonymousVoting] = useState(false);
+  const [tokenContract, setTokenContract] = useState<string>("");
   const [preparedFiles, setPreparedFiles] = useState<File[] | null>(null);
   const [generatedKeys, setGeneratedKeys] = useState<{
     publicKey: string;
@@ -394,6 +397,7 @@ const CreateProposalModal = () => {
         votingEndsAt: votingEndsAt,
         publicVoting: !isAnonymousVoting ? true : false,
         outcomeContracts: contractOutcomes,
+        tokenContract: tokenContract || undefined,
         onProgress: setStep,
       });
 
@@ -504,9 +508,8 @@ const CreateProposalModal = () => {
     if (!projectName) return;
 
     try {
-      const { hasAnonymousVotingConfig } = await import(
-        "@service/ReadContractService"
-      );
+      const { hasAnonymousVotingConfig } =
+        await import("@service/ReadContractService");
 
       const exists = await hasAnonymousVotingConfig(projectName);
 
@@ -551,6 +554,27 @@ const CreateProposalModal = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setStep(1);
+  };
+
+  const handleTemplateSelect = (template: ProposalTemplate) => {
+    setMdText(template.content);
+
+    // Extract proposal name from template if it follows pattern
+    const titleMatch = template.content.match(/^#\s*(.*?)(?:\n|$)/m);
+    if (titleMatch && titleMatch[1]) {
+      const extractedTitle = titleMatch[1]
+        .replace(/\[.*?\]/g, "") // Remove brackets
+        .trim();
+
+      // Only set if proposalName is empty or matches placeholder
+      if (
+        !proposalName ||
+        proposalName === extractedTitle ||
+        proposalName.includes("[")
+      ) {
+        setProposalName(extractedTitle || "");
+      }
+    }
   };
 
   if (!showModal) return <></>;
@@ -651,6 +675,25 @@ const CreateProposalModal = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Token-based voting section */}
+              <div className="flex flex-col gap-2 sm:gap-3 max-w-2xl">
+                <Label htmlFor="tokenContract">
+                  Token Contract Address (Optional)
+                </Label>
+                <Input
+                  id="tokenContract"
+                  placeholder="Enter token contract address for token-based voting"
+                  value={tokenContract}
+                  onChange={(e) => setTokenContract(e.target.value)}
+                />
+                {tokenContract && (
+                  <span className="text-sm text-blue-600">
+                    Voting weight will be determined by token balance instead of
+                    badges.
+                  </span>
+                )}
               </div>
 
               <div className="max-w-2xl">

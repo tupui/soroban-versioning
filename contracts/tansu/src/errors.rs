@@ -39,4 +39,6 @@ pub enum ContractErrors {
     // Versioning
     NoProjectPageFound = 26,
     TooManySubProjects = 27,
+    // Token transfers
+    InsufficientBalance = 28,
 }
