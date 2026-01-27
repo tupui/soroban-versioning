@@ -210,6 +210,14 @@ fn test_sub_projects() {
     let sub_projects_after = client.get_sub_projects(&project_id);
     assert_eq!(sub_projects_after.len(), 1);
     assert_eq!(sub_projects_after.get(0).unwrap(), sub_project_id);
+
+    // Clear sub-projects by setting an empty list
+    let empty: Vec<Bytes> = Vec::new(env);
+    client.set_sub_projects(maintainer, &project_id, &empty);
+
+    // Third get: should return empty vector
+    let sub_projects_cleared = client.get_sub_projects(&project_id);
+    assert_eq!(sub_projects_cleared.len(), 0);
 }
 
 #[test]

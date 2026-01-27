@@ -303,6 +303,11 @@ impl VersioningTrait for Tansu {
 
     /// Set sub-projects for a project (making it an organization).
     ///
+    /// Note: by design, sub-project keys are not validated against existing
+    /// projects. This allows reserving a project space before the project is
+    /// registered (since the key is derived from the name). A project can
+    /// also appear in multiple organizations.
+    ///
     /// # Arguments
     /// * `env` - The environment object
     /// * `maintainer` - The maintainer address calling this function
@@ -312,6 +317,7 @@ impl VersioningTrait for Tansu {
     /// # Panics
     /// * If the project doesn't exist
     /// * If the maintainer is not authorized
+    /// * If more than 10 sub-projects are provided
     fn set_sub_projects(
         env: Env,
         maintainer: Address,
