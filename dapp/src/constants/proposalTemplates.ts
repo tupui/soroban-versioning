@@ -7,9 +7,10 @@ export interface ProposalTemplate {
 
 export const PROPOSAL_TEMPLATES: ProposalTemplate[] = [
   {
-    id: 'code-change',
-    name: 'Code Implementation',
-    description: 'For proposing code changes, feature implementations, or technical upgrades with on-chain commit tracking',
+    id: "code-change",
+    name: "Code Implementation",
+    description:
+      "For proposing code changes, feature implementations, or technical upgrades with on-chain commit tracking",
     content: `# [Implementation Name]
 
 ## Commit Hash
@@ -39,12 +40,13 @@ Brief description of the code changes and their purpose.
 ## Voting Parameters
 - **Voting Type:** [Public/Anonymous]
 - **Duration:** [Number] days
-- **Quorum:** [Percentage]% of maintainers`
+- **Quorum:** [Percentage]% of maintainers`,
   },
   {
-    id: 'governance-update',
-    name: 'Governance Rules',
-    description: 'For updating project governance rules, voting parameters, or membership requirements',
+    id: "governance-update",
+    name: "Governance Rules",
+    description:
+      "For updating project governance rules, voting parameters, or membership requirements",
     content: `# Governance Update: [Rule Name]
 
 ## Current Rule
@@ -75,12 +77,13 @@ Why this change is necessary for the project's governance.
 ## Voting Strategy
 - **Voting Method:** Anonymous recommended for sensitive governance changes
 - **Duration:** 5-7 days for community feedback
-- **Threshold:** [Percentage]% majority required`
+- **Threshold:** [Percentage]% majority required`,
   },
   {
-    id: 'grant-request',
-    name: 'Grant Funding',
-    description: 'For requesting development grants, bounties, or ecosystem funding with transparent milestones',
+    id: "grant-request",
+    name: "Grant Funding",
+    description:
+      "For requesting development grants, bounties, or ecosystem funding with transparent milestones",
     content: `# Grant Request: [Project Name]
 
 ## Applicant Information
@@ -113,12 +116,13 @@ Detailed description of what will be built or improved.
 How success will be measured and verified on-chain.
 
 ## IPFS Storage
-All deliverables will be stored on IPFS with on-chain verification.`
+All deliverables will be stored on IPFS with on-chain verification.`,
   },
   {
-    id: 'membership-change',
-    name: 'Membership Update',
-    description: 'For adding/removing maintainers, assigning roles, or updating achievement badges',
+    id: "membership-change",
+    name: "Membership Update",
+    description:
+      "For adding/removing maintainers, assigning roles, or updating achievement badges",
     content: `# Membership Update
 
 ## Action Requested
@@ -149,12 +153,13 @@ Why this membership change benefits the project.
 
 ## Voting Consideration
 - **Privacy:** Anonymous voting recommended
-- **Duration:** 3-5 days for maintainer consensus`
+- **Duration:** 3-5 days for maintainer consensus`,
   },
   {
-    id: 'emergency-response',
-    name: 'Emergency Fix',
-    description: 'For urgent security patches, bug fixes, or critical system updates requiring fast-track voting',
+    id: "emergency-response",
+    name: "Emergency Fix",
+    description:
+      "For urgent security patches, bug fixes, or critical system updates requiring fast-track voting",
     content: `# ⚠️ EMERGENCY: [Issue Name]
 
 ## Severity Level
@@ -186,12 +191,13 @@ What systems/users are affected and how.
 **Expected resolution time:** [Hours/days]
 
 ## Post-Resolution Review
-Commitment to full review and documentation after resolution.`
+Commitment to full review and documentation after resolution.`,
   },
   {
-    id: 'community-proposal',
-    name: 'Community Initiative',
-    description: 'For general community suggestions, ecosystem improvements, or non-technical changes',
+    id: "community-proposal",
+    name: "Community Initiative",
+    description:
+      "For general community suggestions, ecosystem improvements, or non-technical changes",
     content: `# Community Proposal: [Initiative Name]
 
 ## Proposal Overview
@@ -218,11 +224,10 @@ How we'll know if this initiative is successful.
 ## Voting Parameters
 - **Voting Type:** Public (for community visibility)
 - **Duration:** 7 days for maximum participation
-- **Quorum:** Based on community engagement`
-  }
+- **Quorum:** Based on community engagement`,
+  },
 ];
 
 export const getTemplateById = (id: string): ProposalTemplate | undefined => {
-  return PROPOSAL_TEMPLATES.find(template => template.id === id);
+  return PROPOSAL_TEMPLATES.find((template) => template.id === id);
 };
-

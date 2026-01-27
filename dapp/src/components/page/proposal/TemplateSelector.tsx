@@ -1,30 +1,38 @@
-import { useState, useCallback } from 'react';
-import { PROPOSAL_TEMPLATES, type ProposalTemplate } from '../../../constants/proposalTemplates';
-import Modal from '../../../components/utils/Modal';
-import Button from '../../../components/utils/Button';
+import { useState, useCallback } from "react";
+import {
+  PROPOSAL_TEMPLATES,
+  type ProposalTemplate,
+} from "../../../constants/proposalTemplates";
+import Modal from "../../../components/utils/Modal";
+import Button from "../../../components/utils/Button";
 
 interface TemplateSelectorProps {
   onTemplateSelect: (template: ProposalTemplate) => void;
-  currentContent: string;
 }
 
-export default function TemplateSelector({ 
-  onTemplateSelect, 
-  currentContent
+export default function TemplateSelector({
+  onTemplateSelect,
 }: TemplateSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [previewTemplate, setPreviewTemplate] = useState<ProposalTemplate | null>(null);
+  const [previewTemplate, setPreviewTemplate] =
+    useState<ProposalTemplate | null>(null);
 
-  const handleTemplateClick = useCallback((template: ProposalTemplate) => {
-    onTemplateSelect(template);
-    console.log("Selected: ", template);
-    setIsOpen(false);
-  }, [onTemplateSelect]);
+  const handleTemplateClick = useCallback(
+    (template: ProposalTemplate) => {
+      onTemplateSelect(template);
+      console.log("Selected: ", template);
+      setIsOpen(false);
+    },
+    [onTemplateSelect],
+  );
 
-  const handlePreviewClick = useCallback((template: ProposalTemplate, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setPreviewTemplate(template);
-  }, []);
+  const handlePreviewClick = useCallback(
+    (template: ProposalTemplate, e: React.MouseEvent) => {
+      e.stopPropagation();
+      setPreviewTemplate(template);
+    },
+    [],
+  );
 
   const handleUseTemplate = useCallback(() => {
     if (previewTemplate) {
@@ -39,22 +47,22 @@ export default function TemplateSelector({
     <div className="template-selector mb-4">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <p className="text-sm font-medium text-primary">Start with a template</p>
-          <p className="text-xs text-secondary">Choose a structured format for your proposal</p>
+          <p className="text-sm font-medium text-primary">
+            Start with a template
+          </p>
+          <p className="text-xs text-secondary">
+            Choose a structured format for your proposal
+          </p>
         </div>
-        <Button
-          type="tertiary"
-          size="sm"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? 'Hide Templates' : 'Browse Templates'}
+        <Button type="tertiary" size="sm" onClick={() => setIsOpen(!isOpen)}>
+          {isOpen ? "Hide Templates" : "Browse Templates"}
         </Button>
       </div>
 
       {isOpen && !previewTemplate && (
         <div className="mt-3 p-4 border border-primary rounded-lg bg-[#F5F1F9] shadow-lg">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-60 overflow-y-auto pr-2">
-            {PROPOSAL_TEMPLATES.map(template => (
+            {PROPOSAL_TEMPLATES.map((template) => (
               <div
                 key={template.id}
                 onClick={() => handleTemplateClick(template)}
@@ -111,9 +119,7 @@ export default function TemplateSelector({
               >
                 Close
               </Button>
-              <Button onClick={handleUseTemplate}>
-                Use This Template
-              </Button>
+              <Button onClick={handleUseTemplate}>Use This Template</Button>
             </div>
           </div>
         </Modal>
