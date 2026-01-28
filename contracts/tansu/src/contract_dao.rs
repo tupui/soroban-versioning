@@ -610,9 +610,8 @@ impl DaoTrait for Tansu {
         }
         .publish(&env);
 
-        if (proposal.outcomes_contract).is_some() {
-            let client =
-                outcomes_contract::Client::new(&env, &(proposal.outcomes_contract).unwrap());
+        if let Some(outcomes_contract_id) = &proposal.outcomes_contract {
+            let client = outcomes_contract::Client::new(&env, outcomes_contract_id);
 
             match proposal.status {
                 types::ProposalStatus::Approved => client.approve_outcome(&maintainer),

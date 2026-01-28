@@ -32,10 +32,14 @@ fn proposal_flow() {
     );
 
     // Verify proposal creation event
-    let mut all_events = setup.env.events().all();
-    all_events.pop_front();
+    let contract_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+
     assert_eq!(
-        all_events,
+        contract_events,
         vec![
             &setup.env,
             (
@@ -86,10 +90,13 @@ fn proposal_flow() {
     );
 
     // Verify vote cast event
-    let mut all_events = setup.env.events().all();
-    all_events.pop_front();
+    let contract_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
     assert_eq!(
-        all_events,
+        contract_events,
         vec![
             &setup.env,
             (
@@ -122,12 +129,14 @@ fn proposal_flow() {
         .execute(&setup.mando, &id, &proposal_id, &None, &None);
 
     // Verify proposal executed event
-    let mut all_events = setup.env.events().all();
-    all_events.pop_front();
-    all_events.pop_front();
-    all_events.pop_front();
+    let contract_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+
     assert_eq!(
-        all_events,
+        contract_events,
         vec![
             &setup.env,
             (

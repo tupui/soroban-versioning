@@ -29,8 +29,13 @@ fn register_events() {
         .contract
         .register(&setup.grogu, &name, &maintainers, &url, &ipfs);
 
-    let mut all_events = setup.env.events().all();
-    all_events.pop_front();
+    // In v25, ContractEvents doesn't have pop_front()
+    // We need to get events directly and skip the first one
+    let all_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
 
     assert_eq!(
         all_events,
@@ -234,14 +239,17 @@ fn test_sub_projects_limit() {
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
     setup.token_stellar.mint(maintainer, &genesis_amount);
 
-    let mut sub_project_ids = Vec::new(&env);
+    let mut sub_project_ids = Vec::new(env);
     // Register 11 projects using single character suffixes (like test_project_listing does)
     for i in 0u32..11 {
         let suffix = std::format!("{}", (b'a' + i as u8) as char);
         let name_str = std::format!("sub{}", suffix);
         let name = String::from_str(env, &name_str);
         let url = String::from_str(env, &std::format!("github.com/{}", name_str));
-        let ipfs = String::from_str(env, &std::format!("2ef4f49fdd8fa9dc463f1f06a094c26b8871099{}", i));
+        let ipfs = String::from_str(
+            env,
+            &std::format!("2ef4f49fdd8fa9dc463f1f06a094c26b8871099{}", i),
+        );
         let maintainers = vec![env, maintainer.clone()];
         let sub_project_id = client.register(maintainer, &name, &maintainers, &url, &ipfs);
         sub_project_ids.push_back(sub_project_id);
@@ -255,7 +263,7 @@ fn test_sub_projects_limit() {
     assert_eq!(err, ContractErrors::TooManySubProjects.into());
 
     // Set 10 sub-projects (should succeed)
-    let mut sub_project_ids_10 = Vec::new(&env);
+    let mut sub_project_ids_10 = Vec::new(env);
     for i in 0..10 {
         sub_project_ids_10.push_back(sub_project_ids.get(i).unwrap());
     }
