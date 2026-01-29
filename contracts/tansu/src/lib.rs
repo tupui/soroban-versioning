@@ -61,9 +61,9 @@ pub trait MembershipTrait {
         member_address: Address,
         meta: String,
         git_identity: Option<String>,
-        git_pubkey: Option<String>,
+        git_pubkey: Option<Bytes>,
         msg: Option<String>,
-        sig: Option<String>,
+        sig: Option<Bytes>,
     );
 
     fn get_member(env: Env, member_address: Address) -> types::Member;

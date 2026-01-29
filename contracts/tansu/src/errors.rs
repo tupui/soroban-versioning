@@ -41,4 +41,5 @@ pub enum ContractErrors {
     // Git Handle Flow
     InvalidEnvelope = 27,
     InvalidSignature = 28,
+    InvalidPublicKeyLength = 29,
 }

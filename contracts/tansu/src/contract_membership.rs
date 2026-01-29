@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, Bytes, Env, String, Vec, contractimpl, panic_with_error};
+use soroban_sdk::{Address, Bytes, BytesN, Env, String, Vec, contractimpl, panic_with_error};
 
 use crate::{MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types};
 
@@ -18,67 +18,24 @@ impl MembershipTrait for Tansu {
         member_address: Address,
         meta: String,
         git_identity: Option<String>,
-        git_pubkey: Option<String>,
+        git_pubkey: Option<Bytes>,
         msg: Option<String>,
-        sig: Option<String>,
+        sig: Option<Bytes>,
     ) {
         Tansu::require_not_paused(env.clone());
 
         member_address.require_auth();
 
         if let Some(git_id) = git_identity.clone()
-            && let Some(pubkey_hex) = git_pubkey.clone()
+            && let Some(pubkey_bytes) = git_pubkey.clone()
             && let Some(msg_str) = msg.clone()
-            && let Some(sig_hex) = sig.clone()
+            && let Some(sig_bytes) = sig.clone()
         {
-            // Convert String to Bytes using fixed buffer and copy_into_slice
-            let msg_len = msg_str.len();
-            let mut buf = [0u8; 1024];
-            if msg_len > 1024 {
-                panic!("Message too long");
-            }
-            msg_str.copy_into_slice(&mut buf[..msg_len as usize]);
-            let msg_bytes = Bytes::from_slice(&env, &buf[..msg_len as usize]);
+            // Verify git_identity is present in the message
+            Tansu::verify_identity_in_message(&env, &git_id, &msg_str);
 
-            // Verify Ed25519 signature
-            let pubkey_bytes = Tansu::decode_hex(&env, pubkey_hex);
-            let sig_bytes = Tansu::decode_hex(&env, sig_hex);
-
-            env.crypto().ed25519_verify(
-                &pubkey_bytes
-                    .try_into()
-                    .map_err(|_| panic_with_error!(&env, &errors::ContractErrors::InvalidKey))
-                    .unwrap(),
-                &msg_bytes,
-                &sig_bytes
-                    .try_into()
-                    .map_err(|_| panic_with_error!(&env, &errors::ContractErrors::InvalidSignature))
-                    .unwrap(),
-            );
-
-            // Verify message contains git identity at minimum
-            let git_id_len = git_id.len();
-            let mut git_id_buf = [0u8; 128];
-            if git_id_len > 128 {
-                panic!("Git identity too long");
-            }
-            git_id.copy_into_slice(&mut git_id_buf[..git_id_len as usize]);
-            let git_id_bytes = Bytes::from_slice(&env, &git_id_buf[..git_id_len as usize]);
-
-            let mut found = false;
-            // Scan for the Git identity bytes within the message bytes
-            if msg_len >= git_id_len {
-                for i in 0..=(msg_len - git_id_len) {
-                    if msg_bytes.slice(i..i + git_id_len) == git_id_bytes {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-
-            if !found {
-                panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
-            }
+            // Verify the signature
+            Tansu::verify_ed25519_signature(&env, &msg_str, &sig_bytes, &pubkey_bytes);
         }
 
         let member_key_ = types::DataKey::Member(member_address.clone());
@@ -311,33 +268,144 @@ impl MembershipTrait for Tansu {
 }
 
 impl Tansu {
-    fn decode_hex(env: &Env, hex: String) -> Bytes {
-        let hex_len = hex.len();
-        let mut hex_buf = [0u8; 128];
-        if hex_len > 128 {
-            panic!("Hex string too long");
-        }
-        hex.copy_into_slice(&mut hex_buf[..hex_len as usize]);
-        let hex_bytes = Bytes::from_slice(env, &hex_buf[..hex_len as usize]);
+    /// Verify that the git identity is present in the message
+    fn verify_identity_in_message(env: &Env, git_id: &String, msg_str: &String) {
+       
+        let msg_bytes = Self::convert_message_to_bytes(env, msg_str);
+        let msg_len = msg_str.len();
 
-        if hex_bytes.len() % 2 != 0 {
-            panic!("Invalid hex length");
+        // Verify message contains git identity at minimum
+        let git_id_len = git_id.len();
+        let mut git_id_buf = [0u8; 128];
+        if git_id_len > 128 {
+            panic!("Git identity too long");
         }
-        let mut res = Bytes::new(env);
-        for i in 0..(hex_bytes.len() / 2) {
-            let hi = decode_hex_char(hex_bytes.get(i * 2).unwrap());
-            let lo = decode_hex_char(hex_bytes.get(i * 2 + 1).unwrap());
-            res.push_back(hi << 4 | lo);
+        git_id.copy_into_slice(&mut git_id_buf[..git_id_len as usize]);
+        let git_id_bytes = Bytes::from_slice(&env, &git_id_buf[..git_id_len as usize]);
+
+        let mut found = false;
+        // Scan for the Git identity bytes within the message bytes
+        if msg_len >= git_id_len {
+            for i in 0..=(msg_len - git_id_len) {
+                if msg_bytes.slice(i..i + git_id_len) == git_id_bytes {
+                    found = true;
+                    break;
+                }
+            }
         }
-        res
+
+        if !found {
+            panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
+        }
     }
-}
 
-fn decode_hex_char(c: u8) -> u8 {
-    match c {
-        b'0'..=b'9' => c - b'0',
-        b'a'..=b'f' => c - b'a' + 10,
-        b'A'..=b'F' => c - b'A' + 10,
-        _ => panic!("Invalid hex char"),
+    /// Verify Ed25519 signature
+    fn verify_ed25519_signature(
+        env: &Env,
+        message: &String,
+        signature: &Bytes,
+        pubkey: &Bytes,
+    ) {
+        let raw_pubkey = Self::extract_pubkey(env, pubkey);
+        let raw_signature = Self::extract_signature(env, signature);
+        
+        // Convert message to bytes (UTF-8 encoding)
+    
+        let msg_bytes = Self::convert_message_to_bytes(env, message);
+
+        // Perform Ed25519 verification using Soroban's crypto module
+        // This should match @noble/ed25519's verify function
+        env.crypto().ed25519_verify(
+            &raw_pubkey,
+            &msg_bytes,
+            &raw_signature,
+        );
+    }
+
+    /// Extract raw 32-byte Ed25519 public key
+    /// 
+    /// Handles multiple formats:
+    /// 1. Raw 32-byte key (from @noble/ed25519 or extracted SSH key)
+    /// 2. SSH wire format (parses to extract the 32-byte key)
+    fn extract_pubkey(env: &Env, pubkey: &Bytes) -> BytesN<32> {
+        // Case 1: Already raw 32-byte key
+        if pubkey.len() == 32 {
+            let mut key_array = [0u8; 32];
+            pubkey.copy_into_slice(&mut key_array);
+            return BytesN::from_array(env, &key_array);
+        }
+
+        // SSH wire format
+        // SSH Ed25519 public key format:
+        // [4 bytes: algo name length][11 bytes: "ssh-ed25519"][4 bytes: key length][32 bytes: key]
+        if pubkey.len() >= 51 {
+            // The actual key starts at byte 19 (4 + 11 + 4)
+            let key_start = 19;
+            if pubkey.len() >= key_start + 32 {
+                let key_slice = pubkey.slice(key_start..key_start + 32);
+                let mut key_array = [0u8; 32];
+                key_slice.copy_into_slice(&mut key_array);
+                return BytesN::from_array(env, &key_array);
+            }
+        }
+
+        // Base64-decoded SSH public key (sometimes starts at different offset)
+        // Try to find the 32-byte key in the last portion
+        if pubkey.len() >= 32 {
+            let key_start = pubkey.len() - 32;
+            let key_slice = pubkey.slice(key_start..pubkey.len());
+            let mut key_array = [0u8; 32];
+            key_slice.copy_into_slice(&mut key_array);
+            return BytesN::from_array(env, &key_array);
+        }
+
+        panic_with_error!(env, &errors::ContractErrors::InvalidPublicKeyLength);
+    }
+
+    /// Extract raw 64-byte Ed25519 signature
+    /// 
+    /// Handles multiple formats:
+    /// 1. Raw 64-byte signature (from @noble/ed25519)
+    /// 2. SSH signature format (parses to extract the 64-byte signature)
+    fn extract_signature(env: &Env, signature: &Bytes) -> BytesN<64> {
+        // Already raw 64-byte signature
+        if signature.len() == 64 {
+            let mut sig_array = [0u8; 64];
+            signature.copy_into_slice(&mut sig_array);
+            return BytesN::from_array(env, &sig_array);
+        }
+
+        // SSH signature format
+        // Similar to public key: [4 bytes: algo length][11 bytes: "ssh-ed25519"][4 bytes: sig length][64 bytes: sig]
+        if signature.len() >= 83 {
+            let sig_start = 19;
+            if signature.len() >= sig_start + 64 {
+                let sig_slice = signature.slice(sig_start..sig_start + 64);
+                let mut sig_array = [0u8; 64];
+                sig_slice.copy_into_slice(&mut sig_array);
+                return BytesN::from_array(env, &sig_array);
+            }
+        }
+
+        // Try extracting last 64 bytes
+        if signature.len() >= 64 {
+            let sig_start = signature.len() - 64;
+            let sig_slice = signature.slice(sig_start..signature.len());
+            let mut sig_array = [0u8; 64];
+            sig_slice.copy_into_slice(&mut sig_array);
+            return BytesN::from_array(env, &sig_array);
+        }
+
+        panic_with_error!(env, &errors::ContractErrors::InvalidSignature);
+    }
+
+    fn convert_message_to_bytes(env: &Env, message: &String) -> Bytes {
+        let msg_len = message.len();
+        let mut buf = [0u8; 1024];
+        if msg_len > 1024 {
+            panic!("Message too long");
+        }
+        message.copy_into_slice(&mut buf[..msg_len as usize]);
+        Bytes::from_slice(&env, &buf[..msg_len as usize])
     }
 }

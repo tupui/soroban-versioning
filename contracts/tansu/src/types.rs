@@ -56,9 +56,9 @@ pub struct Member {
     pub projects: Vec<ProjectBadges>,
     pub meta: String,
     pub git_identity: Option<String>,
-    pub git_pubkey: Option<String>,
+    pub git_pubkey: Option<Bytes>,
     pub msg: Option<String>,
-    pub sig: Option<String>,
+    pub sig: Option<Bytes>,
     pub signed_at: Option<u64>,
 }
 
