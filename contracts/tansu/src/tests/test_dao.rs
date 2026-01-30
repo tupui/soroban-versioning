@@ -1,10 +1,12 @@
 use super::test_utils::{create_test_data, init_contract};
+use crate::events::{ProposalCreated, VoteCast, ProposalExecuted, AnonymousVotingSetup};
 use crate::{
     errors::ContractErrors,
     types::{AnonymousVote, Badge, Dao, ProposalStatus, PublicVote, Vote, VoteChoice},
 };
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
-use soroban_sdk::{Address, BytesN, IntoVal, Map, String, Symbol, Val, vec};
+use soroban_sdk::{Address, BytesN, Event, String, vec};
+
 
 #[test]
 fn proposal_flow() {
@@ -32,6 +34,15 @@ fn proposal_flow() {
     );
 
     // Verify proposal creation event
+    let event = ProposalCreated {
+        project_key: id.clone(),
+        proposal_id,
+        title: title.clone(),
+        proposer: setup.grogu.clone(),
+        voting_ends_at,
+        public_voting: true,
+    };
+
     let contract_events = setup
         .env
         .events()
@@ -40,39 +51,7 @@ fn proposal_flow() {
 
     assert_eq!(
         contract_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "proposal_created"), id.clone()).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "proposal_id"),
-                            proposal_id.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "title"),
-                            title.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "proposer"),
-                            setup.grogu.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "voting_ends_at"),
-                            voting_ends_at.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "public_voting"),
-                            true.into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 
     let balance_proposer_ = setup.token_stellar.balance(&setup.grogu);
@@ -90,6 +69,12 @@ fn proposal_flow() {
     );
 
     // Verify vote cast event
+    let event = VoteCast {
+        project_key: id.clone(),
+        proposal_id,
+        voter: setup.mando.clone(),
+    };
+
     let contract_events = setup
         .env
         .events()
@@ -97,27 +82,7 @@ fn proposal_flow() {
         .filter_by_contract(&setup.contract_id);
     assert_eq!(
         contract_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "vote_cast"), id.clone()).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "proposal_id"),
-                            proposal_id.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "voter"),
-                            setup.mando.clone().into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 
     let balance_voter_ = setup.token_stellar.balance(&setup.mando);
@@ -129,6 +94,13 @@ fn proposal_flow() {
         .execute(&setup.mando, &id, &proposal_id, &None, &None);
 
     // Verify proposal executed event
+    let event = ProposalExecuted {
+        project_key: id.clone(),
+        proposal_id,
+        status: String::from_str(&setup.env, "Cancelled"),
+        maintainer: setup.mando.clone(),
+    };
+
     let contract_events = setup
         .env
         .events()
@@ -137,31 +109,7 @@ fn proposal_flow() {
 
     assert_eq!(
         contract_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "proposal_executed"), id.clone()).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "proposal_id"),
-                            proposal_id.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "status"),
-                            String::from_str(&setup.env, "Cancelled").into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "maintainer"),
-                            setup.mando.clone().into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 
     assert_eq!(result, ProposalStatus::Cancelled);
@@ -244,34 +192,16 @@ fn dao_anonymous() {
         .contract
         .anonymous_voting_setup(&setup.mando, &id, &public_key);
 
-    let all_events = setup.env.events().all();
+    let event = AnonymousVotingSetup {
+        project_key: id.clone(),
+        maintainer: setup.mando.clone(),
+        public_key: public_key.clone(),
+    };
+
+    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
     assert_eq!(
         all_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (
-                    Symbol::new(&setup.env, "anonymous_voting_setup"),
-                    id.clone()
-                )
-                    .into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "maintainer"),
-                            setup.mando.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "public_key"),
-                            public_key.into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 
     // Add a member with elevated rights
@@ -694,34 +624,17 @@ fn proposal_revoke() {
         .contract
         .revoke_proposal(&setup.mando, &id, &proposal_id);
 
-    let all_events = setup.env.events().all();
+    let event = ProposalExecuted {
+        project_key: id.clone(),
+        proposal_id,
+        status: String::from_str(&setup.env, "Malicious"),
+        maintainer: setup.mando.clone(),
+    };
+
+    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
     assert_eq!(
         all_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "proposal_executed"), id.clone()).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "proposal_id"),
-                            proposal_id.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "status"),
-                            String::from_str(&setup.env, "Malicious").into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "maintainer"),
-                            setup.mando.clone().into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 
     let proposal = setup.contract.get_proposal(&id, &proposal_id);

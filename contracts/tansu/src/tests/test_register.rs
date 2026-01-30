@@ -1,9 +1,11 @@
 extern crate std;
 use super::test_utils::{create_test_data, init_contract};
+use crate::events::ProjectRegistered;
 use crate::types::Project;
 use crate::{contract_versioning::domain_register, errors::ContractErrors};
 use soroban_sdk::testutils::Events;
-use soroban_sdk::{Bytes, IntoVal, Map, String, Symbol, Val, Vec, symbol_short, vec};
+use soroban_sdk::{Bytes,Event, String,  Vec, vec};
+
 
 #[test]
 fn register_project() {
@@ -29,32 +31,15 @@ fn register_events() {
         .contract
         .register(&setup.grogu, &name, &maintainers, &url, &ipfs);
 
-    let all_events = setup
-        .env
-        .events()
-        .all()
-        .filter_by_contract(&setup.contract_id);
+    let event = ProjectRegistered {
+        project_key: id.clone(),
+        name: name.clone(),
+        maintainer: setup.grogu.clone(),
+    };
 
     assert_eq!(
-        all_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "project_registered"), id.clone()).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (symbol_short!("name"), name.clone().into_val(&setup.env)),
-                        (
-                            Symbol::new(&setup.env, "maintainer"),
-                            setup.grogu.clone().into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        setup.env.events().all().filter_by_contract(&setup.contract_id),
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 
     let expected_id = [

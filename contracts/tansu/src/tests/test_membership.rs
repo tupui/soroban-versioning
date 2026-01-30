@@ -1,8 +1,10 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::errors::ContractErrors;
+use crate::events::{MemberAdded, BadgesUpdated};
 use crate::types::{Badge, ProjectBadges};
 use soroban_sdk::testutils::{Address as _, Events};
-use soroban_sdk::{Address, IntoVal, Map, String, Symbol, Val, vec};
+use soroban_sdk::{Address, Event, String, vec};
+
 
 #[test]
 fn membership_badges() {
@@ -14,24 +16,14 @@ fn membership_badges() {
     setup.contract.add_member(&member, &meta);
 
     // Verify member added event
-    let all_events = setup.env.events().all();
+    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
+    let event = MemberAdded {
+        member_address: member.clone(),
+    };
+
     assert_eq!(
         all_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "member_added"),).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [(
-                        Symbol::new(&setup.env, "member_address"),
-                        member.clone().into_val(&setup.env)
-                    ),],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 
     let badges = vec![&setup.env, Badge::Community];
@@ -40,38 +32,17 @@ fn membership_badges() {
         .set_badges(&setup.mando, &id, &member, &badges);
 
     // Verify badges updated event
-    let all_events = setup.env.events().all();
+    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
+    let event = BadgesUpdated {
+        project_key: id.clone(),
+        maintainer: setup.mando.clone(),
+        member: member.clone(),
+        badges_count: 1u32,
+    };
+
     assert_eq!(
         all_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "badges_updated"),).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "project_key"),
-                            id.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "maintainer"),
-                            setup.mando.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "member"),
-                            member.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "badges_count"),
-                            1u32.into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 
     let info = setup.contract.get_member(&member);

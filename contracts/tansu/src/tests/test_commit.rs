@@ -1,7 +1,9 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::errors::ContractErrors;
+use crate::events::Commit;
 use soroban_sdk::testutils::{Address as _, Events};
-use soroban_sdk::{Address, IntoVal, Map, String, Symbol, Val, symbol_short, vec};
+use soroban_sdk::{Address, Event, String, vec};
+
 
 #[test]
 fn commit_flow() {
@@ -23,26 +25,14 @@ fn commit_events() {
     let hash_commit = String::from_str(&setup.env, "6663520bd9e6ede248fef8157b2af0b6b6b41046");
     setup.contract.commit(&setup.mando, &id, &hash_commit);
 
-    let contract_events = setup
-        .env
-        .events()
-        .all()
-        .filter_by_contract(&setup.contract_id);
+    let event = Commit {
+        project_key: id.clone(),
+        hash: hash_commit,
+    };
 
     assert_eq!(
-        contract_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (symbol_short!("commit"), id.clone()).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [(symbol_short!("hash"), hash_commit.into_val(&setup.env)),],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        setup.env.events().all().filter_by_contract(&setup.contract_id),
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 }
 
