@@ -23,7 +23,7 @@ fn commit_events() {
     let hash_commit = String::from_str(&setup.env, "6663520bd9e6ede248fef8157b2af0b6b6b41046");
     setup.contract.commit(&setup.mando, &id, &hash_commit);
 
-  let contract_events = setup
+    let contract_events = setup
         .env
         .events()
         .all()
