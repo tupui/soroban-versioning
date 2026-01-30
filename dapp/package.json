@@ -11,7 +11,7 @@
     "@noble/ed25519": "^3.0.0",
     "@stellar/stellar-sdk": "^14.3.2",
     "@stellar/stellar-xdr-json": "^23.0.0",
-    "@storacha/client": "^1.8.16",
+    "@storacha/client": "^2.0.0",
     "@ucanto/core": "^10.4.6",
     "@web3-storage/access": "^20.3.0",
     "astro": "^5.16.2",

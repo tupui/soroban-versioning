@@ -107,6 +107,15 @@ pub trait VersioningTrait {
     fn get_project(env: Env, project_key: Bytes) -> types::Project;
 
     fn get_projects(env: Env, page: u32) -> Vec<types::Project>;
+
+    fn get_sub_projects(env: Env, project_key: Bytes) -> Vec<Bytes>;
+
+    fn set_sub_projects(
+        env: Env,
+        maintainer: Address,
+        project_key: Bytes,
+        sub_projects: Vec<Bytes>,
+    );
 }
 
 pub trait DaoTrait {

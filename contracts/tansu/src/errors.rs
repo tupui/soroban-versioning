@@ -42,4 +42,5 @@ pub enum ContractErrors {
     InvalidEnvelope = 27,
     InvalidSignature = 28,
     InvalidPublicKeyLength = 29,
+    TooManySubProjects = 30,
 }

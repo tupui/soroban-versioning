@@ -181,4 +181,5 @@ pub struct Project {
     pub name: String,
     pub config: Config,
     pub maintainers: Vec<Address>,
+    pub sub_projects: Option<Vec<Bytes>>,
 }

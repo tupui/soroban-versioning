@@ -12,6 +12,7 @@ interface Props {
   multiline?: boolean;
   rows?: number;
   disabled?: boolean;
+  type?: string;
 }
 
 const Input: FC<Props> = ({
@@ -26,6 +27,7 @@ const Input: FC<Props> = ({
   rows = 3,
   error,
   disabled,
+  type = "text",
 }) => {
   return (
     <div className="flex-grow flex flex-col gap-[18px]">
@@ -45,6 +47,7 @@ const Input: FC<Props> = ({
         />
       ) : (
         <input
+          type={type}
           placeholder={placeholder}
           value={value}
           onChange={onChange}

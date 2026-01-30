@@ -3,7 +3,7 @@ use super::test_utils::{create_test_data, init_contract};
 use crate::types::Project;
 use crate::{contract_versioning::domain_register, errors::ContractErrors};
 use soroban_sdk::testutils::Events;
-use soroban_sdk::{Bytes, IntoVal, Map, String, Symbol, Val, symbol_short, vec};
+use soroban_sdk::{Bytes, IntoVal, Map, String, Symbol, Val, Vec, symbol_short, vec};
 
 #[test]
 fn register_project() {
@@ -176,4 +176,92 @@ fn test_project_listing() {
     // Check empty page
     let err = setup.contract.try_get_projects(&2).unwrap_err().unwrap();
     assert_eq!(err, ContractErrors::NoProjectPageFound.into());
+}
+
+#[test]
+fn test_sub_projects() {
+    let setup = create_test_data();
+    let client = &setup.contract;
+    let env = &setup.env;
+    let maintainer = &setup.grogu;
+
+    // Register a project
+    let project_id = init_contract(&setup);
+
+    // First get: should return empty vector
+    let sub_projects_before = client.get_sub_projects(&project_id);
+    assert_eq!(sub_projects_before.len(), 0);
+
+    // Register a second project to use as sub-project
+    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
+    setup.token_stellar.mint(maintainer, &genesis_amount);
+
+    let name2 = String::from_str(env, "subproject");
+    let url2 = String::from_str(env, "github.com/subproject");
+    let ipfs2 = String::from_str(env, "2ef4f49fdd8fa9dc463f1f06a094c26b88710991");
+    let maintainers2 = vec![env, maintainer.clone()];
+    let sub_project_id = client.register(maintainer, &name2, &maintainers2, &url2, &ipfs2);
+
+    // Set sub-projects
+    let sub_projects = vec![env, sub_project_id.clone()];
+    client.set_sub_projects(maintainer, &project_id, &sub_projects);
+
+    // Second get: should return the sub-project we just set
+    let sub_projects_after = client.get_sub_projects(&project_id);
+    assert_eq!(sub_projects_after.len(), 1);
+    assert_eq!(sub_projects_after.get(0).unwrap(), sub_project_id);
+
+    // Clear sub-projects by setting an empty list
+    let empty: Vec<Bytes> = Vec::new(env);
+    client.set_sub_projects(maintainer, &project_id, &empty);
+
+    // Third get: should return empty vector
+    let sub_projects_cleared = client.get_sub_projects(&project_id);
+    assert_eq!(sub_projects_cleared.len(), 0);
+}
+
+#[test]
+fn test_sub_projects_limit() {
+    let setup = create_test_data();
+    let client = &setup.contract;
+    let env = &setup.env;
+    let maintainer = &setup.grogu;
+
+    // Register a project
+    let project_id = init_contract(&setup);
+
+    // Register projects to test the limit (register 11 projects)
+    let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
+    setup.token_stellar.mint(maintainer, &genesis_amount);
+
+    let mut sub_project_ids = Vec::new(&env);
+    // Register 11 projects using single character suffixes (like test_project_listing does)
+    for i in 0u32..11 {
+        let suffix = std::format!("{}", (b'a' + i as u8) as char);
+        let name_str = std::format!("sub{}", suffix);
+        let name = String::from_str(env, &name_str);
+        let url = String::from_str(env, &std::format!("github.com/{}", name_str));
+        let ipfs = String::from_str(env, &std::format!("2ef4f49fdd8fa9dc463f1f06a094c26b8871099{}", i));
+        let maintainers = vec![env, maintainer.clone()];
+        let sub_project_id = client.register(maintainer, &name, &maintainers, &url, &ipfs);
+        sub_project_ids.push_back(sub_project_id);
+    }
+
+    // Try to set 11 sub-projects (should fail)
+    let err = client
+        .try_set_sub_projects(maintainer, &project_id, &sub_project_ids)
+        .unwrap_err()
+        .unwrap();
+    assert_eq!(err, ContractErrors::TooManySubProjects.into());
+
+    // Set 10 sub-projects (should succeed)
+    let mut sub_project_ids_10 = Vec::new(&env);
+    for i in 0..10 {
+        sub_project_ids_10.push_back(sub_project_ids.get(i).unwrap());
+    }
+    client.set_sub_projects(maintainer, &project_id, &sub_project_ids_10);
+
+    // Verify 10 sub-projects were set
+    let sub_projects_after = client.get_sub_projects(&project_id);
+    assert_eq!(sub_projects_after.len(), 10);
 }

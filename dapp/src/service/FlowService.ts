@@ -1,6 +1,7 @@
 import { calculateDirectoryCid } from "../utils/ipfsFunctions";
 import { create } from "@storacha/client";
 import * as Delegation from "@ucanto/core/delegation";
+import type { OutcomeContract } from "../types/proposal";
 
 //
 import Tansu from "../contracts/soroban_tansu";
@@ -12,6 +13,116 @@ import { deriveProjectKey } from "../utils/projectKey";
 //
 import { sendSignedTransaction, signAssembledTransaction } from "./TxService";
 import { checkSimulationError } from "../utils/contractErrors";
+import { xdr } from "@stellar/stellar-sdk";
+import { Buffer } from "buffer";
+
+// Convert JavaScript values to Soroban ScVal format with optional type hints
+function convertToScVal(rawValue: any): xdr.ScVal {
+  // If it's already an ScVal-like object, return it as-is
+  if (rawValue instanceof xdr.ScVal) {
+    return rawValue;
+  }
+
+  // Handle objects shaped like { type, value } coming from the contract function selector
+  if (
+    rawValue &&
+    typeof rawValue === "object" &&
+    "type" in rawValue &&
+    "value" in rawValue
+  ) {
+    return convertToScValWithType(rawValue.value, String(rawValue.type));
+  }
+
+  return convertToScValWithType(rawValue);
+}
+
+function convertToScValWithType(value: any, typeHint?: string): xdr.ScVal {
+  const lowerType = typeHint?.toLowerCase();
+
+  const typeDefFromHint = (hint?: string): xdr.ScSpecTypeDef | null => {
+    switch (hint) {
+      case "u32":
+        return xdr.ScSpecTypeDef.scSpecTypeU32();
+      case "i32":
+        return xdr.ScSpecTypeDef.scSpecTypeI32();
+      case "u64":
+        return xdr.ScSpecTypeDef.scSpecTypeU64();
+      case "i64":
+        return xdr.ScSpecTypeDef.scSpecTypeI64();
+      case "u128":
+        return xdr.ScSpecTypeDef.scSpecTypeU128();
+      case "i128":
+        return xdr.ScSpecTypeDef.scSpecTypeI128();
+      case "u256":
+        return xdr.ScSpecTypeDef.scSpecTypeU256();
+      case "i256":
+        return xdr.ScSpecTypeDef.scSpecTypeI256();
+      case "bool":
+        return xdr.ScSpecTypeDef.scSpecTypeBool();
+      case "address":
+        return xdr.ScSpecTypeDef.scSpecTypeAddress();
+      case "symbol":
+        return xdr.ScSpecTypeDef.scSpecTypeSymbol();
+      case "string":
+        return xdr.ScSpecTypeDef.scSpecTypeString();
+      case "bytes":
+        return xdr.ScSpecTypeDef.scSpecTypeBytes();
+      default:
+        return null;
+    }
+  };
+
+  const hintedType = typeDefFromHint(lowerType);
+  if (hintedType) {
+    let normalized = value;
+    if (lowerType === "bytes") {
+      normalized = Buffer.from(String(value ?? ""));
+    } else if (
+      lowerType === "u64" ||
+      lowerType === "i64" ||
+      lowerType === "u128" ||
+      lowerType === "i128" ||
+      lowerType === "u256" ||
+      lowerType === "i256"
+    ) {
+      normalized = typeof value === "bigint" ? value : BigInt(value ?? 0);
+    } else if (lowerType === "u32" || lowerType === "i32") {
+      normalized = Number(value ?? 0);
+    } else if (lowerType === "bool") {
+      normalized = Boolean(value);
+    } else if (
+      lowerType === "string" ||
+      lowerType === "symbol" ||
+      lowerType === "address"
+    ) {
+      normalized = String(value ?? "");
+    }
+    return Tansu.spec.nativeToScVal(normalized, hintedType);
+  }
+
+  if (typeof value === "string") {
+    return Tansu.spec.nativeToScVal(
+      value,
+      xdr.ScSpecTypeDef.scSpecTypeString(),
+    );
+  }
+  if (typeof value === "number") {
+    return Tansu.spec.nativeToScVal(value, xdr.ScSpecTypeDef.scSpecTypeU64());
+  }
+  if (typeof value === "boolean") {
+    return Tansu.spec.nativeToScVal(value, xdr.ScSpecTypeDef.scSpecTypeBool());
+  }
+  if (value && typeof value === "object" && value._isAddress) {
+    return Tansu.spec.nativeToScVal(
+      String(value.publicKey),
+      xdr.ScSpecTypeDef.scSpecTypeAddress(),
+    );
+  }
+  return Tansu.spec.nativeToScVal(
+    Buffer.from(JSON.stringify(value)),
+    xdr.ScSpecTypeDef.scSpecTypeBytes(),
+  );
+}
 
 import type { GitVerificationData } from "../utils/gitVerification";
 
@@ -27,6 +138,7 @@ interface CreateProposalFlowParams {
   proposalFiles: File[];
   votingEndsAt: number;
   publicVoting?: boolean;
+  outcomeContracts?: OutcomeContract[]; // New parameter for contract outcomes
   onProgress?: (step: number) => void;
 }
 
@@ -117,12 +229,70 @@ async function createSignedProposalTransaction(
   ipfs: string,
   votingEndsAt: number,
   publicVoting: boolean,
+  outcomeContracts?: OutcomeContract[],
 ): Promise<string> {
   const publicKey = loadedPublicKey();
   if (!publicKey) throw new Error("Please connect your wallet first");
 
   Tansu.options.publicKey = publicKey;
   const project_key = deriveProjectKey(projectName);
+
+  console.log(
+    "🔍 DEBUG FlowService: outcomeContracts received:",
+    outcomeContracts,
+  );
+  console.log(
+    "outcomeContracts types:",
+    outcomeContracts?.map((oc) => typeof oc),
+  );
+
+  // Convert OutcomeContract[] to contract format expected by Soroban.
+  // We do not allow gaps (e.g. reject without approve) and skip any empty entries.
+  const convertedContracts =
+    outcomeContracts
+      ?.filter(
+        (oc): oc is OutcomeContract =>
+          !!oc && !!oc.address && oc.address.trim() !== "",
+      )
+      .map((oc) => {
+        console.log(
+          `🔍 DEBUG: Converting contract args for function ${oc.execute_fn}:`,
+          oc.args,
+        );
+        return {
+          address: oc.address,
+          execute_fn: oc.execute_fn,
+          args: (oc.args || []).map((arg, idx) => {
+            try {
+              const converted = convertToScVal(arg);
+              // Just a debug log
+              console.log(
+                `DEBUG: Arg ${idx} (${typeof arg}):`,
+                arg,
+                "->",
+                converted,
+              );
+              return converted;
+            } catch (err) {
+              console.error(`  ERROR converting arg ${idx}:`, arg, err);
+              throw err;
+            }
+          }), // Convert each arg to ScVal
+        };
+      }) || [];
+
+  const finalOutcomeContracts =
+    convertedContracts.length > 0 ? convertedContracts : undefined;
+  console.log("finalOutcomeContracts:", finalOutcomeContracts);
+
+  console.log("🔍 DEBUG: Tansu.create_proposal parameters:");
+  console.log("proposer:", publicKey);
+  console.log("project_key:", project_key);
+  console.log("title:", title);
+  console.log("ipfs:", ipfs);
+  console.log("voting_ends_at:", votingEndsAt, typeof votingEndsAt);
+  console.log("public_voting:", publicVoting);
+  console.log("outcome_contracts:", finalOutcomeContracts);
 
   const tx = await Tansu.create_proposal({
     proposer: publicKey,
@@ -131,7 +301,7 @@ async function createSignedProposalTransaction(
     ipfs: ipfs,
     voting_ends_at: BigInt(votingEndsAt),
     public_voting: publicVoting,
-    outcomes_contract: undefined,
+    outcome_contracts: finalOutcomeContracts,
   });
 
   // Check for simulation errors (contract errors) before signing
@@ -203,6 +373,7 @@ export async function createProposalFlow({
   proposalFiles,
   votingEndsAt,
   publicVoting = true,
+  outcomeContracts,
   onProgress,
 }: CreateProposalFlowParams): Promise<number> {
   // Step 1: Calculate the CID
@@ -220,6 +391,7 @@ export async function createProposalFlow({
     expectedCid,
     votingEndsAt,
     publicVoting,
+    outcomeContracts,
   );
 
   // Step 3: Upload to IPFS using the signed transaction as authentication
