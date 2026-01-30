@@ -64,6 +64,8 @@ pub trait MembershipTrait {
         git_pubkey: Option<Bytes>,
         msg: Option<String>,
         sig: Option<Bytes>,
+        namespace: Option<String>,
+        hash_algorithm: Option<String>,
     );
 
     fn get_member(env: Env, member_address: Address) -> types::Member;
