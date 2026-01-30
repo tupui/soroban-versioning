@@ -32,7 +32,9 @@ const Input: FC<Props> = ({
   return (
     <div className="flex-grow flex flex-col gap-[18px]">
       {label && (
-        <p className={`leading-4 text-base font-semibold ${disabled ? "text-gray-400" : "text-primary"}`}>
+        <p
+          className={`leading-4 text-base font-semibold ${disabled ? "text-gray-400" : "text-primary"}`}
+        >
           {label}
         </p>
       )}

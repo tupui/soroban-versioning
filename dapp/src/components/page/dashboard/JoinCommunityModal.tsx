@@ -38,7 +38,8 @@ const JoinCommunityModal: FC<{
 
   // Git binding state
   const [showGitVerification, setShowGitVerification] = useState(false);
-  const [gitVerificationData, setGitVerificationData] = useState<GitVerificationData | null>(null);
+  const [gitVerificationData, setGitVerificationData] =
+    useState<GitVerificationData | null>(null);
 
   // Validation errors
   const [addressError, setAddressError] = useState<string | null>(null);
@@ -269,13 +270,14 @@ const JoinCommunityModal: FC<{
 
           <Input
             label="Member Address *"
-            placeholder="Write the address as G..."
+            placeholder="Connect your wallet"
             value={address}
             onChange={(e) => {
               setAddress(e.target.value);
               setAddressError(null);
             }}
             error={addressError}
+            disabled={!!prefillAddress || isLoading}
           />
 
           <div className="pt-2 md:pt-4 w-full">
@@ -376,7 +378,9 @@ const JoinCommunityModal: FC<{
               <GitVerification
                 onVerificationComplete={setGitVerificationData}
                 onShowGitVerification={setShowGitVerification}
-                networkPassphrase={import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE}
+                networkPassphrase={
+                  import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE
+                }
                 signingAccount={address}
                 contractId={import.meta.env.PUBLIC_TANSU_CONTRACT_ID}
                 setError={setError}

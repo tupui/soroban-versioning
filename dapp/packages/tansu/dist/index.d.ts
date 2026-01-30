@@ -643,6 +643,8 @@ export interface Client {
       git_pubkey,
       msg,
       sig,
+      namespace,
+      hash_algorithm,
     }: {
       member_address: string;
       meta: string;
@@ -650,6 +652,8 @@ export interface Client {
       git_pubkey: Option<Buffer>;
       msg: Option<string>;
       sig: Option<Buffer>;
+      namespace: Option<string>;
+      hash_algorithm: Option<string>;
     },
     options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
