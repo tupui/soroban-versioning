@@ -29,8 +29,6 @@ fn register_events() {
         .contract
         .register(&setup.grogu, &name, &maintainers, &url, &ipfs);
 
-    // In v25, ContractEvents doesn't have pop_front()
-    // We need to get events directly and skip the first one
     let all_events = setup
         .env
         .events()
