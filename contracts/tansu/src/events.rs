@@ -52,6 +52,7 @@ pub struct ProposalCreated {
     pub proposer: Address,
     pub voting_ends_at: u64,
     pub public_voting: bool,
+    pub token_contract: Option<Address>,
 }
 
 #[contractevent]

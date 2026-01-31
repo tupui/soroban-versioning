@@ -137,6 +137,7 @@ interface CreateProposalFlowParams {
   votingEndsAt: number;
   publicVoting?: boolean;
   outcomeContracts?: OutcomeContract[]; // New parameter for contract outcomes
+  tokenContract?: string;
   onProgress?: (step: number) => void;
 }
 
@@ -227,6 +228,7 @@ async function createSignedProposalTransaction(
   votingEndsAt: number,
   publicVoting: boolean,
   outcomeContracts?: OutcomeContract[],
+  tokenContract?: string,
 ): Promise<string> {
   const publicKey = loadedPublicKey();
   if (!publicKey) throw new Error("Please connect your wallet first");
@@ -299,6 +301,7 @@ async function createSignedProposalTransaction(
     voting_ends_at: BigInt(votingEndsAt),
     public_voting: publicVoting,
     outcome_contracts: finalOutcomeContracts,
+    token_contract: tokenContract,
   });
 
   // Check for simulation errors (contract errors) before signing
@@ -363,6 +366,7 @@ export async function createProposalFlow({
   votingEndsAt,
   publicVoting = true,
   outcomeContracts,
+  tokenContract,
   onProgress,
 }: CreateProposalFlowParams): Promise<number> {
   // Step 1: Calculate the CID
@@ -381,6 +385,7 @@ export async function createProposalFlow({
     votingEndsAt,
     publicVoting,
     outcomeContracts,
+    tokenContract,
   );
 
   // Step 3: Upload to IPFS using the signed transaction as authentication

@@ -136,6 +136,7 @@ pub trait DaoTrait {
         ipfs: String,
         voting_ends_at: u64,
         public_voting: bool,
+        token_contract: Option<Address>,
         outcomes_contract: Option<Address>,
     ) -> u32;
 

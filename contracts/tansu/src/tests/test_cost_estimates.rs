@@ -32,6 +32,7 @@ fn test_cost_create_proposal() {
         &ipfs,
         &voting_ends_at,
         &true, // anonymous voting
+        &None,
         &Some(setup.outcomes_id),
     );
 
@@ -59,6 +60,7 @@ fn test_cost_vote_on_proposal() {
         &ipfs,
         &voting_ends_at,
         &true,
+        &None,
         &Some(setup.outcomes_id),
     );
 
@@ -97,6 +99,7 @@ fn test_cost_execute_proposal() {
         &ipfs,
         &voting_ends_at,
         &true,
+        &None,
         &Some(setup.outcomes_id),
     );
 
@@ -150,6 +153,7 @@ fn test_cost_multiple_proposals_flow() {
             &ipfs,
             &voting_ends_at,
             &true,
+            &None,
             &Some(outcomes_contract.clone()),
         );
     }
@@ -240,6 +244,7 @@ fn test_cost_comprehensive_dao_workflow() {
         &ipfs,
         &voting_ends_at,
         &true,
+        &None,
         &Some(setup.outcomes_id),
     );
 

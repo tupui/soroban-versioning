@@ -48,6 +48,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
         const weightTx = await Tansu.get_max_weight({
           project_key: projectKey,
           member_address: publicKey,
+          proposal_id: proposalId,
         });
 
         if (!ignore) {
@@ -68,7 +69,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
     return () => {
       ignore = true;
     };
-  }, [projectName]);
+  }, [projectName, proposalId]);
 
   const validateVote = (): boolean => {
     if (!selectedOption) {

@@ -8,10 +8,12 @@ import Button from "../../../components/utils/Button";
 
 interface TemplateSelectorProps {
   onTemplateSelect: (template: ProposalTemplate) => void;
+  currentContent?: string;
 }
 
 export default function TemplateSelector({
   onTemplateSelect,
+  currentContent,
 }: TemplateSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [previewTemplate, setPreviewTemplate] =
