@@ -27,8 +27,10 @@ export function truncateMiddle(str: string, maxLength: number): string {
 }
 
 export function extractConfigData(tomlData: any, project: Project) {
+  const fullName = tomlData.DOCUMENTATION?.ORG_DBA || project.name;
   return {
     projectName: project.name,
+    projectFullName: fullName,
     logoImageLink: tomlData.DOCUMENTATION?.ORG_LOGO || "",
     thumbnailImageLink: tomlData.DOCUMENTATION?.ORG_THUMBNAIL || "",
     description: tomlData.DOCUMENTATION?.ORG_DESCRIPTION || "",
@@ -160,7 +162,7 @@ export const modifyProposalFromContract = (
       proposer: proposal.proposer,
       status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
       voting_ends_at: Number(proposal.vote_data.voting_ends_at),
-      outcome_contracts: proposal.outcome_contracts || null,
+      outcomes_contract: proposal.outcomes_contract || null,
       voteStatus: {
         approve: {
           voteType: VoteType.APPROVE,
@@ -216,7 +218,7 @@ export const modifyProposalFromContract = (
     proposer: proposal.proposer,
     status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
     voting_ends_at: Number(proposal.vote_data.voting_ends_at),
-    outcome_contracts: proposal.outcome_contracts || null,
+    outcomes_contract: proposal.outcomes_contract || null,
     voteStatus: {
       approve: { voteType: VoteType.APPROVE, score: 0, voters: [] },
       reject: { voteType: VoteType.REJECT, score: 0, voters: [] },
