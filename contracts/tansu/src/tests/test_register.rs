@@ -1,9 +1,11 @@
 extern crate std;
 use super::test_utils::{create_test_data, init_contract};
+use crate::events::ProjectRegistered;
 use crate::types::Project;
 use crate::{contract_versioning::domain_register, errors::ContractErrors};
 use soroban_sdk::testutils::Events;
-use soroban_sdk::{Bytes, IntoVal, Map, String, Symbol, Val, Vec, symbol_short, vec};
+use soroban_sdk::{Bytes,Event, String,  Vec, vec};
+
 
 #[test]
 fn register_project() {
@@ -29,29 +31,15 @@ fn register_events() {
         .contract
         .register(&setup.grogu, &name, &maintainers, &url, &ipfs);
 
-    let mut all_events = setup.env.events().all();
-    all_events.pop_front();
+    let event = ProjectRegistered {
+        project_key: id.clone(),
+        name: name.clone(),
+        maintainer: setup.grogu.clone(),
+    };
 
     assert_eq!(
-        all_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "project_registered"), id.clone()).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (symbol_short!("name"), name.clone().into_val(&setup.env)),
-                        (
-                            Symbol::new(&setup.env, "maintainer"),
-                            setup.grogu.clone().into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
+        setup.env.events().all().filter_by_contract(&setup.contract_id),
+        [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 
     let expected_id = [
@@ -234,14 +222,17 @@ fn test_sub_projects_limit() {
     let genesis_amount: i128 = 1_000_000_000 * 10_000_000;
     setup.token_stellar.mint(maintainer, &genesis_amount);
 
-    let mut sub_project_ids = Vec::new(&env);
+    let mut sub_project_ids = Vec::new(env);
     // Register 11 projects using single character suffixes (like test_project_listing does)
     for i in 0u32..11 {
         let suffix = std::format!("{}", (b'a' + i as u8) as char);
         let name_str = std::format!("sub{}", suffix);
         let name = String::from_str(env, &name_str);
         let url = String::from_str(env, &std::format!("github.com/{}", name_str));
-        let ipfs = String::from_str(env, &std::format!("2ef4f49fdd8fa9dc463f1f06a094c26b8871099{}", i));
+        let ipfs = String::from_str(
+            env,
+            &std::format!("2ef4f49fdd8fa9dc463f1f06a094c26b8871099{}", i),
+        );
         let maintainers = vec![env, maintainer.clone()];
         let sub_project_id = client.register(maintainer, &name, &maintainers, &url, &ipfs);
         sub_project_ids.push_back(sub_project_id);
@@ -255,7 +246,7 @@ fn test_sub_projects_limit() {
     assert_eq!(err, ContractErrors::TooManySubProjects.into());
 
     // Set 10 sub-projects (should succeed)
-    let mut sub_project_ids_10 = Vec::new(&env);
+    let mut sub_project_ids_10 = Vec::new(env);
     for i in 0..10 {
         sub_project_ids_10.push_back(sub_project_ids.get(i).unwrap());
     }
