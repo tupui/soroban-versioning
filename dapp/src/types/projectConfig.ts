@@ -1,5 +1,6 @@
 export interface ConfigData {
   projectName: string;
+  projectFullName: string;
   logoImageLink: string;
   thumbnailImageLink: string;
   description: string;

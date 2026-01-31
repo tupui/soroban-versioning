@@ -2,7 +2,6 @@
 import CommitHistory from "./CommitHistory";
 import DonateModal from "./DonateModal";
 import LatestCommit from "./LatestCommit";
-import SubProjectsSection from "./SubProjectsSection";
 import Button from "components/utils/Button";
 ---
 
@@ -36,9 +35,7 @@ import Button from "components/utils/Button";
                 >
                 </p>
               </div>
-              <div id="latest-commit-section">
-                <LatestCommit client:only />
-              </div>
+              <LatestCommit client:only />
             </div>
           </div>
         </div>
@@ -103,10 +100,7 @@ import Button from "components/utils/Button";
       <div class="community-content flex flex-col gap-4 p-4"></div>
     </div>
     <div id="contribution-metrics-section" class="bg-white w-full"></div>
-    <div id="commit-history-section">
-      <CommitHistory client:load />
-    </div>
-    <SubProjectsSection client:load />
+    <CommitHistory client:load />
   </div>
 </div>
 
@@ -376,11 +370,12 @@ import Button from "components/utils/Button";
           );
         }
 
+        const configData = loadConfigData();
+        
         const projectNameElement = document.getElementById("project-name");
         if (projectNameElement) {
-          projectNameElement.textContent = projectInfo.name;
+          projectNameElement.textContent = configData?.projectFullName || projectInfo.name;
         }
-        const configData = loadConfigData();
 
         const projectThumbnail = document.getElementById(
           "project-thumbnail",
