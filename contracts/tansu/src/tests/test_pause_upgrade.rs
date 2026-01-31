@@ -30,7 +30,7 @@ fn test_pause_unpause() {
     let meta = String::from_str(&setup.env, "abcd");
     let err = setup
         .contract
-        .try_add_member(&member, &meta)
+        .try_add_member(&member, &meta, &None, &None, &None, &None, &None, &None)
         .unwrap_err()
         .unwrap();
     assert_eq!(err, ContractErrors::ContractPaused.into());
@@ -50,7 +50,9 @@ fn test_pause_unpause() {
     );
 
     // try again set operation
-    setup.contract.add_member(&member, &meta);
+    setup
+        .contract
+        .add_member(&member, &meta, &None, &None, &None, &None, &None, &None);
 }
 
 #[test]

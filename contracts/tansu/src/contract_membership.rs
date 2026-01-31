@@ -1,4 +1,4 @@
-use soroban_sdk::{Address, Bytes, Env, String, Vec, contractimpl, panic_with_error};
+use soroban_sdk::{Address, Bytes, BytesN, Env, String, Vec, contractimpl, panic_with_error};
 
 use crate::{MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types};
 
@@ -10,13 +10,54 @@ impl MembershipTrait for Tansu {
     /// * `env` - The environment object
     /// * `member_address` - The address of the member to add
     /// * `meta` - Metadata string associated with the member (e.g., IPFS hash)
+    /// * `git_identity` - The git identity of the member
+    /// * `git_pubkey` - The git public key of the member
+    /// * `msg` - The message to be signed
+    /// * `sig` - The signature of the message
+    /// * `namespace` - The namespace of the signature
+    /// * `hash_algorithm` - The hash algorithm of the signature
     ///
     /// # Panics
     /// * If the member already exists
-    fn add_member(env: Env, member_address: Address, meta: String) {
+    /// * If the git_identity is not present in the message
+    /// * If the signature is not valid
+    /// * If the namespace is not valid
+    /// * If the hash_algorithm is not valid
+    fn add_member(
+        env: Env,
+        member_address: Address,
+        meta: String,
+        git_identity: Option<String>,
+        git_pubkey: Option<Bytes>,
+        msg: Option<String>,
+        sig: Option<Bytes>,
+        namespace: Option<String>,
+        hash_algorithm: Option<String>,
+    ) {
         Tansu::require_not_paused(env.clone());
 
         member_address.require_auth();
+
+        if let Some(git_id) = git_identity.clone()
+            && let Some(pubkey_bytes) = git_pubkey.clone()
+            && let Some(msg_str) = msg.clone()
+            && let Some(sig_bytes) = sig.clone()
+            && let Some(ns) = namespace.clone()
+            && let Some(hash_algo) = hash_algorithm.clone()
+        {
+            // Verify git_identity is present in the message
+            Tansu::verify_identity_in_message(&env, &git_id, &msg_str);
+
+            // Build SSHSIG blob and verify the signature
+            Tansu::verify_sshsig_signature(
+                &env,
+                &msg_str,
+                &sig_bytes,
+                &pubkey_bytes,
+                &ns,
+                &hash_algo,
+            );
+        }
 
         let member_key_ = types::DataKey::Member(member_address.clone());
         if env
@@ -30,6 +71,11 @@ impl MembershipTrait for Tansu {
             let member = types::Member {
                 projects: Vec::new(&env),
                 meta,
+                git_identity,
+                git_pubkey,
+                msg,
+                sig,
+                signed_at: Some(env.ledger().timestamp()),
             };
             env.storage().persistent().set(&member_key_, &member);
 
@@ -239,5 +285,203 @@ impl MembershipTrait for Tansu {
         } else {
             types::Badge::Default as u32
         }
+    }
+}
+
+impl Tansu {
+    /// Verify that the git identity is present in the message
+    fn verify_identity_in_message(env: &Env, git_id: &String, msg_str: &String) {
+        let msg_bytes = Self::convert_message_to_bytes(env, msg_str);
+        let msg_len = msg_str.len();
+
+        // Verify message contains git identity at minimum
+        let git_id_len = git_id.len();
+        let mut git_id_buf = [0u8; 128];
+        if git_id_len > 128 {
+            panic!("Git identity too long");
+        }
+        git_id.copy_into_slice(&mut git_id_buf[..git_id_len as usize]);
+        let git_id_bytes = Bytes::from_slice(&env, &git_id_buf[..git_id_len as usize]);
+
+        let mut found = false;
+        // Scan for the Git identity bytes within the message bytes
+        if msg_len >= git_id_len {
+            for i in 0..=(msg_len - git_id_len) {
+                if msg_bytes.slice(i..i + git_id_len) == git_id_bytes {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if !found {
+            panic_with_error!(&env, &errors::ContractErrors::InvalidEnvelope);
+        }
+    }
+    /// Verify SSHSIG-formatted Ed25519 signature
+    ///
+    /// SSH signatures sign a wrapped blob, not the raw message. This function
+    /// reconstructs the SSHSIG blob and verifies the signature against it.
+    ///
+    /// SSHSIG format: SSHSIG || len(namespace) || namespace || len(reserved) || reserved
+    ///                || len(hash_algo) || hash_algo || len(hash) || hash(message)
+    fn verify_sshsig_signature(
+        env: &Env,
+        message: &String,
+        signature: &Bytes,
+        pubkey: &Bytes,
+        namespace: &String,
+        hash_algorithm: &String,
+    ) {
+        let raw_pubkey = Self::extract_pubkey(env, pubkey);
+        let raw_signature = Self::extract_signature(env, signature);
+
+        // Build the SSHSIG blob
+        let sshsig_blob = Self::build_sshsig_blob(env, message, namespace, hash_algorithm);
+
+        // Perform Ed25519 verification against the SSHSIG blob
+        env.crypto()
+            .ed25519_verify(&raw_pubkey, &sshsig_blob, &raw_signature);
+    }
+
+    /// Build the SSHSIG blob that SSH keys actually sign
+    fn build_sshsig_blob(
+        env: &Env,
+        message: &String,
+        namespace: &String,
+        hash_algorithm: &String,
+    ) -> Bytes {
+        // SSHSIG magic
+        let magic = Bytes::from_slice(env, b"SSHSIG");
+
+        // Convert namespace to bytes
+        let ns_bytes = Self::convert_message_to_bytes(env, namespace);
+        let ns_len = Self::u32_to_bytes(env, ns_bytes.len());
+
+        // Reserved is empty
+        let reserved_len = Self::u32_to_bytes(env, 0);
+
+        // Convert hash algorithm to bytes
+        let algo_bytes = Self::convert_message_to_bytes(env, hash_algorithm);
+
+        // Ensure hash_algorithm is "sha256" as soroban only supports that for now
+        if hash_algorithm != &String::from_str(env, "sha256") {
+            panic!("Unsupported hash algorithm: only sha256 is supported");
+        }
+
+        let algo_len = Self::u32_to_bytes(env, algo_bytes.len());
+
+        // Hash the message using SHA-256 (Soroban's available hash function)
+        let msg_bytes = Self::convert_message_to_bytes(env, message);
+        let msg_hash = env.crypto().sha256(&msg_bytes);
+        let hash_len = Self::u32_to_bytes(env, 32); // SHA-256 produces 32 bytes
+
+        // Concatenate all parts
+        let mut blob = Bytes::new(env);
+        blob.append(&magic);
+        blob.append(&ns_len);
+        blob.append(&ns_bytes);
+        blob.append(&reserved_len);
+        // No reserved content since length is 0
+        blob.append(&algo_len);
+        blob.append(&algo_bytes);
+        blob.append(&hash_len);
+        blob.append(&Bytes::from_array(env, &msg_hash.to_array()));
+
+        blob
+    }
+
+    /// Convert u32 to big-endian bytes
+    fn u32_to_bytes(env: &Env, val: u32) -> Bytes {
+        Bytes::from_slice(env, &val.to_be_bytes())
+    }
+
+    /// Extract raw 32-byte Ed25519 public key
+    ///
+    /// Handles multiple formats:
+    /// 1. Raw 32-byte key (from @noble/ed25519 or extracted SSH key)
+    /// 2. SSH wire format (parses to extract the 32-byte key)
+    fn extract_pubkey(env: &Env, pubkey: &Bytes) -> BytesN<32> {
+        // Already raw 32-byte key
+        if pubkey.len() == 32 {
+            let mut key_array = [0u8; 32];
+            pubkey.copy_into_slice(&mut key_array);
+            return BytesN::from_array(env, &key_array);
+        }
+
+        // SSH wire format
+        // SSH Ed25519 public key format:
+        // [4 bytes: algo name length][11 bytes: "ssh-ed25519"][4 bytes: key length][32 bytes: key]
+        if pubkey.len() >= 51 {
+            // The actual key starts at byte 19 (4 + 11 + 4)
+            let key_start = 19;
+            if pubkey.len() >= key_start + 32 {
+                let key_slice = pubkey.slice(key_start..key_start + 32);
+                let mut key_array = [0u8; 32];
+                key_slice.copy_into_slice(&mut key_array);
+                return BytesN::from_array(env, &key_array);
+            }
+        }
+
+        // Base64-decoded SSH public key (sometimes starts at different offset)
+        // Try to find the 32-byte key in the last portion
+        if pubkey.len() >= 32 {
+            let key_start = pubkey.len() - 32;
+            let key_slice = pubkey.slice(key_start..pubkey.len());
+            let mut key_array = [0u8; 32];
+            key_slice.copy_into_slice(&mut key_array);
+            return BytesN::from_array(env, &key_array);
+        }
+
+        panic_with_error!(env, &errors::ContractErrors::InvalidPublicKeyLength);
+    }
+
+    /// Extract raw 64-byte Ed25519 signature
+    ///
+    /// Handles multiple formats:
+    /// 1. Raw 64-byte signature (from @noble/ed25519)
+    /// 2. SSH signature format (parses to extract the 64-byte signature)
+    fn extract_signature(env: &Env, signature: &Bytes) -> BytesN<64> {
+        // Already raw 64-byte signature
+        if signature.len() == 64 {
+            let mut sig_array = [0u8; 64];
+            signature.copy_into_slice(&mut sig_array);
+            return BytesN::from_array(env, &sig_array);
+        }
+
+        // SSH signature format
+        // Similar to public key: [4 bytes: algo length][11 bytes: "ssh-ed25519"][4 bytes: sig length][64 bytes: sig]
+        if signature.len() >= 83 {
+            let sig_start = 19;
+            if signature.len() >= sig_start + 64 {
+                let sig_slice = signature.slice(sig_start..sig_start + 64);
+                let mut sig_array = [0u8; 64];
+                sig_slice.copy_into_slice(&mut sig_array);
+                return BytesN::from_array(env, &sig_array);
+            }
+        }
+
+        // Try extracting last 64 bytes
+        if signature.len() >= 64 {
+            let sig_start = signature.len() - 64;
+            let sig_slice = signature.slice(sig_start..signature.len());
+            let mut sig_array = [0u8; 64];
+            sig_slice.copy_into_slice(&mut sig_array);
+            return BytesN::from_array(env, &sig_array);
+        }
+
+        panic_with_error!(env, &errors::ContractErrors::InvalidSignature);
+    }
+
+    /// Convert a String to Bytes
+    /// (altenative as Soroban String does not support to_bytes())
+    fn convert_message_to_bytes(env: &Env, message: &String) -> Bytes {
+        let msg_len = message.len();
+        let mut buf = [0u8; 1024];
+        if msg_len > 1024 {
+            panic!("Message too long");
+        }
+        message.copy_into_slice(&mut buf[..msg_len as usize]);
+        Bytes::from_slice(&env, &buf[..msg_len as usize])
     }
 }
