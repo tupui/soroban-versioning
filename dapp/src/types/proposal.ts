@@ -7,6 +7,12 @@ export type ProposalViewStatus =
   | "voted"
   | "approved";
 
+export interface OutcomeContract {
+  address: string;
+  execute_fn: string;
+  args: any[];
+}
+
 export interface Proposal {
   id: number;
   title: string;
@@ -15,7 +21,7 @@ export interface Proposal {
   status: ProposalStatus;
   voting_ends_at: number;
   voteStatus: VoteStatus;
-  outcomes_contract?: string | null;
+  outcome_contracts?: OutcomeContract[] | null; // Array of [approved, rejected, cancelled] contracts
 }
 
 export interface ProposalView {
@@ -63,16 +69,19 @@ export interface Voter {
 }
 
 export interface ProposalOutcome {
-  approved: {
+  approved?: {
     description: string;
-    xdr: string;
+    xdr?: string; // Optional for backward compatibility
+    contract?: OutcomeContract; // New contract-based outcome
   };
-  rejected: {
+  rejected?: {
     description: string;
-    xdr: string;
+    xdr?: string; // Optional for backward compatibility
+    contract?: OutcomeContract; // New contract-based outcome
   };
-  cancelled: {
+  cancelled?: {
     description: string;
-    xdr: string;
+    xdr?: string; // Optional for backward compatibility
+    contract?: OutcomeContract; // New contract-based outcome
   };
 }

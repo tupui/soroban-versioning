@@ -69,6 +69,7 @@ pub enum ProposalStatus {
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
+#[allow(clippy::large_enum_variant)]
 pub enum Vote {
     PublicVote(PublicVote),
     AnonymousVote(AnonymousVote),
@@ -176,4 +177,5 @@ pub struct Project {
     pub name: String,
     pub config: Config,
     pub maintainers: Vec<Address>,
+    pub sub_projects: Option<Vec<Bytes>>,
 }
