@@ -2,6 +2,7 @@
 import CommitHistory from "./CommitHistory";
 import DonateModal from "./DonateModal";
 import LatestCommit from "./LatestCommit";
+import SubProjectsSection from "./SubProjectsSection";
 import Button from "components/utils/Button";
 ---
 
@@ -35,7 +36,7 @@ import Button from "components/utils/Button";
                 >
                 </p>
               </div>
-              <div data-component="LatestCommit">
+              <div id="latest-commit-section">
                 <LatestCommit client:only />
               </div>
             </div>
@@ -102,9 +103,10 @@ import Button from "components/utils/Button";
       <div class="community-content flex flex-col gap-4 p-4"></div>
     </div>
     <div id="contribution-metrics-section" class="bg-white w-full"></div>
-    <div data-component="CommitHistory">
+    <div id="commit-history-section">
       <CommitHistory client:load />
     </div>
+    <SubProjectsSection client:load />
   </div>
 </div>
 

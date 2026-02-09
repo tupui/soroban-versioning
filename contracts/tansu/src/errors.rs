@@ -38,4 +38,5 @@ pub enum ContractErrors {
     CollateralError = 25,
     // Versioning
     NoProjectPageFound = 26,
+    TooManySubProjects = 27,
 }

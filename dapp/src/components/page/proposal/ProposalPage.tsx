@@ -1,12 +1,12 @@
 import { useStore } from "@nanostores/react";
 import {
-  fetchOutcomeDataFromIPFS,
+  fetchProposalOutcomeData,
   fetchProposalFromIPFS,
 } from "@service/ProposalService";
 import { getProjectFromName, getProposal } from "@service/ReadContractService";
 import Loading from "components/utils/Loading";
 import React, { useEffect, useState } from "react";
-import type { ProposalOutcome, ProposalView } from "types/proposal";
+import type { Proposal, ProposalOutcome, ProposalView } from "types/proposal";
 import { connectedPublicKey } from "utils/store";
 import { modifyProposalToView, toast } from "utils/utils";
 import ExecuteProposalModal from "./ExecuteProposalModal";
@@ -23,6 +23,7 @@ const ProposalPage: React.FC = () => {
   const [isExecuteProposalModalOpen, setIsExecuteProposalModalOpen] =
     useState(false);
   const [proposal, setProposal] = useState<ProposalView | null>(null);
+  const [rawProposal, setRawProposal] = useState<Proposal | null>(null);
   const [description, setDescription] = useState("");
   const [outcome, setOutcome] = useState<ProposalOutcome | null>(null);
   const [projectMaintainers, setProjectMaintainers] = useState<string[]>([]);
@@ -54,6 +55,7 @@ const ProposalPage: React.FC = () => {
         const proposalData = await getProposal(projectName, id);
 
         if (proposalData) {
+          setRawProposal(proposalData);
           const proposalView = modifyProposalToView(proposalData, projectName);
           setProposal(proposalView);
 
@@ -63,9 +65,7 @@ const ProposalPage: React.FC = () => {
             );
             setDescription(fetchedDescription || "");
 
-            const outcomeData = await fetchOutcomeDataFromIPFS(
-              proposalData.ipfs,
-            );
+            const outcomeData = await fetchProposalOutcomeData(proposalData);
             setOutcome(outcomeData);
           }
 
@@ -128,6 +128,7 @@ const ProposalPage: React.FC = () => {
             <ExecuteProposalModal
               projectName={projectName}
               proposalId={id}
+              proposal={rawProposal || undefined}
               outcome={outcome}
               voteStatus={proposal?.voteStatus}
               onClose={() => setIsExecuteProposalModalOpen(false)}

@@ -1,6 +1,6 @@
 //! Event definitions for the Tansu contract.
 
-use soroban_sdk::{Address, Bytes, BytesN, String, contractevent};
+use soroban_sdk::{Address, Bytes, BytesN, String, Vec, contractevent};
 
 #[contractevent]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -120,4 +120,12 @@ pub struct UpgradeStatus {
     pub admin: Address,
     pub wasm_hash: Bytes,
     pub status: String,
+}
+
+#[contractevent]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SubProjectsUpdated {
+    #[topic]
+    pub project_key: Bytes,
+    pub sub_projects: Vec<Bytes>,
 }

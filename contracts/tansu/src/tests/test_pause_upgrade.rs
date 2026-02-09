@@ -1,10 +1,11 @@
 use super::test_utils::create_test_data;
 use crate::errors::ContractErrors;
+use crate::events::{
+    ContractPaused, ContractUpdated, UpgradeApproved, UpgradeProposed, UpgradeStatus,
+};
 use crate::{domain_contract, types};
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
-use soroban_sdk::{
-    Address, Bytes, BytesN, Executable, IntoVal, Map, String, Symbol, Val, bytesn, vec,
-};
+use soroban_sdk::{Address, Bytes, BytesN, Event, Executable, String, bytesn, vec};
 
 #[test]
 fn test_pause_unpause() {
@@ -12,28 +13,17 @@ fn test_pause_unpause() {
 
     setup.contract.pause(&setup.contract_admin, &true);
 
-    let all_events = setup.env.events().all();
-    assert_eq!(
-        all_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "contract_paused"),).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (Symbol::new(&setup.env, "paused"), true.into_val(&setup.env)),
-                        (
-                            Symbol::new(&setup.env, "admin"),
-                            setup.contract_admin.clone().into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
-    );
+    let event = ContractPaused {
+        paused: true,
+        admin: setup.contract_admin.clone(),
+    };
+
+    let all_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(all_events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Operations fail when paused
     let member = Address::generate(&setup.env);
@@ -48,31 +38,17 @@ fn test_pause_unpause() {
     // Unpause
     setup.contract.pause(&setup.contract_admin, &false);
 
-    let all_events = setup.env.events().all();
-    assert_eq!(
-        all_events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "contract_paused"),).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "paused"),
-                            false.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "admin"),
-                            setup.contract_admin.clone().into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
-    );
+    let event = ContractPaused {
+        paused: false,
+        admin: setup.contract_admin.clone(),
+    };
+
+    let all_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(all_events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // try again set operation
     setup.contract.add_member(&member, &meta);
@@ -111,35 +87,18 @@ fn test_upgrade_flow() {
         .propose_upgrade(&setup.contract_admin, &wasm_hash, &None);
 
     // Verify the upgrade proposal event
-    let events = setup.env.events().all();
-    assert_eq!(
-        events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "upgrade_proposed"),).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "admin"),
-                            setup.contract_admin.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "wasm_hash"),
-                            wasm_hash.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "executable_at"),
-                            (setup.env.ledger().timestamp() + 24 * 3600).into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
-    );
+    let event = UpgradeProposed {
+        admin: setup.contract_admin.clone(),
+        wasm_hash: wasm_hash.clone().into(),
+        executable_at: setup.env.ledger().timestamp() + 24 * 3600,
+    };
+
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Retrieve the upgrade proposal
     let proposal = setup.contract.get_upgrade_proposal();
@@ -168,35 +127,18 @@ fn test_upgrade_flow() {
         .contract
         .finalize_upgrade(&setup.contract_admin, &true);
 
-    let events = setup.env.events().all();
-    assert_eq!(
-        events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "upgrade_status"),).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "admin"),
-                            setup.contract_admin.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "wasm_hash"),
-                            wasm_hash.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "status"),
-                            String::from_str(&setup.env, "Upgraded").into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
-    );
+    let event = UpgradeStatus {
+        admin: setup.contract_admin.clone(),
+        wasm_hash: wasm_hash.clone().into(),
+        status: String::from_str(&setup.env, "Upgraded"),
+    };
+
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Verify the upgrade was successful by checking that the proposal no longer exists
     let err = setup
@@ -225,35 +167,18 @@ fn test_upgrade_cancel() {
         .finalize_upgrade(&setup.contract_admin, &false);
 
     // Verify the cancellation event
-    let events = setup.env.events().all();
-    assert_eq!(
-        events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "upgrade_status"),).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "admin"),
-                            setup.contract_admin.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "wasm_hash"),
-                            wasm_hash.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "status"),
-                            String::from_str(&setup.env, "Cancelled").into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
-    );
+    let event = UpgradeStatus {
+        admin: setup.contract_admin.clone(),
+        wasm_hash: wasm_hash.clone().into(),
+        status: String::from_str(&setup.env, "Cancelled"),
+    };
+
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Verify the proposal no longer exists
     let err = setup
@@ -343,35 +268,18 @@ fn test_upgrade_approval() {
     setup.contract.approve_upgrade(&second_admin);
 
     // Verify the approval event
-    let events = setup.env.events().all();
-    assert_eq!(
-        events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "upgrade_approved"),).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "admin"),
-                            second_admin.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "approvals_count"),
-                            2u32.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "threshold_reached"),
-                            true.into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
-    );
+    let event = UpgradeApproved {
+        admin: second_admin.clone(),
+        approvals_count: 2u32,
+        threshold_reached: true,
+    };
+
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Fast-forward time past timelock period
     setup
@@ -423,39 +331,19 @@ fn test_domain_contract_update() {
         .set_domain_contract(&setup.contract_admin, &new_domain);
 
     // Verify the event
-    let events = setup.env.events().all();
-    assert_eq!(
-        events,
-        vec![
-            &setup.env,
-            (
-                setup.contract_id.clone(),
-                (Symbol::new(&setup.env, "contract_updated"),).into_val(&setup.env),
-                Map::<Symbol, Val>::from_array(
-                    &setup.env,
-                    [
-                        (
-                            Symbol::new(&setup.env, "admin"),
-                            setup.contract_admin.clone().into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "contract_key"),
-                            String::from_str(&setup.env, "domain").into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "address"),
-                            new_domain.address.into_val(&setup.env)
-                        ),
-                        (
-                            Symbol::new(&setup.env, "wasm_hash"),
-                            new_domain.clone().wasm_hash.into_val(&setup.env)
-                        ),
-                    ],
-                )
-                .into_val(&setup.env),
-            ),
-        ]
-    );
+    let event = ContractUpdated {
+        admin: setup.contract_admin.clone(),
+        contract_key: String::from_str(&setup.env, "domain"),
+        address: new_domain.address.clone(),
+        wasm_hash: new_domain.wasm_hash,
+    };
+
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Verify the update was successful
     // let retrieved_domain: types::Contract = setup

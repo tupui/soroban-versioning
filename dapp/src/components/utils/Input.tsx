@@ -8,6 +8,7 @@ interface Props {
   value?: string | number | readonly string[];
   onChange?: ChangeEventHandler<HTMLInputElement>;
   error?: string | null | undefined;
+  type?: string;
 }
 
 const Input: FC<Props> = ({
@@ -18,6 +19,7 @@ const Input: FC<Props> = ({
   value,
   onChange,
   error,
+  type = "text",
 }) => {
   return (
     <div className="flex-grow flex flex-col gap-[18px]">
@@ -27,6 +29,7 @@ const Input: FC<Props> = ({
         </p>
       )}
       <input
+        type={type}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
