@@ -213,6 +213,7 @@ fn seed_projects(setup: &TestSetup, name_strs: &[&str]) -> soroban_sdk::Vec<soro
                 ipfs: String::from_str(env, "ipfs"),
             },
             maintainers: vec![env, setup.grogu.clone()],
+            sub_projects: None,
         };
 
         env.as_contract(&setup.contract_id, || {
