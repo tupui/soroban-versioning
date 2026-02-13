@@ -6,6 +6,8 @@ import { loadedPublicKey } from "@service/walletService";
 import { toast } from "utils/utils";
 import { validateStellarAddress, validateUrl } from "utils/validations";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
+import GitVerification from "components/utils/GitVerification";
+import type { GitVerificationData } from "utils/gitVerification";
 
 interface ProfileImageFile {
   localUrl: string;
@@ -33,6 +35,11 @@ const JoinCommunityModal: FC<{
   const [updateSuccessful, setUpdateSuccessful] = useState(false);
   const [step, setStep] = useState<number>(1);
   const [error, setError] = useState<string | null>(null);
+
+  // Git binding state
+  const [showGitVerification, setShowGitVerification] = useState(false);
+  const [gitVerificationData, setGitVerificationData] =
+    useState<GitVerificationData | null>(null);
 
   // Validation errors
   const [addressError, setAddressError] = useState<string | null>(null);
@@ -135,6 +142,10 @@ const JoinCommunityModal: FC<{
   const validateForm = (): boolean => {
     const isAddressValid = validateAddressField();
     const isSocialValid = validateSocialField();
+    if (showGitVerification && !gitVerificationData) {
+      setError("Git verification process not completed");
+      return false;
+    }
 
     return isAddressValid && isSocialValid;
   };
@@ -155,6 +166,7 @@ const JoinCommunityModal: FC<{
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: [],
+          gitVerificationData,
           onProgress: setStep,
         });
 
@@ -201,6 +213,7 @@ const JoinCommunityModal: FC<{
         await joinCommunityFlow({
           memberAddress: address,
           profileFiles: files,
+          gitVerificationData,
           onProgress: setStep,
         });
 
@@ -250,23 +263,24 @@ const JoinCommunityModal: FC<{
           className="flex-none w-[200px] md:w-[360px]"
           src="/images/team.svg"
         />
-        <div className="flex flex-col gap-4 md:gap-[30px] w-full">
+        <div className="flex flex-col gap-4 md:gap-[30px] w-full items-start">
           <h2 className="text-xl md:text-2xl font-bold text-primary">
             Join the Community
           </h2>
 
           <Input
             label="Member Address *"
-            placeholder="Write the address as G..."
+            placeholder="Connect your wallet"
             value={address}
             onChange={(e) => {
               setAddress(e.target.value);
               setAddressError(null);
             }}
             error={addressError}
+            disabled={!!prefillAddress || isLoading}
           />
 
-          <div className="pt-2 md:pt-4">
+          <div className="pt-2 md:pt-4 w-full">
             <p className="text-base font-medium text-primary mb-3 md:mb-4">
               Profile Information
             </p>
@@ -361,10 +375,20 @@ const JoinCommunityModal: FC<{
                   />
                 </div>
               </div>
+              <GitVerification
+                onVerificationComplete={setGitVerificationData}
+                onShowGitVerification={setShowGitVerification}
+                networkPassphrase={
+                  import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE
+                }
+                signingAccount={address}
+                contractId={import.meta.env.PUBLIC_TANSU_CONTRACT_ID}
+                setError={setError}
+              />
             </div>
           </div>
 
-          <div className="flex justify-end gap-[18px]">
+          <div className="flex justify-end gap-[18px] w-full pt-4">
             <Button type="secondary" onClick={onClose}>
               Cancel
             </Button>

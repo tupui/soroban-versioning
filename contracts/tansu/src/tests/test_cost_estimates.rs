@@ -180,7 +180,9 @@ fn test_cost_add_member_and_badges() {
     let new_member = Address::generate(&setup.env);
     let meta = String::from_str(&setup.env, "New member for cost testing");
 
-    setup.contract.add_member(&new_member, &meta);
+    setup
+        .contract
+        .add_member(&new_member, &meta, &None, &None, &None, &None, &None, &None);
 
     let badges = vec![&setup.env, Badge::Verified];
     setup
@@ -218,12 +220,26 @@ fn test_cost_comprehensive_dao_workflow() {
     setup.token_stellar.mint(&member1, &(110 * 10_000_000));
     setup.token_stellar.mint(&member2, &(110 * 10_000_000));
 
-    setup
-        .contract
-        .add_member(&member1, &String::from_str(&setup.env, "Member 1"));
-    setup
-        .contract
-        .add_member(&member2, &String::from_str(&setup.env, "Member 2"));
+    setup.contract.add_member(
+        &member1,
+        &String::from_str(&setup.env, "Member 1"),
+        &None,
+        &None,
+        &None,
+        &None,
+        &None,
+        &None,
+    );
+    setup.contract.add_member(
+        &member2,
+        &String::from_str(&setup.env, "Member 2"),
+        &None,
+        &None,
+        &None,
+        &None,
+        &None,
+        &None,
+    );
 
     // Step 3: Create proposal
     let title = String::from_str(&setup.env, "Comprehensive Workflow Proposal");

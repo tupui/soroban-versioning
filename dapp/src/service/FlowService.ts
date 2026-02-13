@@ -124,6 +124,8 @@ function convertToScValWithType(value: any, typeHint?: string): xdr.ScVal {
   );
 }
 
+import type { GitVerificationData } from "../utils/gitVerification";
+
 interface UploadWithDelegationParams {
   files: File[];
   signedTxXdr: string; // The signed contract transaction
@@ -143,6 +145,7 @@ interface CreateProposalFlowParams {
 interface JoinCommunityFlowParams {
   memberAddress: string;
   profileFiles: File[];
+  gitVerificationData?: GitVerificationData | null;
   onProgress?: (step: number) => void;
 }
 
@@ -298,7 +301,7 @@ async function createSignedProposalTransaction(
     ipfs: ipfs,
     voting_ends_at: BigInt(votingEndsAt),
     public_voting: publicVoting,
-    outcome_contracts: finalOutcomeContracts,
+    outcome_contracts: [finalOutcomeContracts],
   });
 
   // Check for simulation errors (contract errors) before signing
@@ -313,6 +316,12 @@ async function createSignedProposalTransaction(
 async function createSignedAddMemberTransaction(
   memberAddress: string,
   meta: string,
+  git_identity?: string,
+  git_pubkey?: Buffer,
+  msg?: string,
+  sig?: Buffer,
+  namespace?: string,
+  hash_algorithm?: string,
 ): Promise<string> {
   const address = memberAddress || loadedPublicKey();
   if (!address) throw new Error("Please connect your wallet first");
@@ -322,11 +331,18 @@ async function createSignedAddMemberTransaction(
     meta = ""; // Use empty string instead of whitespace
   }
 
+  // Ensure the Tansu client is configured with the correct public key for simulation
   Tansu.options.publicKey = address;
 
   const tx = await Tansu.add_member({
     member_address: address,
     meta: meta,
+    git_identity,
+    git_pubkey,
+    msg,
+    sig,
+    namespace,
+    hash_algorithm,
   });
 
   // Check for simulation errors (contract errors) before signing
@@ -425,6 +441,7 @@ export async function createProposalFlow({
 export async function joinCommunityFlow({
   memberAddress,
   profileFiles,
+  gitVerificationData,
   onProgress,
 }: JoinCommunityFlowParams): Promise<boolean> {
   let cid = ""; // Default for no profile - use empty string instead of single space
@@ -440,10 +457,22 @@ export async function joinCommunityFlow({
 
   // Step 2: Create and sign the smart contract transaction with the CID
   onProgress?.(7); // signing step indicator (offset -5 → shows Sign)
+
   const signedTxXdr = await createSignedAddMemberTransaction(
     memberAddress,
     cid,
+    gitVerificationData?.gitHandle,
+    gitVerificationData?.publicKey
+      ? Buffer.from(gitVerificationData.publicKey)
+      : undefined,
+    gitVerificationData?.envelope,
+    gitVerificationData?.signature
+      ? Buffer.from(gitVerificationData.signature)
+      : undefined,
+    gitVerificationData?.namespace || undefined,
+    gitVerificationData?.hashAlgorithm || undefined,
   );
+  console.log("Signed Transaction XDR length:", signedTxXdr.length);
 
   if (profileFiles.length > 0) {
     // Step 3: Upload to IPFS using the signed transaction as authentication
