@@ -3,7 +3,7 @@ import { loadedPublicKey } from "@service/walletService";
 import {
   setConfigData,
   setProject,
-  setProjectRepoInfo,
+  setProjectRepoUrl,
 } from "@service/StateService";
 import { navigate } from "astro:transitions/client";
 import Button from "components/utils/Button.tsx";
@@ -13,7 +13,6 @@ import FlowProgressModal from "components/utils/FlowProgressModal.tsx";
 import Step from "components/utils/Step.tsx";
 import Title from "components/utils/Title.tsx";
 import { useState, type FC, useCallback, useEffect } from "react";
-import { getAuthorRepo } from "utils/editLinkFunctions";
 import { extractConfigData, toast } from "utils/utils";
 import {
   validateProjectName as validateProjectNameUtil,
@@ -345,9 +344,8 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}
       if (project && project.name && project.config && project.maintainers) {
         setProject(project);
 
-        const { username, repoName } = getAuthorRepo(project.config.url);
-        if (username && repoName) {
-          setProjectRepoInfo(username, repoName);
+        if (project.config.url) {
+          setProjectRepoUrl(project.config.url);
         }
 
         const tomlData = await fetchTomlFromCid(project.config.ipfs);
