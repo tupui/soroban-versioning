@@ -18,7 +18,7 @@ import type {
   u256,
   i256,
   Option,
-  Typepoint,
+  Timepoint,
   Duration,
 } from "@stellar/stellar-sdk/contract";
 export * from "@stellar/stellar-sdk";
@@ -93,6 +93,7 @@ export interface Proposal {
 
 export interface VoteData {
   public_voting: boolean;
+  token_contract: Option<string>;
   votes: Array<Vote>;
   voting_ends_at: u64;
 }
@@ -223,22 +224,7 @@ export interface Client {
       proposal_id,
       vote,
     }: { voter: string; project_key: Buffer; proposal_id: u32; vote: Vote },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -281,22 +267,7 @@ export interface Client {
       tallies: Array<u128>;
       seeds: Array<u128>;
     },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<boolean>>;
 
   /**
@@ -340,22 +311,7 @@ export interface Client {
       tallies: Option<Array<u128>>;
       seeds: Option<Array<u128>>;
     },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<ProposalStatus>>;
 
   /**
@@ -375,22 +331,7 @@ export interface Client {
    */
   get_dao: (
     { project_key, page }: { project_key: Buffer; page: u32 },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<Dao>>;
 
   /**
@@ -410,22 +351,7 @@ export interface Client {
    */
   get_proposal: (
     { project_key, proposal_id }: { project_key: Buffer; proposal_id: u32 },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<Proposal>>;
 
   /**
@@ -463,6 +389,7 @@ export interface Client {
       ipfs,
       voting_ends_at,
       public_voting,
+      token_contract,
       outcomes_contract,
     }: {
       proposer: string;
@@ -471,24 +398,10 @@ export interface Client {
       ipfs: string;
       voting_ends_at: u64;
       public_voting: boolean;
+      token_contract: Option<string>;
       outcomes_contract: Option<string>;
     },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<u32>>;
 
   /**
@@ -514,22 +427,7 @@ export interface Client {
       project_key,
       proposal_id,
     }: { maintainer: string; project_key: Buffer; proposal_id: u32 },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -553,22 +451,7 @@ export interface Client {
       project_key,
       public_key,
     }: { maintainer: string; project_key: Buffer; public_key: string },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -587,22 +470,7 @@ export interface Client {
    */
   get_anonymous_voting_config: (
     { project_key }: { project_key: Buffer },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<AnonymousVoteConfig>>;
 
   /**
@@ -634,22 +502,7 @@ export interface Client {
       votes,
       seeds,
     }: { project_key: Buffer; votes: Array<u128>; seeds: Array<u128> },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<Array<Buffer>>>;
 
   /**
@@ -664,22 +517,7 @@ export interface Client {
    */
   pause: (
     { admin, paused }: { admin: string; paused: boolean },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -689,22 +527,7 @@ export interface Client {
    * # Returns
    * * `u32` - The contract version number
    */
-  version: (options?: {
-    /**
-     * The fee to pay for the transaction. Default: BASE_FEE
-     */
-    fee?: number;
-
-    /**
-     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-     */
-    timeoutInSeconds?: number;
-
-    /**
-     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-     */
-    simulate?: boolean;
-  }) => Promise<AssembledTransaction<u32>>;
+  version: (options?: MethodOptions) => Promise<AssembledTransaction<u32>>;
 
   /**
    * Construct and simulate a approve_upgrade transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
@@ -721,22 +544,7 @@ export interface Client {
    */
   approve_upgrade: (
     { admin }: { admin: string },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -763,22 +571,7 @@ export interface Client {
       new_wasm_hash: Buffer;
       new_admins_config: Option<AdminsConfig>;
     },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -801,22 +594,7 @@ export interface Client {
    */
   finalize_upgrade: (
     { admin, accept }: { admin: string; accept: boolean },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -829,22 +607,9 @@ export interface Client {
    * # Returns
    * * `types::AdminsConfig` - The administrators configuration
    */
-  get_admins_config: (options?: {
-    /**
-     * The fee to pay for the transaction. Default: BASE_FEE
-     */
-    fee?: number;
-
-    /**
-     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-     */
-    timeoutInSeconds?: number;
-
-    /**
-     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-     */
-    simulate?: boolean;
-  }) => Promise<AssembledTransaction<AdminsConfig>>;
+  get_admins_config: (
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<AdminsConfig>>;
 
   /**
    * Construct and simulate a require_not_paused transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
@@ -853,22 +618,9 @@ export interface Client {
    * # Panics
    * * If the contract is paused.
    */
-  require_not_paused: (options?: {
-    /**
-     * The fee to pay for the transaction. Default: BASE_FEE
-     */
-    fee?: number;
-
-    /**
-     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-     */
-    timeoutInSeconds?: number;
-
-    /**
-     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-     */
-    simulate?: boolean;
-  }) => Promise<AssembledTransaction<null>>;
+  require_not_paused: (
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a set_domain_contract transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
@@ -881,44 +633,16 @@ export interface Client {
    */
   set_domain_contract: (
     { admin, domain_contract }: { admin: string; domain_contract: Contract },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
    * Construct and simulate a get_upgrade_proposal transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Get upgrade proposal details
    */
-  get_upgrade_proposal: (options?: {
-    /**
-     * The fee to pay for the transaction. Default: BASE_FEE
-     */
-    fee?: number;
-
-    /**
-     * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-     */
-    timeoutInSeconds?: number;
-
-    /**
-     * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-     */
-    simulate?: boolean;
-  }) => Promise<AssembledTransaction<UpgradeProposal>>;
+  get_upgrade_proposal: (
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<UpgradeProposal>>;
 
   /**
    * Construct and simulate a set_collateral_contract transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
@@ -934,22 +658,7 @@ export interface Client {
       admin,
       collateral_contract,
     }: { admin: string; collateral_contract: Contract },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -966,22 +675,7 @@ export interface Client {
    */
   add_member: (
     { member_address, meta }: { member_address: string; meta: string },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -1000,22 +694,7 @@ export interface Client {
    */
   get_badges: (
     { key }: { key: Buffer },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<Badges>>;
 
   /**
@@ -1034,22 +713,7 @@ export interface Client {
    */
   get_member: (
     { member_address }: { member_address: string },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<Member>>;
 
   /**
@@ -1084,22 +748,7 @@ export interface Client {
       member: string;
       badges: Array<Badge>;
     },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -1127,22 +776,7 @@ export interface Client {
       project_key,
       member_address,
     }: { project_key: Buffer; member_address: string },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<u32>>;
 
   /**
@@ -1167,22 +801,7 @@ export interface Client {
       project_key,
       hash,
     }: { maintainer: string; project_key: Buffer; hash: string },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -1225,22 +844,7 @@ export interface Client {
       url: string;
       ipfs: string;
     },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<Buffer>>;
 
   /**
@@ -1260,22 +864,7 @@ export interface Client {
    */
   get_commit: (
     { project_key }: { project_key: Buffer },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<string>>;
 
   /**
@@ -1294,22 +883,7 @@ export interface Client {
    */
   get_project: (
     { project_key }: { project_key: Buffer },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<Project>>;
 
   /**
@@ -1325,22 +899,7 @@ export interface Client {
    */
   get_projects: (
     { page }: { page: u32 },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<Array<Project>>>;
 
   /**
@@ -1375,22 +934,7 @@ export interface Client {
       url: string;
       ipfs: string;
     },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
   /**
@@ -1406,27 +950,17 @@ export interface Client {
    */
   get_sub_projects: (
     { project_key }: { project_key: Buffer },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<Array<Buffer>>>;
 
   /**
    * Construct and simulate a set_sub_projects transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
    * Set sub-projects for a project (making it an organization).
+   *
+   * Note: by design, sub-project keys are not validated against existing
+   * projects. This allows reserving a project space before the project is
+   * registered (since the key is derived from the name). A project can
+   * also appear in multiple organizations.
    *
    * # Arguments
    * * `env` - The environment object
@@ -1437,6 +971,7 @@ export interface Client {
    * # Panics
    * * If the project doesn't exist
    * * If the maintainer is not authorized
+   * * If more than 10 sub-projects are provided
    */
   set_sub_projects: (
     {
@@ -1444,22 +979,7 @@ export interface Client {
       project_key,
       sub_projects,
     }: { maintainer: string; project_key: Buffer; sub_projects: Array<Buffer> },
-    options?: {
-      /**
-       * The fee to pay for the transaction. Default: BASE_FEE
-       */
-      fee?: number;
-
-      /**
-       * The maximum amount of time to wait for the transaction to complete. Default: DEFAULT_TIMEOUT
-       */
-      timeoutInSeconds?: number;
-
-      /**
-       * Whether to automatically simulate the transaction when constructing the AssembledTransaction. Default: true
-       */
-      simulate?: boolean;
-    },
+    options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 }
 export class Client extends ContractClient {
@@ -1487,7 +1007,7 @@ export class Client extends ContractClient {
         "AAAAAAAABABFeGVjdXRlIGEgdm90ZSBhZnRlciB0aGUgdm90aW5nIHBlcmlvZCBlbmRzLgoKUHJvY2Vzc2VzIHRoZSB2b3RpbmcgcmVzdWx0cyBhbmQgZGV0ZXJtaW5lcyB0aGUgZmluYWwgc3RhdHVzIG9mIHRoZSBwcm9wb3NhbC4KRm9yIHB1YmxpYyB2b3RlcywgdGhlIHJlc3VsdHMgYXJlIGNhbGN1bGF0ZWQgZGlyZWN0bHkgZnJvbSB2b3RlIGNvdW50cy4KRm9yIGFub255bW91cyB2b3RlcywgdGFsbGllcyBhbmQgc2VlZHMgYXJlIHZhbGlkYXRlZCBhZ2FpbnN0IHZvdGUgY29tbWl0bWVudHMKdG8gZW5zdXJlIHRoZSByZXN1bHRzIGFyZSBjb3JyZWN0LgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgbWFpbnRhaW5lcmAgLSBUaGUgYWRkcmVzcyBvZiB0aGUgbWFpbnRhaW5lciBleGVjdXRpbmcgdGhlIHByb3Bvc2FsCiogYHByb2plY3Rfa2V5YCAtIFRoZSBwcm9qZWN0IGtleSBpZGVudGlmaWVyCiogYHByb3Bvc2FsX2lkYCAtIFRoZSBJRCBvZiB0aGUgcHJvcG9zYWwgdG8gZXhlY3V0ZQoqIFtgT3B0aW9uPHRhbGxpZXM+YF0gLSBkZWNvZGVkIHRhbGx5IHZhbHVlcyAoc2NhbGVkIGJ5IHdlaWdodHMpLCByZXNwZWN0aXZlbHkgQXBwcm92ZSwgcmVqZWN0IGFuZCBhYnN0YWluCiogW2BPcHRpb248c2VlZHM+YF0gLSBkZWNvZGVkIHNlZWQgdmFsdWVzIChzY2FsZWQgYnkgd2VpZ2h0cyksIHJlc3BlY3RpdmVseSBBcHByb3ZlLCByZWplY3QgYW5kIGFic3RhaW4KCiMgUmV0dXJucwoqIGB0eXBlczo6UHJvcG9zYWxTdGF0dXNgIC0gVGhlIGZpbmFsIHN0YXR1cyBvZiB0aGUgcHJvcG9zYWwgKEFwcHJvdmVkLCBSZWplY3RlZCwgb3IgQ2FuY2VsbGVkKQoKIyBQYW5pY3MKKiBJZiB0aGUgdm90aW5nIHBlcmlvZCBoYXNuJ3QgZW5kZWQKKiBJZiB0aGUgcHJvcG9zYWwgZG9lc24ndCBleGlzdAoqIElmIHRoZSBwcm9wb3NhbCBpcyBub3QgYWN0aXZlIGFueW1vcmUKKiBJZiB0YWxsaWVzL3NlZWRzIGFyZSBtaXNzaW5nIGZvciBhbm9ueW1vdXMgdm90ZXMKKiBJZiBjb21taXRtZW50AAAAB2V4ZWN1dGUAAAAABQAAAAAAAAAKbWFpbnRhaW5lcgAAAAAAEwAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAAAAAALcHJvcG9zYWxfaWQAAAAABAAAAAAAAAAHdGFsbGllcwAAAAPoAAAD6gAAAAoAAAAAAAAABXNlZWRzAAAAAAAD6AAAA+oAAAAKAAAAAQAAB9AAAAAOUHJvcG9zYWxTdGF0dXMAAA==",
         "AAAAAAAAAUdSZXR1cm5zIGEgcGFnZSBvZiBwcm9wb3NhbHMgKDAgdG8gTUFYX1BST1BPU0FMU19QRVJfUEFHRSBwcm9wb3NhbHMgcGVyIHBhZ2UpLgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgcHJvamVjdF9rZXlgIC0gVGhlIHByb2plY3Qga2V5IGlkZW50aWZpZXIKKiBgcGFnZWAgLSBUaGUgcGFnZSBudW1iZXIgKDAtYmFzZWQpCgojIFJldHVybnMKKiBgdHlwZXM6OkRhb2AgLSBUaGUgREFPIG9iamVjdCBjb250YWluaW5nIGEgcGFnZSBvZiBwcm9wb3NhbHMKCiMgUGFuaWNzCiogSWYgdGhlIHBhZ2UgbnVtYmVyIGlzIG91dCBvZiBib3VuZHMAAAAAB2dldF9kYW8AAAAAAgAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAAAAAAEcGFnZQAAAAQAAAABAAAH0AAAAANEYW8A",
         "AAAAAAAAAQtHZXQgYSBzaW5nbGUgcHJvcG9zYWwgYnkgSUQuCgojIEFyZ3VtZW50cwoqIGBlbnZgIC0gVGhlIGVudmlyb25tZW50IG9iamVjdAoqIGBwcm9qZWN0X2tleWAgLSBUaGUgcHJvamVjdCBrZXkgaWRlbnRpZmllcgoqIGBwcm9wb3NhbF9pZGAgLSBUaGUgSUQgb2YgdGhlIHByb3Bvc2FsIHRvIHJldHJpZXZlCgojIFJldHVybnMKKiBgdHlwZXM6OlByb3Bvc2FsYCAtIFRoZSBwcm9wb3NhbCBvYmplY3QKCiMgUGFuaWNzCiogSWYgdGhlIHByb3Bvc2FsIGRvZXNuJ3QgZXhpc3QAAAAADGdldF9wcm9wb3NhbAAAAAIAAAAAAAAAC3Byb2plY3Rfa2V5AAAAAA4AAAAAAAAAC3Byb3Bvc2FsX2lkAAAAAAQAAAABAAAH0AAAAAhQcm9wb3NhbA==",
-        "AAAAAAAAAzhDcmVhdGUgYSBuZXcgcHJvcG9zYWwgZm9yIGEgcHJvamVjdC4KClRoZSBwcm9wb3NlciBpcyBhdXRvbWF0aWNhbGx5IGFkZGVkIHRvIHRoZSBhYnN0YWluIGdyb3VwLgpCeSBjcmVhdGluZyBhIHByb3Bvc2FsLCB0aGUgcHJvcG9zZXIgaW5jdXIgYSBjb2xsYXRlcmFsIHdoaWNoIGlzCnJlcGFpZCB1cG9uIGV4ZWN1dGlvbiBvZiB0aGUgcHJvcG9zYWwgdW5sZXNzIHRoZSBwcm9wb3NhbCBpcyByZXZva2VkLgpUaGlzIGlzIGEgZGV0ZXJyZW50IG1lY2hhbmlzbS4KCiMgQXJndW1lbnRzCiogYGVudmAgLSBUaGUgZW52aXJvbm1lbnQgb2JqZWN0CiogYHByb3Bvc2VyYCAtIEFkZHJlc3Mgb2YgdGhlIHByb3Bvc2FsIGNyZWF0b3IKKiBgcHJvamVjdF9rZXlgIC0gVW5pcXVlIGlkZW50aWZpZXIgZm9yIHRoZSBwcm9qZWN0CiogYHRpdGxlYCAtIFRpdGxlIG9mIHRoZSBwcm9wb3NhbAoqIGBpcGZzYCAtIElQRlMgY29udGVudCBpZGVudGlmaWVyIGRlc2NyaWJpbmcgdGhlIHByb3Bvc2FsCiogYHZvdGluZ19lbmRzX2F0YCAtIFVOSVggdGltZXN0YW1wIHdoZW4gdm90aW5nIGVuZHMKKiBgcHVibGljX3ZvdGluZ2AgLSBXaGV0aGVyIHZvdGluZyBpcyBwdWJsaWMgb3IgYW5vbnltb3VzCiogW2BPcHRpb248b3V0Y29tZXNfY29udHJhY3Q+YF0gLSBPdXRjb21lIGNvbnRyYWN0IGFkZHJlc3MKCiMgUmV0dXJucwoqIGB1MzJgIC0gVGhlIElEIG9mIHRoZSBjcmVhdGVkIHByb3Bvc2FsLgoKIyBQYW5pY3MKKiBJZiB0aGUgdGl0bGUgaXMgdG9vIGxvbmcKKiBJZiB0aGUgdm90aW5nIHBlcmlvZCBpcyBpbnZhbGlkCiogSWYgdGhlIHByb2plY3QgZG9lc24ndCBleGlzdAAAAA9jcmVhdGVfcHJvcG9zYWwAAAAABwAAAAAAAAAIcHJvcG9zZXIAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAV0aXRsZQAAAAAAABAAAAAAAAAABGlwZnMAAAAQAAAAAAAAAA52b3RpbmdfZW5kc19hdAAAAAAABgAAAAAAAAANcHVibGljX3ZvdGluZwAAAAAAAAEAAAAAAAAAEW91dGNvbWVzX2NvbnRyYWN0AAAAAAAD6AAAABMAAAABAAAABA==",
+        "AAAAAAAAAzhDcmVhdGUgYSBuZXcgcHJvcG9zYWwgZm9yIGEgcHJvamVjdC4KClRoZSBwcm9wb3NlciBpcyBhdXRvbWF0aWNhbGx5IGFkZGVkIHRvIHRoZSBhYnN0YWluIGdyb3VwLgpCeSBjcmVhdGluZyBhIHByb3Bvc2FsLCB0aGUgcHJvcG9zZXIgaW5jdXIgYSBjb2xsYXRlcmFsIHdoaWNoIGlzCnJlcGFpZCB1cG9uIGV4ZWN1dGlvbiBvZiB0aGUgcHJvcG9zYWwgdW5sZXNzIHRoZSBwcm9wb3NhbCBpcyByZXZva2VkLgpUaGlzIGlzIGEgZGV0ZXJyZW50IG1lY2hhbmlzbS4KCiMgQXJndW1lbnRzCiogYGVudmAgLSBUaGUgZW52aXJvbm1lbnQgb2JqZWN0CiogYHByb3Bvc2VyYCAtIEFkZHJlc3Mgb2YgdGhlIHByb3Bvc2FsIGNyZWF0b3IKKiBgcHJvamVjdF9rZXlgIC0gVW5pcXVlIGlkZW50aWZpZXIgZm9yIHRoZSBwcm9qZWN0CiogYHRpdGxlYCAtIFRpdGxlIG9mIHRoZSBwcm9wb3NhbAoqIGBpcGZzYCAtIElQRlMgY29udGVudCBpZGVudGlmaWVyIGRlc2NyaWJpbmcgdGhlIHByb3Bvc2FsCiogYHZvdGluZ19lbmRzX2F0YCAtIFVOSVggdGltZXN0YW1wIHdoZW4gdm90aW5nIGVuZHMKKiBgcHVibGljX3ZvdGluZ2AgLSBXaGV0aGVyIHZvdGluZyBpcyBwdWJsaWMgb3IgYW5vbnltb3VzCiogW2BPcHRpb248b3V0Y29tZXNfY29udHJhY3Q+YF0gLSBPdXRjb21lIGNvbnRyYWN0IGFkZHJlc3MKCiMgUmV0dXJucwoqIGB1MzJgIC0gVGhlIElEIG9mIHRoZSBjcmVhdGVkIHByb3Bvc2FsLgoKIyBQYW5pY3MKKiBJZiB0aGUgdGl0bGUgaXMgdG9vIGxvbmcKKiBJZiB0aGUgdm90aW5nIHBlcmlvZCBpcyBpbnZhbGlkCiogSWYgdGhlIHByb2plY3QgZG9lc24ndCBleGlzdAAAAA9jcmVhdGVfcHJvcG9zYWwAAAAACAAAAAAAAAAIcHJvcG9zZXIAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAV0aXRsZQAAAAAAABAAAAAAAAAABGlwZnMAAAAQAAAAAAAAAA52b3RpbmdfZW5kc19hdAAAAAAABgAAAAAAAAANcHVibGljX3ZvdGluZwAAAAAAAAEAAAAAAAAADnRva2VuX2NvbnRyYWN0AAAAAAPoAAAAEwAAAAAAAAARb3V0Y29tZXNfY29udHJhY3QAAAAAAAPoAAAAEwAAAAEAAAAE",
         "AAAAAAAAAY1SZXZva2UgYSBwcm9wb3NhbC4KClVzZWZ1bCBpZiB0aGVyZSB3YXMgc29tZSBzcGFtIG9yIGJhZCBpbnRlbnQuIFRoYXQgd2lsbCBwcmV2ZW50IHRoZQpjb2xsYXRlcmFsIHRvIGJlIGNsYWltZWQgYmFjay4KCiMgQXJndW1lbnRzCiogYGVudmAgLSBUaGUgZW52aXJvbm1lbnQgb2JqZWN0CiogYG1haW50YWluZXJgIC0gQWRkcmVzcyBvZiB0aGUgcHJvcG9zYWwgY3JlYXRvcgoqIGBwcm9qZWN0X2tleWAgLSBUaGUgcHJvamVjdCBrZXkgaWRlbnRpZmllcgoqIGBwcm9wb3NhbF9pZGAgLSBUaGUgSUQgb2YgdGhlIHByb3Bvc2FsIHRvIHZvdGUgb24KCiMgUGFuaWNzCiogSWYgdGhlIHByb3Bvc2FsIGlzIG5vdCBhY3RpdmUgYW55bW9yZQoqIElmIHRoZSBtYWludGFpbmVyIGlzIG5vdCBhdXRob3JpemVkAAAAAAAAD3Jldm9rZV9wcm9wb3NhbAAAAAADAAAAAAAAAAptYWludGFpbmVyAAAAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAtwcm9wb3NhbF9pZAAAAAAEAAAAAA==",
         "AAAAAAAAAXZTZXR1cCBhbm9ueW1vdXMgdm90aW5nIGZvciBhIHByb2plY3QuCgpDb25maWd1cmVzIEJMUzEyLTM4MSBjcnlwdG9ncmFwaGljIHByaW1pdGl2ZXMgZm9yIGFub255bW91cyB2b3RpbmcuCk9ubHkgdGhlIGNvbnRyYWN0IGFkbWluIGNhbiBjYWxsIHRoaXMgZnVuY3Rpb24uCgojIEFyZ3VtZW50cwoqIGBlbnZgIC0gVGhlIGVudmlyb25tZW50IG9iamVjdAoqIGBwcm9qZWN0X2tleWAgLSBVbmlxdWUgaWRlbnRpZmllciBmb3IgdGhlIHByb2plY3QKKiBgcHVibGljX2tleWAgLSBBc3ltbWV0cmljIHB1YmxpYyBrZXkgdG8gYmUgdXNlZCBmb3Igdm90ZSBlbmNyeXB0aW9uCgojIFBhbmljcwoqIElmIHRoZSBjYWxsZXIgaXMgbm90IHRoZSBjb250cmFjdCBhZG1pbgAAAAAAFmFub255bW91c192b3Rpbmdfc2V0dXAAAAAAAAMAAAAAAAAACm1haW50YWluZXIAAAAAABMAAAAAAAAAC3Byb2plY3Rfa2V5AAAAAA4AAAAAAAAACnB1YmxpY19rZXkAAAAAABAAAAAA",
         "AAAAAAAAASdHZXQgdGhlIGFub255bW91cyB2b3RpbmcgY29uZmlndXJhdGlvbiBmb3IgYSBwcm9qZWN0LgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgcHJvamVjdF9rZXlgIC0gVGhlIHByb2plY3Qga2V5IGlkZW50aWZpZXIKCiMgUmV0dXJucwoqIGB0eXBlczo6QW5vbnltb3VzVm90ZUNvbmZpZ2AgLSBUaGUgYW5vbnltb3VzIHZvdGluZyBjb25maWd1cmF0aW9uCgojIFBhbmljcwoqIElmIG5vIGFub255bW91cyB2b3RpbmcgY29uZmlndXJhdGlvbiBleGlzdHMgZm9yIHRoZSBwcm9qZWN0AAAAABtnZXRfYW5vbnltb3VzX3ZvdGluZ19jb25maWcAAAAAAQAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAEAAAfQAAAAE0Fub255bW91c1ZvdGVDb25maWcA",
@@ -1515,7 +1035,7 @@ export class Client extends ContractClient {
         "AAAAAAAAALZHZXQgYSBwYWdlIG9mIHByb2plY3RzLgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgcGFnZWAgLSBUaGUgcGFnZSBudW1iZXIgKDAtYmFzZWQpCgojIFJldHVybnMKKiBgVmVjPHR5cGVzOjpQcm9qZWN0PmAgLSBMaXN0IG9mIHByb2plY3RzIG9uIHRoZSByZXF1ZXN0ZWQgcGFnZQAAAAAADGdldF9wcm9qZWN0cwAAAAEAAAAAAAAABHBhZ2UAAAAEAAAAAQAAA+oAAAfQAAAAB1Byb2plY3QA",
         "AAAAAAAAAdlVcGRhdGUgdGhlIGNvbmZpZ3VyYXRpb24gb2YgYW4gZXhpc3RpbmcgcHJvamVjdC4KCkFsbG93cyBtYWludGFpbmVycyB0byBjaGFuZ2UgdGhlIHByb2plY3QncyBVUkwsIGNvbW1pdCBoYXNoLCBhbmQgbWFpbnRhaW5lciBsaXN0LgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgbWFpbnRhaW5lcmAgLSBUaGUgYWRkcmVzcyBvZiB0aGUgbWFpbnRhaW5lciBjYWxsaW5nIHRoaXMgZnVuY3Rpb24KKiBga2V5YCAtIFRoZSBwcm9qZWN0IGtleSBpZGVudGlmaWVyCiogYG1haW50YWluZXJzYCAtIE5ldyBsaXN0IG9mIG1haW50YWluZXIgYWRkcmVzc2VzCiogYHVybGAgLSBOZXcgR2l0IHJlcG9zaXRvcnkgVVJMCiogYGhhc2hgIC0gTmV3IGNvbW1pdCBoYXNoCgojIFBhbmljcwoqIElmIHRoZSBwcm9qZWN0IGRvZXNuJ3QgZXhpc3QKKiBJZiB0aGUgbWFpbnRhaW5lciBpcyBub3QgYXV0aG9yaXplZAAAAAAAAA11cGRhdGVfY29uZmlnAAAAAAAABQAAAAAAAAAKbWFpbnRhaW5lcgAAAAAAEwAAAAAAAAADa2V5AAAAAA4AAAAAAAAAC21haW50YWluZXJzAAAAA+oAAAATAAAAAAAAAAN1cmwAAAAAEAAAAAAAAAAEaXBmcwAAABAAAAAA",
         "AAAAAAAAAOdHZXQgc3ViLXByb2plY3RzIGZvciBhIHByb2plY3QgKGlmIGl0J3MgYW4gb3JnYW5pemF0aW9uKS4KCiMgQXJndW1lbnRzCiogYGVudmAgLSBUaGUgZW52aXJvbm1lbnQgb2JqZWN0CiogYHByb2plY3Rfa2V5YCAtIFRoZSBwcm9qZWN0IGtleSBpZGVudGlmaWVyCgojIFJldHVybnMKKiBgVmVjPEJ5dGVzPmAgLSBMaXN0IG9mIHN1Yi1wcm9qZWN0IGtleXMsIGVtcHR5IGlmIG5vdCBhbiBvcmdhbml6YXRpb24AAAAAEGdldF9zdWJfcHJvamVjdHMAAAABAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAQAAA+oAAAAO",
-        "AAAAAAAAAVxTZXQgc3ViLXByb2plY3RzIGZvciBhIHByb2plY3QgKG1ha2luZyBpdCBhbiBvcmdhbml6YXRpb24pLgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgbWFpbnRhaW5lcmAgLSBUaGUgbWFpbnRhaW5lciBhZGRyZXNzIGNhbGxpbmcgdGhpcyBmdW5jdGlvbgoqIGBwcm9qZWN0X2tleWAgLSBUaGUgcHJvamVjdCBrZXkgaWRlbnRpZmllcgoqIGBzdWJfcHJvamVjdHNgIC0gTGlzdCBvZiBzdWItcHJvamVjdCBrZXlzIHRvIGFzc29jaWF0ZQoKIyBQYW5pY3MKKiBJZiB0aGUgcHJvamVjdCBkb2Vzbid0IGV4aXN0CiogSWYgdGhlIG1haW50YWluZXIgaXMgbm90IGF1dGhvcml6ZWQAAAAQc2V0X3N1Yl9wcm9qZWN0cwAAAAMAAAAAAAAACm1haW50YWluZXIAAAAAABMAAAAAAAAAC3Byb2plY3Rfa2V5AAAAAA4AAAAAAAAADHN1Yl9wcm9qZWN0cwAAA+oAAAAOAAAAAA==",
+        "AAAAAAAAAn5TZXQgc3ViLXByb2plY3RzIGZvciBhIHByb2plY3QgKG1ha2luZyBpdCBhbiBvcmdhbml6YXRpb24pLgoKTm90ZTogYnkgZGVzaWduLCBzdWItcHJvamVjdCBrZXlzIGFyZSBub3QgdmFsaWRhdGVkIGFnYWluc3QgZXhpc3RpbmcKcHJvamVjdHMuIFRoaXMgYWxsb3dzIHJlc2VydmluZyBhIHByb2plY3Qgc3BhY2UgYmVmb3JlIHRoZSBwcm9qZWN0IGlzCnJlZ2lzdGVyZWQgKHNpbmNlIHRoZSBrZXkgaXMgZGVyaXZlZCBmcm9tIHRoZSBuYW1lKS4gQSBwcm9qZWN0IGNhbgphbHNvIGFwcGVhciBpbiBtdWx0aXBsZSBvcmdhbml6YXRpb25zLgoKIyBBcmd1bWVudHMKKiBgZW52YCAtIFRoZSBlbnZpcm9ubWVudCBvYmplY3QKKiBgbWFpbnRhaW5lcmAgLSBUaGUgbWFpbnRhaW5lciBhZGRyZXNzIGNhbGxpbmcgdGhpcyBmdW5jdGlvbgoqIGBwcm9qZWN0X2tleWAgLSBUaGUgcHJvamVjdCBrZXkgaWRlbnRpZmllcgoqIGBzdWJfcHJvamVjdHNgIC0gTGlzdCBvZiBzdWItcHJvamVjdCBrZXlzIHRvIGFzc29jaWF0ZQoKIyBQYW5pY3MKKiBJZiB0aGUgcHJvamVjdCBkb2Vzbid0IGV4aXN0CiogSWYgdGhlIG1haW50YWluZXIgaXMgbm90IGF1dGhvcml6ZWQKKiBJZiBtb3JlIHRoYW4gMTAgc3ViLXByb2plY3RzIGFyZSBwcm92aWRlZAAAAAAAEHNldF9zdWJfcHJvamVjdHMAAAADAAAAAAAAAAptYWludGFpbmVyAAAAAAATAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAAAAAAxzdWJfcHJvamVjdHMAAAPqAAAADgAAAAA=",
         "AAAAAQAAAAAAAAAAAAAAA0RhbwAAAAABAAAAAAAAAAlwcm9wb3NhbHMAAAAAAAPqAAAH0AAAAAhQcm9wb3NhbA==",
         "AAAAAgAAAAAAAAAAAAAABFZvdGUAAAACAAAAAQAAAAAAAAAKUHVibGljVm90ZQAAAAAAAQAAB9AAAAAKUHVibGljVm90ZQAAAAAAAQAAAAAAAAANQW5vbnltb3VzVm90ZQAAAAAAAAEAAAfQAAAADUFub255bW91c1ZvdGUAAAA=",
         "AAAAAwAAAAAAAAAAAAAABUJhZGdlAAAAAAAABQAAAAAAAAAJRGV2ZWxvcGVyAAAAAJiWgAAAAAAAAAAGVHJpYWdlAAAATEtAAAAAAAAAAAlDb21tdW5pdHkAAAAAD0JAAAAAAAAAAAhWZXJpZmllZAAHoSAAAAAAAAAAB0RlZmF1bHQAAAAAAQ==",
@@ -1526,7 +1046,7 @@ export class Client extends ContractClient {
         "AAAAAQAAAAAAAAAAAAAAB1Byb2plY3QAAAAABAAAAAAAAAAGY29uZmlnAAAAAAfQAAAABkNvbmZpZwAAAAAAAAAAAAttYWludGFpbmVycwAAAAPqAAAAEwAAAAAAAAAEbmFtZQAAABAAAAAAAAAADHN1Yl9wcm9qZWN0cwAAA+gAAAPqAAAADg==",
         "AAAAAQAAAAAAAAAAAAAACENvbnRyYWN0AAAAAgAAAAAAAAAHYWRkcmVzcwAAAAATAAAAAAAAAAl3YXNtX2hhc2gAAAAAAAPoAAAD7gAAACA=",
         "AAAAAQAAAAAAAAAAAAAACFByb3Bvc2FsAAAABwAAAAAAAAACaWQAAAAAAAQAAAAAAAAABGlwZnMAAAAQAAAAAAAAABFvdXRjb21lc19jb250cmFjdAAAAAAAA+gAAAATAAAAAAAAAAhwcm9wb3NlcgAAABMAAAAAAAAABnN0YXR1cwAAAAAH0AAAAA5Qcm9wb3NhbFN0YXR1cwAAAAAAAAAAAAV0aXRsZQAAAAAAABAAAAAAAAAACXZvdGVfZGF0YQAAAAAAB9AAAAAIVm90ZURhdGE=",
-        "AAAAAQAAAAAAAAAAAAAACFZvdGVEYXRhAAAAAwAAAAAAAAANcHVibGljX3ZvdGluZwAAAAAAAAEAAAAAAAAABXZvdGVzAAAAAAAD6gAAB9AAAAAEVm90ZQAAAAAAAAAOdm90aW5nX2VuZHNfYXQAAAAAAAY=",
+        "AAAAAQAAAAAAAAAAAAAACFZvdGVEYXRhAAAABAAAAAAAAAANcHVibGljX3ZvdGluZwAAAAAAAAEAAAAAAAAADnRva2VuX2NvbnRyYWN0AAAAAAPoAAAAEwAAAAAAAAAFdm90ZXMAAAAAAAPqAAAH0AAAAARWb3RlAAAAAAAAAA52b3RpbmdfZW5kc19hdAAAAAAABg==",
         "AAAAAgAAAAAAAAAAAAAAClByb2plY3RLZXkAAAAAAAgAAAABAAAAAAAAAANLZXkAAAAAAQAAAA4AAAABAAAAAAAAAAZCYWRnZXMAAAAAAAEAAAAOAAAAAQAAAAAAAAAITGFzdEhhc2gAAAABAAAADgAAAAEAAAAAAAAAA0RhbwAAAAACAAAADgAAAAQAAAABAAAAAAAAABFEYW9Ub3RhbFByb3Bvc2FscwAAAAAAAAEAAAAOAAAAAQAAAAAAAAATQW5vbnltb3VzVm90ZUNvbmZpZwAAAAABAAAADgAAAAEAAAAAAAAAC1Byb2plY3RLZXlzAAAAAAEAAAAEAAAAAAAAAAAAAAANVG90YWxQcm9qZWN0cwAAAA==",
         "AAAAAQAAAAAAAAAAAAAAClB1YmxpY1ZvdGUAAAAAAAMAAAAAAAAAB2FkZHJlc3MAAAAAEwAAAAAAAAALdm90ZV9jaG9pY2UAAAAH0AAAAApWb3RlQ2hvaWNlAAAAAAAAAAAABndlaWdodAAAAAAABA==",
         "AAAAAgAAAAAAAAAAAAAAClZvdGVDaG9pY2UAAAAAAAMAAAAAAAAAAAAAAAdBcHByb3ZlAAAAAAAAAAAAAAAABlJlamVjdAAAAAAAAAAAAAAAAAAHQWJzdGFpbgA=",
@@ -1545,7 +1065,7 @@ export class Client extends ContractClient {
         "AAAABQAAAAAAAAAAAAAADVVwZ3JhZGVTdGF0dXMAAAAAAAABAAAADnVwZ3JhZGVfc3RhdHVzAAAAAAADAAAAAAAAAAVhZG1pbgAAAAAAABMAAAAAAAAAAAAAAAl3YXNtX2hhc2gAAAAAAAAOAAAAAAAAAAAAAAAGc3RhdHVzAAAAAAAQAAAAAAAAAAI=",
         "AAAABQAAAAAAAAAAAAAADkNvbnRyYWN0UGF1c2VkAAAAAAABAAAAD2NvbnRyYWN0X3BhdXNlZAAAAAACAAAAAAAAAAZwYXVzZWQAAAAAAAEAAAAAAAAAAAAAAAVhZG1pbgAAAAAAABMAAAAAAAAAAg==",
         "AAAABQAAAAAAAAAAAAAAD0NvbnRyYWN0VXBkYXRlZAAAAAABAAAAEGNvbnRyYWN0X3VwZGF0ZWQAAAAEAAAAAAAAAAVhZG1pbgAAAAAAABMAAAAAAAAAAAAAAAxjb250cmFjdF9rZXkAAAAQAAAAAAAAAAAAAAAHYWRkcmVzcwAAAAATAAAAAAAAAAAAAAAJd2FzbV9oYXNoAAAAAAAD6AAAA+4AAAAgAAAAAAAAAAI=",
-        "AAAABQAAAAAAAAAAAAAAD1Byb3Bvc2FsQ3JlYXRlZAAAAAABAAAAEHByb3Bvc2FsX2NyZWF0ZWQAAAAGAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAQAAAAAAAAALcHJvcG9zYWxfaWQAAAAABAAAAAAAAAAAAAAABXRpdGxlAAAAAAAAEAAAAAAAAAAAAAAACHByb3Bvc2VyAAAAEwAAAAAAAAAAAAAADnZvdGluZ19lbmRzX2F0AAAAAAAGAAAAAAAAAAAAAAANcHVibGljX3ZvdGluZwAAAAAAAAEAAAAAAAAAAg==",
+        "AAAABQAAAAAAAAAAAAAAD1Byb3Bvc2FsQ3JlYXRlZAAAAAABAAAAEHByb3Bvc2FsX2NyZWF0ZWQAAAAHAAAAAAAAAAtwcm9qZWN0X2tleQAAAAAOAAAAAQAAAAAAAAALcHJvcG9zYWxfaWQAAAAABAAAAAAAAAAAAAAABXRpdGxlAAAAAAAAEAAAAAAAAAAAAAAACHByb3Bvc2VyAAAAEwAAAAAAAAAAAAAADnZvdGluZ19lbmRzX2F0AAAAAAAGAAAAAAAAAAAAAAANcHVibGljX3ZvdGluZwAAAAAAAAEAAAAAAAAAAAAAAA50b2tlbl9jb250cmFjdAAAAAAD6AAAABMAAAAAAAAAAg==",
         "AAAABQAAAAAAAAAAAAAAD1VwZ3JhZGVBcHByb3ZlZAAAAAABAAAAEHVwZ3JhZGVfYXBwcm92ZWQAAAADAAAAAAAAAAVhZG1pbgAAAAAAABMAAAAAAAAAAAAAAA9hcHByb3ZhbHNfY291bnQAAAAABAAAAAAAAAAAAAAAEXRocmVzaG9sZF9yZWFjaGVkAAAAAAAAAQAAAAAAAAAC",
         "AAAABQAAAAAAAAAAAAAAD1VwZ3JhZGVQcm9wb3NlZAAAAAABAAAAEHVwZ3JhZGVfcHJvcG9zZWQAAAADAAAAAAAAAAVhZG1pbgAAAAAAABMAAAAAAAAAAAAAAAl3YXNtX2hhc2gAAAAAAAAOAAAAAAAAAAAAAAANZXhlY3V0YWJsZV9hdAAAAAAAAAYAAAAAAAAAAg==",
         "AAAABQAAAAAAAAAAAAAAEFByb3Bvc2FsRXhlY3V0ZWQAAAABAAAAEXByb3Bvc2FsX2V4ZWN1dGVkAAAAAAAABAAAAAAAAAALcHJvamVjdF9rZXkAAAAADgAAAAEAAAAAAAAAC3Byb3Bvc2FsX2lkAAAAAAQAAAAAAAAAAAAAAAZzdGF0dXMAAAAAABAAAAAAAAAAAAAAAAptYWludGFpbmVyAAAAAAATAAAAAAAAAAI=",

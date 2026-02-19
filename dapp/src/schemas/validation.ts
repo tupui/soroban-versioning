@@ -113,6 +113,17 @@ export const createProposalSchema = z.object({
       "Voting must end at least 25 hours from now",
     ),
   isAnonymousVoting: z.boolean().default(false),
+  tokenContract: z
+    .string()
+    .optional()
+    .refine(
+      (val) => {
+        if (!val || val.trim() === "") return true;
+        // Basic Stellar address validation (starts with G or C, 56 characters)
+        return /^[GC][A-Z0-9]{55}$/.test(val);
+      },
+      { message: "Invalid token contract address format" },
+    ),
 });
 
 export const donationSchema = z.object({

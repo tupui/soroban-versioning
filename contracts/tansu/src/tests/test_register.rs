@@ -4,8 +4,7 @@ use crate::events::ProjectRegistered;
 use crate::types::Project;
 use crate::{contract_versioning::domain_register, errors::ContractErrors};
 use soroban_sdk::testutils::Events;
-use soroban_sdk::{Bytes,Event, String,  Vec, vec};
-
+use soroban_sdk::{Bytes, Event, String, Vec, vec};
 
 #[test]
 fn register_project() {
@@ -38,7 +37,11 @@ fn register_events() {
     };
 
     assert_eq!(
-        setup.env.events().all().filter_by_contract(&setup.contract_id),
+        setup
+            .env
+            .events()
+            .all()
+            .filter_by_contract(&setup.contract_id),
         [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 

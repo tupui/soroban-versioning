@@ -79,6 +79,7 @@ const CreateProposalModal = () => {
   const [proposalId, setProposalId] = useState<number | null>(null);
   const [_ipfsLink, setIpfsLink] = useState("");
   const [isAnonymousVoting, setIsAnonymousVoting] = useState(false);
+  const [tokenContract, setTokenContract] = useState<string>("");
   const [preparedFiles, setPreparedFiles] = useState<File[] | null>(null);
   const [generatedKeys, setGeneratedKeys] = useState<{
     publicKey: string;
@@ -394,6 +395,7 @@ const CreateProposalModal = () => {
         votingEndsAt: votingEndsAt,
         publicVoting: !isAnonymousVoting ? true : false,
         outcomeContracts: contractOutcomes,
+        ...(tokenContract && { tokenContract }),
         onProgress: setStep,
       });
 
@@ -504,9 +506,8 @@ const CreateProposalModal = () => {
     if (!projectName) return;
 
     try {
-      const { hasAnonymousVotingConfig } = await import(
-        "@service/ReadContractService"
-      );
+      const { hasAnonymousVotingConfig } =
+        await import("@service/ReadContractService");
 
       const exists = await hasAnonymousVotingConfig(projectName);
 
@@ -651,6 +652,22 @@ const CreateProposalModal = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Token-based voting section */}
+              <div className="flex flex-col gap-2 sm:gap-3 max-w-2xl">
+                <Input
+                  label="Token Contract Address (Optional)"
+                  placeholder="Enter token contract address for token-based voting"
+                  value={tokenContract}
+                  onChange={(e) => setTokenContract(e.target.value)}
+                />
+                {tokenContract && (
+                  <span className="text-sm text-blue-600">
+                    Voting weight will be determined by token balance instead of
+                    badges.
+                  </span>
+                )}
               </div>
 
               <div className="max-w-2xl">

@@ -1,10 +1,9 @@
 use super::test_utils::{create_test_data, init_contract};
 use crate::errors::ContractErrors;
-use crate::events::{MemberAdded, BadgesUpdated};
+use crate::events::{BadgesUpdated, MemberAdded};
 use crate::types::{Badge, ProjectBadges};
 use soroban_sdk::testutils::{Address as _, Events};
 use soroban_sdk::{Address, Event, String, vec};
-
 
 #[test]
 fn membership_badges() {
@@ -16,15 +15,16 @@ fn membership_badges() {
     setup.contract.add_member(&member, &meta);
 
     // Verify member added event
-    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
+    let all_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
     let event = MemberAdded {
         member_address: member.clone(),
     };
 
-    assert_eq!(
-        all_events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    assert_eq!(all_events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     let badges = vec![&setup.env, Badge::Community];
     setup
@@ -32,7 +32,11 @@ fn membership_badges() {
         .set_badges(&setup.mando, &id, &member, &badges);
 
     // Verify badges updated event
-    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
+    let all_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
     let event = BadgesUpdated {
         project_key: id.clone(),
         maintainer: setup.mando.clone(),
@@ -40,10 +44,7 @@ fn membership_badges() {
         badges_count: 1u32,
     };
 
-    assert_eq!(
-        all_events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    assert_eq!(all_events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     let info = setup.contract.get_member(&member);
     assert_eq!(

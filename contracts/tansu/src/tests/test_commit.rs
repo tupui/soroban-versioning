@@ -4,7 +4,6 @@ use crate::events::Commit;
 use soroban_sdk::testutils::{Address as _, Events};
 use soroban_sdk::{Address, Event, String, vec};
 
-
 #[test]
 fn commit_flow() {
     let setup = create_test_data();
@@ -31,7 +30,11 @@ fn commit_events() {
     };
 
     assert_eq!(
-        setup.env.events().all().filter_by_contract(&setup.contract_id),
+        setup
+            .env
+            .events()
+            .all()
+            .filter_by_contract(&setup.contract_id),
         [event.to_xdr(&setup.env, &setup.contract_id)]
     );
 }

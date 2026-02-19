@@ -47,9 +47,8 @@ try {
           import("react"),
           import("react-dom/client"),
         ]);
-        const { default: CreateProjectModal } = await import(
-          "components/page/dashboard/CreateProjectModal.tsx"
-        );
+        const { default: CreateProjectModal } =
+          await import("components/page/dashboard/CreateProjectModal.tsx");
         const root = createRoot(container);
         const handleClose = () => {
           if (document.body.contains(container))
@@ -81,9 +80,8 @@ try {
           import("react"),
           import("react-dom/client"),
         ]);
-        const { default: JoinCommunityModal } = await import(
-          "components/page/dashboard/JoinCommunityModal.tsx"
-        );
+        const { default: JoinCommunityModal } =
+          await import("components/page/dashboard/JoinCommunityModal.tsx");
         const root = createRoot(container);
         const handleClose = () => {
           if (document.body.contains(container))
@@ -124,9 +122,8 @@ try {
           import("react"),
           import("react-dom/client"),
         ]);
-        const { default: MemberProfileModal } = await import(
-          "components/page/dashboard/MemberProfileModal.tsx"
-        );
+        const { default: MemberProfileModal } =
+          await import("components/page/dashboard/MemberProfileModal.tsx");
         const root = createRoot(container);
         const handleClose = () => {
           if (document.body.contains(container))
@@ -193,9 +190,8 @@ try {
             import("react"),
             import("react-dom/client"),
           ]);
-          const { default: TermsAcceptanceModal } = await import(
-            "components/utils/TermsAcceptanceModal.tsx"
-          );
+          const { default: TermsAcceptanceModal } =
+            await import("components/utils/TermsAcceptanceModal.tsx");
           const root = createRoot(container);
 
           const handleAccept = () => {

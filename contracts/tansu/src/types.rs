@@ -106,6 +106,7 @@ pub struct AnonymousVote {
 pub struct VoteData {
     pub voting_ends_at: u64,
     pub public_voting: bool,
+    pub token_contract: Option<Address>,
     pub votes: Vec<Vote>,
 }
 

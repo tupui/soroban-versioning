@@ -1,12 +1,11 @@
 use super::test_utils::{create_test_data, init_contract};
-use crate::events::{ProposalCreated, VoteCast, ProposalExecuted, AnonymousVotingSetup};
+use crate::events::{AnonymousVotingSetup, ProposalCreated, ProposalExecuted, VoteCast};
 use crate::{
     errors::ContractErrors,
     types::{AnonymousVote, Badge, Dao, ProposalStatus, PublicVote, Vote, VoteChoice},
 };
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
 use soroban_sdk::{Address, BytesN, Event, String, vec};
-
 
 #[test]
 fn proposal_flow() {
@@ -31,6 +30,7 @@ fn proposal_flow() {
         &voting_ends_at,
         &true,
         &None,
+        &None,
     );
 
     // Verify proposal creation event
@@ -41,6 +41,7 @@ fn proposal_flow() {
         proposer: setup.grogu.clone(),
         voting_ends_at,
         public_voting: true,
+        token_contract: None,
     };
 
     let contract_events = setup
@@ -150,6 +151,7 @@ fn dao_basic_functionality() {
         &voting_ends_at,
         &true,
         &None,
+        &None,
     );
     assert_eq!(proposal_id, 0);
 
@@ -198,11 +200,12 @@ fn dao_anonymous() {
         public_key: public_key.clone(),
     };
 
-    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
-    assert_eq!(
-        all_events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    let all_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(all_events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Add a member with elevated rights
     let kuiil = Address::generate(&setup.env);
@@ -221,6 +224,7 @@ fn dao_anonymous() {
         &ipfs,
         &voting_ends_at,
         &false,
+        &None,
         &None,
     );
     assert_eq!(proposal_id, 0);
@@ -311,6 +315,7 @@ fn voting_errors() {
         &voting_ends_at,
         &true,
         &None,
+        &None,
     );
 
     // Start testing bad behaviours
@@ -325,6 +330,7 @@ fn voting_errors() {
             &ipfs,
             &voting_ends_at,
             &false,
+            &None,
             &None,
         )
         .unwrap_err()
@@ -343,6 +349,7 @@ fn voting_errors() {
         &ipfs,
         &voting_ends_at,
         &false,
+        &None,
         &None,
     );
 
@@ -543,6 +550,7 @@ fn proposal_execution() {
         &voting_ends_at,
         &true,
         &None,
+        &None,
     );
 
     // Add member with badge
@@ -610,6 +618,7 @@ fn proposal_revoke() {
         &voting_ends_at,
         &true,
         &None,
+        &None,
     );
 
     let kuiil = Address::generate(&setup.env);
@@ -631,11 +640,12 @@ fn proposal_revoke() {
         maintainer: setup.mando.clone(),
     };
 
-    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
-    assert_eq!(
-        all_events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    let all_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(all_events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     let proposal = setup.contract.get_proposal(&id, &proposal_id);
     assert_eq!(proposal.title, String::from_str(&setup.env, "REDACTED"));
@@ -673,6 +683,7 @@ fn voter_weight_validation() {
         &ipfs,
         &voting_ends_at,
         &true,
+        &None,
         &None,
     );
 
@@ -759,6 +770,7 @@ fn outcomes_execution() {
         &ipfs,
         &voting_ends_at,
         &true,
+        &None,
         &Some(setup.outcomes_id),
     );
 
@@ -803,4 +815,110 @@ fn outcomes_execution() {
 
     let proposal = setup.contract.get_proposal(&id, &proposal_id);
     assert_eq!(proposal.status, ProposalStatus::Approved);
+}
+
+#[test]
+fn token_based_proposal_flow() {
+    let setup = create_test_data();
+    let id = init_contract(&setup);
+
+    let title = String::from_str(&setup.env, "Token-based voting test");
+    let ipfs = String::from_str(
+        &setup.env,
+        "bafybeib6ioupho3p3pliusx7tgs7dvi6mpu2bwfhayj6w6ie44lo3vvc4i",
+    );
+    let voting_ends_at = setup.env.ledger().timestamp() + 3600 * 24 * 2;
+
+    // Record initial balances
+    let balance_proposer_init = setup.token_stellar.balance(&setup.grogu);
+    let balance_voter_init = setup.token_stellar.balance(&setup.mando);
+
+    // Create token-based proposal
+    let proposal_id = setup.contract.create_proposal(
+        &setup.grogu,
+        &id,
+        &title,
+        &ipfs,
+        &voting_ends_at,
+        &true,                                      // public_voting
+        &Some(setup.token_stellar.address.clone()), // token_contract
+        &None,
+    );
+
+    // Verify proposal was created with token_contract
+    let proposal = setup.contract.get_proposal(&id, &proposal_id);
+    assert!(proposal.vote_data.token_contract.is_some());
+
+    // Check proposer balance decreased by PROPOSAL_COLLATERAL only (no VOTE_COLLATERAL for token-based)
+    let balance_proposer_after_create = setup.token_stellar.balance(&setup.grogu);
+    let expected_proposer_deduction = 100 * 10_000_000; // PROPOSAL_COLLATERAL
+    assert_eq!(
+        balance_proposer_init - balance_proposer_after_create,
+        expected_proposer_deduction
+    );
+
+    // Vote with weight based on token balance
+    let vote_weight = 1000u32;
+    setup.contract.vote(
+        &setup.mando,
+        &id,
+        &proposal_id,
+        &Vote::PublicVote(PublicVote {
+            address: setup.mando.clone(),
+            weight: vote_weight,
+            vote_choice: VoteChoice::Approve,
+        }),
+    );
+
+    // Verify voter balance decreased by vote_weight only (token IS the collateral)
+    let balance_voter_after_vote = setup.token_stellar.balance(&setup.mando);
+    let expected_deduction = vote_weight as i128; // Only the vote weight in tokens
+    assert_eq!(
+        balance_voter_init - balance_voter_after_vote,
+        expected_deduction
+    );
+
+    // Move time forward to end voting period
+    setup.env.ledger().set_timestamp(voting_ends_at + 1);
+
+    // Execute the proposal
+    let vote_result = setup
+        .contract
+        .execute(&setup.mando, &id, &proposal_id, &None, &None);
+    assert_eq!(vote_result, ProposalStatus::Approved);
+
+    // Verify balances were restored
+    let balance_proposer_final = setup.token_stellar.balance(&setup.grogu);
+    let balance_voter_final = setup.token_stellar.balance(&setup.mando);
+
+    // Proposer gets back PROPOSAL_COLLATERAL (didn't pay VOTE_COLLATERAL for token-based)
+    assert_eq!(balance_proposer_final, balance_proposer_init);
+
+    // Voter gets back vote_weight in tokens (token WAS the collateral)
+    assert_eq!(balance_voter_final, balance_voter_init);
+}
+
+#[test]
+fn token_based_get_max_weight() {
+    let setup = create_test_data();
+    let id = init_contract(&setup);
+
+    // For token-based proposals, get_max_weight returns badge-based weight
+    // Token balance validation happens during the transfer in vote()
+    let max_weight = setup.contract.get_max_weight(&id, &setup.mando);
+
+    // Should return default badge weight (1) since no badges assigned
+    assert_eq!(max_weight, 1);
+}
+
+#[test]
+fn badge_based_get_max_weight_still_works() {
+    let setup = create_test_data();
+    let id = init_contract(&setup);
+
+    // get_max_weight always returns badge-based weight
+    let max_weight = setup.contract.get_max_weight(&id, &setup.mando);
+
+    // Should return default badge weight (1) since no badges assigned
+    assert_eq!(max_weight, 1);
 }

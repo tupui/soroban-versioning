@@ -1,12 +1,11 @@
 use super::test_utils::create_test_data;
 use crate::errors::ContractErrors;
-use crate::events::{ContractPaused, UpgradeProposed, UpgradeStatus, UpgradeApproved, ContractUpdated};
+use crate::events::{
+    ContractPaused, ContractUpdated, UpgradeApproved, UpgradeProposed, UpgradeStatus,
+};
 use crate::{domain_contract, types};
 use soroban_sdk::testutils::{Address as _, Events, Ledger};
-use soroban_sdk::{
-    Address, Bytes, BytesN, Event, Executable, String, bytesn, vec,
-
-};
+use soroban_sdk::{Address, Bytes, BytesN, Event, Executable, String, bytesn, vec};
 
 #[test]
 fn test_pause_unpause() {
@@ -19,11 +18,12 @@ fn test_pause_unpause() {
         admin: setup.contract_admin.clone(),
     };
 
-    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
-    assert_eq!(
-        all_events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    let all_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(all_events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Operations fail when paused
     let member = Address::generate(&setup.env);
@@ -43,11 +43,12 @@ fn test_pause_unpause() {
         admin: setup.contract_admin.clone(),
     };
 
-    let all_events = setup.env.events().all().filter_by_contract(&setup.contract_id);
-    assert_eq!(
-        all_events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    let all_events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(all_events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // try again set operation
     setup.contract.add_member(&member, &meta);
@@ -92,11 +93,12 @@ fn test_upgrade_flow() {
         executable_at: setup.env.ledger().timestamp() + 24 * 3600,
     };
 
-    let events = setup.env.events().all().filter_by_contract(&setup.contract_id);
-    assert_eq!(
-        events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Retrieve the upgrade proposal
     let proposal = setup.contract.get_upgrade_proposal();
@@ -131,11 +133,12 @@ fn test_upgrade_flow() {
         status: String::from_str(&setup.env, "Upgraded"),
     };
 
-    let events = setup.env.events().all().filter_by_contract(&setup.contract_id);
-    assert_eq!(
-        events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Verify the upgrade was successful by checking that the proposal no longer exists
     let err = setup
@@ -170,11 +173,12 @@ fn test_upgrade_cancel() {
         status: String::from_str(&setup.env, "Cancelled"),
     };
 
-    let events = setup.env.events().all().filter_by_contract(&setup.contract_id);
-    assert_eq!(
-        events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Verify the proposal no longer exists
     let err = setup
@@ -270,11 +274,12 @@ fn test_upgrade_approval() {
         threshold_reached: true,
     };
 
-    let events = setup.env.events().all().filter_by_contract(&setup.contract_id);
-    assert_eq!(
-        events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Fast-forward time past timelock period
     setup
@@ -333,11 +338,12 @@ fn test_domain_contract_update() {
         wasm_hash: new_domain.wasm_hash,
     };
 
-    let events = setup.env.events().all().filter_by_contract(&setup.contract_id);
-    assert_eq!(
-        events,
-        [event.to_xdr(&setup.env, &setup.contract_id)]
-    );
+    let events = setup
+        .env
+        .events()
+        .all()
+        .filter_by_contract(&setup.contract_id);
+    assert_eq!(events, [event.to_xdr(&setup.env, &setup.contract_id)]);
 
     // Verify the update was successful
     // let retrieved_domain: types::Contract = setup
