@@ -8,4 +8,4 @@
   always_run: true
   require_serial: true
   stages:
-    - pre-push
+    - push
