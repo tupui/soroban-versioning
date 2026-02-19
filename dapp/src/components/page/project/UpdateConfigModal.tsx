@@ -41,6 +41,7 @@ const UpdateConfigModal = () => {
   ]);
   const [maintainerGithubs, setMaintainerGithubs] = useState<string[]>([""]);
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
+  const [projectFullName, setProjectFullName] = useState("");
   const [orgName, setOrgName] = useState("");
   const [orgUrl, setOrgUrl] = useState("");
   const [orgLogo, setOrgLogo] = useState("");
@@ -65,6 +66,7 @@ const UpdateConfigModal = () => {
       cfg?.authorGithubNames || projectInfo.maintainers.map(() => ""),
     );
     setGithubRepoUrl(projectInfo.config.url);
+    setProjectFullName(cfg?.projectFullName || projectInfo.name || "");
     setOrgName(cfg?.organizationName || "");
     setOrgUrl(cfg?.officials?.websiteLink || "");
     setOrgLogo(cfg?.logoImageLink || "");
@@ -127,7 +129,7 @@ const UpdateConfigModal = () => {
   // build TOML
   const buildToml = (): string => {
     return `VERSION="2.0.0"
-\nACCOUNTS=[\n${maintainerAddresses.map((a) => `    "${a}"`).join(",\n")}\n]\n\n[DOCUMENTATION]\nORG_NAME="${orgName}"\nORG_URL="${orgUrl}"\nORG_LOGO="${orgLogo}"\nORG_DESCRIPTION="${orgDescription}"\nORG_GITHUB="${githubRepoUrl.split("https://github.com/")[1] || ""}"\n\n${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}\n`;
+\nACCOUNTS=[\n${maintainerAddresses.map((a) => `    "${a}"`).join(",\n")}\n]\n\n[DOCUMENTATION]\nORG_DBA="${projectFullName.trim()}"\nORG_NAME="${orgName}"\nORG_URL="${orgUrl}"\nORG_LOGO="${orgLogo}"\nORG_DESCRIPTION="${orgDescription}"\nORG_GITHUB="${githubRepoUrl.split("https://github.com/")[1] || ""}"\n\n${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\ngithub="${gh}"`).join("\n\n")}\n`;
   };
 
   const handleSubmit = async () => {
@@ -266,7 +268,14 @@ const UpdateConfigModal = () => {
                     <Step step={2} totalSteps={3} />
                     <Title
                       title="Project details"
-                      description="Organisation & repository"
+                      description="Project name, organisation & repository"
+                    />
+                    <Input
+                      label="Project Full Name"
+                      placeholder="My Awesome Project"
+                      value={projectFullName}
+                      onChange={(e) => setProjectFullName(e.target.value)}
+                      description="Human-readable name shown in the UI."
                     />
                     <Input
                       label="Organisation name"

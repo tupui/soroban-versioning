@@ -96,7 +96,7 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
     // Wait for the first step to be fully rendered
     await expect(
       page.locator(
-        ".project-modal-container input[placeholder='Write the name']",
+          ".project-modal-container input[placeholder='Write the project name (e.g., myproject)']",
       ),
     ).toBeVisible();
 
