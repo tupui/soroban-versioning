@@ -12,13 +12,13 @@
   "dependencies": {
     "@ipld/dag-ucan": "^3.4.5",
     "@stellar/stellar-sdk": "^14.3.2",
-    "@storacha/client": "^1.8.16",
+    "@storacha/client": "^2.0.0",
     "@ucanto/core": "^10.4.6",
     "multiformats": "13.4.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251117.0",
-    "@storacha/cli": "^1.6.28",
+    "@storacha/cli": "^2.0.0",
     "typescript": "^5.9.3",
     "wrangler": "^4.47.0"
   },
