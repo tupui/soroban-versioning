@@ -8,7 +8,7 @@
  */
 
 import { Transaction, Keypair, Networks } from "@stellar/stellar-sdk";
-import { create } from "@storacha/client";
+import * as Client from "@storacha/client";
 import { Signer } from "@storacha/client/principal/ed25519";
 import * as Proof from "@storacha/client/proof";
 import { StoreMemory } from "@storacha/client/stores/memory";
@@ -182,7 +182,7 @@ async function generateDelegation(did: string, env: Env): Promise<Uint8Array> {
     const proof = await Proof.parse(storachaProof);
     const principal = Signer.parse(key);
     const store = new StoreMemory();
-    const client = await create({ principal, store });
+    const client = await Client.create({ principal, store });
 
     // Use the delegation directly instead of loadDelegation
     const space = await client.addSpace(proof);
