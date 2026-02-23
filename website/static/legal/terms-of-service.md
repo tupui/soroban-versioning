@@ -1,7 +1,7 @@
 # Terms of Service - Tansu
 
 **Last Updated: October 21, 2025**  
-**Effective: October 21, 2025**  
+**Effective: October 21, 2025**
 
 ## 1. Introduction
 
@@ -90,6 +90,7 @@ Tansu provides a comprehensive governance platform with the following core funct
 **Content Compliance**: You are solely responsible for all content you upload. See Section 7 for detailed obligations.
 
 **Role-Specific Responsibilities**:
+
 - **Anonymous Voters**: See Section 6 for key management requirements
 - **Project Maintainers**: See Section 8.2 for moderation and revocation duties
 
@@ -108,6 +109,7 @@ You acknowledge and accept the following risks:
 **Fork Risk**: We follow the canonical Stellar blockchain as determined by the Stellar Development Foundation (SDF).
 
 **Anonymous Voting Risks**:
+
 - ECDH key pairs generated client-side using Web Crypto API
 - You must securely download and store private keys before voting
 - Lost keys prevent vote decryption and proposal execution
@@ -122,6 +124,7 @@ You acknowledge and accept the following risks:
 **Our Role**: We provide infrastructure services for decentralized content storage using IPFS (InterPlanetary File System). We are not a content host, publisher, or content service provider under the Digital Services Act (DSA).
 
 **Content Permanence**: IPFS is a decentralized, peer-to-peer network where content is distributed across multiple nodes. Once content is uploaded to IPFS:
+
 - It receives a unique Content Identifier (CID)
 - It may be cached and replicated across the network
 - It persists independently of our platform
@@ -154,6 +157,7 @@ You acknowledge and accept the following risks:
 **Collateral Reimbursement**: Collateral is reimbursed to proposers and voters when proposals are successfully executed.
 
 **Collateral Forfeiture**: Collateral may be forfeited if:
+
 - The proposal is revoked by the maintainer
 - The proposal violates these Terms
 - The proposal contains illegal or inappropriate content
@@ -167,6 +171,7 @@ You acknowledge and accept the following risks:
 **Revocation Rights**: Project maintainers have the authority to revoke proposals within their projects.
 
 **Revocation Grounds**: Maintainers may revoke proposals for:
+
 - Terms violations or prohibited activities
 - Inappropriate or illegal content
 - Technical issues or errors
@@ -174,6 +179,7 @@ You acknowledge and accept the following risks:
 - Any reason at their discretion
 
 **Revocation Process**:
+
 1. Maintainer initiates revocation through the dApp interface
 2. Collateral is forfeited to the maintainer
 3. Proposal is marked as revoked
@@ -181,6 +187,7 @@ You acknowledge and accept the following risks:
 5. Proposal cannot be re-submitted
 
 **Revocation Effect**: Revoked proposals:
+
 - Are removed from active voting
 - Cannot be executed
 - Result in collateral forfeiture
@@ -203,6 +210,7 @@ You acknowledge and accept the following risks:
 **Your Content**: You retain ownership of all content you create and upload to our platform.
 
 **License Grant**: By uploading content, you grant us a limited, non-exclusive license to:
+
 - Store and display your content through our services
 - Process your content for platform functionality
 - Make your content available to other users as intended
@@ -218,6 +226,7 @@ You acknowledge and accept the following risks:
 Please review our separate Privacy Policy for complete details on data collection, processing, and your GDPR rights.
 
 **Key Points**:
+
 - No backend servers or centralized databases
 - Blockchain data is public and immutable
 - IPFS content is permanent
@@ -245,6 +254,7 @@ Please review our separate Privacy Policy for complete details on data collectio
 ### 12.1 Prohibited Activities
 
 You must not:
+
 - Upload illegal, harmful, or inappropriate content
 - Attempt to compromise platform security
 - Engage in fraudulent or deceptive practices
@@ -261,6 +271,7 @@ See Section 7 for technical details on content removal limitations.
 **Reporting**: Users can report inappropriate content by contacting legal@consulting-manao.com.
 
 **Moderation Actions**: We may:
+
 - Unlink content from our platform
 - Suspend or terminate accounts
 - Cancel proposals
@@ -274,13 +285,14 @@ See Section 7 for technical details on content removal limitations.
 
 **Service Changes**: We reserve the right to modify, suspend, or discontinue the dApp or any part thereof at any time, with or without notice, except where notice is required by applicable law.
 
-**No Liability**: We are not liable for any modification, suspension, or discontinuation of services, except in cases of intent (*Vorsatz*) or gross negligence (*grobe Fahrlässigkeit*).
+**No Liability**: We are not liable for any modification, suspension, or discontinuation of services, except in cases of intent (_Vorsatz_) or gross negligence (_grobe Fahrlässigkeit_).
 
 ### 13.2 Smart Contract Upgrades and Modifications
 
 **Upgrade Authority**: We retain the right to upgrade, modify, or replace smart contracts deployed on the Stellar blockchain for the following purposes:
 
 **Permitted Modifications**:
+
 - **Feature Additions**: Adding new functionality, improving user experience, or introducing new governance mechanisms
 - **Bug Fixes**: Correcting errors, vulnerabilities, or unexpected behavior in smart contract code
 - **Security Updates**: Addressing security vulnerabilities, preventing exploits, or enhancing platform security
@@ -289,6 +301,7 @@ See Section 7 for technical details on content removal limitations.
 - **Data Corrections**: Altering on-chain data to correct errors, resolve disputes, or comply with legal requirements
 
 **Upgrade Process**:
+
 - Multi-admin approval required (threshold signature scheme)
 - Timelock period of 7 days for non-emergency upgrades where technically feasible
 - Emergency upgrades for security or legal compliance may be immediate
@@ -297,38 +310,44 @@ See Section 7 for technical details on content removal limitations.
 **Backward Compatibility**: We will use reasonable efforts to maintain backward compatibility with existing proposals, voting records, and user data, but cannot guarantee complete compatibility across all upgrades.
 
 **User Impact**: Smart contract upgrades may:
+
 - Change how features work
 - Modify voting mechanisms or weight calculations
 - Alter collateral requirements or forfeiture conditions
 - Update badge assignment or revocation processes
 - Affect pending proposals or voting periods
 
-**No Compensation**: Users are not entitled to compensation for changes, losses, or disruptions resulting from smart contract upgrades, except in cases of intent (*Vorsatz*) or gross negligence (*grobe Fahrlässigkeit*).
+**No Compensation**: Users are not entitled to compensation for changes, losses, or disruptions resulting from smart contract upgrades, except in cases of intent (_Vorsatz_) or gross negligence (_grobe Fahrlässigkeit_).
 
 ### 13.3 Administrative Actions and Data Modifications
 
 **Administrative Authority**: We reserve the right to take administrative actions directly on smart contracts and on-chain data, including:
 
 **Project Management**:
+
 - **Project Deletion**: Removing projects from the platform for Terms violations, legal compliance, court orders, or regulatory requirements
 - **Project Suspension**: Temporarily disabling projects pending investigation or dispute resolution
 - **Maintainer Changes**: Modifying project maintainer lists to resolve disputes, comply with Soroban Domains decisions, or address security concerns
 
 **Proposal Management**:
+
 - **Proposal Cancellation**: Cancelling proposals that violate Terms, contain illegal content, or pose security risks
 - **Vote Invalidation**: Invalidating votes found to be fraudulent, manipulated, or technically compromised
 - **Forced Execution**: Executing or rejecting proposals to resolve technical issues or comply with legal requirements
 
 **Member Management**:
+
 - **Badge Revocation**: Removing badges from members who violate Terms, engage in malicious activity, or as required by maintainers
 - **Account Suspension**: Suspending member accounts for Terms violations, security threats, or legal compliance
 - **Data Correction**: Modifying member data to correct errors, remove illegal content references, or comply with GDPR/legal requirements
 
 **Collateral Management**:
+
 - **Collateral Forfeiture**: Forfeiting collateral for revoked proposals or Terms violations
 - **Collateral Return**: Returning collateral in cases of technical errors, disputes, or good faith mistakes
 
 **Legal Compliance Actions**: We may take any necessary action on smart contracts or on-chain data to comply with:
+
 - Court orders, subpoenas, or legal process
 - Regulatory requirements or guidance from Austrian or EU authorities
 - GDPR or data protection obligations
@@ -345,6 +364,7 @@ See Section 7 for technical details on content removal limitations.
 ### 13.4 Account Suspension and Termination
 
 **Suspension Grounds**: We may suspend user accounts for:
+
 - Terms violations or prohibited activities
 - Suspected fraudulent or malicious behavior
 - Security threats to the platform or other users
@@ -352,6 +372,7 @@ See Section 7 for technical details on content removal limitations.
 - Chargebacks or payment disputes (if applicable)
 
 **Termination Grounds**: Access may be permanently terminated for:
+
 - Repeated or severe Terms violations
 - Uploading illegal content (CSAM, terrorism material, etc.)
 - Fraudulent activity or attempt to compromise platform security
@@ -359,6 +380,7 @@ See Section 7 for technical details on content removal limitations.
 - Court order or regulatory directive
 
 **Effect of Termination**:
+
 - Account access disabled
 - Future registrations prohibited
 - Pending proposals may be cancelled
@@ -370,6 +392,7 @@ See Section 7 for technical details on content removal limitations.
 ### 13.5 Emergency Powers
 
 **Emergency Situations**: In cases of imminent harm, security breaches, legal emergencies, or critical system failures, we may:
+
 - Immediately pause all or part of the smart contract functionality
 - Suspend specific features, projects, or user accounts without notice
 - Modify smart contracts without timelock periods
@@ -382,21 +405,27 @@ See Section 7 for technical details on content removal limitations.
 Our platform integrates with various third-party services:
 
 **Stellar Network**: Blockchain infrastructure for transactions and smart contracts
+
 - Privacy Policy: https://stellar.org/privacy-policy
 
 **IPFS/Storacha**: Decentralized content storage
+
 - Privacy Policy: https://storacha.com/privacy
 
 **Soroban Domains**: Domain name registration
+
 - Privacy Policy: https://sorobandomains.com/privacy
 
 **GitHub**: Code hosting and version control
+
 - Privacy Policy: https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement
 
 **Netlify**: Web hosting and deployment
+
 - Privacy Policy: https://www.netlify.com/privacy/
 
 **Cloudflare**: CDN and security services
+
 - Privacy Policy: https://www.cloudflare.com/privacypolicy/
 
 **Third-Party Terms**: Your use of these services is subject to their respective terms and privacy policies.
@@ -406,6 +435,7 @@ Our platform integrates with various third-party services:
 ## 15. Indemnification
 
 You agree to indemnify and hold us harmless from any claims, damages, or expenses arising from:
+
 - Your use of our services
 - Your violation of these Terms
 - Your violation of any law or regulation
@@ -415,6 +445,7 @@ You agree to indemnify and hold us harmless from any claims, damages, or expense
 ## 16. Force Majeure
 
 We are not liable for delays or failures due to circumstances beyond our reasonable control, including:
+
 - Natural disasters
 - Government actions
 - Network outages
@@ -446,7 +477,7 @@ Our failure to enforce any provision of these Terms does not constitute a waiver
 
 ## 21. Governing Law and Dispute Resolution
 
-**Governing Law**: These Terms are governed by Austrian law (*österreichisches Recht*). To the extent these Terms constitute general terms and conditions (*Allgemeine Geschäftsbedingungen*), they comply with Austrian law, particularly ABGB (Allgemeines bürgerliches Gesetzbuch) §§ 879-916 regarding unfair contract terms.
+**Governing Law**: These Terms are governed by Austrian law (_österreichisches Recht_). To the extent these Terms constitute general terms and conditions (_Allgemeine Geschäftsbedingungen_), they comply with Austrian law, particularly ABGB (Allgemeines bürgerliches Gesetzbuch) §§ 879-916 regarding unfair contract terms.
 
 **Jurisdiction**: Any disputes arising from these Terms or your use of our services shall be subject to the exclusive jurisdiction of the competent courts in Graz, Austria.
 
