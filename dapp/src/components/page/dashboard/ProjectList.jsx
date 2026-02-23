@@ -6,7 +6,7 @@ import {
   getProjectFromName,
   getMember,
   getProjectsPage,
-} from "../../../service/ReadContractService.ts";
+} from "../../../service/ReadContractService";
 import { loadConfigData } from "../../../service/StateService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
 import { projectCardModalOpen } from "../../../utils/store.ts";
