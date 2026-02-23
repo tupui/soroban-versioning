@@ -1,25 +1,17 @@
-import type { ChangeEventHandler, FC, ReactNode } from "react";
+import type { FC, ReactNode, InputHTMLAttributes } from "react";
 
-interface Props {
-  className?: string;
+interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label?: ReactNode;
   description?: ReactNode;
-  placeholder?: string;
-  value?: string | number | readonly string[];
-  onChange?: ChangeEventHandler<HTMLInputElement>;
   error?: string | null | undefined;
-  type?: string;
 }
 
 const Input: FC<Props> = ({
   className,
   label,
   description,
-  placeholder,
-  value,
-  onChange,
   error,
-  type = "text",
+  ...inputProps
 }) => {
   return (
     <div className="flex-grow flex flex-col gap-[18px]">
@@ -28,13 +20,14 @@ const Input: FC<Props> = ({
           {label}
         </p>
       )}
+
       <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className={`p-[18px] border ${error ? "border-red-500" : "border-[#978AA1]"} outline-none ${className}`}
+        {...inputProps}
+        className={`p-[18px] border ${
+          error ? "border-red-500" : "border-[#978AA1]"
+        } outline-none ${className ?? ""}`}
       />
+
       {error ? (
         <p className="leading-[16px] text-base text-red-500">{error}</p>
       ) : description ? (

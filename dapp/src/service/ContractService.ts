@@ -132,7 +132,6 @@ export async function voteToProposal(
       const weightTx = await client.get_max_weight({
         project_key: projectKey,
         member_address: client.options.publicKey!,
-        proposal_id: Number(proposal_id),
       });
       // Check for simulation errors (contract errors)
       checkSimulationError(weightTx as any);
