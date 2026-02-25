@@ -162,8 +162,9 @@ test.describe("Essential Production Validation", () => {
     // Test that contract service can be imported and methods exist
     const contractServiceTest = await page.evaluate(async () => {
       try {
-        const { commitHash, voteToProposal, execute } =
-          await import("../src/service/ContractService.ts");
+        const { commitHash, voteToProposal, execute } = await import(
+          "../src/service/ContractService.ts"
+        );
 
         // Should not throw "is not a function" errors during static analysis
         const hasCommitHashMethod = typeof commitHash === "function";
