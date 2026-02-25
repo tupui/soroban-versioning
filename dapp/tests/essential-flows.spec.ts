@@ -162,8 +162,9 @@ test.describe("Essential Production Validation", () => {
     // Test that contract service can be imported and methods exist
     const contractServiceTest = await page.evaluate(async () => {
       try {
-        const { commitHash, voteToProposal, execute } =
-          await import("../src/service/ContractService.ts");
+        const { commitHash, voteToProposal, execute } = await import(
+          "../src/service/ContractService.ts"
+        );
 
         // Should not throw "is not a function" errors during static analysis
         const hasCommitHashMethod = typeof commitHash === "function";
@@ -217,12 +218,13 @@ test.describe("Essential Production Validation", () => {
     // XSS protection test
     await page.goto(
       "/project?name=%3Cscript%3Ealert%28%27xss%27%29%3C%2Fscript%3E",
+      { waitUntil: "domcontentloaded" },
     );
     await expect(page.locator("body")).toBeVisible();
 
     // Network failure resilience
     await page.route("**/soroban/**", (route) => route.abort());
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.locator("[data-connect]")).toBeVisible();
 
     // No critical environment errors

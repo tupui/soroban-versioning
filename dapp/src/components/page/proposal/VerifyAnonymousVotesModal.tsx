@@ -53,8 +53,9 @@ const VerifyAnonymousVotesModal: React.FC<Props> = ({
       const parsed = JSON.parse(txt);
       if (!parsed.privateKey) throw new Error("Invalid key file");
       // Validate uploaded key against on-chain config (centralized helper)
-      const { validateAnonymousKeyForProject } =
-        await import("utils/anonymousVoting");
+      const { validateAnonymousKeyForProject } = await import(
+        "utils/anonymousVoting"
+      );
       await validateAnonymousKeyForProject(projectName!, parsed.publicKey);
       setProcessingError(null);
       const count = await computeTalliesAndProof(parsed.privateKey);
