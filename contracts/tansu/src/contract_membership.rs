@@ -1,6 +1,10 @@
-use soroban_sdk::{Address, Bytes, Env, String, Vec, contractimpl, panic_with_error};
+use soroban_sdk::{
+    Address, Bytes, BytesN, Env, String, Vec, contractimpl, panic_with_error,
+};
 
-use crate::{MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types};
+use crate::{
+    MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types,
+};
 
 #[contractimpl]
 impl MembershipTrait for Tansu {
@@ -13,7 +17,15 @@ impl MembershipTrait for Tansu {
     ///
     /// # Panics
     /// * If the member already exists
-    fn add_member(env: Env, member_address: Address, meta: String) {
+    fn add_member(
+        env: Env,
+        member_address: Address,
+        meta: String,
+        git_identity: Option<String>,
+        git_pubkey: Option<BytesN<32>>,
+        msg: Option<Bytes>,
+        sig: Option<BytesN<64>>,
+    ) {
         Tansu::require_not_paused(env.clone());
 
         member_address.require_auth();
@@ -32,6 +44,71 @@ impl MembershipTrait for Tansu {
                 meta,
             };
             env.storage().persistent().set(&member_key_, &member);
+
+            if let (Some(git_identity), Some(git_pubkey), Some(msg), Some(sig)) =
+                (git_identity, git_pubkey, msg, sig)
+            {
+                // Verify the signature
+                env.crypto().ed25519_verify(&git_pubkey, &msg, &sig);
+
+                // Parse the message
+                let msg_str = core::str::from_utf8(msg.as_slice())
+                    .map_err(|_| {
+                        panic_with_error!(&env, &errors::ContractErrors::GitIdentityMessageParsing)
+                    })
+                    .unwrap();
+
+                let lines: core::str::Lines = msg_str.lines();
+                let lines_vec: Vec<String> = lines.map(String::from_str).collect_in(&env);
+
+                if lines_vec.len() != 5 {
+                    panic_with_error!(&env, &errors::ContractErrors::GitIdentityInvalidMessage);
+                }
+
+                // Check header
+                if lines_vec.get(0).unwrap() != String::from_str(&env, "Stellar Signed Message") {
+                    panic_with_error!(&env, &errors::ContractErrors::GitIdentityInvalidMessage);
+                }
+
+                // Check network
+                if lines_vec.get(1).unwrap() != env.network().passphrase() {
+                    panic_with_error!(&env, &errors::ContractErrors::GitIdentityInvalidMessage);
+                }
+
+                // Check account
+                let member_address_string = member_address.to_string();
+                if lines_vec.get(2).unwrap() != member_address_string {
+                    panic_with_error!(&env, &errors::ContractErrors::GitIdentityInvalidMessage);
+                }
+
+                // Check nonce format (32 hex chars)
+                let nonce = lines_vec.get(3).unwrap();
+                if nonce.len() != 32 {
+                    panic_with_error!(&env, &errors::ContractErrors::GitIdentityInvalidMessage);
+                }
+
+                // Check payload
+                let payload = lines_vec.get(4).unwrap();
+                let Ok(prefix) = String::from_str(&env, "tansu-bind|") else {
+                    panic_with_error!(&env, &errors::ContractErrors::UnexpectedError)
+                };
+                if !payload.starts_with(prefix) {
+                    panic_with_error!(&env, &errors::ContractErrors::GitIdentityInvalidMessage);
+                }
+
+                let git_identity_data = types::GitIdentity {
+                    git_identity: git_identity.clone(),
+                    git_pubkey,
+                    msg,
+                    sig,
+                    signed_at: env.ledger().timestamp(),
+                };
+
+                let git_identity_key = types::DataKey::GitIdentity(member_address.clone());
+                env.storage()
+                    .persistent()
+                    .set(&git_identity_key, &git_identity_data);
+            }
 
             events::MemberAdded { member_address }.publish(&env);
         };
@@ -56,6 +133,11 @@ impl MembershipTrait for Tansu {
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &errors::ContractErrors::UnknownMember);
             })
+    }
+
+    fn get_git_identity(env: Env, member_address: Address) -> Option<types::GitIdentity> {
+        let git_identity_key = types::DataKey::GitIdentity(member_address);
+        env.storage().persistent().get(&git_identity_key)
     }
 
     /// Set badges for a member in a specific project.

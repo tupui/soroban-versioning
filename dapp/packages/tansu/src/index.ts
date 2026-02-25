@@ -155,6 +155,14 @@ export interface UpgradeProposal {
   wasm_hash: Buffer;
 }
 
+export interface GitIdentity {
+  git_identity: string;
+  git_pubkey: Buffer;
+  msg: Buffer;
+  sig: Buffer;
+  signed_at: u64;
+}
+
 export interface AnonymousVoteConfig {
   public_key: string;
   seed_generator_point: Buffer;
@@ -190,6 +198,9 @@ export const ContractErrors = {
   25: { message: "CollateralError" },
   26: { message: "NoProjectPageFound" },
   27: { message: "TooManySubProjects" },
+  28: { message: "GitIdentityVerificationFailed" },
+  29: { message: "GitIdentityInvalidMessage" },
+  30: { message: "GitIdentityMessageParsing" },
 };
 
 export interface Client {
@@ -674,7 +685,21 @@ export interface Client {
    * * If the member already exists
    */
   add_member: (
-    { member_address, meta }: { member_address: string; meta: string },
+    {
+      member_address,
+      meta,
+      git_identity,
+      git_pubkey,
+      msg,
+      sig,
+    }: {
+      member_address: string;
+      meta: string;
+      git_identity?: string;
+      git_pubkey?: Buffer;
+      msg?: Buffer;
+      sig?: Buffer;
+    },
     options?: MethodOptions,
   ) => Promise<AssembledTransaction<null>>;
 
@@ -715,6 +740,11 @@ export interface Client {
     { member_address }: { member_address: string },
     options?: MethodOptions,
   ) => Promise<AssembledTransaction<Member>>;
+
+  get_git_identity: (
+    { member_address }: { member_address: string },
+    options?: MethodOptions,
+  ) => Promise<AssembledTransaction<GitIdentity>>;
 
   /**
    * Construct and simulate a set_badges transaction. Returns an `AssembledTransaction` object which will have a `result` field containing the result of the simulation. If this transaction changes contract state, you will need to call `signAndSend()` on the returned object.
@@ -1101,6 +1131,7 @@ export class Client extends ContractClient {
     add_member: this.txFromJSON<null>,
     get_badges: this.txFromJSON<Badges>,
     get_member: this.txFromJSON<Member>,
+    get_git_identity: this.txFromJSON<GitIdentity>,
     set_badges: this.txFromJSON<null>,
     get_max_weight: this.txFromJSON<u32>,
     commit: this.txFromJSON<null>,

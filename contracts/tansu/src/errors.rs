@@ -39,4 +39,8 @@ pub enum ContractErrors {
     // Versioning
     NoProjectPageFound = 26,
     TooManySubProjects = 27,
+    // Git identity binding
+    GitIdentityVerificationFailed = 28,
+    GitIdentityInvalidMessage = 29,
+    GitIdentityMessageParsing = 30,
 }

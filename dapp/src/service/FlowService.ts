@@ -2,21 +2,17 @@ import { calculateDirectoryCid } from "../utils/ipfsFunctions";
 import { create } from "@storacha/client";
 import * as Delegation from "@ucanto/core/delegation";
 import type { OutcomeContract } from "../types/proposal";
-
-//
 import Tansu from "../contracts/soroban_tansu";
 import { loadedPublicKey } from "./walletService";
 import { loadedProjectId } from "./StateService";
 import { deriveProjectKey } from "../utils/projectKey";
-//
-
-//
 import { sendSignedTransaction, signAssembledTransaction } from "./TxService";
 import { checkSimulationError } from "../utils/contractErrors";
 import { Buffer } from "buffer";
+
 interface UploadWithDelegationParams {
   files: File[];
-  signedTxXdr: string; // The signed contract transaction
+  signedTxXdr: string;
   did: string;
 }
 
@@ -26,7 +22,7 @@ interface CreateProposalFlowParams {
   proposalFiles: File[];
   votingEndsAt: number;
   publicVoting?: boolean;
-  outcomeContracts?: OutcomeContract[]; // New parameter for contract outcomes
+  outcomeContracts?: OutcomeContract[];
   tokenContract?: string;
   onProgress?: (step: number) => void;
 }
@@ -35,6 +31,10 @@ interface JoinCommunityFlowParams {
   memberAddress: string;
   profileFiles: File[];
   onProgress?: (step: number) => void;
+  git_identity?: string;
+  git_pubkey?: Buffer;
+  msg?: Buffer;
+  sig?: Buffer;
 }
 
 interface CreateProjectFlowParams {
@@ -45,15 +45,11 @@ interface CreateProjectFlowParams {
   onProgress?: (step: number) => void;
 }
 
-/**
- * Upload files to IPFS using delegation
- */
 export async function uploadWithDelegation({
   files,
   signedTxXdr,
   did,
 }: UploadWithDelegationParams): Promise<string> {
-  // Request delegation from the backend
   const response = await fetch(import.meta.env.PUBLIC_DELEGATION_API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -62,20 +58,16 @@ export async function uploadWithDelegation({
 
   if (!response.ok) {
     const contentType = response.headers.get("content-type");
-
     let errorMessage = "Unknown error";
     try {
       if (contentType?.includes("application/json")) {
-        const data = await response.json();
-        errorMessage = data.error || errorMessage;
+        errorMessage = (await response.json()).error || errorMessage;
       } else {
-        const text = await response.text();
-        errorMessage = text || errorMessage;
+        errorMessage = (await response.text()) || errorMessage;
       }
     } catch (parseError) {
       console.error("Failed to parse error response:", parseError);
     }
-
     throw new Error(errorMessage);
   }
 
@@ -87,30 +79,23 @@ export async function uploadWithDelegation({
   if ("ok" in extracted) {
     delegation = extracted.ok;
   } else if (Array.isArray(extracted)) {
-    delegation = extracted[0];
+    [delegation] = extracted;
   }
 
   if (!delegation) {
     throw new Error("Failed to extract a valid delegation from archive");
   }
 
-  // Create Storacha client
   const client = await create();
-
-  // Create a new space for uploading files
   const space = await client.addSpace(delegation);
   await client.setCurrentSpace(space.did());
 
-  // Upload files to IPFS
   const directoryCid = await client.uploadDirectory(files);
   if (!directoryCid) throw new Error("Failed to upload to IPFS");
 
   return directoryCid.toString();
 }
 
-/**
- * Create and sign a proposal transaction
- */
 async function createSignedProposalTransaction(
   projectName: string,
   title: string,
@@ -125,85 +110,57 @@ async function createSignedProposalTransaction(
 
   Tansu.options.publicKey = publicKey;
   const project_key = deriveProjectKey(projectName);
-
-  // Simplification: contract expects Option<Address>, so take only the first contract address
-  const outcomesContractAddress = outcomeContracts?.[0]?.address || undefined;
-
-  console.log("🔍 DEBUG: Tansu.create_proposal parameters:");
-  console.log("proposer:", publicKey);
-  console.log("project_key:", project_key);
-  console.log("title:", title);
-  console.log("ipfs:", ipfs);
-  console.log("voting_ends_at:", votingEndsAt, typeof votingEndsAt);
-  console.log("public_voting:", publicVoting);
-  console.log("outcomes_contract:", outcomesContractAddress);
+  const outcomesContractAddress = outcomeContracts?.[0]?.address;
 
   const tx = await Tansu.create_proposal({
     proposer: publicKey,
-    project_key: project_key,
-    title: title,
-    ipfs: ipfs,
+    project_key,
+    title,
+    ipfs,
     voting_ends_at: BigInt(votingEndsAt),
     public_voting: publicVoting,
     outcomes_contract: outcomesContractAddress,
     token_contract: tokenContract,
   });
 
-  // Check for simulation errors (contract errors) before signing
   checkSimulationError(tx as any);
-
-  return await signAssembledTransaction(tx);
+  return signAssembledTransaction(tx);
 }
 
-/**
- * Create and sign an add member transaction
- */
 async function createSignedAddMemberTransaction(
   memberAddress: string,
   meta: string,
+  git_identity?: string,
+  git_pubkey?: Buffer,
+  msg?: Buffer,
+  sig?: Buffer,
 ): Promise<string> {
   const address = memberAddress || loadedPublicKey();
   if (!address) throw new Error("Please connect your wallet first");
 
-  // Validate meta parameter - ensure it's not just whitespace
   if (meta.trim() === "") {
-    meta = ""; // Use empty string instead of whitespace
+    meta = "";
   }
 
   Tansu.options.publicKey = address;
 
   const tx = await Tansu.add_member({
     member_address: address,
-    meta: meta,
+    meta,
+    git_identity,
+    git_pubkey,
+    msg,
+    sig,
   });
 
-  // Check for simulation errors (contract errors) before signing
   checkSimulationError(tx as any);
-
-  return await signAssembledTransaction(tx);
+  return signAssembledTransaction(tx);
 }
 
-/**
- * Send a signed transaction to the network
- */
 async function sendSignedTransactionLocal(signedTxXdr: string): Promise<any> {
   return sendSignedTransaction(signedTxXdr);
 }
 
-/**
- * Execute the new Flow 2 for creating a proposal
- *
- * This flow reduces user interactions from 2 signatures to 1:
- * 1. Calculate CID locally before any user interaction
- * 2. Create and sign the proposal transaction with the pre-calculated CID
- * 3. Upload to IPFS using the signed transaction for authentication
- * 4. Verify the uploaded CID matches the calculated one
- * 5. Send the pre-signed transaction to the network
- *
- * @param params - The proposal creation parameters
- * @returns The created proposal ID
- * @throws Error if any step fails
- */
 export async function createProposalFlow({
   projectName,
   proposalName,
@@ -214,15 +171,11 @@ export async function createProposalFlow({
   tokenContract,
   onProgress,
 }: CreateProposalFlowParams): Promise<number> {
-  // Step 1: Calculate the CID
   const expectedCid = await calculateDirectoryCid(proposalFiles);
-
-  // Create the W3UP client to get the DID
   const client = await create();
   const did = client.agent.did();
 
-  // Step 2: Create and sign the smart contract transaction with the CID
-  onProgress?.(7); // Signing proposal transaction (UI index 2)
+  onProgress?.(7);
   const signedTxXdr = await createSignedProposalTransaction(
     projectName,
     proposalName,
@@ -233,79 +186,60 @@ export async function createProposalFlow({
     tokenContract,
   );
 
-  // Step 3: Upload to IPFS using the signed transaction as authentication
-  onProgress?.(8); // Uploading to IPFS (UI index 3)
+  onProgress?.(8);
   const uploadedCid = await uploadWithDelegation({
     files: proposalFiles,
     signedTxXdr,
     did,
   });
 
-  // Step 4: Verify CID matches
   if (uploadedCid !== expectedCid) {
-    throw new Error(
-      `CID mismatch: expected ${expectedCid}, got ${uploadedCid}`,
-    );
+    throw new Error(`CID mismatch: expected ${expectedCid}, got ${uploadedCid}`);
   }
 
-  // Step 5: Send the signed transaction
-  onProgress?.(9); // Sending transaction (align with ProgressStep step 4)
+  onProgress?.(9);
   const result = await sendSignedTransactionLocal(signedTxXdr);
 
-  // The result should be the proposal ID
-  if (typeof result === "number") return result;
   const parsed = Number(result);
   if (!Number.isNaN(parsed)) return parsed;
   throw new Error("Unexpected contract response: missing proposal id");
 }
 
-/**
- * Execute the new Flow 2 for joining the community
- *
- * This flow reduces user interactions from 2 signatures to 1:
- * 1. If profile data is provided, calculate CID locally
- * 2. Create and sign the add_member transaction with the CID (or empty)
- * 3. If profile data exists, upload to IPFS and verify CID
- * 4. Send the pre-signed transaction to the network
- *
- * @param params - The member registration parameters
- * @returns true if successful
- * @throws Error if any step fails
- */
 export async function joinCommunityFlow({
   memberAddress,
   profileFiles,
   onProgress,
+  git_identity,
+  git_pubkey,
+  msg,
+  sig,
 }: JoinCommunityFlowParams): Promise<boolean> {
-  let cid = ""; // Default for no profile - use empty string instead of single space
-
+  let cid = "";
   if (profileFiles.length > 0) {
-    // Step 1: Calculate the CID
     cid = await calculateDirectoryCid(profileFiles);
   }
 
-  // Create the W3UP client to get the DID
   const client = await create();
   const did = client.agent.did();
 
-  // Step 2: Create and sign the smart contract transaction with the CID
-  onProgress?.(7); // signing step indicator (offset -5 → shows Sign)
+  onProgress?.(7);
   const signedTxXdr = await createSignedAddMemberTransaction(
     memberAddress,
     cid,
+    git_identity,
+    git_pubkey,
+    msg,
+    sig,
   );
 
   if (profileFiles.length > 0) {
-    // Step 3: Upload to IPFS using the signed transaction as authentication
-    onProgress?.(8); // uploading step indicator (offset -5 → shows Uploading)
+    onProgress?.(8);
     try {
       const uploadedCid = await uploadWithDelegation({
         files: profileFiles,
         signedTxXdr,
         did,
       });
-
-      // Step 4: Verify CID matches
       if (uploadedCid !== cid) {
         throw new Error(`CID mismatch: expected ${cid}, got ${uploadedCid}`);
       }
@@ -315,20 +249,11 @@ export async function joinCommunityFlow({
     }
   }
 
-  // Step 5: Send the signed transaction
-  onProgress?.(9); // sending step indicator (offset -5 → shows Sending)
+  onProgress?.(9);
   await sendSignedTransactionLocal(signedTxXdr);
   return true;
 }
 
-/**
- * Execute Flow 2 for creating a project – mirrors proposal flow steps:
- * 1. Calculate CID locally
- * 2. Create & sign register transaction embedding CID
- * 3. Upload to IPFS using the signed tx for delegation
- * 4. Verify CID matches
- * 5. Send signed transaction
- */
 export async function createProjectFlow({
   projectName,
   tomlFile,
@@ -336,15 +261,11 @@ export async function createProjectFlow({
   maintainers,
   onProgress,
 }: CreateProjectFlowParams): Promise<boolean> {
-  // Step 1 – Calculate CID
   const expectedCid = await calculateDirectoryCid([tomlFile]);
-
-  // Create W3UP client for DID retrieval
   const client = await create();
   const did = client.agent.did();
 
-  // Step 2 – Create & sign register transaction
-  onProgress?.(7); // signing step indicator (offset -4 → shows Sign)
+  onProgress?.(7);
 
   const publicKey = loadedPublicKey();
   if (!publicKey) throw new Error("Please connect your wallet first");
@@ -359,35 +280,25 @@ export async function createProjectFlow({
     ipfs: expectedCid,
   });
 
-  // Check for simulation errors (contract errors) before signing
   checkSimulationError(tx as any);
-
   const signedTxXdr = await signAssembledTransaction(tx);
 
-  // Step 3 – Upload to IPFS with delegation
-  onProgress?.(8); // uploading step indicator (offset -4 → shows Uploading)
-
+  onProgress?.(8);
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
     signedTxXdr,
     did,
   });
 
-  // Step 4 – Verify CID matches
   if (cidUploaded !== expectedCid) {
-    throw new Error(
-      `CID mismatch: expected ${expectedCid}, got ${cidUploaded}`,
-    );
+    throw new Error(`CID mismatch: expected ${expectedCid}, got ${cidUploaded}`);
   }
 
-  // Step 5 – Send signed transaction
-  onProgress?.(9); // sending step indicator (offset -4 → shows Sending)
+  onProgress?.(9);
   await sendSignedTransactionLocal(signedTxXdr);
-
   return true;
 }
 
-/** Create and sign an update_config transaction */
 async function createSignedUpdateConfigTransaction(
   maintainers: string[],
   configUrl: string,
@@ -401,7 +312,6 @@ async function createSignedUpdateConfigTransaction(
   const projectId = loadedProjectId();
   if (!projectId) throw new Error("No project defined");
 
-  // Ensure projectId is a proper Buffer
   const projectKey = Buffer.isBuffer(projectId)
     ? projectId
     : Buffer.from(projectId, "hex");
@@ -409,15 +319,13 @@ async function createSignedUpdateConfigTransaction(
   const tx = await Tansu.update_config({
     maintainer: publicKey,
     key: projectKey,
-    maintainers: maintainers,
+    maintainers,
     url: configUrl,
     ipfs: cid,
   });
 
-  // Check for simulation errors (contract errors) before signing
   checkSimulationError(tx as any);
-
-  return await signAssembledTransaction(tx);
+  return signAssembledTransaction(tx);
 }
 
 export async function updateConfigFlow({
@@ -432,20 +340,17 @@ export async function updateConfigFlow({
   onProgress?: (step: number) => void;
 }): Promise<boolean> {
   const expectedCid = await calculateDirectoryCid([tomlFile]);
-
   const client = await create();
   const did = client.agent.did();
 
-  // sign tx
-  onProgress?.(7); // UI offset -4 → shows "Sign"
+  onProgress?.(7);
   const signedTxXdr = await createSignedUpdateConfigTransaction(
     maintainers,
     githubRepoUrl,
     expectedCid,
   );
 
-  // upload
-  onProgress?.(8); // UI offset -4 → shows "Uploading"
+  onProgress?.(8);
   const cidUploaded = await uploadWithDelegation({
     files: [tomlFile],
     signedTxXdr,
@@ -453,12 +358,10 @@ export async function updateConfigFlow({
   });
 
   if (cidUploaded !== expectedCid) {
-    throw new Error(
-      `CID mismatch: expected ${expectedCid}, got ${cidUploaded}`,
-    );
+    throw new Error(`CID mismatch: expected ${expectedCid}, got ${cidUploaded}`);
   }
 
-  onProgress?.(9); // UI offset -4 → shows "Sending"
+  onProgress?.(9);
   await sendSignedTransaction(signedTxXdr);
   return true;
 }

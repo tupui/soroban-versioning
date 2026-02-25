@@ -216,6 +216,26 @@ async function getMember(memberAddress: string): Promise<Member | null> {
   }
 }
 
+async function getGitIdentity(
+  memberAddress: string,
+): Promise<GitIdentity | null> {
+  if (!memberAddress || memberAddress.trim() === "") {
+    return null;
+  }
+
+  try {
+    const res = await Tansu.get_git_identity({
+      member_address: memberAddress,
+    });
+
+    checkSimulationError(res);
+
+    return res.result;
+  } catch {
+    return null;
+  }
+}
+
 async function getBadges(): Promise<Badges | null> {
   const projectId = loadedProjectId();
   if (projectId === undefined) {
@@ -262,6 +282,7 @@ export {
   getProposals,
   getProposal,
   getMember,
+  getGitIdentity,
   getBadges,
   getProjectsPage,
 };
