@@ -1,13 +1,10 @@
-import {
-  allowAllModules,
-  StellarWalletsKit,
-} from "@creit.tech/stellar-wallets-kit";
-import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
+/**
+ * Stellar Wallets Kit Initialization
+ * 
+ * Re-exports from the wrapper module which handles the dual implementation.
+ * Uses feature flag (USE_NEW_WALLET_KIT env var) to switch between:
+ * - Legacy: @creit.tech/stellar-wallets-kit@^1.9.5 (npm)
+ * - New: @creit.tech/stellar-wallets-kit (JSR)
+ */
 
-const kit: StellarWalletsKit = new StellarWalletsKit({
-  modules: [...allowAllModules(), new LedgerModule()],
-  // @ts-ignore
-  network: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
-});
-
-export { kit };
+export { getWalletKit as getKit} from "./stellar-wallets-kit-wrapper";

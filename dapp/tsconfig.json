@@ -6,7 +6,7 @@
     "paths": {
       "@service/*": ["service/*"]
     },
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
   },
   "exclude": ["packages", "dist", "node_modules"]
 }

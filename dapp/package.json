@@ -5,6 +5,7 @@
     "@astrojs/react": "4.4.2",
     "@creit.tech/sorobandomains-sdk": "^0.1.6",
     "@creit.tech/stellar-wallets-kit": "^1.9.5",
+    "@creit.tech/stellar-wallets-kit-jsr": "^2.0.0",
     "@ipld/dag-ucan": "^3.4.5",
     "@nanostores/react": "^1.0.0",
     "@noble/curves": "^2.0.1",
