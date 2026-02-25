@@ -2,21 +2,23 @@ import type { FC } from "react";
 import { useState, useEffect } from "react";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Button from "components/utils/Button";
-import type { Member, Badge } from "../../../../packages/tansu";
+import type { Member, Badge, GitIdentity } from "../../../../packages/tansu";
 import { getIpfsBasicLink, fetchJSONFromIPFS } from "utils/ipfsFunctions";
 import Markdown from "markdown-to-jsx";
 import { connectedPublicKey } from "../../../utils/store";
 import { refreshLocalStorage } from "@service/StateService";
-import { getProjectFromId } from "../../../service/ReadContractService";
+import {
+  getProjectFromId,
+  getGitIdentity,
+} from "../../../service/ReadContractService";
 import { navigate } from "astro:transitions/client";
 import { Buffer } from "buffer";
 import OnChainActions from "./OnChainActions";
 import { badgeName } from "../../../utils/badges";
-import AddressDisplay from "../proposal/AddressDisplay"; // use existing component
+import AddressDisplay from "../proposal/AddressDisplay";
 
 interface Props extends ModalProps {
   member: Member | null;
-  // The Stellar address of the member
   address?: string;
 }
 
@@ -24,7 +26,7 @@ interface ProfileData {
   name: string;
   description: string;
   social: string;
-  image?: string; // optional path to profile image inside the IPFS directory
+  image?: string;
 }
 
 interface ProjectWithName {
@@ -41,11 +43,10 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
   const [projectsWithNames, setProjectsWithNames] = useState<ProjectWithName[]>(
     [],
   );
+  const [gitIdentity, setGitIdentity] = useState<GitIdentity | null>(null);
 
-  // Use the address prop directly or extract the address from the search query if needed
   const memberAddress = address || "";
 
-  // Navigate to project page
   const navigateToProject = (projectName: string) => {
     refreshLocalStorage();
     navigate(`/project?name=${encodeURIComponent(projectName)}`);
@@ -53,7 +54,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      // Check if member exists and has valid metadata
       if (
         member &&
         member.meta &&
@@ -63,49 +63,33 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
       ) {
         try {
           setIsLoading(true);
-
-          // Validate that meta is a proper IPFS CID before attempting to fetch
           const validCidPattern = /^(bafy|Qm)[a-zA-Z0-9]{44,}$/;
           if (!validCidPattern.test(member.meta)) {
-            // Invalid CID format, nothing to fetch
             setIsLoading(false);
             return;
           }
-
           const ipfsUrl = getIpfsBasicLink(member.meta);
           if (!ipfsUrl) {
             setIsLoading(false);
             return;
           }
-
-          // Fetch profile.json
           try {
-            // Standard path format
             const profileUrl = `${ipfsUrl}/profile.json`;
             const profileData = await fetchJSONFromIPFS(profileUrl);
-
             if (profileData) {
               setProfileData(profileData);
               setHasValidMetadata(true);
-
-              // Determine profile image path
               if (profileData.image && typeof profileData.image === "string") {
                 setProfileImageUrl(`${ipfsUrl}/${profileData.image}`);
               }
             }
-          } catch {
-            // Silent failure - this is an expected case for missing profile data
-          }
-
-          // If not already set from profile.json, try the standard file name pattern
+          } catch {}
           if (!profileImageUrl) {
             const exts = ["png", "jpg", "jpeg"];
             let found = false;
             exts.forEach((ext, idx) => {
               const candidate = `${ipfsUrl}/profile-image.${ext}`;
-              // First extension becomes optimistic default so the UI loads quickly
               if (idx === 0) setProfileImageUrl(candidate);
-
               const img = new Image();
               img.src = candidate;
               img.onload = () => {
@@ -115,17 +99,13 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 }
               };
               img.onerror = () => {
-                // Silently handle 404 errors - profile images are optional
                 if (idx === exts.length - 1 && !found) {
-                  // If this was the last extension and no image found, clear the URL
                   setProfileImageUrl("");
                 }
               };
             });
           }
-        } catch {
-          // Silent error handling
-        } finally {
+        } catch {} finally {
           setIsLoading(false);
         }
       } else {
@@ -137,7 +117,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
       if (!member || !member.projects || member.projects.length === 0) {
         return;
       }
-
       const projectsWithNamesPromises = member.projects.map(async (proj) => {
         try {
           const projectData = await getProjectFromId(proj.project);
@@ -154,41 +133,41 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
           };
         }
       });
-
       const projects = await Promise.all(projectsWithNamesPromises);
       setProjectsWithNames(projects);
+    };
+
+    const fetchGitIdentity = async () => {
+      if (memberAddress) {
+        const identity = await getGitIdentity(memberAddress);
+        setGitIdentity(identity);
+      }
     };
 
     if (member) {
       fetchProfileData();
       fetchProjectNames();
+      fetchGitIdentity();
     } else {
       setIsLoading(false);
     }
-  }, [member]);
+  }, [member, memberAddress]);
 
-  // Get the initial letter for the avatar
   const getInitialLetter = (name: string | undefined): string => {
     if (!name || name === "Anonymous") return "A";
     return name.charAt(0).toUpperCase();
   };
 
-  // Get the connected public key
   const publicKey = connectedPublicKey.get();
 
-  // Handle disconnect button click
   const handleDisconnect = () => {
     window.dispatchEvent(new CustomEvent("walletDisconnected"));
     onClose();
-    // Force reload and navigate to main page
     window.location.href = "/";
   };
 
-  // Handle registration button click
   const handleRegister = () => {
-    // Show registration modal or redirect to registration page
     onClose();
-    // Dispatch event to show join community modal with the address
     window.dispatchEvent(
       new CustomEvent("openJoinCommunity", {
         detail: { address: memberAddress },
@@ -196,7 +175,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
     );
   };
 
-  // If member is null, show registration message
   if (!member) {
     return (
       <Modal onClose={onClose}>
@@ -204,14 +182,11 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
           <h2 className="text-xl font-bold text-primary text-center">
             Member Not Registered
           </h2>
-
           <div className="flex flex-col items-center gap-3">
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-zinc-200 flex items-center justify-center">
               <span className="text-3xl text-zinc-500">❓</span>
             </div>
-
             {memberAddress && <AddressDisplay address={memberAddress} />}
-
             <div className="text-center mt-1">
               <p className="text-sm sm:text-base text-secondary mb-1">
                 This member hasn't registered on the platform yet.
@@ -220,7 +195,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 To participate in the community, please register first.
               </p>
             </div>
-
             <div className="flex w-full justify-between gap-2 sm:gap-3 mt-3">
               <Button
                 type="primary"
@@ -229,7 +203,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
               >
                 Register Now
               </Button>
-
               {publicKey === memberAddress && (
                 <Button
                   type="primary"
@@ -246,7 +219,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
     );
   }
 
-  // If member exists, proceed with normal rendering
   const noBadges = member.projects.every((p) => p.badges.length === 0);
 
   return (
@@ -260,16 +232,12 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
       ) : (
         <div className="flex flex-col md:flex-row gap-6 md:gap-8 w-full">
           <div className="flex flex-col items-center gap-3 sm:gap-4 md:w-1/3">
-            {/* Profile Image */}
             {profileImageUrl ? (
               <img
                 src={profileImageUrl}
                 alt={profileData?.name || "Profile"}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-3 border-primary"
-                onError={() => {
-                  // If image fails to load, just hide it and show fallback
-                  setProfileImageUrl("");
-                }}
+                onError={() => setProfileImageUrl("")}
               />
             ) : (
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -278,15 +246,21 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 </span>
               </div>
             )}
-
-            {/* Name and Address */}
             <div className="text-center w-full">
               <h3 className="text-xl sm:text-2xl font-semibold text-primary">
                 {profileData?.name || "Anonymous"}
               </h3>
-
               {memberAddress && <AddressDisplay address={memberAddress} />}
-
+              {gitIdentity && (
+                <a
+                  href={`https://${gitIdentity.git_identity.replace(":", ".com/")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm sm:text-base text-blue-500 hover:underline mt-2 block"
+                >
+                  {gitIdentity.git_identity}
+                </a>
+              )}
               {profileData?.social && (
                 <a
                   href={profileData.social}
@@ -297,8 +271,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                   {profileData.social.replace(/^https?:\/\//, "")}
                 </a>
               )}
-
-              {/* IPFS metadata link */}
               {member?.meta && hasValidMetadata && (
                 <a
                   href={getIpfsBasicLink(member.meta)}
@@ -316,8 +288,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 </a>
               )}
             </div>
-
-            {/* Action Buttons */}
             <div className="flex w-full justify-between gap-2 sm:gap-3 mt-2 sm:mt-4">
               {publicKey === memberAddress && (
                 <Button
@@ -330,9 +300,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
               )}
             </div>
           </div>
-
           <div className="md:w-2/3 flex flex-col gap-4">
-            {/* Description - Only show if exists */}
             {profileData?.description && (
               <div className="w-full">
                 <h4 className="text-base sm:text-lg font-semibold text-primary mb-1 sm:mb-2">
@@ -377,8 +345,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 </div>
               </div>
             )}
-
-            {/* Engagement Section (previously Badges) */}
             <div className="w-full">
               <h4 className="text-base sm:text-lg font-semibold text-primary mb-1 sm:mb-2">
                 Community Engagements
@@ -413,8 +379,6 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
                 </div>
               )}
             </div>
-
-            {/* On-chain Actions List */}
             {address && (
               <div className="mt-6">
                 <h4 className="text-base sm:text-lg font-semibold text-primary mb-1 sm:mb-2">

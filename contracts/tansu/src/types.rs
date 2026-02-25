@@ -19,6 +19,7 @@ pub enum ContractKey {
 #[contracttype]
 pub enum DataKey {
     Member(Address), // Member of the DAO, address
+    GitIdentity(Address), // Verified Git identity binding for a member
     Paused,          // Contract pause state
     UpgradeProposal, // Pending upgrade proposal
     AdminsConfig,    // Admin configuration for upgrades and other admin operations
@@ -55,6 +56,16 @@ pub struct ProjectBadges {
 pub struct Member {
     pub projects: Vec<ProjectBadges>,
     pub meta: String,
+}
+
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct GitIdentity {
+    pub git_identity: String, // "<provider>:<username>"
+    pub git_pubkey: BytesN<32>,
+    pub msg: Bytes,
+    pub sig: BytesN<64>,
+    pub signed_at: u64,
 }
 
 #[contracttype]
