@@ -1,64 +1,190 @@
 ---
-// ConnectWallet.astro (JSR-only)
-// All wallet logic now dynamically imports getKit to avoid TS warnings
+import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx";
 ---
-<div id="connect-wrap" class="relative">
-  <button
-    id="connect-button"
-    class="h-10 px-4 flex items-center gap-2 bg-white shadow-button text-pink font-medium rounded"
-    aria-label="Connect wallet"
-    title="Connect your wallet"
+
+<div id="connect-wrap" aria-live="polite" class="relative">
+  <div
+    id="get-started"
+    class="absolute hidden top-6 -left-16 xl:flex flex-col gap-2 transform -rotate-13"
+    aria-hidden="true"
   >
-    <span id="connect-text">Connect</span>
-    <img src="/icons/connect.png" alt="Connect wallet icon" class="w-5 h-5"/>
+    <img
+      src="/arrow.svg"
+      alt="Arrow pointing to connect button"
+      class="w-14 h-[69px]"
+      width="56"
+      height="69"
+    />
+    <p class="text-victormono text-lg italic text-zinc-700 text-nowrap">
+      Get Started
+    </p>
+  </div>
+  <button
+    data-connect
+    aria-controls="connect-wrap"
+    aria-label="Connect wallet to start using Tansu"
+    class="h-8 md:h-10 lg:h-12 px-3 md:px-4 lg:px-6 flex justify-center items-center gap-1 md:gap-2 bg-white shadow-button truncate focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200"
+  >
+    <span
+      class="text-xs md:text-sm lg:text-base font-medium text-pink truncate"
+    >
+      Connect
+    </span>
+    <img
+      src="/icons/connect.png"
+      alt="Connect wallet icon"
+      class="w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 shrink-0"
+      width="20"
+      height="20"
+    />
   </button>
 </div>
 
-<script type="module">
-  let publicKey = null;
+<!-- React-hydrated modal for unfunded wallets -->
+<WalletFundingWrapper client:load />
 
-  const button = document.getElementById("connect-button");
-  const textEl = document.getElementById("connect-text");
+<script>
+  import { connectedPublicKey } from "utils/store";
+  import {
+    initializeConnection,
+    loadedPublicKey,
+    setConnection,
+    disconnect,
+    checkAndNotifyFunding,
+  } from "../service/walletService";
 
-  async function setLoggedIn(address) {
-    textEl.textContent = "Profile";
-    button.classList.remove("bg-white", "text-pink");
-    button.classList.add("bg-primary", "text-white");
-    button.title = address;
-    publicKey = address;
+  document.addEventListener("astro:page-load", () => {
+    initializeConnection();
 
-    // Notify global or store if needed
-    window.dispatchEvent(
-      new CustomEvent("walletConnected", { detail: { address } })
-    );
+    // Eagerly initialize the wallet kit so it's ready when the user clicks connect
+    import("./stellar-wallets-kit");
 
-    localStorage.setItem("publicKey", address);
-  }
+    const button = document.querySelector(
+      "[data-connect]",
+    ) as HTMLButtonElement;
 
-  async function connectWallet() {
-    try {
-      // Dynamically import getKit to avoid TS warnings
-      const { getKit } = await import("./stellar-wallets-kit-wrapper");
+    async function setLoggedIn(publicKey: string) {
+      button.textContent = "";
+      const textElement = document.createElement("span");
+      textElement.className =
+        "hidden sm:inline text-xs md:text-sm lg:text-base font-medium text-white truncate";
+      textElement.textContent = "Profile";
+      const imgElement = document.createElement("img");
+      imgElement.src = "/icons/profile.svg";
+      imgElement.alt = "User profile icon";
+      imgElement.className = "w-4 md:w-5 h-4 md:h-5 flex-shrink-0";
+      imgElement.setAttribute("width", "20");
+      imgElement.setAttribute("height", "20");
+      button.appendChild(textElement);
+      button.appendChild(imgElement);
+      button.title = publicKey;
+      button.setAttribute("aria-label", "Open user profile");
+      button.classList.toggle("bg-white", false);
+      button.classList.toggle("bg-primary", true);
+      button.classList.toggle("text-white", true);
+      button.classList.toggle("hover:opacity-90", true);
+      button.classList.toggle("transition-opacity", true);
+      button.classList.toggle("cursor-pointer", true);
 
-      const walletKit = await getKit();
-
-      console.log("Opening wallet modal...");
-      await walletKit.openModal();
-
-      // After wallet selected, read address
-      const { address } = (await walletKit.getSelectedWallet?.()) || {};
-
-      if (!address) return;
-
-      await setLoggedIn(address);
-    } catch (err) {
-      console.error("Wallet connection failed:", err);
+      button.onclick = () => {
+        window.dispatchEvent(new CustomEvent("openProfileModal"));
+      };
     }
-  }
 
-  button.addEventListener("click", connectWallet);
+    const publicKey = loadedPublicKey();
 
-  // Auto-update if already connected
-  const stored = localStorage.getItem("publicKey");
-  if (stored) setLoggedIn(stored);
+    if (import.meta.env.MODE !== "test") {
+      if (publicKey) {
+        setLoggedIn(publicKey);
+        checkAndNotifyFunding();
+      }
+    }
+
+    async function connectWallet() {
+      if (button.title) {
+        // Already connected - revalidate current address
+        try {
+          const { StellarWalletsKit } = await import(
+            "./stellar-wallets-kit"
+          );
+          const { address } = await StellarWalletsKit.getAddress();
+          const currentStored = loadedPublicKey();
+
+          if (address !== currentStored) {
+            setConnection(address, "stellar-wallets-kit");
+            await setLoggedIn(address);
+            window.dispatchEvent(
+              new CustomEvent("walletSwitched", {
+                detail: { address, provider: "stellar-wallets-kit" },
+              }),
+            );
+
+            // Check funding after wallet switch
+            if (import.meta.env.MODE !== "test") {
+              await checkAndNotifyFunding();
+            }
+          } else {
+            // Same address - open profile modal
+            window.dispatchEvent(new CustomEvent("openProfileModal"));
+          }
+        } catch {
+          // If getAddress fails, open profile modal as fallback
+          window.dispatchEvent(new CustomEvent("openProfileModal"));
+        }
+        return;
+      }
+
+      // First connection - getAddress() in v2 triggers wallet selection
+      try {
+        const { StellarWalletsKit } = await import(
+          "./stellar-wallets-kit"
+        );
+        const { address } = await StellarWalletsKit.getAddress();
+
+        setConnection(address, "stellar-wallets-kit");
+        await setLoggedIn(address);
+
+        window.dispatchEvent(
+          new CustomEvent("walletConnected", {
+            detail: { address, provider: "stellar-wallets-kit" },
+          }),
+        );
+
+        // Check funding status using centralized function
+        if (import.meta.env.MODE !== "test") {
+          await checkAndNotifyFunding();
+        }
+      } catch {}
+    }
+
+    if (button) button.addEventListener("click", connectWallet);
+
+    const getStarted = document.querySelector("#get-started");
+    connectedPublicKey.subscribe((publicKey) => {
+      if (publicKey) getStarted?.classList.remove("xl:flex");
+    });
+
+    window.addEventListener("walletDisconnected", () => {
+      disconnect();
+      button.textContent = "";
+      const textElement = document.createElement("span");
+      textElement.className =
+        "text-xs md:text-sm lg:text-base font-medium text-pink truncate";
+      textElement.textContent = "Connect";
+      const imgElement = document.createElement("img");
+      imgElement.src = "/icons/connect.png";
+      imgElement.alt = "Connect wallet icon";
+      imgElement.className =
+        "w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 flex-shrink-0";
+      imgElement.setAttribute("width", "20");
+      imgElement.setAttribute("height", "20");
+      button.appendChild(textElement);
+      button.appendChild(imgElement);
+      button.title = "";
+      button.setAttribute("aria-label", "Connect wallet to start using Tansu");
+      button.classList.toggle("bg-white", true);
+      button.classList.toggle("bg-primary", false);
+      button.classList.toggle("text-white", false);
+    });
+  });
 </script>

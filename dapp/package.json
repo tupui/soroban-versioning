@@ -3,6 +3,7 @@
     "@astrojs/check": "^0.9.5",
     "@astrojs/netlify": "6.6.0",
     "@astrojs/react": "4.4.2",
+    "@creit-tech/stellar-wallets-kit": "npm:@jsr/creit-tech__stellar-wallets-kit",
     "@creit.tech/sorobandomains-sdk": "^0.1.6",
     "@creit.tech/stellar-wallets-kit": "^1.9.5",
     "@creit.tech/stellar-wallets-kit-jsr": "^2.0.0",
