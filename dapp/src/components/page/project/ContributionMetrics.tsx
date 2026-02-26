@@ -36,10 +36,10 @@ const ContributionMetrics = ({
 
         const configData = loadConfigData();
         if (
-          configData?.authorGithubNames &&
-          Array.isArray(configData.authorGithubNames)
+          configData?.authorHandles &&
+          Array.isArray(configData.authorHandles)
         ) {
-          const maintainerNames = configData.authorGithubNames
+          const maintainerNames = configData.authorHandles
             .map((name) =>
               name && typeof name === "string" ? name.toLowerCase() : "",
             )
