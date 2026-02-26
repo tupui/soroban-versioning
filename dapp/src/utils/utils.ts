@@ -160,7 +160,15 @@ export const modifyProposalFromContract = (
       proposer: proposal.proposer,
       status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
       voting_ends_at: Number(proposal.vote_data.voting_ends_at),
-      outcome_contracts: proposal.outcome_contracts || null,
+      outcome_contracts: proposal.outcomes_contract
+        ? [
+            {
+              address: proposal.outcomes_contract,
+              execute_fn: "default_fn",
+              args: [],
+            },
+          ]
+        : null,
       voteStatus: {
         approve: {
           voteType: VoteType.APPROVE,
@@ -216,7 +224,7 @@ export const modifyProposalFromContract = (
     proposer: proposal.proposer,
     status: proposal.status.tag.toLocaleLowerCase() as ProposalStatus,
     voting_ends_at: Number(proposal.vote_data.voting_ends_at),
-    outcome_contracts: proposal.outcome_contracts || null,
+    outcome_contracts: proposal.outcomes_contract || null,
     voteStatus: {
       approve: { voteType: VoteType.APPROVE, score: 0, voters: [] },
       reject: { voteType: VoteType.REJECT, score: 0, voters: [] },

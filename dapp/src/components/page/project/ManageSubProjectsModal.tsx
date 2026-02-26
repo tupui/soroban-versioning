@@ -15,6 +15,7 @@ import {
   sendSignedTransaction,
 } from "@service/TxService";
 import { Buffer } from "buffer";
+import React from "react";
 
 interface ManageSubProjectsModalProps {
   isOpen?: boolean;
@@ -56,10 +57,6 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
 
   const handleClose = () => {
     setIsOpen(false);
-    const modal = document.getElementById(
-      "manage-sub-projects-modal",
-    ) as HTMLDialogElement;
-    if (modal) modal.close();
   };
 
   const loadCurrentSubProjects = async () => {
@@ -69,7 +66,6 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
 
       const projectKey = deriveProjectKey(projectInfo.name);
 
-      // Check if method exists (contract might not be deployed yet)
       if (typeof (Tansu as any).get_sub_projects !== "function") {
         setSubProjectNames([]);
         return;
@@ -78,10 +74,12 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
       const res = await (Tansu as any).get_sub_projects({
         project_key: projectKey,
       });
+
       checkSimulationError(res);
 
       const subProjectKeys = res.result || [];
       const names: string[] = [];
+
       for (const key of subProjectKeys) {
         const subProject = await getProjectFromKey(key);
         if (subProject) {
@@ -91,6 +89,7 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
           names.push(keyHex.slice(0, 8) + "...");
         }
       }
+
       setSubProjectNames(names);
     } catch {
       setSubProjectNames([]);
@@ -102,6 +101,7 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
       const res = await Tansu.get_project({
         project_key: key,
       });
+
       checkSimulationError(res);
       return res.result;
     } catch {
@@ -114,18 +114,20 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
       setError("Project name cannot be empty");
       return;
     }
+
     if (subProjectNames.includes(newProjectName.trim())) {
       setError("Project already in list");
       return;
     }
+
     setSubProjectNames([...subProjectNames, newProjectName.trim()]);
     setNewProjectName("");
     setError(null);
   };
 
-  const handleRemoveProject = (index: number) => {
-    setSubProjectNames(subProjectNames.filter((_, i) => i !== index));
-  };
+  // const handleRemoveProject = (index: number) => {
+  //   setSubProjectNames(subProjectNames.filter((_, i) => i !== index));
+  // };
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -146,12 +148,12 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
       if (!publicKey) {
         throw new Error("Please connect your wallet first");
       }
+
       Tansu.options.publicKey = publicKey;
 
-      // Check if method exists (contract might not be deployed yet)
       if (typeof (Tansu as any).set_sub_projects !== "function") {
         throw new Error(
-          "set_sub_projects method not available. The contract needs to be deployed with the new methods first.",
+          "set_sub_projects method not available. The contract needs deployment with new methods.",
         );
       }
 
@@ -162,6 +164,7 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
       });
 
       checkSimulationError(tx as any);
+
       const signedTxXdr = await signAssembledTransaction(tx);
       await sendSignedTransaction(signedTxXdr);
 
@@ -185,105 +188,59 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
   return (
     <>
       <button
-        className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
+        className="px-4 py-3 flex gap-2 items-center bg-white cursor-pointer border border-gray-200 hover:bg-gray-50 rounded-md"
         onClick={() => setIsOpen(true)}
       >
-        <img src="/icons/plus-fill.svg" className="w-5 h-5 flex-shrink-0" />
-        <span className="text-sm sm:text-base text-primary font-medium">
+        <img src="/icons/plus-fill.svg" className="w-5 h-5" />
+        <span className="text-sm text-primary font-medium">
           Manage Sub-Projects
         </span>
       </button>
+
       {isOpen && (
         <Modal onClose={handleClose}>
-          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-[18px]">
-            <img
-              src="/images/team.svg"
-              className="w-16 h-16 sm:w-auto sm:h-auto mx-auto sm:mx-0"
-            />
-            <div className="flex-grow flex flex-col gap-6 sm:gap-9 w-full">
-              <h6 className="text-xl sm:text-2xl font-medium text-primary text-center sm:text-left">
-                Manage Sub-Projects
-              </h6>
-              <p className="text-sm sm:text-base text-secondary">
-                Add or remove sub-projects to group them under this project. If
-                this project has sub-projects, it acts as an organization.
-              </p>
+          <div className="flex flex-col gap-6 w-full">
+            <h6 className="text-xl font-medium text-primary">
+              Manage Sub-Projects
+            </h6>
 
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-sm text-red-600">{error}</p>
-                </div>
-              )}
-
-              <div className="flex flex-col gap-4 sm:gap-[18px]">
-                <div className="flex flex-col gap-2 sm:gap-3">
-                  <p className="text-sm sm:text-base font-[600] text-primary">
-                    Add Sub-Project
-                  </p>
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="Enter project name"
-                      value={newProjectName}
-                      onChange={(e) => setNewProjectName(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter") {
-                          handleAddProject();
-                        }
-                      }}
-                      className="flex-1"
-                    />
-                    <Button onClick={handleAddProject} disabled={isLoading}>
-                      Add
-                    </Button>
-                  </div>
-                </div>
-
-                {subProjectNames.length > 0 && (
-                  <div className="flex flex-col gap-2 sm:gap-3">
-                    <p className="text-sm sm:text-base font-[600] text-primary">
-                      Sub-Projects ({subProjectNames.length})
-                    </p>
-                    <div className="flex flex-col gap-2 max-h-60 overflow-y-auto">
-                      {subProjectNames.map((name, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-md"
-                        >
-                          <span className="text-sm sm:text-base text-primary">
-                            {name}
-                          </span>
-                          <Button
-                            onClick={() => handleRemoveProject(index)}
-                            disabled={isLoading}
-                            type="secondary"
-                            size="sm"
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-end gap-3 mt-4">
-                  <Button
-                    onClick={handleClose}
-                    disabled={isLoading}
-                    type="secondary"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isLoading}
-                    isLoading={isLoading}
-                  >
-                    Save Changes
-                  </Button>
-                </div>
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">{error}</p>
               </div>
+            )}
+
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Enter project name"
+                value={newProjectName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewProjectName(e.target.value)
+                }
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                  if (e.key === "Enter") {
+                    handleAddProject();
+                  }
+                }}
+                className="flex-1"
+              />
+              <Button onClick={handleAddProject} disabled={isLoading}>
+                Add
+              </Button>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button onClick={handleClose} type="secondary">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={isLoading}
+                isLoading={isLoading}
+              >
+                Save Changes
+              </Button>
             </div>
           </div>
         </Modal>
