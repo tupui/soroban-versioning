@@ -3,7 +3,12 @@ import ProposalPageTitle from "components/page/proposal/ProposalPageTitle.astro"
 import Container from "../../components/layout/Container.astro";
 import ProposalPage from "../../components/page/proposal/ProposalPage.tsx";
 import Layout from "../../layouts/Layout.astro";
+import { FoksDiscussion } from "../../components/page/proposal/FoksDiscussion";
 ---
+
+const url = new URL(Astro.request.url);
+const proposalId = url.searchParams.get("id") || "0";
+
 
 <script is:inline>
   var global = global || window;
@@ -13,6 +18,9 @@ import Layout from "../../layouts/Layout.astro";
   <Container>
     <ProposalPageTitle />
     <ProposalPage client:only />
+    <div class="mt-8">
+       <FoksDiscussion client:load proposalId={proposalId} />
+    </div>
   </Container>
 </Layout>
 

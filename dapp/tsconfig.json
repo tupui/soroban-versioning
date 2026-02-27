@@ -1,12 +1,24 @@
 {
-  "extends": "astro/tsconfigs/strictest",
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
     "jsx": "react-jsx",
-    "baseUrl": "src",
+    "jsxImportSource": "react",
+    "strict": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "esModuleInterop": true,
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
     "paths": {
-      "@service/*": ["service/*"]
-    },
-    "allowImportingTsExtensions": true
+      "@/*": ["src/*"],
+      "@service/*": ["src/service/*"]
+    }
   },
-  "exclude": ["packages", "dist", "node_modules"]
+  "include": ["src/**/*", ".astro/types.d.ts"],
+  "exclude": ["node_modules", "dist"]
 }
