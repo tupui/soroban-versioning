@@ -1,13 +1,8 @@
-import {
-  allowAllModules,
-  StellarWalletsKit,
-} from "@creit.tech/stellar-wallets-kit";
-import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
+import { StellarWalletsKit } from "@creit-tech/stellar-wallets-kit/sdk";
+import { defaultModules } from "@creit-tech/stellar-wallets-kit/modules/utils";
 
-const kit: StellarWalletsKit = new StellarWalletsKit({
-  modules: [...allowAllModules(), new LedgerModule()],
-  // @ts-ignore
-  network: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+StellarWalletsKit.init({
+  modules: defaultModules(),
 });
 
-export { kit };
+export { StellarWalletsKit as Kit };

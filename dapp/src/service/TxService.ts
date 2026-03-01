@@ -189,9 +189,17 @@ export async function sendXLM(
       .setTimeout(StellarSdk.TimeoutInfinite)
       .build();
 
-    // Sign via wallet kit
-    const { kit } = await import("../components/stellar-wallets-kit");
-    const { signedTxXdr } = await kit.signTransaction(transaction.toXDR());
+    // Sign via wallet kit (v2 static API)
+    const { Kit } = await import(
+      "../components/stellar-wallets-kit"
+    );
+    const { signedTxXdr } = await Kit.signTransaction(
+      transaction.toXDR(),
+      {
+        networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+        address: senderPublicKey,
+      },
+    );
 
     // Submit signed transaction directly to Horizon
     const signedTransaction = new StellarSdk.Transaction(
@@ -284,8 +292,18 @@ export async function signAssembledTransaction(
 
   const preparedXdr = assembledTx.toXDR();
 
-  const { kit } = await import("../components/stellar-wallets-kit");
-  const { signedTxXdr } = await kit.signTransaction(preparedXdr);
+  // Sign via wallet kit (v2 static API)
+  const { Kit } = await import(
+    "../components/stellar-wallets-kit"
+  );
+  const senderAddress = loadedPublicKey();
+  const { signedTxXdr } = await Kit.signTransaction(
+    preparedXdr,
+    {
+      networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
+      address: senderAddress!,
+    },
+  );
 
   return signedTxXdr;
 }

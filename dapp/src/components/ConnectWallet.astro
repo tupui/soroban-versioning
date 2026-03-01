@@ -5,13 +5,13 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
 <div id="connect-wrap" aria-live="polite" class="relative">
   <div
     id="get-started"
-    class="absolute hidden top-6 -left-16 xl:flex flex-col gap-2 transform -rotate-[13deg]"
+    class="absolute hidden top-6 -left-16 xl:flex flex-col gap-2 transform -rotate-13"
     aria-hidden="true"
   >
     <img
       src="/arrow.svg"
       alt="Arrow pointing to connect button"
-      class="w-[56px] h-[69px]"
+      class="w-14 h-[69px]"
       width="56"
       height="69"
     />
@@ -33,7 +33,7 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
     <img
       src="/icons/connect.png"
       alt="Connect wallet icon"
-      class="w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 flex-shrink-0"
+      class="w-3 md:w-4 lg:w-5 h-3 md:h-4 lg:h-5 shrink-0"
       width="20"
       height="20"
     />
@@ -50,12 +50,14 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
     loadedPublicKey,
     setConnection,
     disconnect,
-    loadedProvider,
     checkAndNotifyFunding,
   } from "../service/walletService";
 
   document.addEventListener("astro:page-load", () => {
     initializeConnection();
+
+    // Eagerly initialize the wallet kit so it's ready when the user clicks connect
+    import("./stellar-wallets-kit");
 
     const button = document.querySelector(
       "[data-connect]",
@@ -99,65 +101,59 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
     }
 
     async function connectWallet() {
-      const provider = loadedProvider();
-
       if (button.title) {
-        // Already connected - revalidate
-        if (provider) {
-          const { kit } = await import("./stellar-wallets-kit");
-          kit.setWallet(provider);
-          try {
-            const { address } = await kit.getAddress();
-            const currentStored = loadedPublicKey();
+        // Already connected - revalidate current address
+        try {
+          const { StellarWalletsKit } = await import(
+            "./stellar-wallets-kit"
+          );
+          const { address } = await StellarWalletsKit.getAddress();
+          const currentStored = loadedPublicKey();
 
-            if (address !== currentStored) {
-              setConnection(address, provider);
-              await setLoggedIn(address);
-              window.dispatchEvent(
-                new CustomEvent("walletSwitched", {
-                  detail: { address, provider },
-                }),
-              );
+          if (address !== currentStored) {
+            setConnection(address, "stellar-wallets-kit");
+            await setLoggedIn(address);
+            window.dispatchEvent(
+              new CustomEvent("walletSwitched", {
+                detail: { address, provider: "stellar-wallets-kit" },
+              }),
+            );
 
-              // Check funding after wallet switch
-              if (import.meta.env.MODE !== "test") {
-                await checkAndNotifyFunding();
-              }
+            // Check funding after wallet switch
+            if (import.meta.env.MODE !== "test") {
+              await checkAndNotifyFunding();
             }
-          } catch {
-            disconnect();
+          } else {
+            // Same address - open profile modal
+            window.dispatchEvent(new CustomEvent("openProfileModal"));
           }
-        } else {
+        } catch {
+          // If getAddress fails, open profile modal as fallback
           window.dispatchEvent(new CustomEvent("openProfileModal"));
         }
         return;
       }
 
-      // First connection
+      // First connection - getAddress() in v2 triggers wallet selection
       try {
-        const { kit } = await import("./stellar-wallets-kit");
-        await kit.openModal({
-          onWalletSelected: async (option: { id: string }) => {
-            try {
-              kit.setWallet(option.id);
-              const { address } = await kit.getAddress();
+        const { StellarWalletsKit } = await import(
+          "./stellar-wallets-kit"
+        );
+        const { address } = await StellarWalletsKit.getAddress();
 
-              setConnection(address, option.id);
-              await setLoggedIn(address);
+        setConnection(address, "stellar-wallets-kit");
+        await setLoggedIn(address);
 
-              window.dispatchEvent(
-                new CustomEvent("walletConnected", {
-                  detail: { address, provider: option.id },
-                }),
-              );
+        window.dispatchEvent(
+          new CustomEvent("walletConnected", {
+            detail: { address, provider: "stellar-wallets-kit" },
+          }),
+        );
 
-              // Check funding status using centralized function
-              if (import.meta.env.MODE !== "test") {
-                await checkAndNotifyFunding();
-              }
-            } catch {}
-          },
-        });
+        // Check funding status using centralized function
+        if (import.meta.env.MODE !== "test") {
+          await checkAndNotifyFunding();
+        }
       } catch {}
     }
 
@@ -190,12 +186,5 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
       button.classList.toggle("bg-primary", false);
       button.classList.toggle("text-white", false);
     });
-
-    const provider = loadedProvider();
-    if (provider) {
-      import("./stellar-wallets-kit").then(({ kit }) => {
-        kit.setWallet(provider);
-      });
-    }
   });
 </script>
