@@ -4,18 +4,48 @@
   "importantNotice": "Our architecture is fully decentralized—we do not operate backend servers or store user data. We recommend reading our Privacy Policy alongside these Terms.",
   "sections": {
     "keyPoints": [
-      { "title": "Age Requirement", "content": "You must be at least 18 years old to use our services." },
-      { "title": "Free Service", "content": "Tansu is provided free of charge. Users only pay blockchain transaction fees." },
-      { "title": "Wallet Required", "content": "You must use a third-party Stellar wallet to authenticate your account." },
-      { "title": "Content Responsibility", "content": "You are solely responsible for all content you upload to IPFS." },
-      { "title": "Collateral System", "content": "Proposals and voting require collateral, reimbursed upon successful execution." },
-      { "title": "Austrian Law", "content": "These Terms are governed by Austrian law with jurisdiction in Graz, Austria." }
+      {
+        "title": "Age Requirement",
+        "content": "You must be at least 18 years old to use our services."
+      },
+      {
+        "title": "Free Service",
+        "content": "Tansu is provided free of charge. Users only pay blockchain transaction fees."
+      },
+      {
+        "title": "Wallet Required",
+        "content": "You must use a third-party Stellar wallet to authenticate your account."
+      },
+      {
+        "title": "Content Responsibility",
+        "content": "You are solely responsible for all content you upload to IPFS."
+      },
+      {
+        "title": "Collateral System",
+        "content": "Proposals and voting require collateral, reimbursed upon successful execution."
+      },
+      {
+        "title": "Austrian Law",
+        "content": "These Terms are governed by Austrian law with jurisdiction in Graz, Austria."
+      }
     ],
     "importantRisks": [
-      { "title": "Blockchain Risks", "content": "Transactions are permanent and cannot be reversed. Cryptocurrency prices fluctuate significantly." },
-      { "title": "IPFS Content", "content": "Content uploaded to IPFS is permanent and cannot be deleted. It remains accessible even if unlinked from our platform." },
-      { "title": "Anonymous Voting", "content": "Lost private keys prevent vote decryption and proposal execution. No recovery mechanism exists." },
-      { "title": "No Recourse", "content": "Lost keys, failed transactions, or errors cannot be reversed or compensated." }
+      {
+        "title": "Blockchain Risks",
+        "content": "Transactions are permanent and cannot be reversed. Cryptocurrency prices fluctuate significantly."
+      },
+      {
+        "title": "IPFS Content",
+        "content": "Content uploaded to IPFS is permanent and cannot be deleted. It remains accessible even if unlinked from our platform."
+      },
+      {
+        "title": "Anonymous Voting",
+        "content": "Lost private keys prevent vote decryption and proposal execution. No recovery mechanism exists."
+      },
+      {
+        "title": "No Recourse",
+        "content": "Lost keys, failed transactions, or errors cannot be reversed or compensated."
+      }
     ],
     "yourResponsibilities": [
       "Use services in compliance with Austrian law and these Terms",
@@ -46,4 +76,3 @@
     }
   }
 }
-

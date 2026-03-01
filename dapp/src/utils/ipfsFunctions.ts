@@ -64,8 +64,9 @@ export const calculateDirectoryCid = async (
   try {
     // For simple File[] inputs, use the more efficient implementation
     if (Array.isArray(files) && files.length > 0 && files[0] instanceof File) {
-      const { createDirectoryEncoderStream, CAREncoderStream } =
-        await import("ipfs-car");
+      const { createDirectoryEncoderStream, CAREncoderStream } = await import(
+        "ipfs-car"
+      );
 
       // We only need the root CID, not the full CAR, so we'll track blocks
       let rootCID: any;

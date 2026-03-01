@@ -82,46 +82,13 @@ function setProject(project: Project): void {
   projectInfo.project_maintainers = project.maintainers;
   projectInfo.project_config_url = project.config.url;
   projectInfo.project_config_ipfs = project.config.ipfs;
+  if (!project.sub_projects) {
+    project.sub_projects = [];
+  }
+
   if (typeof window !== "undefined") {
     projectInfoStore.set(projectInfo);
   }
-}
-
-function setProjectRepoInfo(author: string, repository: string): void {
-  projectRepoInfo.project_author = author;
-  projectRepoInfo.project_repository = repository;
-  if (typeof window !== "undefined") {
-    projectRepoInfoStore.set(projectRepoInfo);
-  }
-}
-
-function setProjectLatestSha(sha: string): void {
-  projectLatestSha.sha = sha;
-  if (typeof window !== "undefined") {
-    projectLatestShaStore.set(projectLatestSha);
-  }
-}
-
-function setConfigData(data: Partial<ConfigData>): void {
-  if (!configData) {
-    configData = data as ConfigData;
-  } else {
-    configData = {
-      ...configData,
-      ...data,
-    };
-  }
-  if (typeof window !== "undefined") {
-    configDataStore.set(configData);
-  }
-}
-
-function loadedProjectId(): Buffer | undefined {
-  return projectState.project_id;
-}
-
-function loadProjectName(): string | undefined {
-  return projectState.project_name;
 }
 
 function loadProjectInfo(): Project | undefined {
@@ -133,6 +100,7 @@ function loadProjectInfo(): Project | undefined {
   ) {
     return undefined;
   }
+
   return {
     maintainers: projectInfo.project_maintainers,
     name: projectState.project_name,
@@ -140,7 +108,17 @@ function loadProjectInfo(): Project | undefined {
       url: projectInfo.project_config_url,
       ipfs: projectInfo.project_config_ipfs,
     },
+    sub_projects: [],
   };
+}
+
+function setProjectRepoInfo(author: string, repository: string): void {
+  projectRepoInfo.project_author = author;
+  projectRepoInfo.project_repository = repository;
+
+  if (typeof window !== "undefined") {
+    projectRepoInfoStore.set(projectRepoInfo);
+  }
 }
 
 function loadProjectRepoInfo():
@@ -149,18 +127,49 @@ function loadProjectRepoInfo():
   if (!projectRepoInfo.project_author || !projectRepoInfo.project_repository) {
     return undefined;
   }
+
   return {
     author: projectRepoInfo.project_author,
     repository: projectRepoInfo.project_repository,
   };
 }
 
+function setProjectLatestSha(sha: string): void {
+  projectLatestSha.sha = sha;
+  if (typeof window !== "undefined") {
+    projectLatestShaStore.set(projectLatestSha);
+  }
+}
+
 function loadProjectLatestSha(): string | undefined {
   return projectLatestSha.sha;
 }
 
+function setConfigData(data: Partial<ConfigData>): void {
+  if (!configData) {
+    configData = data as ConfigData;
+  } else {
+    configData = {
+      ...configData,
+      ...data,
+    };
+  }
+
+  if (typeof window !== "undefined") {
+    configDataStore.set(configData);
+  }
+}
+
 function loadConfigData(): ConfigData | undefined {
   return configData;
+}
+
+function loadedProjectId(): Buffer | undefined {
+  return projectState.project_id;
+}
+
+function loadProjectName(): string | undefined {
+  return projectState.project_name;
 }
 
 export {
