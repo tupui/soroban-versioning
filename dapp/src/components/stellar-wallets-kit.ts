@@ -5,4 +5,4 @@ StellarWalletsKit.init({
   modules: defaultModules(),
 });
 
-export { StellarWalletsKit };
+export { StellarWalletsKit as Kit };

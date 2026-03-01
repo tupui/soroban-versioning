@@ -190,10 +190,10 @@ export async function sendXLM(
       .build();
 
     // Sign via wallet kit (v2 static API)
-    const { StellarWalletsKit } = await import(
+    const { Kit } = await import(
       "../components/stellar-wallets-kit"
     );
-    const { signedTxXdr } = await StellarWalletsKit.signTransaction(
+    const { signedTxXdr } = await Kit.signTransaction(
       transaction.toXDR(),
       {
         networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
@@ -293,11 +293,11 @@ export async function signAssembledTransaction(
   const preparedXdr = assembledTx.toXDR();
 
   // Sign via wallet kit (v2 static API)
-  const { StellarWalletsKit } = await import(
+  const { Kit } = await import(
     "../components/stellar-wallets-kit"
   );
   const senderAddress = loadedPublicKey();
-  const { signedTxXdr } = await StellarWalletsKit.signTransaction(
+  const { signedTxXdr } = await Kit.signTransaction(
     preparedXdr,
     {
       networkPassphrase: import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE,
