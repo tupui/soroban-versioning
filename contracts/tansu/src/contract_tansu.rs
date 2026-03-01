@@ -325,7 +325,7 @@ impl TansuTrait for Tansu {
 }
 
 /// Authenticate that the caller is an admin, panic if not
-fn auth_admin(env: &Env, admin: &Address) -> types::AdminsConfig {
+pub fn auth_admin(env: &Env, admin: &Address) -> types::AdminsConfig {
     admin.require_auth();
     let admins_config = Tansu::get_admins_config(env.clone());
     if !admins_config.admins.contains(admin) {
