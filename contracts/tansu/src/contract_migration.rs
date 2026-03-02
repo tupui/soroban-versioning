@@ -33,12 +33,7 @@ impl MigrationTrait for Tansu {
             .unwrap_or(Vec::new(&env));
 
         for name in names {
-            let str_len = name.len() as usize;
-            let mut slice: [u8; 15] = [0; 15];
-            name.copy_into_slice(&mut slice[..str_len]);
-            let name_b = Bytes::from_slice(&env, &slice[0..str_len]);
-
-            let key: Bytes = env.crypto().keccak256(&name_b).into();
+            let key: Bytes = env.crypto().keccak256(&name.to_bytes()).into();
             let key_ = types::ProjectKey::Key(key.clone());
 
             // Only migrate if the project exists
@@ -57,7 +52,7 @@ impl MigrationTrait for Tansu {
             }
         }
 
-        if current_project_keys.len() > 0 {
+        if !current_project_keys.is_empty() {
             env.storage().persistent().set(
                 &types::ProjectKey::ProjectKeys(current_page),
                 &current_project_keys,
