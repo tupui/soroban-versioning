@@ -56,10 +56,8 @@ impl VersioningTrait for Tansu {
             // could add more checks but handled in any case with later calls
             panic_with_error!(&env, &errors::ContractErrors::InvalidDomainError);
         }
-        let mut slice: [u8; 15] = [0; 15];
-        name.copy_into_slice(&mut slice[..str_len]);
-        let name_b = Bytes::from_slice(&env, &slice[0..str_len]);
 
+        let name_b = name.to_bytes();
         let key: Bytes = env.crypto().keccak256(&name_b).into();
 
         let key_ = types::ProjectKey::Key(key.clone());

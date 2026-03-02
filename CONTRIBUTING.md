@@ -8,6 +8,15 @@ Welcome to our community! Thank you for taking the time to read the following.
 - All code should be documented.
 - No changes are ever committed without review and approval.
 
+## AI tool use policy
+
+We follow the policy set by the LLVM project:
+
+https://llvm.org/docs/AIToolPolicy.html
+
+The core principle is that a human must be in the loop at all time and contributors are
+solely responsible for their contributions.
+
 ## Project management
 
 - _github_ is used for the code base.

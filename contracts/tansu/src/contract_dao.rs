@@ -57,7 +57,7 @@ impl DaoTrait for Tansu {
             public_key: public_key.clone(),
         };
 
-        env.storage().instance().set(
+        env.storage().persistent().set(
             &types::ProjectKey::AnonymousVoteConfig(project_key.clone()),
             &vote_config,
         );
@@ -84,7 +84,7 @@ impl DaoTrait for Tansu {
     /// * If no anonymous voting configuration exists for the project
     fn get_anonymous_voting_config(env: Env, project_key: Bytes) -> types::AnonymousVoteConfig {
         env.storage()
-            .instance()
+            .persistent()
             .get::<types::ProjectKey, types::AnonymousVoteConfig>(
                 &types::ProjectKey::AnonymousVoteConfig(project_key),
             )
@@ -377,6 +377,10 @@ impl DaoTrait for Tansu {
     /// The vote can be either public or anonymous depending on the proposal configuration.
     /// For public votes, the choice and weight are visible. For anonymous votes, only
     /// the weight is visible, and the choice is encrypted.
+    /// 
+    /// Voting incurs a collateral which is repaid upon proposal execution.
+    /// If the proposal is revoked, the collateral is not repaid as the voter
+    /// engaged with a malicious proposal.
     ///
     /// # Arguments
     /// * `env` - The environment object
@@ -717,7 +721,7 @@ impl DaoTrait for Tansu {
 
         let vote_config: types::AnonymousVoteConfig = env
             .storage()
-            .instance()
+            .persistent()
             .get(&types::ProjectKey::AnonymousVoteConfig(project_key))
             .unwrap_or_else(|| {
                 panic_with_error!(&env, &errors::ContractErrors::NoAnonymousVotingConfig);
