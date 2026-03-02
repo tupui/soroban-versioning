@@ -377,6 +377,10 @@ impl DaoTrait for Tansu {
     /// The vote can be either public or anonymous depending on the proposal configuration.
     /// For public votes, the choice and weight are visible. For anonymous votes, only
     /// the weight is visible, and the choice is encrypted.
+    /// 
+    /// Voting incurs a collateral which is repaid upon proposal execution.
+    /// If the proposal is revoked, the collateral is not repaid as the voter
+    /// engaged with a malicious proposal.
     ///
     /// # Arguments
     /// * `env` - The environment object
