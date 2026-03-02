@@ -1,4 +1,4 @@
-use crate::{Tansu, TansuClient, domain_contract, outcomes_contract, types};
+use crate::{Tansu, TansuClient, domain_contract, types};
 use soroban_sdk::testutils::Address as _;
 use soroban_sdk::{Address, Bytes, Env, Executable, String, Vec, token, vec};
 

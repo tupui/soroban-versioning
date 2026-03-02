@@ -1,8 +1,7 @@
 #![allow(clippy::too_many_arguments)]
 
 use crate::{
-    DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events,
-    outcomes_contract, types,
+    DaoTrait, MembershipTrait, Tansu, TansuArgs, TansuClient, TansuTrait, errors, events, types,
 };
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
@@ -23,15 +22,15 @@ impl DaoTrait for Tansu {
     /// Setup anonymous voting for a project.
     ///
     /// Configures BLS12-381 cryptographic primitives for anonymous voting.
-    /// Only the contract admin can call this function.
     ///
     /// # Arguments
     /// * `env` - The environment object
+    /// * `maintainer` - The address of the maintainer (must be authorized)
     /// * `project_key` - Unique identifier for the project
     /// * `public_key` - Asymmetric public key to be used for vote encryption
     ///
     /// # Panics
-    /// * If the caller is not the contract admin
+    /// * If the caller is not an authorized maintainer of the project
     fn anonymous_voting_setup(
         env: Env,
         maintainer: Address,
@@ -157,7 +156,8 @@ impl DaoTrait for Tansu {
     /// * `ipfs` - IPFS content identifier describing the proposal
     /// * `voting_ends_at` - UNIX timestamp when voting ends
     /// * `public_voting` - Whether voting is public or anonymous
-    /// * [`Option<outcomes_contract>`] - Outcome contract address
+    /// * `token_contract` - Optional token contract for token-based voting
+    /// * `outcomes_contract` - Optional outcome contract address for callbacks
     ///
     /// # Returns
     /// * `u32` - The ID of the created proposal.
@@ -320,9 +320,9 @@ impl DaoTrait for Tansu {
     ///
     /// # Arguments
     /// * `env` - The environment object
-    /// * `maintainer` - Address of the proposal creator
+    /// * `maintainer` - Address of the maintainer or admin revoking the proposal
     /// * `project_key` - The project key identifier
-    /// * `proposal_id` - The ID of the proposal to vote on
+    /// * `proposal_id` - The ID of the proposal to revoke
     ///
     /// # Panics
     /// * If the proposal is not active anymore
@@ -395,7 +395,6 @@ impl DaoTrait for Tansu {
     /// * If the proposal is not active anymore
     /// * If the proposal doesn't exist
     /// * If the voter's weight exceeds their maximum allowed weight
-    /// * If the voter is not a member of the project
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote) {
         Tansu::require_not_paused(env.clone());
 
@@ -898,14 +897,14 @@ pub fn anonymous_execute(tallies: &Vec<u128>) -> types::ProposalStatus {
 
 /// Convert vote tallies to proposal status.
 ///
-/// Helper function to determine the final status based on vote counts.
-/// Abstain votes are ignored in the decision. If approve and reject are equal,
-/// the proposal is cancelled.
+/// Supermajority governance: a choice must exceed the sum of the other two
+/// to win. Abstain votes count against both approval and rejection,
+/// requiring broad consensus for any decision.
 ///
 /// # Arguments
-/// * `voted_approve` - Number of approve votes
-/// * `voted_reject` - Number of reject votes
-/// * `voted_abstain` - Number of abstain votes (not used in decision)
+/// * `voted_approve` - Weighted approve votes
+/// * `voted_reject` - Weighted reject votes
+/// * `voted_abstain` - Weighted abstain votes
 ///
 /// # Returns
 /// * `types::ProposalStatus` - The final status (Approved, Rejected, or Cancelled)

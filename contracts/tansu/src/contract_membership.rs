@@ -193,23 +193,19 @@ impl MembershipTrait for Tansu {
         }
     }
 
-    /// Get the maximum voting weight for a member in a specific project.
+    /// Get the maximum voting weight for an address in a specific project.
     ///
-    /// Calculates the sum of all badge weights for the member in the project.
-    /// If no badges are assigned, returns the Default badge weight (1).
-    /// This weight determines the maximum number of votes the member can cast
-    /// in a single voting transaction.
+    /// Calculates the sum of all badge weights for the address in the project.
+    /// Returns the Default badge weight (1) if the address has no badges
+    /// assigned or is not a registered member.
     ///
     /// # Arguments
     /// * `env` - The environment object
     /// * `project_key` - The project key identifier
-    /// * `member_address` - The address of the member
+    /// * `member_address` - The address to check
     ///
     /// # Returns
-    /// * `u32` - The maximum voting weight for the member
-    ///
-    /// # Panics
-    /// * If the member doesn't exist
+    /// * `u32` - The maximum voting weight for the address
     fn get_max_weight(env: Env, project_key: Bytes, member_address: Address) -> u32 {
         let member_key = types::DataKey::Member(member_address.clone());
 

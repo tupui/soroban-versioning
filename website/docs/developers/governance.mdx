@@ -412,14 +412,20 @@ Custom quorum logic (percentage, thresholds…) can be built off-chain before de
 
 ### Voting Eligibility
 
-To cast a vote on a proposal, users must:
+**Badge-based proposals:** Any authenticated Stellar address can vote with a minimum
+weight of 1 (the `Default` badge). Registered members with assigned badges can vote with
+higher weights up to their `get_max_weight` value. The collateral deposit (10 XLM) serves
+as the economic barrier to spam. See [Membership & Badges](./membership.mdx) for details
+on how badges increase voting power.
 
-- Be registered as a member using `add_member`
-- Have one or more badges assigned for the project (see [Membership & Badges](./membership.mdx))
+**Token-based proposals:** Any address holding the proposal's token can vote. The vote
+weight equals the number of tokens locked as collateral. Badge validation is skipped.
+
+All voters must:
+
 - Vote with a weight not exceeding their maximum allowed weight
 - Vote before the proposal's deadline
-
-Members with zero voting weight (no badges) cannot participate in voting.
+- Pay the required collateral deposit
 
 ## Pagination helpers
 

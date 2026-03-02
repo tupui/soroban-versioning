@@ -7,10 +7,6 @@ mod domain_contract {
     soroban_sdk::contractimport!(file = "../domain_current.wasm");
 }
 
-mod outcomes_contract {
-    soroban_sdk::contractimport!(file = "../outcomes.wasm");
-}
-
 mod contract_dao;
 mod contract_membership;
 mod contract_migration;

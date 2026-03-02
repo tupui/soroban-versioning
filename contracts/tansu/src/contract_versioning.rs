@@ -131,7 +131,7 @@ impl VersioningTrait for Tansu {
 
     /// Update the configuration of an existing project.
     ///
-    /// Allows maintainers to change the project's URL, commit hash, and maintainer list.
+    /// Allows maintainers to change the project's URL, IPFS metadata, and maintainer list.
     ///
     /// # Arguments
     /// * `env` - The environment object
@@ -139,7 +139,7 @@ impl VersioningTrait for Tansu {
     /// * `key` - The project key identifier
     /// * `maintainers` - New list of maintainer addresses
     /// * `url` - New Git repository URL
-    /// * `hash` - New commit hash
+    /// * `ipfs` - New CID of the tansu.toml file with metadata
     ///
     /// # Panics
     /// * If the project doesn't exist
@@ -194,7 +194,6 @@ impl VersioningTrait for Tansu {
         events::Commit { project_key, hash }.publish(&env);
     }
 
-    /// Get the last commit hash
     /// Get the latest commit hash for a project.
     ///
     /// # Arguments
