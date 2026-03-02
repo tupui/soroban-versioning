@@ -377,7 +377,7 @@ impl DaoTrait for Tansu {
     /// The vote can be either public or anonymous depending on the proposal configuration.
     /// For public votes, the choice and weight are visible. For anonymous votes, only
     /// the weight is visible, and the choice is encrypted.
-    /// 
+    ///
     /// Voting incurs a collateral which is repaid upon proposal execution.
     /// If the proposal is revoked, the collateral is not repaid as the voter
     /// engaged with a malicious proposal.
@@ -552,7 +552,7 @@ impl DaoTrait for Tansu {
     ) -> types::ProposalStatus {
         Tansu::require_not_paused(env.clone());
 
-        maintainer.require_auth();
+        crate::auth_maintainers(&env, &maintainer, &project_key);
 
         let page = proposal_id / MAX_PROPOSALS_PER_PAGE;
         let sub_id = proposal_id % MAX_PROPOSALS_PER_PAGE;
