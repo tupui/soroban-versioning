@@ -174,7 +174,7 @@ const NavbarSearch = () => {
         {/* Mobile: Search icon toggle button */}
         <button
           onClick={toggleSearchVisibility}
-          className="flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
           aria-label="Toggle search"
           title="Search"
         >
@@ -225,7 +225,7 @@ const NavbarSearch = () => {
                 setSearchTerm("");
                 toggleSearchVisibility();
               }}
-              className="hidden md:flex-shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="hidden md:shrink-0 p-2 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Close and clear search"
               title="Close and clear search"
             >
@@ -260,7 +260,7 @@ const NavbarSearch = () => {
         {/* Desktop: Search bar */}
         <div className="search-container relative flex-1">
           <div className="flex items-center border border-zinc-800 h-12 bg-white rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all duration-300 w-full">
-            <div className="flex-shrink-0 pl-4">
+            <div className="shrink-0 pl-4">
               <img
                 src="/icons/search.svg"
                 width={16}

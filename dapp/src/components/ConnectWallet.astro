@@ -104,10 +104,10 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
       if (button.title) {
         // Already connected - revalidate current address
         try {
-          const { StellarWalletsKit } = await import(
+          const { Kit } = await import(
             "./stellar-wallets-kit"
           );
-          const { address } = await StellarWalletsKit.getAddress();
+          const { address } = await Kit.getAddress();
           const currentStored = loadedPublicKey();
 
           if (address !== currentStored) {
@@ -136,10 +136,10 @@ import WalletFundingWrapper from "../components/wallet/WalletFundingWrapper.tsx"
 
       // First connection - getAddress() in v2 triggers wallet selection
       try {
-        const { StellarWalletsKit } = await import(
+        const { Kit } = await import(
           "./stellar-wallets-kit"
         );
-        const { address } = await StellarWalletsKit.getAddress();
+        const { address } = await Kit.getAddress();
 
         setConnection(address, "stellar-wallets-kit");
         await setLoggedIn(address);

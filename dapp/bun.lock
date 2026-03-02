@@ -10,8 +10,6 @@
         "@astrojs/react": "4.4.2",
         "@creit-tech/stellar-wallets-kit": "npm:@jsr/creit-tech__stellar-wallets-kit",
         "@creit.tech/sorobandomains-sdk": "^0.1.6",
-        "@creit.tech/stellar-wallets-kit": "^1.9.5",
-        "@creit.tech/stellar-wallets-kit-jsr": "^2.0.0",
         "@ipld/dag-ucan": "^3.4.5",
         "@nanostores/react": "^1.0.0",
         "@noble/curves": "^2.0.1",
@@ -159,10 +157,6 @@
     "@creit-tech/stellar-wallets-kit": ["@jsr/creit-tech__stellar-wallets-kit@2.0.0", "https://npm.jsr.io/~/11/@jsr/creit-tech__stellar-wallets-kit/2.0.0.tgz", { "dependencies": { "@albedo-link/intent": "0.12.0", "@creit.tech/xbull-wallet-connect": "0.4.0", "@hot-wallet/sdk": "1.0.11", "@jsr/std__encoding": "1.0.10", "@ledgerhq/hw-app-str": "7.2.8", "@ledgerhq/hw-transport": "6.31.12", "@ledgerhq/hw-transport-webusb": "6.29.12", "@lobstrco/signer-extension-api": "2.0.0", "@preact/signals": "2.3.2", "@reown/appkit": "1.8.12", "@stellar/freighter-api": "6.0.0", "@stellar/stellar-base": "14.0.1", "@trezor/connect-plugin-stellar": "9.2.3", "@trezor/connect-web": "9.6.4", "@twind/core": "1.1.3", "@twind/preset-autoprefix": "1.0.7", "@twind/preset-tailwind": "1.1.4", "@walletconnect/sign-client": "2.23.0", "@walletconnect/types": "2.23.0", "htm": "3.1.1", "preact": "^10.27.2" } }, "sha512-Uha9c5HVffR4gc5oA/VsEaSwxWxdtLhFhfMIGJgLb0tFSa85NejM5EwWkK6y2o5OLIPk5M7qAd2YHtgT8NdYIQ=="],
 
     "@creit.tech/sorobandomains-sdk": ["@creit.tech/sorobandomains-sdk@0.1.6", "", { "dependencies": { "buffer": "^6.0.3", "js-sha3": "^0.9.3" } }, "sha512-9dXTSefevgDq7TT3/SROK9DGsdaIEcVy0JIIDzgQXSv8frmFlxRtEpkI2rtdLskmcTbelhaDgb7Ga77UrHvVVw=="],
-
-    "@creit.tech/stellar-wallets-kit": ["@creit.tech/stellar-wallets-kit@1.9.5", "", { "dependencies": { "@albedo-link/intent": "0.12.0", "@creit.tech/xbull-wallet-connect": "^0.4.0", "@hot-wallet/sdk": "1.0.11", "@ledgerhq/hw-app-str": "7.0.4", "@ledgerhq/hw-transport": "6.31.4", "@ledgerhq/hw-transport-webusb": "6.29.4", "@lobstrco/signer-extension-api": "1.0.0-beta.0", "@ngneat/elf": "2.5.1", "@ngneat/elf-devtools": "1.3.0", "@ngneat/elf-entities": "5.0.2", "@ngneat/elf-persist-state": "1.2.1", "@stellar/freighter-api": "5.0.0", "@trezor/connect-plugin-stellar": "9.2.1", "@trezor/connect-web": "9.6.2", "@walletconnect/modal": "2.6.2", "@walletconnect/sign-client": "2.11.2", "buffer": "6.0.3", "events": "3.3.0", "lit": "3.2.0", "rxjs": "7.8.1" }, "peerDependencies": { "@stellar/stellar-base": "^14.0.0" } }, "sha512-b9E77r+o6Opow0CttmHdFBPeJpdLhOcLFTx3CbnwMQVivo94niap70y3A03F5cYgwVk9HhM4CJr0aimm0eNwxA=="],
-
-    "@creit.tech/stellar-wallets-kit-jsr": ["@creit.tech/stellar-wallets-kit@2.0.0", "", { "dependencies": { "@albedo-link/intent": "0.12.0", "@creit.tech/xbull-wallet-connect": "0.4.0", "@hot-wallet/sdk": "1.0.11", "@ledgerhq/hw-app-str": "7.2.8", "@ledgerhq/hw-transport": "6.31.12", "@ledgerhq/hw-transport-webusb": "6.29.12", "@lobstrco/signer-extension-api": "2.0.0", "@preact/signals": "2.3.2", "@reown/appkit": "1.8.12", "@stellar/freighter-api": "6.0.0", "@stellar/stellar-base": "14.0.1", "@trezor/connect-plugin-stellar": "9.2.3", "@trezor/connect-web": "9.6.4", "@twind/core": "1.1.3", "@twind/preset-autoprefix": "1.0.7", "@twind/preset-tailwind": "1.1.4", "@walletconnect/sign-client": "2.23.0", "@walletconnect/types": "2.23.0", "htm": "3.1.1", "preact": "^10.27.2" } }, "sha512-BrFMuCu4qHQSj9SjqNTtZNIpLh9bmheTD+vrrDp68X7g27/ACx0AAI55CbcXn8KzPegrAr7AOW6244n8WtgLtA=="],
 
     "@creit.tech/xbull-wallet-connect": ["@creit.tech/xbull-wallet-connect@0.4.0", "", { "dependencies": { "rxjs": "^7.5.5", "tweetnacl": "^1.0.3", "tweetnacl-util": "^0.15.1" } }, "sha512-LrCUIqUz50SkZ4mv2hTqSmwews8CNRYVoZ9+VjLsK/1U8PByzXTxv1vZyenj6avRTG86ifpoeihz7D3D5YIDrQ=="],
 
@@ -426,22 +420,6 @@
 
     "@mobily/ts-belt": ["@mobily/ts-belt@3.13.1", "", {}, "sha512-K5KqIhPI/EoCTbA6CGbrenM9s41OouyK8A03fGJJcla/zKucsgLbz8HNbeseoLarRPgyWJsUyCYqFhI7t3Ra9Q=="],
 
-    "@motionone/animation": ["@motionone/animation@10.18.0", "", { "dependencies": { "@motionone/easing": "^10.18.0", "@motionone/types": "^10.17.1", "@motionone/utils": "^10.18.0", "tslib": "^2.3.1" } }, "sha512-9z2p5GFGCm0gBsZbi8rVMOAJCtw1WqBTIPw3ozk06gDvZInBPIsQcHgYogEJ4yuHJ+akuW8g1SEIOpTOvYs8hw=="],
-
-    "@motionone/dom": ["@motionone/dom@10.18.0", "", { "dependencies": { "@motionone/animation": "^10.18.0", "@motionone/generators": "^10.18.0", "@motionone/types": "^10.17.1", "@motionone/utils": "^10.18.0", "hey-listen": "^1.0.8", "tslib": "^2.3.1" } }, "sha512-bKLP7E0eyO4B2UaHBBN55tnppwRnaE3KFfh3Ps9HhnAkar3Cb69kUCJY9as8LrccVYKgHA+JY5dOQqJLOPhF5A=="],
-
-    "@motionone/easing": ["@motionone/easing@10.18.0", "", { "dependencies": { "@motionone/utils": "^10.18.0", "tslib": "^2.3.1" } }, "sha512-VcjByo7XpdLS4o9T8t99JtgxkdMcNWD3yHU/n6CLEz3bkmKDRZyYQ/wmSf6daum8ZXqfUAgFeCZSpJZIMxaCzg=="],
-
-    "@motionone/generators": ["@motionone/generators@10.18.0", "", { "dependencies": { "@motionone/types": "^10.17.1", "@motionone/utils": "^10.18.0", "tslib": "^2.3.1" } }, "sha512-+qfkC2DtkDj4tHPu+AFKVfR/C30O1vYdvsGYaR13W/1cczPrrcjdvYCj0VLFuRMN+lP1xvpNZHCRNM4fBzn1jg=="],
-
-    "@motionone/svelte": ["@motionone/svelte@10.16.4", "", { "dependencies": { "@motionone/dom": "^10.16.4", "tslib": "^2.3.1" } }, "sha512-zRVqk20lD1xqe+yEDZhMYgftsuHc25+9JSo+r0a0OWUJFocjSV9D/+UGhX4xgJsuwB9acPzXLr20w40VnY2PQA=="],
-
-    "@motionone/types": ["@motionone/types@10.17.1", "", {}, "sha512-KaC4kgiODDz8hswCrS0btrVrzyU2CSQKO7Ps90ibBVSQmjkrt2teqta6/sOG59v7+dPnKMAg13jyqtMKV2yJ7A=="],
-
-    "@motionone/utils": ["@motionone/utils@10.18.0", "", { "dependencies": { "@motionone/types": "^10.17.1", "hey-listen": "^1.0.8", "tslib": "^2.3.1" } }, "sha512-3XVF7sgyTSI2KWvTf6uLlBJ5iAgRgmvp3bpuOiQJvInd4nZ19ET8lX5unn30SlmRH7hXbBbH+Gxd0m0klJ3Xtw=="],
-
-    "@motionone/vue": ["@motionone/vue@10.16.4", "", { "dependencies": { "@motionone/dom": "^10.16.4", "tslib": "^2.3.1" } }, "sha512-z10PF9JV6SbjFq+/rYabM+8CVlMokgl8RFGvieSGNTmrkQanfHn+15XBrhG3BgUfvmTeSeyShfOHpG0i9zEdcg=="],
-
     "@msgpack/msgpack": ["@msgpack/msgpack@3.1.2", "", {}, "sha512-JEW4DEtBzfe8HvUYecLU9e6+XJnKDlUAIve8FvPzF3Kzs6Xo/KuZkZJsDH0wJXl/qEZbeeE7edxDNY3kMs39hQ=="],
 
     "@multiformats/blake2": ["@multiformats/blake2@2.0.2", "", { "dependencies": { "blakejs": "^1.2.1", "multiformats": "^13.0.0" } }, "sha512-AOWu6Tyuk5UoT5m4faB6ntVnPB8EmuD6rn18s4cCgHNEGgsamT8GdvjP9DYjzFHQVaP/0L3CaKqWQqJlXx9ecw=="],
@@ -525,14 +503,6 @@
     "@netlify/vite-plugin": ["@netlify/vite-plugin@2.7.3", "", { "dependencies": { "@netlify/dev": "4.6.2", "@netlify/dev-utils": "^4.3.0", "dedent": "^1.7.0" }, "peerDependencies": { "vite": "^5 || ^6 || ^7" } }, "sha512-MtuCoUJQ/INiQsscaF/q9UOJYE2Lxn2b222YX24DeEWyxJTNnhetXHUK1WGtnsUCLZmKG4dd7P0ThyW4HBLV8Q=="],
 
     "@netlify/zip-it-and-ship-it": ["@netlify/zip-it-and-ship-it@14.1.10", "", { "dependencies": { "@babel/parser": "^7.22.5", "@babel/types": "7.28.4", "@netlify/binary-info": "^1.0.0", "@netlify/serverless-functions-api": "^2.7.0", "@vercel/nft": "0.29.4", "archiver": "^7.0.0", "common-path-prefix": "^3.0.0", "copy-file": "^11.0.0", "es-module-lexer": "^1.0.0", "esbuild": "0.25.10", "execa": "^8.0.0", "fast-glob": "^3.3.3", "filter-obj": "^6.0.0", "find-up": "^7.0.0", "is-path-inside": "^4.0.0", "junk": "^4.0.0", "locate-path": "^7.0.0", "merge-options": "^3.0.4", "minimatch": "^9.0.0", "normalize-path": "^3.0.0", "p-map": "^7.0.0", "path-exists": "^5.0.0", "precinct": "^12.0.0", "require-package-name": "^2.0.1", "resolve": "^2.0.0-next.1", "semver": "^7.3.8", "tmp-promise": "^3.0.2", "toml": "^3.0.0", "unixify": "^1.0.0", "urlpattern-polyfill": "8.0.2", "yargs": "^17.0.0", "zod": "^3.23.8" }, "bin": { "zip-it-and-ship-it": "./bin.js" } }, "sha512-4zLknf28ScL7UQrsWd0JnQazfLkf+ah6ihZoQb77nMZwOBou9b4topqUsAvc0y2ADjqe9As308fB4FcRHM6J8g=="],
-
-    "@ngneat/elf": ["@ngneat/elf@2.5.1", "", { "peerDependencies": { "rxjs": ">=7.0.0" } }, "sha512-13BItNZFgHglTiXuP9XhisNczwQ5QSzH+imAv9nAPsdbCq/3ortqkIYRnlxB8DGPVcuIjLujQ4OcZa+9QWgZtw=="],
-
-    "@ngneat/elf-devtools": ["@ngneat/elf-devtools@1.3.0", "", {}, "sha512-J9+4Vk/S/nKFGnXGZUDYrIx/K8Jfv4TLpzR3voBSOtSeq+c8Q0hdmo8iW7oaK6y5FWFDk0VJktlEh9cjylYxFg=="],
-
-    "@ngneat/elf-entities": ["@ngneat/elf-entities@5.0.2", "", { "peerDependencies": { "@ngneat/elf": ">=2.5.0", "rxjs": ">=7.0.0" } }, "sha512-G4ag51lvM3tOSgpxVVFYAgsh/bOL5BkNb4Z0VtosaM/CTWTHoNrf8UdvcaeJ3+sP1RS3bmEdZ9xUE8ifnVxssA=="],
-
-    "@ngneat/elf-persist-state": ["@ngneat/elf-persist-state@1.2.1", "", { "peerDependencies": { "rxjs": ">=7.0.0" } }, "sha512-R+5IRLC35cDT403sSs37UeqqOpHNnCwHl3eicPv/Rc+JJ7Av1bcQClSF2mHC0jE4pkYmEuVghpzUntvmrKCCwA=="],
 
     "@noble/ciphers": ["@noble/ciphers@1.3.0", "", {}, "sha512-2I0gnIVPtfnMw9ee9h1dJG7tp81+8Ob3OJb3Mv37rx5L40/b0i7djjCVvGOVqc9AEIQyvyu1i6ypKdFw8R8gQw=="],
 
@@ -878,38 +848,6 @@
 
     "@solana/web3.js": ["@solana/web3.js@1.98.4", "", { "dependencies": { "@babel/runtime": "^7.25.0", "@noble/curves": "^1.4.2", "@noble/hashes": "^1.4.0", "@solana/buffer-layout": "^4.0.1", "@solana/codecs-numbers": "^2.1.0", "agentkeepalive": "^4.5.0", "bn.js": "^5.2.1", "borsh": "^0.7.0", "bs58": "^4.0.1", "buffer": "6.0.3", "fast-stable-stringify": "^1.0.0", "jayson": "^4.1.1", "node-fetch": "^2.7.0", "rpc-websockets": "^9.0.2", "superstruct": "^2.0.2" } }, "sha512-vv9lfnvjUsRiq//+j5pBdXig0IQdtzA0BRZ3bXEP4KaIyF1CcaydWqgyzQgfZMNIsWNWmG+AUHwPy4AHOD6gpw=="],
 
-    "@stablelib/aead": ["@stablelib/aead@1.0.1", "", {}, "sha512-q39ik6sxGHewqtO0nP4BuSe3db5G1fEJE8ukvngS2gLkBXyy6E7pLubhbYgnkDFv6V8cWaxcE4Xn0t6LWcJkyg=="],
-
-    "@stablelib/binary": ["@stablelib/binary@1.0.1", "", { "dependencies": { "@stablelib/int": "^1.0.1" } }, "sha512-ClJWvmL6UBM/wjkvv/7m5VP3GMr9t0osr4yVgLZsLCOz4hGN9gIAFEqnJ0TsSMAN+n840nf2cHZnA5/KFqHC7Q=="],
-
-    "@stablelib/bytes": ["@stablelib/bytes@1.0.1", "", {}, "sha512-Kre4Y4kdwuqL8BR2E9hV/R5sOrUj6NanZaZis0V6lX5yzqC3hBuVSDXUIBqQv/sCpmuWRiHLwqiT1pqqjuBXoQ=="],
-
-    "@stablelib/chacha": ["@stablelib/chacha@1.0.1", "", { "dependencies": { "@stablelib/binary": "^1.0.1", "@stablelib/wipe": "^1.0.1" } }, "sha512-Pmlrswzr0pBzDofdFuVe1q7KdsHKhhU24e8gkEwnTGOmlC7PADzLVxGdn2PoNVBBabdg0l/IfLKg6sHAbTQugg=="],
-
-    "@stablelib/chacha20poly1305": ["@stablelib/chacha20poly1305@1.0.1", "", { "dependencies": { "@stablelib/aead": "^1.0.1", "@stablelib/binary": "^1.0.1", "@stablelib/chacha": "^1.0.1", "@stablelib/constant-time": "^1.0.1", "@stablelib/poly1305": "^1.0.1", "@stablelib/wipe": "^1.0.1" } }, "sha512-MmViqnqHd1ymwjOQfghRKw2R/jMIGT3wySN7cthjXCBdO+qErNPUBnRzqNpnvIwg7JBCg3LdeCZZO4de/yEhVA=="],
-
-    "@stablelib/constant-time": ["@stablelib/constant-time@1.0.1", "", {}, "sha512-tNOs3uD0vSJcK6z1fvef4Y+buN7DXhzHDPqRLSXUel1UfqMB1PWNsnnAezrKfEwTLpN0cGH2p9NNjs6IqeD0eg=="],
-
-    "@stablelib/hash": ["@stablelib/hash@1.0.1", "", {}, "sha512-eTPJc/stDkdtOcrNMZ6mcMK1e6yBbqRBaNW55XA1jU8w/7QdnCF0CmMmOD1m7VSkBR44PWrMHU2l6r8YEQHMgg=="],
-
-    "@stablelib/hkdf": ["@stablelib/hkdf@1.0.1", "", { "dependencies": { "@stablelib/hash": "^1.0.1", "@stablelib/hmac": "^1.0.1", "@stablelib/wipe": "^1.0.1" } }, "sha512-SBEHYE16ZXlHuaW5RcGk533YlBj4grMeg5TooN80W3NpcHRtLZLLXvKyX0qcRFxf+BGDobJLnwkvgEwHIDBR6g=="],
-
-    "@stablelib/hmac": ["@stablelib/hmac@1.0.1", "", { "dependencies": { "@stablelib/constant-time": "^1.0.1", "@stablelib/hash": "^1.0.1", "@stablelib/wipe": "^1.0.1" } }, "sha512-V2APD9NSnhVpV/QMYgCVMIYKiYG6LSqw1S65wxVoirhU/51ACio6D4yDVSwMzuTJXWZoVHbDdINioBwKy5kVmA=="],
-
-    "@stablelib/int": ["@stablelib/int@1.0.1", "", {}, "sha512-byr69X/sDtDiIjIV6m4roLVWnNNlRGzsvxw+agj8CIEazqWGOQp2dTYgQhtyVXV9wpO6WyXRQUzLV/JRNumT2w=="],
-
-    "@stablelib/keyagreement": ["@stablelib/keyagreement@1.0.1", "", { "dependencies": { "@stablelib/bytes": "^1.0.1" } }, "sha512-VKL6xBwgJnI6l1jKrBAfn265cspaWBPAPEc62VBQrWHLqVgNRE09gQ/AnOEyKUWrrqfD+xSQ3u42gJjLDdMDQg=="],
-
-    "@stablelib/poly1305": ["@stablelib/poly1305@1.0.1", "", { "dependencies": { "@stablelib/constant-time": "^1.0.1", "@stablelib/wipe": "^1.0.1" } }, "sha512-1HlG3oTSuQDOhSnLwJRKeTRSAdFNVB/1djy2ZbS35rBSJ/PFqx9cf9qatinWghC2UbfOYD8AcrtbUQl8WoxabA=="],
-
-    "@stablelib/random": ["@stablelib/random@1.0.2", "", { "dependencies": { "@stablelib/binary": "^1.0.1", "@stablelib/wipe": "^1.0.1" } }, "sha512-rIsE83Xpb7clHPVRlBj8qNe5L8ISQOzjghYQm/dZ7VaM2KHYwMW5adjQjrzTZCchFnNCNhkwtnOBa9HTMJCI8w=="],
-
-    "@stablelib/sha256": ["@stablelib/sha256@1.0.1", "", { "dependencies": { "@stablelib/binary": "^1.0.1", "@stablelib/hash": "^1.0.1", "@stablelib/wipe": "^1.0.1" } }, "sha512-GIIH3e6KH+91FqGV42Kcj71Uefd/QEe7Dy42sBTeqppXV95ggCcxLTk39bEr+lZfJmp+ghsR07J++ORkRELsBQ=="],
-
-    "@stablelib/wipe": ["@stablelib/wipe@1.0.1", "", {}, "sha512-WfqfX/eXGiAd3RJe4VU2snh/ZPwtSjLG4ynQ/vYzvghTh7dHFcI1wl+nrkWG6lGhukOxOsUHfv8dUXr58D0ayg=="],
-
-    "@stablelib/x25519": ["@stablelib/x25519@1.0.3", "", { "dependencies": { "@stablelib/keyagreement": "^1.0.1", "@stablelib/random": "^1.0.2", "@stablelib/wipe": "^1.0.1" } }, "sha512-KnTbKmUhPhHavzobclVJQG5kuivH+qDLpe84iRqX3CLrKp881cF160JvXJ+hjn1aMyCwYOKeIZefIH/P5cJoRw=="],
-
     "@standard-schema/spec": ["@standard-schema/spec@1.0.0", "", {}, "sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA=="],
 
     "@standard-schema/utils": ["@standard-schema/utils@0.3.0", "", {}, "sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g=="],
@@ -1203,12 +1141,6 @@
     "@walletconnect/keyvaluestorage": ["@walletconnect/keyvaluestorage@1.1.1", "", { "dependencies": { "@walletconnect/safe-json": "^1.0.1", "idb-keyval": "^6.2.1", "unstorage": "^1.9.0" }, "peerDependencies": { "@react-native-async-storage/async-storage": "1.x" }, "optionalPeers": ["@react-native-async-storage/async-storage"] }, "sha512-V7ZQq2+mSxAq7MrRqDxanTzu2RcElfK1PfNYiaVnJgJ7Q7G7hTVwF8voIBx92qsRyGHZihrwNPHuZd1aKkd0rA=="],
 
     "@walletconnect/logger": ["@walletconnect/logger@3.0.0", "", { "dependencies": { "@walletconnect/safe-json": "^1.0.2", "pino": "10.0.0" } }, "sha512-DDktPBFdmt5d7U3sbp4e3fQHNS1b6amsR8FmtOnt6L2SnV7VfcZr8VmAGL12zetAR+4fndegbREmX0P8Mw6eDg=="],
-
-    "@walletconnect/modal": ["@walletconnect/modal@2.6.2", "", { "dependencies": { "@walletconnect/modal-core": "2.6.2", "@walletconnect/modal-ui": "2.6.2" } }, "sha512-eFopgKi8AjKf/0U4SemvcYw9zlLpx9njVN8sf6DAkowC2Md0gPU/UNEbH1Wwj407pEKnEds98pKWib1NN1ACoA=="],
-
-    "@walletconnect/modal-core": ["@walletconnect/modal-core@2.6.2", "", { "dependencies": { "valtio": "1.11.2" } }, "sha512-cv8ibvdOJQv2B+nyxP9IIFdxvQznMz8OOr/oR/AaUZym4hjXNL/l1a2UlSQBXrVjo3xxbouMxLb3kBsHoYP2CA=="],
-
-    "@walletconnect/modal-ui": ["@walletconnect/modal-ui@2.6.2", "", { "dependencies": { "@walletconnect/modal-core": "2.6.2", "lit": "2.8.0", "motion": "10.16.2", "qrcode": "1.5.3" } }, "sha512-rbdstM1HPGvr7jprQkyPggX7rP4XiCG85ZA+zWBEX0dVQg8PpAgRUqpeub4xQKDgY7pY/xLRXSiCVdWGqvG2HA=="],
 
     "@walletconnect/relay-api": ["@walletconnect/relay-api@1.0.11", "", { "dependencies": { "@walletconnect/jsonrpc-types": "^1.0.2" } }, "sha512-tLPErkze/HmC9aCmdZOhtVmYZq1wKfWTJtygQHoWtgg722Jd4homo54Cs4ak2RUFUZIGO2RsOpIcWipaua5D5Q=="],
 
@@ -1684,8 +1616,6 @@
 
     "decode-named-character-reference": ["decode-named-character-reference@1.2.0", "", { "dependencies": { "character-entities": "^2.0.0" } }, "sha512-c6fcElNV6ShtZXmsgNgFFV5tVX2PaV4g+MOAkb8eXHvn6sryJBrZa9r0zV6+dtTyoCKxtDy5tyQ5ZwQuidtd+Q=="],
 
-    "decode-uri-component": ["decode-uri-component@0.2.2", "", {}, "sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ=="],
-
     "dedent": ["dedent@1.7.0", "", { "peerDependencies": { "babel-plugin-macros": "^3.1.0" }, "optionalPeers": ["babel-plugin-macros"] }, "sha512-HGFtf8yhuhGhqO07SV79tRp+br4MnbdjeVxotpn1QBl30pcLLCQjX5b2295ll0fv8RKDKsmWYrl05usHM9CewQ=="],
 
     "deep-extend": ["deep-extend@0.6.0", "", {}, "sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA=="],
@@ -1783,8 +1713,6 @@
     "dset": ["dset@3.1.4", "", {}, "sha512-2QF/g9/zTaPDc3BjNcVTGoBbXBgYfMTTceLaYcFJ/W9kggFUkhxD/hMEeuLKbugyef9SqAx8cpgwlIP/jinUTA=="],
 
     "dunder-proto": ["dunder-proto@1.0.1", "", { "dependencies": { "call-bind-apply-helpers": "^1.0.1", "es-errors": "^1.3.0", "gopd": "^1.2.0" } }, "sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A=="],
-
-    "duplexify": ["duplexify@4.1.3", "", { "dependencies": { "end-of-stream": "^1.4.1", "inherits": "^2.0.3", "readable-stream": "^3.1.1", "stream-shift": "^1.0.2" } }, "sha512-M3BmBhwJRZsSx38lZyhE53Csddgzl5R7xGJNk7CVddZD6CcmwMCH8J+7AprIrQKH7TonKxaCjcv27Qmf+sQ+oA=="],
 
     "eastasianwidth": ["eastasianwidth@0.2.0", "", {}, "sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA=="],
 
@@ -1917,8 +1845,6 @@
     "fast-json-stable-stringify": ["fast-json-stable-stringify@2.1.0", "", {}, "sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw=="],
 
     "fast-levenshtein": ["fast-levenshtein@2.0.6", "", {}, "sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw=="],
-
-    "fast-redact": ["fast-redact@3.5.0", "", {}, "sha512-dwsoQlS7h9hMeYUq1W++23NDcBLV4KqONnITDV9DjfS3q1SgDGVrBdvvTLUotWtPSD7asWDV9/CmsZPy8Hf70A=="],
 
     "fast-safe-stringify": ["fast-safe-stringify@2.1.1", "", {}, "sha512-W+KJc2dmILlPplD/H4K9l9LcAHAfPtP6BY84uVLXQ6Evcz9Lcg33Y2z1IVblT6xdY54PXYVHEv+0Wpq8Io6zkA=="],
 
@@ -2089,8 +2015,6 @@
     "hast-util-whitespace": ["hast-util-whitespace@3.0.0", "", { "dependencies": { "@types/hast": "^3.0.0" } }, "sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw=="],
 
     "hastscript": ["hastscript@9.0.1", "", { "dependencies": { "@types/hast": "^3.0.0", "comma-separated-tokens": "^2.0.0", "hast-util-parse-selector": "^4.0.0", "property-information": "^7.0.0", "space-separated-tokens": "^2.0.0" } }, "sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w=="],
-
-    "hey-listen": ["hey-listen@1.0.8", "", {}, "sha512-COpmrF2NOg4TBWUJ5UVyaCU2A88wEMkUPK4hNqyCkqHbxT92BbvfjoSozkAIIm6XhicGlJHhFdullInrdhwU8Q=="],
 
     "hmac-drbg": ["hmac-drbg@1.0.1", "", { "dependencies": { "hash.js": "^1.0.3", "minimalistic-assert": "^1.0.0", "minimalistic-crypto-utils": "^1.0.1" } }, "sha512-Tti3gMqLdZfhOQY1Mzf/AanLiqh1WTiJgEj26ZuYQ9fbkLomzGchCws4FyrSd4VkpBfiNhaE1On+lOz894jvXg=="],
 
@@ -2280,8 +2204,6 @@
 
     "iso-url": ["iso-url@1.2.1", "", {}, "sha512-9JPDgCN4B7QPkLtYAAOrEuAWvP9rWvR5offAr0/SeF046wIkglqH3VXgYYP6NcsKslH80UIVgmPqNe3j7tG2ng=="],
 
-    "isomorphic-unfetch": ["isomorphic-unfetch@3.1.0", "", { "dependencies": { "node-fetch": "^2.6.1", "unfetch": "^4.2.0" } }, "sha512-geDJjpoZ8N0kWexiwkX8F9NkTsXhetLPVbZFQ+JTW239QNOwvB0gniuR1Wc6f0AMTn7/mFGyXvHTifrCp/GH8Q=="],
-
     "isomorphic-ws": ["isomorphic-ws@4.0.1", "", { "peerDependencies": { "ws": "*" } }, "sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w=="],
 
     "isows": ["isows@1.0.7", "", { "peerDependencies": { "ws": "*" } }, "sha512-I1fSfDCZL5P0v33sVqeTDSpcstAg/N+wF5HS033mogOVIp4B+oHC7oOCsA3axAbBSGTJ8QubbNmnIRN/h8U7hg=="],
@@ -2422,7 +2344,7 @@
 
     "listhen": ["listhen@1.9.0", "", { "dependencies": { "@parcel/watcher": "^2.4.1", "@parcel/watcher-wasm": "^2.4.1", "citty": "^0.1.6", "clipboardy": "^4.0.0", "consola": "^3.2.3", "crossws": ">=0.2.0 <0.4.0", "defu": "^6.1.4", "get-port-please": "^3.1.2", "h3": "^1.12.0", "http-shutdown": "^1.2.2", "jiti": "^2.1.2", "mlly": "^1.7.1", "node-forge": "^1.3.1", "pathe": "^1.1.2", "std-env": "^3.7.0", "ufo": "^1.5.4", "untun": "^0.1.3", "uqr": "^0.1.2" }, "bin": { "listen": "bin/listhen.mjs", "listhen": "bin/listhen.mjs" } }, "sha512-I8oW2+QL5KJo8zXNWX046M134WchxsXC7SawLPvRQpogCbkyQIaFxPE89A2HiwR7vAK2Dm2ERBAmyjTYGYEpBg=="],
 
-    "lit": ["lit@3.2.0", "", { "dependencies": { "@lit/reactive-element": "^2.0.4", "lit-element": "^4.1.0", "lit-html": "^3.2.0" } }, "sha512-s6tI33Lf6VpDu7u4YqsSX78D28bYQulM+VAzsGch4fx2H0eLZnJsUBsPWmGYSGoKDNbjtRv02rio1o+UdPVwvw=="],
+    "lit": ["lit@3.3.0", "", { "dependencies": { "@lit/reactive-element": "^2.1.0", "lit-element": "^4.2.0", "lit-html": "^3.3.0" } }, "sha512-DGVsqsOIHBww2DqnuZzW7QsuCdahp50ojuDaBPC7jUDRpYoH0z7kHBBYZewRzer75FwtrkmkKk7iOAwSaWdBmw=="],
 
     "lit-element": ["lit-element@4.2.1", "", { "dependencies": { "@lit-labs/ssr-dom-shim": "^1.4.0", "@lit/reactive-element": "^2.1.0", "lit-html": "^3.3.0" } }, "sha512-WGAWRGzirAgyphK2urmYOV72tlvnxw7YfyLDgQ+OZnM9vQQBQnumQ7jUJe6unEzwGU3ahFOjuz1iz1jjrpCPuw=="],
 
@@ -2437,8 +2359,6 @@
     "lodash.includes": ["lodash.includes@4.3.0", "", {}, "sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w=="],
 
     "lodash.isboolean": ["lodash.isboolean@3.0.3", "", {}, "sha512-Bz5mupy2SVbPHURB98VAcw+aHh4vRV5IPNhILUCsOzRmsTmSQ17jIuqopAentWoehktxGd9e/hbIXq980/1QJg=="],
-
-    "lodash.isequal": ["lodash.isequal@4.5.0", "", {}, "sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ=="],
 
     "lodash.isinteger": ["lodash.isinteger@4.0.4", "", {}, "sha512-DBwtEWN2caHQ9/imiNeEA5ys1JoRtRfY3d7V9wkqtbycnAmTvRRmbHKDV4a0EYc678/dia0jrte4tjYwVBaZUA=="],
 
@@ -2609,8 +2529,6 @@
     "module-definition": ["module-definition@6.0.1", "", { "dependencies": { "ast-module-types": "^6.0.1", "node-source-walk": "^7.0.1" }, "bin": { "module-definition": "bin/cli.js" } }, "sha512-FeVc50FTfVVQnolk/WQT8MX+2WVcDnTGiq6Wo+/+lJ2ET1bRVi3HG3YlJUfqagNMc/kUlFSoR96AJkxGpKz13g=="],
 
     "module-details-from-path": ["module-details-from-path@1.0.4", "", {}, "sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w=="],
-
-    "motion": ["motion@10.16.2", "", { "dependencies": { "@motionone/animation": "^10.15.1", "@motionone/dom": "^10.16.2", "@motionone/svelte": "^10.16.2", "@motionone/types": "^10.15.1", "@motionone/utils": "^10.15.1", "@motionone/vue": "^10.16.2" } }, "sha512-p+PurYqfUdcJZvtnmAqu5fJgV2kR0uLFQuBKtLeFVTrYEVllI99tiOTSefVNYuip9ELTEkepIIDftNdze76NAQ=="],
 
     "mri": ["mri@1.2.0", "", {}, "sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA=="],
 
@@ -2896,8 +2814,6 @@
 
     "qrcode": ["qrcode@1.5.3", "", { "dependencies": { "dijkstrajs": "^1.0.1", "encode-utf8": "^1.0.3", "pngjs": "^5.0.0", "yargs": "^15.3.1" }, "bin": { "qrcode": "bin/qrcode" } }, "sha512-puyri6ApkEHYiVl4CFzo1tDkAZ+ATcnbJrJ6RiBM1Fhctdn/ix9MTE3hRph33omisEbC/2fcfemsseiKgBPKZg=="],
 
-    "query-string": ["query-string@7.1.3", "", { "dependencies": { "decode-uri-component": "^0.2.2", "filter-obj": "^1.1.0", "split-on-first": "^1.0.0", "strict-uri-encode": "^2.0.0" } }, "sha512-hh2WYhq4fi8+b+/2Kg9CEge4fDPvHS534aOOvOZeQ3+Vf2mCFsaFBYj0i+iXcAq6I9Vzp5fjMFBlONvayDC1qg=="],
-
     "queue-microtask": ["queue-microtask@1.2.3", "", {}, "sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A=="],
 
     "quick-format-unescaped": ["quick-format-unescaped@4.0.4", "", {}, "sha512-tYC1Q1hgyRuHgloV/YXs2w15unPVh8qfu/qCTfhTYamaw7fyhumKa2yGpdSo87vY32rIclj+4fWYQXUMs9EHvg=="],
@@ -3140,8 +3056,6 @@
 
     "speedline-core": ["speedline-core@1.4.3", "", { "dependencies": { "@types/node": "*", "image-ssim": "^0.2.0", "jpeg-js": "^0.4.1" } }, "sha512-DI7/OuAUD+GMpR6dmu8lliO2Wg5zfeh+/xsdyJZCzd8o5JgFUjCeLsBDuZjIQJdwXS3J0L/uZYrELKYqx+PXog=="],
 
-    "split-on-first": ["split-on-first@1.1.0", "", {}, "sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw=="],
-
     "split2": ["split2@4.2.0", "", {}, "sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg=="],
 
     "stack-trace": ["stack-trace@0.0.10", "", {}, "sha512-KGzahc7puUKkzyMt+IqAep+TVNbKP+k2Lmwhub39m1AsTSkaDutx56aDCo+HLDzf/D26BIHTJWNiTG1KAJiQCg=="],
@@ -3160,13 +3074,9 @@
 
     "stream-json": ["stream-json@1.9.1", "", { "dependencies": { "stream-chain": "^2.2.5" } }, "sha512-uWkjJ+2Nt/LO9Z/JyKZbMusL8Dkh97uUBTv3AJQ74y07lVahLY4eEFsPsE97pxYBwr8nnjMAIch5eqI0gPShyw=="],
 
-    "stream-shift": ["stream-shift@1.0.3", "", {}, "sha512-76ORR0DO1o1hlKwTbi/DM3EXWGf3ZJYO8cXX5RJwnul2DEg2oyoZyjLNoQM8WsvZiFKCRfC1O0J7iCvie3RZmQ=="],
-
     "stream-to-it": ["stream-to-it@0.2.4", "", { "dependencies": { "get-iterator": "^1.0.2" } }, "sha512-4vEbkSs83OahpmBybNJXlJd7d6/RxzkkSdT3I0mnGt79Xd2Kk+e1JqbvAvsQfCeKj3aKb0QIWkyK3/n0j506vQ=="],
 
     "streamx": ["streamx@2.23.0", "", { "dependencies": { "events-universal": "^1.0.0", "fast-fifo": "^1.3.2", "text-decoder": "^1.1.0" } }, "sha512-kn+e44esVfn2Fa/O0CPFcex27fjIL6MkVae0Mm6q+E6f0hWv578YCERbv+4m02cjxvDsPKLnmxral/rR6lBMAg=="],
-
-    "strict-uri-encode": ["strict-uri-encode@2.0.0", "", {}, "sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ=="],
 
     "string-width": ["string-width@6.1.0", "", { "dependencies": { "eastasianwidth": "^0.2.0", "emoji-regex": "^10.2.1", "strip-ansi": "^7.0.1" } }, "sha512-k01swCJAgQmuADB0YIc+7TuatfNvTBVOoaUWJjTB9R4VJzR5vNWzf5t42ESVZFPS8xTySF7CAdV4t/aaIm3UnQ=="],
 
@@ -3337,8 +3247,6 @@
     "uncrypto": ["uncrypto@0.1.3", "", {}, "sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q=="],
 
     "undici-types": ["undici-types@6.21.0", "", {}, "sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ=="],
-
-    "unfetch": ["unfetch@4.2.0", "", {}, "sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA=="],
 
     "unicode-properties": ["unicode-properties@1.4.1", "", { "dependencies": { "base64-js": "^1.3.0", "unicode-trie": "^2.0.0" } }, "sha512-CLjCCLQ6UuMxWnbIylkisbRj31qxHPAurvena/0iwSVbQ2G1VY5/HjV0IRabOEbDHlzZlRdCrD4NhB0JtU40Pg=="],
 
@@ -3580,22 +3488,6 @@
 
     "@babel/traverse/@babel/types": ["@babel/types@7.28.4", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.27.1" } }, "sha512-bkFqkLhh3pMBUQQkpVgWDWq/lqzc2678eUyDlTBhRqhCHFguYYGM0Efga7tYk4TogG/3x0EEl66/OQ+WGbWB/Q=="],
 
-    "@creit.tech/stellar-wallets-kit/@ledgerhq/hw-app-str": ["@ledgerhq/hw-app-str@7.0.4", "", { "dependencies": { "@ledgerhq/errors": "^6.19.1", "@ledgerhq/hw-transport": "^6.31.4", "bip32-path": "^0.4.2" } }, "sha512-ArKnGCZaGnUPqoKaR9OE+ZGcGARKJLHthl/aybQWOIo952+cQpgcn0mg5yK1Amd9EiKfArCTlLJ3wAafO5d/lw=="],
-
-    "@creit.tech/stellar-wallets-kit/@ledgerhq/hw-transport": ["@ledgerhq/hw-transport@6.31.4", "", { "dependencies": { "@ledgerhq/devices": "^8.4.4", "@ledgerhq/errors": "^6.19.1", "@ledgerhq/logs": "^6.12.0", "events": "^3.3.0" } }, "sha512-6c1ir/cXWJm5dCWdq55NPgCJ3UuKuuxRvf//Xs36Bq9BwkV2YaRQhZITAkads83l07NAdR16hkTWqqpwFMaI6A=="],
-
-    "@creit.tech/stellar-wallets-kit/@ledgerhq/hw-transport-webusb": ["@ledgerhq/hw-transport-webusb@6.29.4", "", { "dependencies": { "@ledgerhq/devices": "^8.4.4", "@ledgerhq/errors": "^6.19.1", "@ledgerhq/hw-transport": "^6.31.4", "@ledgerhq/logs": "^6.12.0" } }, "sha512-HoGF1LlBT9HEGBQy2XeCHrFdv/FEOZU0+J+yfKcgAQIAiASr2MLvdzwoJbUS8h6Gn+vc+/BjzBSO3JNn7Loqbg=="],
-
-    "@creit.tech/stellar-wallets-kit/@lobstrco/signer-extension-api": ["@lobstrco/signer-extension-api@1.0.0-beta.0", "", {}, "sha512-16V34W9MyTgunGvgkzv1JmV+k59OjNWCrNOH+KH+6vWamcGDGBnFhvRgGEarEhINYITMGkdqEvaEy7qTD5s5cw=="],
-
-    "@creit.tech/stellar-wallets-kit/@stellar/freighter-api": ["@stellar/freighter-api@5.0.0", "", { "dependencies": { "buffer": "6.0.3", "semver": "7.7.1" } }, "sha512-MydzLg+WpSzmws24uUs4mVME2LPN8xhUWkwyGEP0N1Hr519swC6I/W7K6cdVBzghBiVv7f/vvGFNT+0p1a33Vg=="],
-
-    "@creit.tech/stellar-wallets-kit/@trezor/connect-plugin-stellar": ["@trezor/connect-plugin-stellar@9.2.1", "", { "dependencies": { "@trezor/utils": "9.4.1" }, "peerDependencies": { "@stellar/stellar-sdk": "^13.3.0", "@trezor/connect": "9.x.x", "tslib": "^2.6.2" } }, "sha512-Orz5gFZzYFZs1+cTsgg8fz/VWFjhl7pqMCqD5DVNZpXW+wrjwBaRbcGJZ+ibkPKU3AlM7Uv3SVD/pjaQmAkZ2Q=="],
-
-    "@creit.tech/stellar-wallets-kit/@trezor/connect-web": ["@trezor/connect-web@9.6.2", "", { "dependencies": { "@trezor/connect": "9.6.2", "@trezor/connect-common": "0.4.2", "@trezor/utils": "9.4.2", "@trezor/websocket-client": "1.2.2" }, "peerDependencies": { "tslib": "^2.6.2" } }, "sha512-QGuCjX8Bx9aCq1Pg52KifbbzYn00FQu9mCTDSgCVGH/HAzbxhcRkDKc86kFwW8z9NdJxw+XeVJq5Ky/js3iEDA=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client": ["@walletconnect/sign-client@2.11.2", "", { "dependencies": { "@walletconnect/core": "2.11.2", "@walletconnect/events": "^1.0.1", "@walletconnect/heartbeat": "1.2.1", "@walletconnect/jsonrpc-utils": "1.0.8", "@walletconnect/logger": "^2.0.1", "@walletconnect/time": "^1.0.2", "@walletconnect/types": "2.11.2", "@walletconnect/utils": "2.11.2", "events": "^3.3.0" } }, "sha512-MfBcuSz2GmMH+P7MrCP46mVE5qhP0ZyWA0FyIH6/WuxQ6G+MgKsGfaITqakpRPsykWOJq8tXMs3XvUPDU413OQ=="],
-
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
 
     "@eslint/eslintrc/ignore": ["ignore@5.3.2", "", {}, "sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g=="],
@@ -3762,19 +3654,11 @@
 
     "@parcel/watcher-wasm/napi-wasm": ["napi-wasm@1.1.3", "", { "bundled": true }, "sha512-h/4nMGsHjZDCYmQVNODIrYACVJ+I9KItbG+0si6W/jSjdA9JbWDoU4LLeMXVcEQGHjttI2tuXqDrbGF7qkUHHg=="],
 
-    "@phosphor-icons/webcomponents/lit": ["lit@3.3.0", "", { "dependencies": { "@lit/reactive-element": "^2.1.0", "lit-element": "^4.2.0", "lit-html": "^3.3.0" } }, "sha512-DGVsqsOIHBww2DqnuZzW7QsuCdahp50ojuDaBPC7jUDRpYoH0z7kHBBYZewRzer75FwtrkmkKk7iOAwSaWdBmw=="],
-
     "@pnpm/network.ca-file/graceful-fs": ["graceful-fs@4.2.10", "", {}, "sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA=="],
 
     "@puppeteer/browsers/semver": ["semver@7.7.3", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q=="],
 
     "@reown/appkit/semver": ["semver@7.7.2", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA=="],
-
-    "@reown/appkit-pay/lit": ["lit@3.3.0", "", { "dependencies": { "@lit/reactive-element": "^2.1.0", "lit-element": "^4.2.0", "lit-html": "^3.3.0" } }, "sha512-DGVsqsOIHBww2DqnuZzW7QsuCdahp50ojuDaBPC7jUDRpYoH0z7kHBBYZewRzer75FwtrkmkKk7iOAwSaWdBmw=="],
-
-    "@reown/appkit-scaffold-ui/lit": ["lit@3.3.0", "", { "dependencies": { "@lit/reactive-element": "^2.1.0", "lit-element": "^4.2.0", "lit-html": "^3.3.0" } }, "sha512-DGVsqsOIHBww2DqnuZzW7QsuCdahp50ojuDaBPC7jUDRpYoH0z7kHBBYZewRzer75FwtrkmkKk7iOAwSaWdBmw=="],
-
-    "@reown/appkit-ui/lit": ["lit@3.3.0", "", { "dependencies": { "@lit/reactive-element": "^2.1.0", "lit-element": "^4.2.0", "lit-html": "^3.3.0" } }, "sha512-DGVsqsOIHBww2DqnuZzW7QsuCdahp50ojuDaBPC7jUDRpYoH0z7kHBBYZewRzer75FwtrkmkKk7iOAwSaWdBmw=="],
 
     "@reown/appkit-wallet/zod": ["zod@3.22.4", "", {}, "sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg=="],
 
@@ -3957,10 +3841,6 @@
     "@walletconnect/jsonrpc-utils/tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
 
     "@walletconnect/keyvaluestorage/unstorage": ["unstorage@1.17.1", "", { "dependencies": { "anymatch": "^3.1.3", "chokidar": "^4.0.3", "destr": "^2.0.5", "h3": "^1.15.4", "lru-cache": "^10.4.3", "node-fetch-native": "^1.6.7", "ofetch": "^1.4.1", "ufo": "^1.6.1" }, "peerDependencies": { "@azure/app-configuration": "^1.8.0", "@azure/cosmos": "^4.2.0", "@azure/data-tables": "^13.3.0", "@azure/identity": "^4.6.0", "@azure/keyvault-secrets": "^4.9.0", "@azure/storage-blob": "^12.26.0", "@capacitor/preferences": "^6.0.3 || ^7.0.0", "@deno/kv": ">=0.9.0", "@netlify/blobs": "^6.5.0 || ^7.0.0 || ^8.1.0 || ^9.0.0 || ^10.0.0", "@planetscale/database": "^1.19.0", "@upstash/redis": "^1.34.3", "@vercel/blob": ">=0.27.1", "@vercel/functions": "^2.2.12 || ^3.0.0", "@vercel/kv": "^1.0.1", "aws4fetch": "^1.0.20", "db0": ">=0.2.1", "idb-keyval": "^6.2.1", "ioredis": "^5.4.2", "uploadthing": "^7.4.4" }, "optionalPeers": ["@azure/app-configuration", "@azure/cosmos", "@azure/data-tables", "@azure/identity", "@azure/keyvault-secrets", "@azure/storage-blob", "@capacitor/preferences", "@deno/kv", "@netlify/blobs", "@planetscale/database", "@upstash/redis", "@vercel/blob", "@vercel/functions", "@vercel/kv", "aws4fetch", "db0", "idb-keyval", "ioredis", "uploadthing"] }, "sha512-KKGwRTT0iVBCErKemkJCLs7JdxNVfqTPc/85ae1XES0+bsHbc/sFBfVi5kJp156cc51BHinIH2l3k0EZ24vOBQ=="],
-
-    "@walletconnect/modal-core/valtio": ["valtio@1.11.2", "", { "dependencies": { "proxy-compare": "2.5.1", "use-sync-external-store": "1.2.0" }, "peerDependencies": { "@types/react": ">=16.8", "react": ">=16.8" }, "optionalPeers": ["@types/react", "react"] }, "sha512-1XfIxnUXzyswPAPXo1P3Pdx2mq/pIqZICkWN60Hby0d9Iqb+MEIpqgYVlbflvHdrp2YR/q3jyKWRPJJ100yxaw=="],
-
-    "@walletconnect/modal-ui/lit": ["lit@2.8.0", "", { "dependencies": { "@lit/reactive-element": "^1.6.0", "lit-element": "^3.3.0", "lit-html": "^2.8.0" } }, "sha512-4Sc3OFX9QHOJaHbmTMk28SYgVxLN3ePDjg7hofEft2zWlehFL3LiAuapWc4U/kYwMYJSh2hTCPZ6/LIC7ii0MA=="],
 
     "@walletconnect/relay-api/@walletconnect/jsonrpc-types": ["@walletconnect/jsonrpc-types@1.0.3", "", { "dependencies": { "keyvaluestorage-interface": "^1.0.0", "tslib": "1.14.1" } }, "sha512-iIQ8hboBl3o5ufmJ8cuduGad0CQm3ZlsHtujv9Eu16xq89q+BG7Nh5VLxxUgmtpnrePgFkTwXirCTkwJH1v+Yw=="],
 
@@ -4224,8 +4104,6 @@
 
     "qrcode/yargs": ["yargs@15.4.1", "", { "dependencies": { "cliui": "^6.0.0", "decamelize": "^1.2.0", "find-up": "^4.1.0", "get-caller-file": "^2.0.1", "require-directory": "^2.1.1", "require-main-filename": "^2.0.0", "set-blocking": "^2.0.0", "string-width": "^4.2.0", "which-module": "^2.0.0", "y18n": "^4.0.0", "yargs-parser": "^18.1.2" } }, "sha512-aePbxDmcYW++PaqBsJ+HYUFwCdv4LVvdnhBy78E57PIor8/OVvhMrADFFEDh8DHDFRv/O9i3lPhsENjO7QX0+A=="],
 
-    "query-string/filter-obj": ["filter-obj@1.1.0", "", {}, "sha512-8rXg1ZnX7xzy2NGDVkBVaAy+lSlPNwad13BtgSlLuxfIslyt5Vg64U7tFcCt4WS1R0hvtnQybT/IyCkGZ3DpXQ=="],
-
     "rc/ini": ["ini@1.3.8", "", {}, "sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew=="],
 
     "rc/strip-json-comments": ["strip-json-comments@2.0.1", "", {}, "sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ=="],
@@ -4337,26 +4215,6 @@
     "@babel/template/@babel/types/@babel/helper-validator-identifier": ["@babel/helper-validator-identifier@7.27.1", "", {}, "sha512-D2hP9eA+Sqx1kBZgzxZh0y1trbuU+JoDkiEwqhQ36nodYqJwyEIhPSdMNd7lOm/4io72luTPWH20Yda0xOuUow=="],
 
     "@babel/traverse/@babel/types/@babel/helper-validator-identifier": ["@babel/helper-validator-identifier@7.27.1", "", {}, "sha512-D2hP9eA+Sqx1kBZgzxZh0y1trbuU+JoDkiEwqhQ36nodYqJwyEIhPSdMNd7lOm/4io72luTPWH20Yda0xOuUow=="],
-
-    "@creit.tech/stellar-wallets-kit/@stellar/freighter-api/semver": ["semver@7.7.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA=="],
-
-    "@creit.tech/stellar-wallets-kit/@trezor/connect-plugin-stellar/@trezor/utils": ["@trezor/utils@9.4.1", "", { "dependencies": { "bignumber.js": "^9.3.0" }, "peerDependencies": { "tslib": "^2.6.2" } }, "sha512-9MYNa99tzXiTBnKadABoY2D80YL9Mh3ntM5wziwVhjZ4HyhqFH6BsCxwFpWYLUIKBctD55QEdE4bASoqp7Ad1A=="],
-
-    "@creit.tech/stellar-wallets-kit/@trezor/connect-web/@trezor/connect-common": ["@trezor/connect-common@0.4.2", "", { "dependencies": { "@trezor/env-utils": "1.4.2", "@trezor/utils": "9.4.2" }, "peerDependencies": { "tslib": "^2.6.2" } }, "sha512-ND5TTjrTPnJdfl8Wlhl9YtFWnY2u6FHM1dsPkNYCmyUKIMoflJ5cLn95Xabl6l1btHERYn3wTUvgEYQG7r8OVQ=="],
-
-    "@creit.tech/stellar-wallets-kit/@trezor/connect-web/@trezor/utils": ["@trezor/utils@9.4.2", "", { "dependencies": { "bignumber.js": "^9.3.0" }, "peerDependencies": { "tslib": "^2.6.2" } }, "sha512-Fm3m2gmfXsgv4chqn5HX8e8dElEr2ibBJSJ7HE3bsHh/1OSQcDdzsSioAK04Fo9ws/v7n6lt+QBZ6fGmwyIkZQ=="],
-
-    "@creit.tech/stellar-wallets-kit/@trezor/connect-web/@trezor/websocket-client": ["@trezor/websocket-client@1.2.2", "", { "dependencies": { "@trezor/utils": "9.4.2", "ws": "^8.18.0" }, "peerDependencies": { "tslib": "^2.6.2" } }, "sha512-vu9L1V/5yh8LHQCmsGC9scCnihELsVuR5Tri1IvW3CdgTUFFcfjsEgXsFqFME3HlxuUmx6qokw0Gx/o0/hzaSQ=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/core": ["@walletconnect/core@2.11.2", "", { "dependencies": { "@walletconnect/heartbeat": "1.2.1", "@walletconnect/jsonrpc-provider": "1.0.13", "@walletconnect/jsonrpc-types": "1.0.3", "@walletconnect/jsonrpc-utils": "1.0.8", "@walletconnect/jsonrpc-ws-connection": "1.0.14", "@walletconnect/keyvaluestorage": "^1.1.1", "@walletconnect/logger": "^2.0.1", "@walletconnect/relay-api": "^1.0.9", "@walletconnect/relay-auth": "^1.0.4", "@walletconnect/safe-json": "^1.0.2", "@walletconnect/time": "^1.0.2", "@walletconnect/types": "2.11.2", "@walletconnect/utils": "2.11.2", "events": "^3.3.0", "isomorphic-unfetch": "3.1.0", "lodash.isequal": "4.5.0", "uint8arrays": "^3.1.0" } }, "sha512-bB4SiXX8hX3/hyBfVPC5gwZCXCl+OPj+/EDVM71iAO3TDsh78KPbrVAbDnnsbHzZVHlsMohtXX3j5XVsheN3+g=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/heartbeat": ["@walletconnect/heartbeat@1.2.1", "", { "dependencies": { "@walletconnect/events": "^1.0.1", "@walletconnect/time": "^1.0.2", "tslib": "1.14.1" } }, "sha512-yVzws616xsDLJxuG/28FqtZ5rzrTA4gUjdEMTbWB5Y8V1XHRmqq4efAxCw5ie7WjbXFSUyBHaWlMR+2/CpQC5Q=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/logger": ["@walletconnect/logger@2.1.3", "", { "dependencies": { "@walletconnect/safe-json": "^1.0.2", "pino": "7.11.0" } }, "sha512-wRsD0eDQSajj8YMM/jpxoH1yeSLyS7FPkh0VKCQ1BWrERTy1Z7/DmOE8FYm/gmd7Cg6BNXVWiymhGq6wnmlq8w=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/types": ["@walletconnect/types@2.11.2", "", { "dependencies": { "@walletconnect/events": "^1.0.1", "@walletconnect/heartbeat": "1.2.1", "@walletconnect/jsonrpc-types": "1.0.3", "@walletconnect/keyvaluestorage": "^1.1.1", "@walletconnect/logger": "^2.0.1", "events": "^3.3.0" } }, "sha512-p632MFB+lJbip2cvtXPBQslpUdiw1sDtQ5y855bOlAGquay+6fZ4h1DcDePeKQDQM3P77ax2a9aNPZxV6y/h1Q=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/utils": ["@walletconnect/utils@2.11.2", "", { "dependencies": { "@stablelib/chacha20poly1305": "1.0.1", "@stablelib/hkdf": "1.0.1", "@stablelib/random": "^1.0.2", "@stablelib/sha256": "1.0.1", "@stablelib/x25519": "^1.0.3", "@walletconnect/relay-api": "^1.0.9", "@walletconnect/safe-json": "^1.0.2", "@walletconnect/time": "^1.0.2", "@walletconnect/types": "2.11.2", "@walletconnect/window-getters": "^1.0.1", "@walletconnect/window-metadata": "^1.0.1", "detect-browser": "5.3.0", "query-string": "7.1.3", "uint8arrays": "^3.1.0" } }, "sha512-LyfdmrnZY6dWqlF4eDrx5jpUwsB2bEPjoqR5Z6rXPiHJKUOdJt7az+mNOn5KTSOlRpd1DmozrBrWr+G9fFLYVw=="],
 
     "@inquirer/checkbox/ansi-escapes/type-fest": ["type-fest@0.21.3", "", {}, "sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w=="],
 
@@ -4646,16 +4504,6 @@
 
     "@walletconnect/keyvaluestorage/unstorage/lru-cache": ["lru-cache@10.4.3", "", {}, "sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ=="],
 
-    "@walletconnect/modal-core/valtio/proxy-compare": ["proxy-compare@2.5.1", "", {}, "sha512-oyfc0Tx87Cpwva5ZXezSp5V9vht1c7dZBhvuV/y3ctkgMVUmiAGDVeeB0dKhGSyT0v1ZTEQYpe/RXlBVBNuCLA=="],
-
-    "@walletconnect/modal-core/valtio/use-sync-external-store": ["use-sync-external-store@1.2.0", "", { "peerDependencies": { "react": "^16.8.0 || ^17.0.0 || ^18.0.0" } }, "sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA=="],
-
-    "@walletconnect/modal-ui/lit/@lit/reactive-element": ["@lit/reactive-element@1.6.3", "", { "dependencies": { "@lit-labs/ssr-dom-shim": "^1.0.0" } }, "sha512-QuTgnG52Poic7uM1AN5yJ09QMe0O28e10XzSvWDz02TJiiKee4stsiownEIadWm8nYzyDAyT+gKzUoZmiWQtsQ=="],
-
-    "@walletconnect/modal-ui/lit/lit-element": ["lit-element@3.3.3", "", { "dependencies": { "@lit-labs/ssr-dom-shim": "^1.1.0", "@lit/reactive-element": "^1.3.0", "lit-html": "^2.8.0" } }, "sha512-XbeRxmTHubXENkV4h8RIPyr8lXc+Ff28rkcQzw3G6up2xg5E8Zu1IgOWIwBLEQsu3cOVFqdYwiVi0hv0SlpqUA=="],
-
-    "@walletconnect/modal-ui/lit/lit-html": ["lit-html@2.8.0", "", { "dependencies": { "@types/trusted-types": "^2.0.2" } }, "sha512-o9t+MQM3P4y7M7yNzqAyjp7z+mQGa4NS4CxiyLqFPyFWyc4O+nodLrkrxSaCTrla6M5YOLaT3RpbbqjszB5g3Q=="],
-
     "@walletconnect/relay-api/@walletconnect/jsonrpc-types/tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
 
     "@walletconnect/relay-auth/uint8arrays/multiformats": ["multiformats@9.9.0", "", {}, "sha512-HoMUjhH9T8DDBNT+6xzkrd9ga/XiBI4xLr58LJACwK6G3HTOPeMz4nB4KJs33L2BelrIJa7P0VuNaVF3hMYfjg=="],
@@ -4814,26 +4662,6 @@
 
     "yargs/string-width/emoji-regex": ["emoji-regex@8.0.0", "", {}, "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A=="],
 
-    "@creit.tech/stellar-wallets-kit/@trezor/connect-web/@trezor/connect-common/@trezor/env-utils": ["@trezor/env-utils@1.4.2", "", { "dependencies": { "ua-parser-js": "^2.0.4" }, "peerDependencies": { "expo-constants": "*", "expo-localization": "*", "react-native": "*", "tslib": "^2.6.2" }, "optionalPeers": ["expo-constants", "expo-localization", "react-native"] }, "sha512-lQvrqcNK5I4dy2MuiLyMuEm0KzY59RIu2GLtc9GsvqyxSPZkADqVzGeLJjXj/vI2ajL8leSpMvmN4zPw3EK8AA=="],
-
-    "@creit.tech/stellar-wallets-kit/@trezor/connect-web/@trezor/websocket-client/ws": ["ws@8.18.3", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/core/@walletconnect/jsonrpc-provider": ["@walletconnect/jsonrpc-provider@1.0.13", "", { "dependencies": { "@walletconnect/jsonrpc-utils": "^1.0.8", "@walletconnect/safe-json": "^1.0.2", "tslib": "1.14.1" } }, "sha512-K73EpThqHnSR26gOyNEL+acEex3P7VWZe6KE12ZwKzAt2H4e5gldZHbjsu2QR9cLeJ8AXuO7kEMOIcRv1QEc7g=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/core/@walletconnect/jsonrpc-types": ["@walletconnect/jsonrpc-types@1.0.3", "", { "dependencies": { "keyvaluestorage-interface": "^1.0.0", "tslib": "1.14.1" } }, "sha512-iIQ8hboBl3o5ufmJ8cuduGad0CQm3ZlsHtujv9Eu16xq89q+BG7Nh5VLxxUgmtpnrePgFkTwXirCTkwJH1v+Yw=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/core/@walletconnect/jsonrpc-ws-connection": ["@walletconnect/jsonrpc-ws-connection@1.0.14", "", { "dependencies": { "@walletconnect/jsonrpc-utils": "^1.0.6", "@walletconnect/safe-json": "^1.0.2", "events": "^3.3.0", "ws": "^7.5.1" } }, "sha512-Jsl6fC55AYcbkNVkwNM6Jo+ufsuCQRqViOQ8ZBPH9pRREHH9welbBiszuTLqEJiQcO/6XfFDl6bzCJIkrEi8XA=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/core/uint8arrays": ["uint8arrays@3.1.1", "", { "dependencies": { "multiformats": "^9.4.2" } }, "sha512-+QJa8QRnbdXVpHYjLoTpJIdCTiw9Ir62nocClWuXIq2JIh4Uta0cQsTSpFL678p2CN8B+XSApwcU+pQEqVpKWg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/heartbeat/tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/logger/pino": ["pino@7.11.0", "", { "dependencies": { "atomic-sleep": "^1.0.0", "fast-redact": "^3.0.0", "on-exit-leak-free": "^0.2.0", "pino-abstract-transport": "v0.5.0", "pino-std-serializers": "^4.0.0", "process-warning": "^1.0.0", "quick-format-unescaped": "^4.0.3", "real-require": "^0.1.0", "safe-stable-stringify": "^2.1.0", "sonic-boom": "^2.2.1", "thread-stream": "^0.15.1" }, "bin": { "pino": "bin.js" } }, "sha512-dMACeu63HtRLmCG8VKdy4cShCPKaYDR4youZqoSWLxl5Gu99HUw8bw75thbPv9Nip+H+QYX8o3ZJbTdVZZ2TVg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/types/@walletconnect/jsonrpc-types": ["@walletconnect/jsonrpc-types@1.0.3", "", { "dependencies": { "keyvaluestorage-interface": "^1.0.0", "tslib": "1.14.1" } }, "sha512-iIQ8hboBl3o5ufmJ8cuduGad0CQm3ZlsHtujv9Eu16xq89q+BG7Nh5VLxxUgmtpnrePgFkTwXirCTkwJH1v+Yw=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/utils/uint8arrays": ["uint8arrays@3.1.1", "", { "dependencies": { "multiformats": "^9.4.2" } }, "sha512-+QJa8QRnbdXVpHYjLoTpJIdCTiw9Ir62nocClWuXIq2JIh4Uta0cQsTSpFL678p2CN8B+XSApwcU+pQEqVpKWg=="],
-
     "@inquirer/confirm/@inquirer/core/ansi-escapes/type-fest": ["type-fest@0.21.3", "", {}, "sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w=="],
 
     "@inquirer/editor/@inquirer/core/ansi-escapes/type-fest": ["type-fest@0.21.3", "", {}, "sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w=="],
@@ -4915,30 +4743,6 @@
     "yaml-language-server/vscode-languageserver/vscode-languageserver-protocol/vscode-jsonrpc": ["vscode-jsonrpc@6.0.0", "", {}, "sha512-wnJA4BnEjOSyFMvjZdpiOwhSq9uDoK8e/kpRJDTaMYzwlkrhG1fwDIZI94CLsLzlCK5cIbMMtFlJlfR57Lavmg=="],
 
     "yaml-language-server/vscode-languageserver/vscode-languageserver-protocol/vscode-languageserver-types": ["vscode-languageserver-types@3.16.0", "", {}, "sha512-k8luDIWJWyenLc5ToFQQMaSrqCHiLwyKPHKPQZ5zz21vM+vIVUSvsRpcbiECH4WR88K2XZqc4ScRcZ7nk/jbeA=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/core/@walletconnect/jsonrpc-provider/tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/core/@walletconnect/jsonrpc-types/tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/core/uint8arrays/multiformats": ["multiformats@9.9.0", "", {}, "sha512-HoMUjhH9T8DDBNT+6xzkrd9ga/XiBI4xLr58LJACwK6G3HTOPeMz4nB4KJs33L2BelrIJa7P0VuNaVF3hMYfjg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/logger/pino/on-exit-leak-free": ["on-exit-leak-free@0.2.0", "", {}, "sha512-dqaz3u44QbRXQooZLTUKU41ZrzYrcvLISVgbrzbyCMxpmSLJvZ3ZamIJIZ29P6OhZIkNIQKosdeM6t1LYbA9hg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/logger/pino/pino-abstract-transport": ["pino-abstract-transport@0.5.0", "", { "dependencies": { "duplexify": "^4.1.2", "split2": "^4.0.0" } }, "sha512-+KAgmVeqXYbTtU2FScx1XS3kNyfZ5TrXY07V96QnUSFqo2gAqlvmaxH67Lj7SWazqsMabf+58ctdTcBgnOLUOQ=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/logger/pino/pino-std-serializers": ["pino-std-serializers@4.0.0", "", {}, "sha512-cK0pekc1Kjy5w9V2/n+8MkZwusa6EyyxfeQCB799CQRhRt/CqYKiWs5adeu8Shve2ZNffvfC/7J64A2PJo1W/Q=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/logger/pino/process-warning": ["process-warning@1.0.0", "", {}, "sha512-du4wfLyj4yCZq1VupnVSZmRsPJsNuxoDQFdCFHLaYiEbFBD7QE0a+I4D7hOxrVnh78QE/YipFAj9lXHiXocV+Q=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/logger/pino/real-require": ["real-require@0.1.0", "", {}, "sha512-r/H9MzAWtrv8aSVjPCMFpDMl5q66GqtmmRkRjpHTsp4zBAa+snZyiQNlMONiUmEJcsnaw0wCauJ2GWODr/aFkg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/logger/pino/sonic-boom": ["sonic-boom@2.8.0", "", { "dependencies": { "atomic-sleep": "^1.0.0" } }, "sha512-kuonw1YOYYNOve5iHdSahXPOK49GqwA+LZhI6Wz/l0rP57iKyXXIHaRagOBHAPmGwJC6od2Z9zgvZ5loSgMlVg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/logger/pino/thread-stream": ["thread-stream@0.15.2", "", { "dependencies": { "real-require": "^0.1.0" } }, "sha512-UkEhKIg2pD+fjkHQKyJO3yoIvAP3N6RlNFt2dUhcS1FGvCD1cQa1M/PGknCLFIyZdtJOWQjejp7bdNqmN7zwdA=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/types/@walletconnect/jsonrpc-types/tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
-
-    "@creit.tech/stellar-wallets-kit/@walletconnect/sign-client/@walletconnect/utils/uint8arrays/multiformats": ["multiformats@9.9.0", "", {}, "sha512-HoMUjhH9T8DDBNT+6xzkrd9ga/XiBI4xLr58LJACwK6G3HTOPeMz4nB4KJs33L2BelrIJa7P0VuNaVF3hMYfjg=="],
 
     "@netlify/edge-bundler/find-up/locate-path/p-locate/p-limit": ["p-limit@4.0.0", "", { "dependencies": { "yocto-queue": "^1.0.0" } }, "sha512-5b0R4txpzjPWVw/cXXUResoD4hb6U/x9BH08L7nw+GN1sezDzPdxeRvpc9c433fZhBan/wusjbCsqwqm4EIBIQ=="],
 
