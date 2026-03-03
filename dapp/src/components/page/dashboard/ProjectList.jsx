@@ -7,9 +7,11 @@ import {
   getMember,
   getProjectsPage,
 } from "../../../service/ReadContractService";
-import { loadConfigData } from "../../../service/StateService.ts";
 import { convertGitHubLink } from "../../../utils/editLinkFunctions";
-import { projectCardModalOpen } from "../../../utils/store.ts";
+import {
+  configData as configDataStore,
+  projectCardModalOpen,
+} from "../../../utils/store.ts";
 import { extractConfigData } from "../../../utils/utils";
 import CreateProjectModal from "./CreateProjectModal.tsx";
 import ProjectCard from "./ProjectCard";
@@ -19,6 +21,7 @@ import Spinner from "components/utils/Spinner.tsx";
 
 const ProjectList = () => {
   const isProjectInfoModalOpen = useStore(projectCardModalOpen);
+  const configDataFromStore = useStore(configDataStore);
   const [projects, setProjects] = useState(undefined);
   const [filteredProjects, setFilteredProjects] = useState(undefined);
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +31,6 @@ const ProjectList = () => {
   const [prevPath, setPrevPath] = useState("");
   const [memberNotFound, setMemberNotFound] = useState(false);
 
-  const [projectInfo, setProjectInfo] = useState(null);
   const [showProjectInfoModal, setShowProjectInfoModal] = useState(false);
   const [showCreateProjectModal, setShowCreateProjectModal] = useState(false);
   const [memberResult, setMemberResult] = useState(undefined);
@@ -170,18 +172,16 @@ const ProjectList = () => {
 
   useEffect(() => {
     setShowProjectInfoModal(isProjectInfoModalOpen);
-    if (isProjectInfoModalOpen) {
-      const configData = loadConfigData();
-      if (configData?.logoImageLink) {
-        setProjectInfo({
-          ...configData,
-          logoImageLink: convertGitHubLink(configData.logoImageLink),
-        });
-      } else {
-        setProjectInfo(configData);
-      }
-    }
   }, [isProjectInfoModalOpen]);
+
+  const projectInfo = configDataFromStore
+    ? {
+        ...configDataFromStore,
+        logoImageLink: configDataFromStore.logoImageLink
+          ? convertGitHubLink(configDataFromStore.logoImageLink)
+          : configDataFromStore.logoImageLink,
+      }
+    : null;
 
   const handleSearch = () => {
     if (!projects) return;
@@ -215,7 +215,7 @@ const ProjectList = () => {
     try {
       const project = await getProjectFromName(projectName);
       if (project && project.name && project.config && project.maintainers) {
-        const tomlData = await fetchTomlFromCid(project.config.ipfs);
+        const tomlData = await fetchTomlFromCid(project.config.ipfs, 5000);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigInfo(configData);
@@ -280,68 +280,54 @@ const ProjectList = () => {
     }
   };
 
+  const minimalConfig = (project) => ({
+    projectName: project.name,
+    logoImageLink: undefined,
+    thumbnailImageLink: "",
+    description: "",
+    organizationName: "",
+    officials: { githubLink: project.config.url },
+    socialLinks: {},
+    authorGithubNames: [],
+    maintainersAddresses: project.maintainers,
+  });
+
   const fetchProjectsForPage = async (uiPage) => {
     setIsLoadingOnChain(true);
     try {
       const blockchainPage = uiPage - 1;
-
       const projects = await getProjectsPage(blockchainPage);
 
       if (projects.length === 0) {
         setOnChainProjects([]);
         setHasNextPage(false);
+        setIsLoadingOnChain(false);
         return;
       }
 
-      const configuredProjects = [];
-      for (const project of projects) {
-        try {
-          const tomlData = await fetchTomlFromCid(project.config.ipfs);
-          const configData = tomlData
-            ? extractConfigData(tomlData, project)
-            : {
-                projectName: project.name,
-                logoImageLink: undefined,
-                thumbnailImageLink: "",
-                description: "",
-                organizationName: "",
-                officials: {
-                  githubLink: project.config.url,
-                },
-                socialLinks: {},
-                authorGithubNames: [],
-                maintainersAddresses: project.maintainers,
-              };
-          configuredProjects.push(configData);
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error("Error loading project:", project.name, error);
-          }
-          configuredProjects.push({
-            projectName: project.name,
-            logoImageLink: undefined,
-            thumbnailImageLink: "",
-            description: "",
-            organizationName: "",
-            officials: {
-              githubLink: project.config.url,
-            },
-            socialLinks: {},
-            authorGithubNames: [],
-            maintainersAddresses: project.maintainers,
-          });
-        }
-      }
-
-      setOnChainProjects(configuredProjects);
+      const minimalList = projects.map(minimalConfig);
+      setOnChainProjects(minimalList);
       setHasNextPage(true);
+      setIsLoadingOnChain(false);
+
+      const results = await Promise.allSettled(
+        projects.map((p) => fetchTomlFromCid(p.config.ipfs, 5000)),
+      );
+      const enrichedList = projects.map((project, i) => {
+        const result = results[i];
+        const tomlData =
+          result.status === "fulfilled" ? result.value : undefined;
+        return tomlData
+          ? extractConfigData(tomlData, project)
+          : minimalConfig(project);
+      });
+      setOnChainProjects(enrichedList);
     } catch (error) {
       if (import.meta.env.DEV) {
         console.error("Error fetching projects for page:", uiPage, error);
       }
       setOnChainProjects([]);
       setHasNextPage(false);
-    } finally {
       setIsLoadingOnChain(false);
     }
   };

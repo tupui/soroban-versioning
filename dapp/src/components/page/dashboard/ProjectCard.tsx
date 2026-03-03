@@ -42,28 +42,33 @@ const ProjectCard = ({ config }: { config: ProjectConfig }) => {
         if (username && repoName) {
           setProjectRepoInfo(username, repoName);
         }
-        const tomlData = await fetchTomlFromCid(project.config.ipfs);
-        if (tomlData) {
-          const configData = extractConfigData(tomlData, project);
-          setConfigData(configData);
-        } else {
-          setConfigData({});
-        }
-        try {
-          const latestSha = await getProjectHash();
-          if (
-            latestSha &&
-            typeof latestSha === "string" &&
-            latestSha.match(/^[a-f0-9]{40}$/)
-          ) {
-            setProjectLatestSha(latestSha);
-          } else {
-            setProjectLatestSha("");
-          }
-        } catch (error: any) {
-          toast.error("Something Went Wrong!", error.message);
-        }
+        setConfigData(extractConfigData({}, project));
         projectCardModalOpen.set(true);
+
+        (async () => {
+          try {
+            const tomlData = await fetchTomlFromCid(project.config.ipfs, 5000);
+            if (tomlData) {
+              setConfigData(extractConfigData(tomlData, project));
+            }
+          } catch (_) {
+            // TOML load failed; modal already shows minimal config
+          }
+          try {
+            const latestSha = await getProjectHash();
+            if (
+              latestSha &&
+              typeof latestSha === "string" &&
+              latestSha.match(/^[a-f0-9]{40}$/)
+            ) {
+              setProjectLatestSha(latestSha);
+            } else {
+              setProjectLatestSha("");
+            }
+          } catch (error: any) {
+            toast.error("Something Went Wrong!", error.message);
+          }
+        })();
       } else {
         toast.error(
           "Something Went Wrong!",

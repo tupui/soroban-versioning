@@ -167,16 +167,18 @@ export const fetchJSONFromIPFS = async (
  * The TOML file must live at the root of the directory.
  *
  * @param cid - The directory CID that contains the `tansu.toml` file
+ * @param timeoutMs - Timeout in milliseconds (default 5000)
  * @returns The parsed TOML data or `undefined` if not found / parse error
  */
 export const fetchTomlFromCid = async (
   cid: string,
+  timeoutMs: number = 5000,
 ): Promise<any | undefined> => {
   if (!cid) return undefined;
 
   try {
     const url = `${getIpfsBasicLink(cid)}/tansu.toml`;
-    const response = await fetchFromIPFS(url);
+    const response = await fetchFromIPFS(url, {}, timeoutMs);
 
     if (!response.ok) return undefined;
 

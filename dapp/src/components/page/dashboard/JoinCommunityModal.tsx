@@ -158,7 +158,6 @@ const JoinCommunityModal: FC<{
           onProgress: setStep,
         });
 
-        toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
         setUpdateSuccessful(true);
         setIsLoading(false);
