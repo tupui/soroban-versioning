@@ -6,7 +6,7 @@ import Button from "components/utils/Button";
 import Input from "components/utils/Input";
 import Modal from "components/utils/Modal";
 import { toast } from "utils/utils";
-import { deriveProjectKey } from "utils/projectKey";
+import { deriveProjectKey, toProjectKeyBuffer } from "utils/projectKey";
 import Tansu from "contracts/soroban_tansu";
 import { checkSimulationError } from "utils/contractErrors";
 import { loadedPublicKey } from "@service/walletService";
@@ -87,7 +87,7 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
       const names: string[] = [];
 
       for (const key of subProjectKeys) {
-        const keyBuffer = Buffer.isBuffer(key) ? key : Buffer.from(key, "hex");
+        const keyBuffer = toProjectKeyBuffer(key);
         const subProject = await getProjectFromKey(keyBuffer);
         if (subProject) {
           names.push(subProject.name);

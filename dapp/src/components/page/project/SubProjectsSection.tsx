@@ -2,7 +2,7 @@ import { useStore } from "@nanostores/react";
 import { useEffect, useState } from "react";
 import { projectInfoLoaded } from "utils/store";
 import { loadProjectInfo } from "@service/StateService";
-import { deriveProjectKey } from "utils/projectKey";
+import { deriveProjectKey, toProjectKeyBuffer } from "utils/projectKey";
 import Tansu from "contracts/soroban_tansu";
 import { checkSimulationError } from "utils/contractErrors";
 import { fetchTomlFromCid } from "utils/ipfsFunctions";
@@ -96,9 +96,7 @@ const SubProjectsSection = () => {
         const projects: any[] = [];
         for (const key of subProjectKeys) {
           try {
-            const keyBuffer = Buffer.isBuffer(key)
-              ? key
-              : Buffer.from(key, "hex");
+            const keyBuffer = toProjectKeyBuffer(key);
             const project = await Tansu.get_project({
               project_key: keyBuffer,
             });

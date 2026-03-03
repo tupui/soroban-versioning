@@ -12,3 +12,13 @@ export function deriveProjectKey(projectName: string): Buffer {
     keccak256.create().update(projectName.toLowerCase()).digest(),
   );
 }
+
+/**
+ * Normalize a sub-project key from get_sub_projects to a Buffer.
+ * The SDK can return Buffer, Uint8Array (from XDR decode), or hex string.
+ */
+export function toProjectKeyBuffer(key: Buffer | Uint8Array | string): Buffer {
+  if (Buffer.isBuffer(key)) return key;
+  if (typeof key === "string") return Buffer.from(key, "hex");
+  return Buffer.from(key);
+}
