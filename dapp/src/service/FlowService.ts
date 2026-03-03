@@ -126,18 +126,6 @@ async function createSignedProposalTransaction(
   Tansu.options.publicKey = publicKey;
   const project_key = deriveProjectKey(projectName);
 
-  // Simplification: contract expects Option<Address>, so take only the first contract address
-  const outcomesContractAddress = outcomeContracts?.[0]?.address || undefined;
-
-  console.log("🔍 DEBUG: Tansu.create_proposal parameters:");
-  console.log("proposer:", publicKey);
-  console.log("project_key:", project_key);
-  console.log("title:", title);
-  console.log("ipfs:", ipfs);
-  console.log("voting_ends_at:", votingEndsAt, typeof votingEndsAt);
-  console.log("public_voting:", publicVoting);
-  console.log("outcomes_contract:", outcomesContractAddress);
-
   const tx = await Tansu.create_proposal({
     proposer: publicKey,
     project_key: project_key,
@@ -145,7 +133,7 @@ async function createSignedProposalTransaction(
     ipfs: ipfs,
     voting_ends_at: BigInt(votingEndsAt),
     public_voting: publicVoting,
-    outcomes_contract: outcomesContractAddress,
+    outcome_contracts: outcomeContracts || null,
     token_contract: tokenContract,
   });
 
