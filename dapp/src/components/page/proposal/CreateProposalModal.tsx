@@ -378,21 +378,6 @@ const CreateProposalModal = () => {
 
       const { createProposalFlow } = await import("@service/FlowService");
 
-      console.log("🔍 DEBUG: createProposalFlow parameters:");
-      console.log("projectName:", projectName);
-      console.log("proposalName:", proposalName);
-      console.log("files:", files);
-      console.log("votingEndsAt:", votingEndsAt, typeof votingEndsAt);
-      console.log("publicVoting:", !isAnonymousVoting ? true : false);
-      console.log(
-        "outcomeContracts:",
-        JSON.stringify(contractOutcomes, null, 2),
-      );
-      console.log(
-        "contractOutcomes types:",
-        contractOutcomes.map((oc) => typeof oc),
-      );
-
       const proposalId = await createProposalFlow({
         projectName: projectName!,
         proposalName,

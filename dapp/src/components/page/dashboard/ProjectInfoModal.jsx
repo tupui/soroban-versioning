@@ -27,7 +27,7 @@ const ProjectInfoModal = ({ id, projectInfo, onClose }) => {
             <img
               alt="Project Thumbnail"
               src={projectInfo?.logoImageLink || "/fallback-image.jpg"}
-              className="w-[220px] h-[220px]"
+              className="w-[220px] h-[220px] object-contain"
             />
             <div className="flex-grow flex flex-col gap-[30px]">
               <div className="flex flex-col gap-3">
