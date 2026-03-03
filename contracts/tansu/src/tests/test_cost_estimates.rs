@@ -33,7 +33,7 @@ fn test_cost_create_proposal() {
         &voting_ends_at,
         &true, // anonymous voting
         &None,
-        &Some(setup.outcomes_id),
+        &None,
     );
 
     let budget = setup.env.cost_estimate().budget();
@@ -61,7 +61,7 @@ fn test_cost_vote_on_proposal() {
         &voting_ends_at,
         &true,
         &None,
-        &Some(setup.outcomes_id),
+        &None,
     );
 
     setup.contract.vote(
@@ -100,7 +100,7 @@ fn test_cost_execute_proposal() {
         &voting_ends_at,
         &true,
         &None,
-        &Some(setup.outcomes_id),
+        &None,
     );
 
     // Vote to make it executable
@@ -132,8 +132,6 @@ fn test_cost_multiple_proposals_flow() {
     let setup = create_test_data();
     let project_id = init_contract(&setup);
 
-    let outcomes_contract = setup.outcomes_id;
-
     let num_proposals = 3;
     println!("Cost Estimate - multiple_proposals_flow");
 
@@ -154,7 +152,7 @@ fn test_cost_multiple_proposals_flow() {
             &voting_ends_at,
             &true,
             &None,
-            &Some(outcomes_contract.clone()),
+            &None,
         );
     }
 
@@ -245,7 +243,7 @@ fn test_cost_comprehensive_dao_workflow() {
         &voting_ends_at,
         &true,
         &None,
-        &Some(setup.outcomes_id),
+        &None,
     );
 
     // Step 4: Multiple votes

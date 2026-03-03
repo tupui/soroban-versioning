@@ -5,7 +5,8 @@ use crate::{
 };
 use soroban_sdk::crypto::bls12_381::G1Affine;
 use soroban_sdk::{
-    Address, Bytes, BytesN, Env, String, U256, Vec, contractimpl, panic_with_error, token, vec,
+    Address, Bytes, BytesN, Env, InvokeError, String, U256, Vec, contractimpl, panic_with_error,
+    token, vec,
 };
 
 const PROPOSAL_COLLATERAL: i128 = 100 * 10_000_000;
@@ -156,8 +157,8 @@ impl DaoTrait for Tansu {
     /// * `ipfs` - IPFS content identifier describing the proposal
     /// * `voting_ends_at` - UNIX timestamp when voting ends
     /// * `public_voting` - Whether voting is public or anonymous
-    /// * `token_contract` - Optional token contract for token-based voting
-    /// * `outcomes_contract` - Optional outcome contract address for callbacks
+    /// * [`Option<token_contract>`] - token contract for token-based voting
+    /// * [`Option<Vec<OutcomeContract>>`] - outcome contracts executed after proposal completion
     ///
     /// # Returns
     /// * `u32` - The ID of the created proposal.
@@ -176,7 +177,7 @@ impl DaoTrait for Tansu {
         voting_ends_at: u64,
         public_voting: bool,
         token_contract: Option<Address>,
-        outcomes_contract: Option<Address>,
+        outcome_contracts: Option<Vec<types::OutcomeContract>>,
     ) -> u32 {
         Tansu::require_not_paused(env.clone());
 
@@ -275,7 +276,7 @@ impl DaoTrait for Tansu {
             ipfs,
             vote_data,
             status: types::ProposalStatus::Active,
-            outcomes_contract,
+            outcome_contracts,
         };
 
         let next_id = proposal_id + 1;
@@ -410,6 +411,9 @@ impl DaoTrait for Tansu {
 
         // Check that voting period has not ended
         let curr_timestamp = env.ledger().timestamp();
+        if proposal.status != types::ProposalStatus::Active {
+            panic_with_error!(&env, &errors::ContractErrors::ProposalActive);
+        }
         if curr_timestamp >= proposal.vote_data.voting_ends_at {
             panic_with_error!(&env, &errors::ContractErrors::ProposalVotingTime);
         }
@@ -660,15 +664,24 @@ impl DaoTrait for Tansu {
         }
         .publish(&env);
 
-        if let Some(outcomes_contract_id) = &proposal.outcomes_contract {
-            let client = outcomes_contract::Client::new(&env, outcomes_contract_id);
-
-            match proposal.status {
-                types::ProposalStatus::Approved => client.approve_outcome(&maintainer),
-                types::ProposalStatus::Rejected => client.reject_outcome(&maintainer),
-                types::ProposalStatus::Cancelled => client.abstain_outcome(&maintainer),
-                _ => (),
+        if let Some(outcome_contracts) = &proposal.outcome_contracts {
+            let outcome_index = match proposal.status {
+                types::ProposalStatus::Approved => 0,
+                types::ProposalStatus::Rejected => 1,
+                types::ProposalStatus::Cancelled => 2,
+                // guard execution to only these outcomes
+                _ => panic_with_error!(&env, &errors::ContractErrors::OutcomeError),
             };
+
+            if let Some(contract) = outcome_contracts.get(outcome_index) {
+                let r = env.try_invoke_contract::<(), InvokeError>(
+                    &contract.address,
+                    &contract.execute_fn,
+                    contract.args.clone(),
+                );
+                let _ =
+                    r.map_err(|_| panic_with_error!(&env, &errors::ContractErrors::OutcomeError));
+            }
         }
 
         proposal.status

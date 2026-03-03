@@ -134,7 +134,7 @@ pub trait DaoTrait {
         voting_ends_at: u64,
         public_voting: bool,
         token_contract: Option<Address>,
-        outcomes_contract: Option<Address>,
+        outcome_contracts: Option<Vec<types::OutcomeContract>>,
     ) -> u32;
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote);
