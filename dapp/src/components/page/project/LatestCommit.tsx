@@ -17,12 +17,24 @@ enum Status {
 
 const LatestCommit = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
-  const [commitData, setCommitData] = useState<any>(null);
+  const [commitData, setCommitData] = useState<{
+    sha: string;
+    commit: {
+      message: string;
+      author: { name: string };
+      committer: { date: string };
+    };
+    html_url?: string;
+  } | null>(null);
   const [latestCommitStatus, setLatestCommitStatus] = useState<Status>(
     Status.NotFound,
   );
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadLatestCommitData = async () => {
+    setLoadError(null);
+    setIsLoading(true);
     const projectInfo = loadProjectInfo();
     const latestSha = await getProjectHash();
     if (
@@ -38,22 +50,33 @@ const LatestCommit = () => {
         );
         if (latestCommit) {
           setCommitData(latestCommit);
-          if (latestCommit.sha === latestSha) {
-            setLatestCommitStatus(Status.Match);
-          } else {
-            setLatestCommitStatus(Status.NotMatch);
-          }
+          setLatestCommitStatus(
+            latestCommit.sha === latestSha ? Status.Match : Status.NotMatch,
+          );
+        } else {
+          setLatestCommitStatus(Status.NotFound);
         }
       } catch {
-        // Failed to load commit data - keep status as NotFound
         setLatestCommitStatus(Status.NotFound);
+        setLoadError("Could not load commit data.");
       }
+    } else {
+      setLatestCommitStatus(Status.NotFound);
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
     loadLatestCommitData();
   }, [isProjectInfoLoaded]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-3" aria-busy="true">
+        <p className="text-base text-tertiary">Loading latest commit…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-3">
@@ -119,17 +142,26 @@ const LatestCommit = () => {
           </p>
         </div>
       )}
-      {/* Configuration link */}
-      {isProjectInfoLoaded && (
-        <a
-          href={`${getIpfsBasicLink(loadProjectInfo()?.config.ipfs || "")}/tansu.toml`}
-          target="_blank"
-          className="flex items-center gap-1 text-[#07711E] hover:underline"
-        >
-          <img src="/icons/ipfs.svg" className="w-4 h-4" />
-          <span className="text-base">tansu.toml</span>
-        </a>
+      {loadError && (
+        <p className="text-sm text-red-600" role="alert">
+          {loadError}
+        </p>
       )}
+      {/* Configuration link – only when project has a valid config CID */}
+      {(() => {
+        const configCid = loadProjectInfo()?.config?.ipfs;
+        if (!configCid || !getIpfsBasicLink(configCid)) return null;
+        return (
+          <a
+            href={`${getIpfsBasicLink(configCid)}/tansu.toml`}
+            target="_blank"
+            className="flex items-center gap-1 text-[#07711E] hover:underline"
+          >
+            <img src="/icons/ipfs.svg" className="w-4 h-4" />
+            <span className="text-base">tansu.toml</span>
+          </a>
+        );
+      })()}
     </div>
   );
 };

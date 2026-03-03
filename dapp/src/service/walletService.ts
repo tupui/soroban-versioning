@@ -41,28 +41,22 @@ export async function checkAndNotifyFunding(): Promise<void> {
   const publicKey = loadedPublicKey();
   if (!publicKey) return;
 
-  console.log("🔍 Checking wallet funding for:", publicKey);
-
   try {
     const { exists, balance } = await getWalletHealth();
-    console.log("🔍 Wallet health:", { exists, balance });
 
     const minRequired = 1;
     const networkPass = import.meta.env.PUBLIC_SOROBAN_NETWORK_PASSPHRASE || "";
     const network = /Test/i.test(networkPass) ? "testnet" : "mainnet";
 
     if (!exists || balance < minRequired) {
-      console.log("🚨 Wallet needs funding! Opening modal");
       window.dispatchEvent(
         new CustomEvent("openFundingModal", {
           detail: { exists, balance, network },
         }),
       );
-    } else {
-      console.log("✅ Wallet is sufficiently funded");
     }
-  } catch (error) {
-    console.error("❌ Error checking wallet funding:", error);
+  } catch (_) {
+    // Funding check is best-effort; swallow errors silently
   }
 }
 
@@ -75,7 +69,7 @@ function initializeConnection(): void {
     connectionState.provider = storedProvider;
     connectedPublicKey.set(storedPublicKey);
 
-    // ✅ Check funding for returning users
+    // Check funding for returning users
     setTimeout(() => {
       checkAndNotifyFunding();
     }, 500);

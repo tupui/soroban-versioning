@@ -79,7 +79,9 @@ async function test() {
 
   console.log(`\n✅ Upload successful!`);
   console.log(`CID: ${directoryCid.toString()}`);
-  console.log(`URL: https://${directoryCid.toString()}.ipfs.w3s.link/test.txt`);
+  console.log(
+    `URL: https://${directoryCid.toString()}.ipfs.storacha.link/test.txt`,
+  );
 }
 
 test().catch(console.error);

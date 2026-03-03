@@ -25,7 +25,7 @@ export const getIpfsBasicLink = (cid: string): string => {
     return "";
   }
 
-  return `https://w3s.link/ipfs/${cid}`;
+  return `https://${cid}.ipfs.storacha.link`;
 };
 
 /**
@@ -58,83 +58,36 @@ export const getOutcomeLinkFromIpfs = (cid: string): string => {
  * @param files - Array of File objects or objects with path and content
  * @returns The calculated CID
  */
-export const calculateDirectoryCid = async (
-  files: File[] | { path: string; content: Uint8Array }[],
-): Promise<string> => {
-  try {
-    // For simple File[] inputs, use the more efficient implementation
-    if (Array.isArray(files) && files.length > 0 && files[0] instanceof File) {
-      const { createDirectoryEncoderStream, CAREncoderStream } = await import(
-        "ipfs-car"
-      );
+export const calculateDirectoryCid = async (files: File[]): Promise<string> => {
+  const { createDirectoryEncoderStream, CAREncoderStream } = await import(
+    "ipfs-car"
+  );
 
-      // We only need the root CID, not the full CAR, so we'll track blocks
-      let rootCID: any;
+  let rootCID: any;
 
-      // Create a stream that encodes the directory structure
-      const stream = createDirectoryEncoderStream(files as File[]);
+  const stream = createDirectoryEncoderStream(files);
 
-      // Create a transform to capture the last block (which will be the root)
-      const captureRoot = new TransformStream({
-        transform(block: any, controller) {
-          rootCID = block.cid;
-          controller.enqueue(block);
-        },
-      });
+  const captureRoot = new TransformStream({
+    transform(block: any, controller) {
+      rootCID = block.cid;
+      controller.enqueue(block);
+    },
+  });
 
-      // Create a writable that discards the CAR data (we only need the CID)
-      const discard = new WritableStream({
-        write() {
-          // Discard the data
-        },
-      });
+  const discard = new WritableStream({
+    write() {},
+  });
 
-      // Process the stream to get the root CID
-      await stream
-        .pipeThrough(captureRoot)
-        .pipeThrough(new CAREncoderStream())
-        .pipeTo(discard);
+  await stream
+    .pipeThrough(captureRoot)
+    .pipeThrough(new CAREncoderStream())
+    .pipeTo(discard);
 
-      if (!rootCID) {
-        throw new Error("Failed to compute CID: no root block found");
-      }
-
-      return rootCID.toString();
-    }
-    // For more complex inputs, use the original implementation that supports custom objects
-    else {
-      // Dynamically import the IPFS libraries to reduce initial bundle size
-      const { create } = await import("@storacha/client");
-      const client = await create();
-
-      // Convert the files array to the format expected by the uploadDirectory method
-      const filesArray =
-        Array.isArray(files) && files.length > 0 && files[0] instanceof File
-          ? (files as File[]).map((file) => ({
-              name: file.name,
-              stream: () => file.stream(),
-            }))
-          : (files as { path: string; content: Uint8Array }[]).map((file) => ({
-              name: file.path,
-              stream: () =>
-                new ReadableStream({
-                  start(controller) {
-                    controller.enqueue(file.content);
-                    controller.close();
-                  },
-                }),
-            }));
-
-      // Calculate CID without uploading
-      const dirCid = await client.uploadDirectory(filesArray);
-      return dirCid.toString();
-    }
-  } catch (error) {
-    // This is a truly unexpected error during CID calculation
-    // Keep this log since it's a critical operation that shouldn't fail
-    console.error("Error calculating directory CID:", error);
-    throw error;
+  if (!rootCID) {
+    throw new Error("Failed to compute CID: no root block found");
   }
+
+  return rootCID.toString();
 };
 
 /**

@@ -29,16 +29,8 @@ export function validateFreighterEnvironment(): {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  // Check required environment variables
-  const requiredEnvVars = [
-    "PUBLIC_SOROBAN_NETWORK_PASSPHRASE",
-    "PUBLIC_SOROBAN_RPC_URL",
-    "PUBLIC_HORIZON_URL",
-    "PUBLIC_TANSU_CONTRACT_ID",
-    "PUBLIC_SOROBAN_DOMAIN_CONTRACT_ID",
-  ];
-
-  for (const envVar of requiredEnvVars) {
+  // Use same canonical list as assertEnv so they cannot get out of sync
+  for (const envVar of requiredEnv) {
     const value = import.meta.env[envVar];
     if (!value) {
       errors.push(`Missing required environment variable: ${envVar}`);

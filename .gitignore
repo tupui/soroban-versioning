@@ -7,6 +7,7 @@ contracts/tansu/test_snapshots
 mutants*
 
 # Misc
+.cursor
 .idea
 .DS_Store
 .env.local

@@ -15,27 +15,40 @@ const CommitHistory = () => {
   const [commitHistory, setCommitHistory] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   const fetchCommitHistory = async (page = 1) => {
+    setLoadError(null);
     const projectRepoInfo = loadProjectRepoInfo();
     if (projectRepoInfo?.author && projectRepoInfo?.repository) {
-      const history = await getCommitHistory(
-        projectRepoInfo.author,
-        projectRepoInfo.repository,
-        page,
-      );
+      setIsLoading(true);
+      try {
+        const history = await getCommitHistory(
+          projectRepoInfo.author,
+          projectRepoInfo.repository,
+          page,
+        );
 
-      if (history) {
-        setCommitHistory(history);
-        setCurrentPage(page);
+        if (history) {
+          setCommitHistory(history);
+          setCurrentPage(page);
 
-        // Set the latest commit
-        if (history.length > 0 && history[0].commits.length > 0) {
-          latestCommit.set(history[0].commits[0].sha);
+          if (history.length > 0 && history[0].commits.length > 0) {
+            latestCommit.set(history[0].commits[0].sha);
+          }
+        } else {
+          setCommitHistory([]);
         }
-      } else {
+      } catch (err) {
+        setLoadError("Could not load commit history.");
         setCommitHistory([]);
+      } finally {
+        setIsLoading(false);
       }
+    } else {
+      setLoadError("Project repository info not available.");
+      setIsLoading(false);
     }
   };
 
@@ -65,6 +78,8 @@ const CommitHistory = () => {
     if (isProjectInfoLoaded) {
       fetchCommitHistory();
       addMaintainerBadge();
+    } else {
+      setIsLoading(false);
     }
   };
 
@@ -81,6 +96,16 @@ const CommitHistory = () => {
           </p>
           <div className="border-t border-[#EEEEEE]" />
         </div>
+        {isLoading && (
+          <p className="text-base text-tertiary" aria-busy="true">
+            Loading commit history…
+          </p>
+        )}
+        {loadError && (
+          <p className="text-sm text-red-600" role="alert">
+            {loadError}
+          </p>
+        )}
         <div className="commit-history-container pl-[44px] lg:pl-[54px] max-h-[560px] flex flex-col gap-6 overflow-auto">
           {commitHistory.map((day) => (
             <div key={day.date} className="day-group flex flex-col gap-6">

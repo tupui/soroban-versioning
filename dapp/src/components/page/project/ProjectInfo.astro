@@ -271,7 +271,7 @@ import Button from "components/utils/Button";
       if (maintainersList) {
         const viewAllButtonContainer =
           maintainersList.querySelector(".view-all");
-        if (viewAllButtonContainer) viewAllButtonContainer.innerHTML = "";
+        if (viewAllButtonContainer) viewAllButtonContainer.replaceChildren();
         const viewAllButton = document.createElement("button");
         viewAllButton.className =
           "leading-[18px] text-lg font-[450] text-primary underline";
@@ -283,7 +283,7 @@ import Button from "components/utils/Button";
         }
         const ul = maintainersList.querySelector("ul");
         if (ul) {
-          ul.innerHTML = "";
+          ul.replaceChildren();
           // Prefer the order straight from tansu.toml (guaranteed 1-1)
           const hasMapping =
             configData &&
@@ -417,7 +417,7 @@ import Button from "components/utils/Button";
 
         const officialLinks = document.getElementById("official-links");
         if (officialLinks) {
-          officialLinks.innerHTML = "";
+          officialLinks.replaceChildren();
           if (configData && configData.officials) {
             if (configData.officials.githubLink) {
               addLinkButton(
@@ -457,8 +457,16 @@ import Button from "components/utils/Button";
 
           const donateTipPopup = document.getElementById("donate-tip-popup");
           if (donateTipPopup) {
-            donateTipPopup.innerHTML = `Help us run the Tansu platform sustainability
-                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>`;
+            donateTipPopup.replaceChildren();
+            donateTipPopup.appendChild(
+              document.createTextNode(
+                "Help us run the Tansu platform sustainability",
+              ),
+            );
+            const triangle = document.createElement("div");
+            triangle.className =
+              "absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800";
+            donateTipPopup.appendChild(triangle);
           }
         }
 
@@ -466,7 +474,7 @@ import Button from "components/utils/Button";
           "project-sync-status",
         );
         if (syncStatusContainer) {
-          syncStatusContainer.innerHTML = "";
+          syncStatusContainer.replaceChildren();
 
           // Replace configuration badge with direct link to tansu.toml on IPFS
           const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.ipfs)}/tansu.toml`;
@@ -525,25 +533,38 @@ import Button from "components/utils/Button";
               ) {
                 commitIcon.src = "/icons/check.svg";
                 commitIcon.alt = "Check";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain exists on GitHub</p>';
+                commitPopup.replaceChildren();
+                const p1 = document.createElement("p");
+                p1.className = "text-sm w-36 sm:w-max";
+                p1.textContent = "Commit SHA on-chain exists on GitHub";
+                commitPopup.appendChild(p1);
               } else {
                 commitIcon.src = "/icons/check.svg";
                 commitIcon.alt = "Failed";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain cannot be found on GitHub</p>';
+                commitPopup.replaceChildren();
+                const p2 = document.createElement("p");
+                p2.className = "text-sm w-36 sm:w-max";
+                p2.textContent =
+                  "Commit SHA on-chain cannot be found on GitHub";
+                commitPopup.appendChild(p2);
               }
             } else {
               commitIcon.src = "/icons/failed.svg";
               commitIcon.alt = "Failed";
-              commitPopup.innerHTML =
-                '<p class="text-sm w-36 sm:w-max">No commit SHA on-chain yet</p>';
+              commitPopup.replaceChildren();
+              const p3 = document.createElement("p");
+              p3.className = "text-sm w-36 sm:w-max";
+              p3.textContent = "No commit SHA on-chain yet";
+              commitPopup.appendChild(p3);
             }
           } catch (error) {
             commitIcon.src = "/icons/failed.svg";
             commitIcon.alt = "Failed";
-            commitPopup.innerHTML =
-              '<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on GitHub</p>';
+            commitPopup.replaceChildren();
+            const p4 = document.createElement("p");
+            p4.className = "text-sm w-36 sm:w-max";
+            p4.textContent = "No commit SHA can be found on-chain or on GitHub";
+            commitPopup.appendChild(p4);
           }
         }
 
@@ -648,7 +669,7 @@ import Button from "components/utils/Button";
         const contentDiv =
           communityContainer.querySelector(".community-content");
         if (!contentDiv) return;
-        contentDiv.innerHTML = "";
+        contentDiv.replaceChildren();
 
         const sections = [
           { key: "developer", label: "Developer", list: badgeData.developer },

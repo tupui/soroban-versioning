@@ -132,7 +132,7 @@ const CreateProposalModal = () => {
       throw new Error("Only maintainers can submit proposals");
   };
 
-  const handleSubmmitProposal = useCallback(() => {
+  const handleSubmitProposal = useCallback(() => {
     try {
       checkSubmitAvailability();
       setShowModal(true);
@@ -149,25 +149,30 @@ const CreateProposalModal = () => {
     setProjectName(name);
     const showModalButton = document.querySelector("#create-proposal-button");
 
-    // pre-existing flag check
-    if ((window as any).__nextFunc === "create_proposal") {
+    if (
+      import.meta.env.DEV &&
+      typeof (window as Window & { __nextFunc?: string }).__nextFunc ===
+        "string" &&
+      (window as Window & { __nextFunc?: string }).__nextFunc ===
+        "create_proposal"
+    ) {
       setShowModal(true);
       setStep(1);
     }
 
     if (showModalButton) {
       setStep(1);
-      showModalButton.addEventListener("click", handleSubmmitProposal);
+      showModalButton.addEventListener("click", handleSubmitProposal);
       return () => {
         unsubscribe();
-        showModalButton.removeEventListener("click", handleSubmmitProposal);
+        showModalButton.removeEventListener("click", handleSubmitProposal);
       };
     }
 
     return () => {
       unsubscribe();
     };
-  }, [handleSubmmitProposal]);
+  }, [handleSubmitProposal]);
 
   useEffect(() => {
     if (projectName) {
@@ -257,10 +262,9 @@ const CreateProposalModal = () => {
     return files;
   };
 
-  // Helper function to get parameter name by index for a given function
+  // Best-effort display labels for outcome contract args. Not from introspection;
+  // Tansu outcome contracts may use different function signatures.
   const getParamName = (functionName: string, paramIndex: number): string => {
-    // This is a simplified mapping - in a real implementation you'd get this
-    // from the contract introspection service based on the function signature
     const paramMappings: Record<string, string[]> = {
       mint: ["message", "signature", "recovery_id", "public_key", "nonce"],
       transfer: [

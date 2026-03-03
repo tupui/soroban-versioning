@@ -14,7 +14,7 @@ const UpdateHashModal = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
   const [showButton, setShowButton] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [lastestHash, setLatestHash] = useState("");
+  const [latestHash, setLatestHash] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [updateSuccessful, setUpdateSuccessful] = useState(false);
   useEffect(() => {
@@ -39,10 +39,10 @@ const UpdateHashModal = () => {
   }, [isProjectInfoLoaded]);
 
   const handleClose = () => {
+    const shouldReload = updateSuccessful;
     setIsOpen(false);
     setUpdateSuccessful(false);
-    // Reload page if update was successful to show fresh data
-    if (updateSuccessful) {
+    if (shouldReload) {
       window.location.reload();
     }
   };
@@ -50,7 +50,7 @@ const UpdateHashModal = () => {
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
-      await commitHash(lastestHash);
+      await commitHash(latestHash);
 
       // Successfully updated - refresh project data and reload the page
       try {
@@ -116,7 +116,7 @@ const UpdateHashModal = () => {
                     type="text"
                     className="p-3 sm:p-[18px] border border-[#978AA1] outline-none w-full text-sm sm:text-base"
                     placeholder="Latest Commit Hash"
-                    value={lastestHash}
+                    value={latestHash}
                     onChange={(e) => setLatestHash(e.target.value)}
                     required
                   />

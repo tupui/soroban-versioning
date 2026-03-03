@@ -1,40 +1,33 @@
-import { contractErrorMessages } from "../constants/contractErrorMessages";
+import { parseContractError } from "./contractErrors";
 
-/**
- * Error handling utility for the application
- * Centralizes error handling logic to avoid duplication
- */
+/** Shared error handling; contract messages via parseContractError (contractErrors.ts). */
 
 interface ErrorHandlerOptions {
-  showUser?: boolean; // Whether to show error to user (UI component should handle this)
-  rethrow?: boolean; // Whether to rethrow the error after handling
+  showUser?: boolean;
+  rethrow?: boolean;
 }
 
-/**
- * Extract contract error code and message from error object
- */
-export function extractContractError(error: any): {
+/** Returns { errorCode, errorMessage } from contract or -4 user-denial. */
+export function extractContractError(error: unknown): {
   errorCode: number;
   errorMessage: string;
 } {
-  if (error.code === -4) {
+  const err = error as { code?: number; message?: string };
+  if (err?.code === -4) {
     return {
-      errorCode: error.code,
-      errorMessage: error.message,
+      errorCode: err.code,
+      errorMessage: err.message ?? "Unknown error",
     };
   }
 
-  const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(error.message);
-  let errorCode = 0;
-
-  if (errorCodeMatch && errorCodeMatch[1]) {
-    errorCode = parseInt(errorCodeMatch[1], 10);
-  }
-
-  // Use our constants file for user-friendly error messages
-  const errorMessage =
-    contractErrorMessages[errorCode as keyof typeof contractErrorMessages] ||
-    `Contract error #${errorCode}`;
+  const errorMessage = parseContractError(
+    typeof err?.message === "string" ? { message: err.message } : err,
+  );
+  const errorCodeMatch = /Error\(Contract, #(\d+)\)/.exec(
+    String(err?.message ?? ""),
+  );
+  const errorCode =
+    errorCodeMatch?.[1] != null ? parseInt(errorCodeMatch[1], 10) : 0;
 
   return {
     errorCode,
@@ -42,48 +35,33 @@ export function extractContractError(error: any): {
   };
 }
 
-/**
- * Handle errors in a consistent way throughout the application
- * @param error The error object
- * @param context Context information about where the error occurred
- * @param options Additional options for error handling
- * @returns The error message
- */
+function hasContractError(message: unknown): message is string {
+  return typeof message === "string" && message.includes("Error(Contract");
+}
+
 export function handleError(
-  error: any,
+  error: unknown,
   context: string,
   options: ErrorHandlerOptions = {},
 ): string {
-  const { showUser: _showUser = true, rethrow = false } = options;
+  const { rethrow = false } = options;
+  const err = error as { message?: string };
 
-  // For debugging in development only - remove in production
-  if (import.meta.env.DEV) {
-    // Use more specific error type check
-    if (error?.message?.includes("Error(Contract")) {
-      const { errorMessage } = extractContractError(error);
-      const _logMessage = `${context}: ${errorMessage}`;
-      // No console.error in production
-      console.error(_logMessage);
-    } else {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      const _logMessage = `${context}: ${errorMessage}`;
-      // No console.error in production
-      console.error(_logMessage);
-    }
+  if (import.meta.env.DEV && err?.message) {
+    console.error(
+      context,
+      hasContractError(err.message)
+        ? extractContractError(error).errorMessage
+        : err.message,
+    );
   }
 
-  // Get appropriate error message
-  let userMessage: string;
+  const userMessage = hasContractError(err?.message)
+    ? extractContractError(error).errorMessage
+    : error instanceof Error
+      ? error.message
+      : String(error ?? "Unknown error");
 
-  if (error?.message?.includes("Error(Contract")) {
-    const { errorMessage } = extractContractError(error);
-    userMessage = errorMessage;
-  } else {
-    userMessage = error instanceof Error ? error.message : String(error);
-  }
-
-  // Rethrow if needed
   if (rethrow) {
     throw new Error(userMessage);
   }
@@ -91,12 +69,6 @@ export function handleError(
   return userMessage;
 }
 
-/**
- * Create a try-catch wrapper for async functions with consistent error handling
- * @param fn The async function to wrap
- * @param context Context information about the function
- * @returns The wrapped function
- */
 export function withErrorHandling<T, Args extends any[]>(
   fn: (...args: Args) => Promise<T>,
   context: string,
@@ -106,24 +78,18 @@ export function withErrorHandling<T, Args extends any[]>(
       return await fn(...args);
     } catch (error) {
       handleError(error, context, { rethrow: true });
-      throw error; // TypeScript needs this even though rethrow: true already throws
     }
   };
 }
 
-/**
- * Handle the specific "Cannot destructure property 'simulation' of 'e' as it is null" error
- * This error typically occurs when transaction simulation fails due to network or contract issues
- */
 export function handleSimulationDestructuringError(
-  error: any,
+  error: unknown,
   context: string,
 ): string {
-  // Check if this is the specific destructuring error
+  const msg = (error as { message?: string })?.message;
   if (
-    error?.message?.includes(
-      "Cannot destructure property 'simulation' of 'e' as it is null",
-    )
+    typeof msg === "string" &&
+    msg.includes("Cannot destructure property 'simulation'")
   ) {
     return `Transaction simulation failed. This usually means:
 1. Network connectivity issues - check your internet connection
@@ -134,41 +100,30 @@ export function handleSimulationDestructuringError(
 Context: ${context}`;
   }
 
-  return error?.message || "Unknown simulation error";
+  return msg ?? "Unknown simulation error";
 }
 
-/**
- * Enhanced error handler that specifically addresses Freighter simulation issues
- */
-export function handleFreighterError(error: any, context: string): string {
-  // Handle the specific destructuring error
-  if (error?.message?.includes("Cannot destructure property 'simulation'")) {
+export function handleFreighterError(error: unknown, context: string): string {
+  const msg = (error as { message?: string })?.message ?? "";
+
+  if (msg.includes("Cannot destructure property 'simulation'")) {
     return handleSimulationDestructuringError(error, context);
   }
 
-  // Handle other Freighter-related errors
-  if (
-    error?.message?.includes("Freighter") ||
-    error?.message?.includes("wallet")
-  ) {
-    return `Wallet error: ${error.message}. Please:
+  if (msg.includes("Freighter") || msg.includes("wallet")) {
+    return `Wallet error: ${msg}. Please:
 1. Ensure Freighter is installed and unlocked
 2. Check that you're connected to the correct network (Testnet/Mainnet)
 3. Try refreshing the page and reconnecting your wallet
 4. Verify your account has sufficient XLM for transaction fees`;
   }
 
-  // Handle network connectivity errors
-  if (
-    error?.message?.includes("fetch") ||
-    error?.message?.includes("network")
-  ) {
+  if (msg.includes("fetch") || msg.includes("network")) {
     return `Network error: Unable to connect to Stellar network. Please:
 1. Check your internet connection
 2. Verify the RPC endpoint is accessible
 3. Try again in a few moments`;
   }
 
-  // Default error handling
   return handleError(error, context);
 }

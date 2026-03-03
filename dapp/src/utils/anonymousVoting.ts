@@ -117,8 +117,8 @@ export async function computeAnonymousVotingData(
     let maxWeight: number | string;
 
     if (memberAddr === proposerAddr) {
-      weight = Badge.Verified;
-      maxWeight = "N/A"; //For proposer
+      weight = Number((data as { weight?: number }).weight ?? Badge.Verified);
+      maxWeight = "N/A";
     } else {
       // Normal voter – use weight from contract
       weight = Number((data as { weight?: number }).weight ?? Badge.Default);

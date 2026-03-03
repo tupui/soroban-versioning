@@ -4,6 +4,30 @@ import * as StellarSdk from "@stellar/stellar-sdk";
 import { toast } from "utils/utils";
 import { loadedPublicKey } from "./walletService";
 
+async function decodeReturnValue(returnValue: any): Promise<any> {
+  if (returnValue === undefined) return true;
+  if (typeof returnValue === "number" || typeof returnValue === "boolean") {
+    return returnValue;
+  }
+  try {
+    const { xdr, scValToNative } = await import("@stellar/stellar-sdk");
+    let decoded: any;
+    if (typeof returnValue === "string") {
+      const scVal = xdr.ScVal.fromXDR(returnValue, "base64");
+      decoded = scValToNative(scVal);
+    } else {
+      decoded = scValToNative(returnValue);
+    }
+    if (typeof decoded === "bigint") return Number(decoded);
+    if (typeof decoded === "number") return decoded;
+    if (typeof decoded === "boolean") return decoded;
+    const coerced = Number(decoded);
+    return isNaN(coerced) ? decoded : coerced;
+  } catch (_) {
+    return true;
+  }
+}
+
 /**
  * Send a signed transaction (Soroban) and decode typical return values.
  * - Accepts base64 XDR directly (soroban-rpc supports it)
@@ -39,32 +63,7 @@ export async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
   }
 
   if (sendResponse.status === "SUCCESS") {
-    if (sendResponse.returnValue !== undefined) {
-      if (
-        typeof sendResponse.returnValue === "number" ||
-        typeof sendResponse.returnValue === "boolean"
-      ) {
-        return sendResponse.returnValue;
-      }
-      try {
-        const { xdr, scValToNative } = await import("@stellar/stellar-sdk");
-        let decoded: any;
-        if (typeof sendResponse.returnValue === "string") {
-          const scVal = xdr.ScVal.fromXDR(sendResponse.returnValue, "base64");
-          decoded = scValToNative(scVal);
-        } else {
-          decoded = scValToNative(sendResponse.returnValue);
-        }
-        if (typeof decoded === "bigint") return Number(decoded);
-        if (typeof decoded === "number") return decoded;
-        if (typeof decoded === "boolean") return decoded;
-        const coerced = Number(decoded);
-        return isNaN(coerced) ? decoded : coerced;
-      } catch (_) {
-        return true;
-      }
-    }
-    return true;
+    return decodeReturnValue(sendResponse.returnValue);
   }
 
   if (sendResponse.status === "PENDING") {
@@ -79,32 +78,7 @@ export async function sendSignedTransaction(signedTxXdr: string): Promise<any> {
     }
 
     if (getResponse.status === "SUCCESS") {
-      if (getResponse.returnValue !== undefined) {
-        if (
-          typeof getResponse.returnValue === "number" ||
-          typeof getResponse.returnValue === "boolean"
-        ) {
-          return getResponse.returnValue;
-        }
-        try {
-          const { xdr, scValToNative } = await import("@stellar/stellar-sdk");
-          let decoded: any;
-          if (typeof getResponse.returnValue === "string") {
-            const scVal = xdr.ScVal.fromXDR(getResponse.returnValue, "base64");
-            decoded = scValToNative(scVal);
-          } else {
-            decoded = scValToNative(getResponse.returnValue);
-          }
-          if (typeof decoded === "bigint") return Number(decoded);
-          if (typeof decoded === "number") return decoded;
-          if (typeof decoded === "boolean") return decoded;
-          const coerced = Number(decoded);
-          return isNaN(coerced) ? decoded : coerced;
-        } catch (_) {
-          return true;
-        }
-      }
-      return true;
+      return decodeReturnValue(getResponse.returnValue);
     } else if (getResponse.status === "FAILED") {
       const resultStr = JSON.stringify(getResponse);
       const contractErrorMatch = resultStr.match(/Error\(Contract, #(\d+)\)/);

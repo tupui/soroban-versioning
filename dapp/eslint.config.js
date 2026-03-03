@@ -6,7 +6,7 @@ import react from "eslint-plugin-react";
 export default [
   js.configs.recommended,
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.{ts,tsx,jsx}"],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -100,7 +100,7 @@ export default [
       "**/*.d.ts",
       "**/*.astro",
       "**/*.wrangler",
-      "**/*.js", // Skip JS files for now
+      "**/*.js",
     ],
   },
 ];

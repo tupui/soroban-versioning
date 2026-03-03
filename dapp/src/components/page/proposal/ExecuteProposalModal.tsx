@@ -102,11 +102,6 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   }, [voteStatus]);
 
   useEffect(() => {
-    if (!displayVoteStatus) return;
-    // computedResult is derived via useMemo; no state updates needed here
-  }, [displayVoteStatus]);
-
-  useEffect(() => {
     const checkMaintainer = async () => {
       try {
         const { getProjectFromName } = await import(
@@ -196,7 +191,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
         seeds ?? undefined,
       );
       setStep(step + 1);
-      toast.success("Congratulation!", "Proposal executed successfully");
+      toast.success("Congratulations!", "Proposal executed successfully");
     } catch (error: any) {
       toast.error("Execute Proposal", error.message);
       onClose();

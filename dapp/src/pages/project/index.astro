@@ -37,7 +37,11 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
   document.addEventListener("astro:page-load", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const projectName = urlParams.get("name") || "";
-    if (projectName) {
+    if (!projectName) {
+      window.location.href = "/";
+      return;
+    }
+    {
       setProjectId(projectName);
       try {
         const project = await getProjectFromName(projectName);

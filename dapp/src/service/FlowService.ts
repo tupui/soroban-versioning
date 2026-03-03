@@ -58,6 +58,7 @@ export async function uploadWithDelegation({
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ signedTxXdr, did }),
+    signal: AbortSignal.timeout(15000),
   });
 
   if (!response.ok) {

@@ -21,6 +21,7 @@ import { updateConfigFlow } from "@service/FlowService";
 import { toast, extractConfigData } from "utils/utils";
 import { getProject } from "@service/ReadContractService";
 import { calculateDirectoryCid } from "utils/ipfsFunctions";
+import toml from "toml";
 
 const UpdateConfigModal = () => {
   const infoLoaded = useStore(projectInfoLoaded);
@@ -145,10 +146,14 @@ const UpdateConfigModal = () => {
       });
       // refresh state
       const p = await getProject();
-      if (p) setProject(p);
-      await calculateDirectoryCid([tomlFile]); // Ensure IPFS upload completed
-      const configData = extractConfigData(JSON.parse("{}"), p as any); // placeholder parse later
-      setConfigData(configData);
+      if (p) {
+        setProject(p);
+        await calculateDirectoryCid([tomlFile]);
+        const parsedToml = toml.parse(tomlContent) as Parameters<
+          typeof extractConfigData
+        >[0];
+        setConfigData(extractConfigData(parsedToml, p));
+      }
       toast.success(
         "Config updated",
         "Project configuration updated successfully.",

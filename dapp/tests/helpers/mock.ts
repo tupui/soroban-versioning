@@ -1,6 +1,5 @@
 // @ts-nocheck
 
-import { rpcMock } from "./rpcMock";
 import { WALLET_PK, MOCK_PROJECT, MOCK_PROPOSAL, MOCK_MEMBER } from "./data";
 
 /** Common mocks for Playwright tests */
@@ -366,7 +365,7 @@ export async function applyAllMocks(page) {
   // Stub IPFS helper to make CID deterministic and match upload stub
   await page.route("**/src/utils/ipfsFunctions.ts", async (route) => {
     const body =
-      'export const getIpfsBasicLink = (cid) => (cid ? "https://w3s.link/ipfs/" + cid : "");\n' +
+      'export const getIpfsBasicLink = (cid) => (cid ? "https://" + cid + ".ipfs.storacha.link" : "");\n' +
       'export const getProposalLinkFromIpfs = (cid) => (cid ? getIpfsBasicLink(cid) + "/proposal.md" : "");\n' +
       'export const getOutcomeLinkFromIpfs = (cid) => (cid ? getIpfsBasicLink(cid) + "/outcomes.json" : "");\n' +
       'export const calculateDirectoryCid = async () => "bafytestcidmock";\n' +
