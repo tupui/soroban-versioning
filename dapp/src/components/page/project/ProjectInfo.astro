@@ -129,7 +129,10 @@ import Button from "components/utils/Button";
     convertGitHubLink,
     getAuthorRepo,
   } from "../../../utils/editLinkFunctions";
-  import { projectInfoLoaded } from "../../../utils/store";
+  import {
+    projectHasSubProjects,
+    projectInfoLoaded,
+  } from "../../../utils/store";
   import { getBadges, getMember } from "@service/ReadContractService";
 
   document.addEventListener("astro:page-load", async () => {
@@ -627,6 +630,33 @@ import Button from "components/utils/Button";
       if (loaded) {
         updateProjectInfo();
       }
+    });
+
+    projectHasSubProjects.subscribe((hasSubProjects) => {
+      if (!hasSubProjects) return;
+      const syncStatusContainer = document.getElementById(
+        "project-sync-status",
+      );
+      if (!syncStatusContainer) return;
+      const projectInfo = loadProjectInfo();
+      if (!projectInfo?.config?.ipfs) return;
+      const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.ipfs)}/tansu.toml`;
+      syncStatusContainer.replaceChildren();
+      const link = document.createElement("a");
+      link.href = ipfsUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.className = "flex items-center space-x-2 hover:underline";
+      const icon = document.createElement("img");
+      icon.className = "w-5 h-5";
+      icon.src = "/icons/ipfs.svg";
+      icon.alt = "IPFS";
+      const text = document.createElement("span");
+      text.className = "text-sm sm:text-base";
+      text.textContent = "tansu.toml";
+      link.appendChild(icon);
+      link.appendChild(text);
+      syncStatusContainer.appendChild(link);
     });
 
     function addLinkButton(

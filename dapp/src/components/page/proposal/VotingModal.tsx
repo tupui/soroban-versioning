@@ -105,6 +105,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
       );
       setIsVoted?.(true);
       setStep(2);
+      onClose();
     } catch (error: any) {
       setIsLoading(false);
 

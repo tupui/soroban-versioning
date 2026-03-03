@@ -31,7 +31,7 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
     setProjectRepoInfo,
   } from "../../service/StateService";
   import { getAuthorRepo } from "../../utils/editLinkFunctions";
-  import { projectInfoLoaded } from "../../utils/store";
+  import { projectHasSubProjects, projectInfoLoaded } from "../../utils/store";
   import { extractConfigData, toast } from "../../utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
@@ -41,6 +41,7 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
       window.location.href = "/";
       return;
     }
+    projectHasSubProjects.set(false);
     {
       setProjectId(projectName);
       try {
@@ -51,28 +52,34 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
           if (username && repoName) {
             setProjectRepoInfo(username, repoName);
           }
-          const tomlData = await fetchTomlFromCid(project.config.ipfs);
-          if (tomlData) {
-            const configData = extractConfigData(tomlData, project);
-            setConfigData(configData);
-          } else {
-            setConfigData({});
-          }
-          try {
-            const latestSha = await getProjectHash();
-            if (
-              latestSha &&
-              typeof latestSha === "string" &&
-              latestSha.match(/^[a-f0-9]{40}$/)
-            ) {
-              setProjectLatestSha(latestSha);
-            } else {
-              setProjectLatestSha("");
-            }
-          } catch (error: any) {
-            toast.error("Something Went Wrong!", error.message);
-          }
+          setConfigData(extractConfigData({}, project));
           projectInfoLoaded.set(true);
+
+          (async () => {
+            try {
+              const tomlData = await fetchTomlFromCid(
+                project.config.ipfs,
+                5000,
+              );
+              if (tomlData) {
+                setConfigData(extractConfigData(tomlData, project));
+              }
+            } catch (_) {}
+            try {
+              const latestSha = await getProjectHash();
+              if (
+                latestSha &&
+                typeof latestSha === "string" &&
+                latestSha.match(/^[a-f0-9]{40}$/)
+              ) {
+                setProjectLatestSha(latestSha);
+              } else {
+                setProjectLatestSha("");
+              }
+            } catch (error: any) {
+              toast.error("Something Went Wrong!", error.message);
+            }
+          })();
         } else {
           refreshLocalStorage();
           window.location.href = "/";

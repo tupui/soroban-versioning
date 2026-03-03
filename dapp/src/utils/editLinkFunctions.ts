@@ -1,4 +1,5 @@
-export function convertGitHubLink(link: string): string {
+export function convertGitHubLink(link: string | null | undefined): string {
+  if (link == null || typeof link !== "string") return "";
   const githubFileRegex =
     /^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/(.+)$/;
 
@@ -20,10 +21,13 @@ export function getGithubContentUrl(
   return `https://raw.githubusercontent.com/${username}/${repoName}/${filePath}`;
 }
 
-export function getAuthorRepo(repoUrl: string): {
+export function getAuthorRepo(repoUrl: string | null | undefined): {
   username: string | undefined;
   repoName: string | undefined;
 } {
+  if (repoUrl == null || typeof repoUrl !== "string") {
+    return { username: undefined, repoName: undefined };
+  }
   const match = repoUrl.match(/https\:\/\/github\.com\/([^\/]+)\/([^\/]+)/);
   if (!match || !match[1] || !match[2])
     return { username: undefined, repoName: undefined };
@@ -31,22 +35,20 @@ export function getAuthorRepo(repoUrl: string): {
 }
 
 export function getGithubContentUrlFromConfigUrl(
-  configUrl: string,
+  configUrl: string | null | undefined,
 ): string | undefined {
   const { username, repoName } = getAuthorRepo(configUrl);
   if (username && repoName) {
-    // use master as GitHub will do an automatic redirection to main
     return getGithubContentUrl(username, repoName, "master/tansu.toml");
   }
   return undefined;
 }
 
 export function getGithubContentUrlFromReadmeUrl(
-  configUrl: string,
+  configUrl: string | null | undefined,
 ): string | undefined {
   const { username, repoName } = getAuthorRepo(configUrl);
   if (username && repoName) {
-    // use master as GitHub will do an automatic redirection to main
     return getGithubContentUrl(username, repoName, "master/README.md");
   }
   return undefined;

@@ -19,6 +19,9 @@ export interface ProjectLatestShaValue {
 }
 
 export const projectInfoLoaded = atom<boolean>(false);
+
+/** True when the current project has sub-projects (organization view). Used to hide commit hash UI. */
+export const projectHasSubProjects = atom<boolean>(false);
 export const latestCommit = atom<string>("");
 export const projectCardModalOpen = atom<boolean>(false);
 export const connectedPublicKey = atom<string>("");

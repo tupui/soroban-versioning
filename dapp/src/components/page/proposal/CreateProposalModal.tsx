@@ -79,6 +79,7 @@ const CreateProposalModal = () => {
   const [proposalId, setProposalId] = useState<number | null>(null);
   const [_ipfsLink, setIpfsLink] = useState("");
   const [isAnonymousVoting, setIsAnonymousVoting] = useState(false);
+  const [votingType, setVotingType] = useState<"badge" | "token">("badge");
   const [tokenContract, setTokenContract] = useState<string>("");
   const [preparedFiles, setPreparedFiles] = useState<File[] | null>(null);
   const [generatedKeys, setGeneratedKeys] = useState<{
@@ -399,7 +400,7 @@ const CreateProposalModal = () => {
         votingEndsAt: votingEndsAt,
         publicVoting: !isAnonymousVoting ? true : false,
         outcomeContracts: contractOutcomes,
-        ...(tokenContract && { tokenContract }),
+        ...(votingType === "token" && tokenContract && { tokenContract }),
         onProgress: setStep,
       });
 
@@ -659,19 +660,36 @@ const CreateProposalModal = () => {
                 </div>
               </div>
 
-              {/* Token-based voting section */}
+              {/* Voting type: Badge based (default) or Token based */}
               <div className="flex flex-col gap-2 sm:gap-3 max-w-2xl">
-                <Input
-                  label="Token Contract Address (Optional)"
-                  placeholder="Enter token contract address for token-based voting"
-                  value={tokenContract}
-                  onChange={(e) => setTokenContract(e.target.value)}
-                />
-                {tokenContract && (
-                  <span className="text-sm text-blue-600">
-                    Voting weight will be determined by token balance instead of
-                    badges.
-                  </span>
+                <label className="text-sm font-semibold text-primary">
+                  Voting type
+                </label>
+                <select
+                  value={votingType}
+                  onChange={(e) =>
+                    setVotingType(e.target.value as "badge" | "token")
+                  }
+                  className="rounded-md border border-zinc-700 bg-transparent px-3 py-2 text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="badge">Badge based</option>
+                  <option value="token">Token based</option>
+                </select>
+                {votingType === "token" && (
+                  <>
+                    <Input
+                      label="Token Contract Address (Optional)"
+                      placeholder="Enter token contract address for token-based voting"
+                      value={tokenContract}
+                      onChange={(e) => setTokenContract(e.target.value)}
+                    />
+                    {tokenContract && (
+                      <span className="text-sm text-blue-600">
+                        Voting weight will be determined by token balance
+                        instead of badges.
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
 

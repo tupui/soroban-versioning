@@ -6,15 +6,15 @@ import Button from "components/utils/Button";
 import Input from "components/utils/Input";
 import Modal from "components/utils/Modal";
 import { toast } from "utils/utils";
-import { deriveProjectKey, toProjectKeyBuffer } from "utils/projectKey";
-import Tansu from "contracts/soroban_tansu";
-import { checkSimulationError } from "utils/contractErrors";
-import { loadedPublicKey } from "@service/walletService";
+import { getProjectFromId } from "@service/ReadContractService";
 import {
   signAssembledTransaction,
   sendSignedTransaction,
 } from "@service/TxService";
-import { Buffer } from "buffer";
+import { loadedPublicKey } from "@service/walletService";
+import Tansu from "contracts/soroban_tansu";
+import { checkSimulationError } from "utils/contractErrors";
+import { deriveProjectKey, normalizeSubProjectKeys } from "utils/projectKey";
 import React from "react";
 
 interface ManageSubProjectsModalProps {
@@ -83,36 +83,21 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
 
       checkSimulationError(res);
 
-      const subProjectKeys = res.result || [];
+      const subProjectKeys = normalizeSubProjectKeys(res.result);
       const names: string[] = [];
 
-      for (const key of subProjectKeys) {
-        const keyBuffer = toProjectKeyBuffer(key);
-        const subProject = await getProjectFromKey(keyBuffer);
-        if (subProject) {
-          names.push(subProject.name);
+      for (const keyBuffer of subProjectKeys) {
+        const project = await getProjectFromId(keyBuffer);
+        if (project?.name) {
+          names.push(project.name);
         } else {
-          const keyHex = keyBuffer.toString("hex");
-          names.push(keyHex.slice(0, 8) + "...");
+          names.push(keyBuffer.toString("hex").slice(0, 8) + "...");
         }
       }
 
       setSubProjectNames(names);
     } catch {
       setSubProjectNames([]);
-    }
-  };
-
-  const getProjectFromKey = async (key: Buffer): Promise<any> => {
-    try {
-      const res = await Tansu.get_project({
-        project_key: key,
-      });
-
-      checkSimulationError(res);
-      return res.result;
-    } catch {
-      return null;
     }
   };
 
