@@ -55,6 +55,12 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
     loadCurrentSubProjects();
   }, [infoLoaded]);
 
+  useEffect(() => {
+    if (isOpen && infoLoaded) {
+      loadCurrentSubProjects();
+    }
+  }, [isOpen, infoLoaded]);
+
   const handleClose = () => {
     setIsOpen(false);
   };
@@ -81,11 +87,12 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
       const names: string[] = [];
 
       for (const key of subProjectKeys) {
-        const subProject = await getProjectFromKey(key);
+        const keyBuffer = Buffer.isBuffer(key) ? key : Buffer.from(key, "hex");
+        const subProject = await getProjectFromKey(keyBuffer);
         if (subProject) {
           names.push(subProject.name);
         } else {
-          const keyHex = Buffer.isBuffer(key) ? key.toString("hex") : key;
+          const keyHex = keyBuffer.toString("hex");
           names.push(keyHex.slice(0, 8) + "...");
         }
       }
@@ -125,9 +132,9 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
     setError(null);
   };
 
-  // const handleRemoveProject = (index: number) => {
-  //   setSubProjectNames(subProjectNames.filter((_, i) => i !== index));
-  // };
+  const handleRemoveProject = (index: number) => {
+    setSubProjectNames(subProjectNames.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async () => {
     setIsLoading(true);
@@ -207,6 +214,34 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-md">
                 <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
+
+            {subProjectNames.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-sm font-medium text-primary">
+                  Current sub-projects
+                </p>
+                <ul className="border border-gray-200 rounded-md divide-y divide-gray-100">
+                  {subProjectNames.map((name, index) => (
+                    <li
+                      key={`${name}-${index}`}
+                      className="flex items-center justify-between gap-2 px-3 py-2"
+                    >
+                      <span className="text-sm text-primary truncate">
+                        {name}
+                      </span>
+                      <Button
+                        type="secondary"
+                        onClick={() => handleRemoveProject(index)}
+                        disabled={isLoading}
+                        className="shrink-0 text-xs py-1 px-2"
+                      >
+                        Remove
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 

@@ -3,7 +3,6 @@ import Input from "components/utils/Input";
 import Button from "components/utils/Button";
 import FlowProgressModal from "components/utils/FlowProgressModal";
 import { loadedPublicKey } from "@service/walletService";
-import { toast } from "utils/utils";
 import { validateStellarAddress, validateUrl } from "utils/validations";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 
@@ -203,7 +202,6 @@ const JoinCommunityModal: FC<{
           onProgress: setStep,
         });
 
-        toast.success("Success", "You have successfully joined the community!");
         onJoined?.();
         setUpdateSuccessful(true);
         setIsLoading(false);
