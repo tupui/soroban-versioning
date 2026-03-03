@@ -6,12 +6,14 @@ interface Props {
   voteStatus: VoteStatus | undefined;
   decodedVotes: any[];
   proofOk?: boolean | null;
+  proofErrorMessage?: string | null;
 }
 
 const AnonymousTalliesDisplay: React.FC<Props> = ({
   voteStatus,
   decodedVotes,
   proofOk,
+  proofErrorMessage,
 }) => {
   // Compute simple counts by looking at decoded votes (each row is one ballot)
   const counts = decodedVotes.reduce(
@@ -82,6 +84,11 @@ const AnonymousTalliesDisplay: React.FC<Props> = ({
               </span>
             )}
           </div>
+          {proofOk === false && proofErrorMessage && (
+            <p className="text-sm text-red-600 max-w-prose" role="alert">
+              {proofErrorMessage}
+            </p>
+          )}
           <p className="text-xs md:text-sm text-secondary max-w-prose">
             This check verifies that the aggregated tallies and seeds correspond
             to the on-chain vote commitments (weights applied during

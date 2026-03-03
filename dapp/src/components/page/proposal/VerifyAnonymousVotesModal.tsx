@@ -22,6 +22,9 @@ const VerifyAnonymousVotesModal: React.FC<Props> = ({
   const [processingError, setProcessingError] = useState<string | null>(null);
   const [voteStatus, setVoteStatus] = useState<VoteStatus | null>(null);
   const [proofOk, setProofOk] = useState<boolean | null>(null);
+  const [proofErrorMessage, setProofErrorMessage] = useState<string | null>(
+    null,
+  );
   const [decodedVotes, setDecodedVotes] = useState<any[]>([]);
 
   const computeTalliesAndProof = async (privKey: string) => {
@@ -34,6 +37,7 @@ const VerifyAnonymousVotesModal: React.FC<Props> = ({
       );
       setVoteStatus(data.voteStatus);
       setProofOk(data.proofOk ?? null);
+      setProofErrorMessage(data.proofErrorMessage ?? null);
       setDecodedVotes(data.decodedVotes);
       return data.decodedVotes.length;
     } catch (err: any) {
@@ -113,6 +117,7 @@ const VerifyAnonymousVotesModal: React.FC<Props> = ({
             voteStatus={voteStatus || undefined}
             decodedVotes={decodedVotes}
             proofOk={proofOk}
+            proofErrorMessage={proofErrorMessage}
           />
 
           <div className="flex justify-center sm:justify-end">

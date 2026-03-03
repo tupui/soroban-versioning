@@ -43,6 +43,9 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   const [isMaintainer, setIsMaintainer] = useState(false);
   const [decodedVotes, setDecodedVotes] = useState<any[]>([]);
   const [proofOk, setProofOk] = useState<boolean | null>(null);
+  const [proofErrorMessage, setProofErrorMessage] = useState<string | null>(
+    null,
+  );
   const [_privateKey, setPrivateKey] = useState<string>("");
 
   // Local vote status that may be updated once we compute tallies for
@@ -159,6 +162,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       setDisplayVoteStatus(data.voteStatus);
       setDecodedVotes(data.decodedVotes);
       setProofOk(data.proofOk ?? null);
+      setProofErrorMessage(data.proofErrorMessage ?? null);
       setProcessingError(null);
       if (isAnonymous) setStep(2);
     } catch (err: any) {
@@ -286,6 +290,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
                 voteStatus={displayVoteStatus}
                 decodedVotes={decodedVotes}
                 proofOk={proofOk}
+                proofErrorMessage={proofErrorMessage}
               />
             </div>
           </div>

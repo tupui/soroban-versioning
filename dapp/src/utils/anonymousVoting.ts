@@ -8,6 +8,7 @@ import { deriveProjectKey } from "./projectKey";
 import type { VoteStatus } from "types/proposal";
 import { VoteType } from "types/proposal";
 import { decryptWithPrivateKey } from "utils/crypto";
+import { parseContractError } from "utils/contractErrors";
 import { Badge } from "../../packages/tansu/dist";
 // Lazy-loaded imports to avoid circular dependency issues in Astro/SSR
 async function getTansu() {
@@ -62,6 +63,7 @@ export interface AnonymousVotingData {
   voteStatus: VoteStatus;
   decodedVotes: DecodedVote[];
   proofOk?: boolean | null; // undefined if verifyProof == false
+  proofErrorMessage?: string | null; // contract error when proof fails
 }
 
 // Regex helper reused across components
@@ -89,8 +91,23 @@ export async function computeAnonymousVotingData(
   });
   const votes: any[] = rawProposal?.vote_data?.votes ?? [];
 
-  // Extract proposer address
-  const proposerAddr: string = rawProposal?.proposer ?? "";
+  // Extract proposer address (normalize to string for comparison)
+  const proposerRaw = rawProposal?.proposer;
+  const proposerAddr: string =
+    typeof proposerRaw === "string"
+      ? proposerRaw
+      : (proposerRaw?.address ?? proposerRaw?.value ?? "");
+
+  // Normalize vote to { tag, data } (SDK may return [tag, data] or { tag, values: [data] })
+  function getVoteTagAndData(vote: any): { tag: string; data: any } {
+    if (!vote) return { tag: "", data: null };
+    if (Array.isArray(vote) && vote.length >= 2)
+      return { tag: String(vote[0]), data: vote[1] ?? null };
+    return {
+      tag: vote.tag ?? "",
+      data: vote.values?.[0] ?? vote.data ?? null,
+    };
+  }
 
   // Init accumulators
   const talliesArr = [0, 0, 0];
@@ -99,9 +116,8 @@ export async function computeAnonymousVotingData(
   const decodedPerVoter: DecodedVote[] = [];
 
   for (const vote of votes) {
-    if (!vote || vote.tag !== "AnonymousVote") continue;
-    const data: any = vote.values?.[0];
-    if (!data) continue;
+    const { tag, data } = getVoteTagAndData(vote);
+    if (tag !== "AnonymousVote" || !data) continue;
 
     const encryptedVotes: string[] =
       (data as { encrypted_votes?: string[] }).encrypted_votes ?? [];
@@ -110,8 +126,15 @@ export async function computeAnonymousVotingData(
 
     let voteChoiceIdx = -1;
     let selectedSeedRaw = 0;
-    // Retrieve max weight for voter
-    const memberAddr = (data as { address?: string }).address ?? "";
+    // Retrieve member address (may be Address object)
+    const addrRaw = (data as { address?: string | { address?: string } })
+      .address;
+    const memberAddr: string =
+      typeof addrRaw === "string"
+        ? addrRaw
+        : ((addrRaw && typeof addrRaw === "object" && "address" in addrRaw
+            ? (addrRaw as { address?: string }).address
+            : "") ?? "");
 
     let weight: number;
     let maxWeight: number | string;
@@ -208,6 +231,7 @@ export async function computeAnonymousVotingData(
   };
 
   let proofOk: boolean | null = null;
+  let proofErrorMessage: string | null = null;
   if (verifyProof) {
     try {
       const proofRes = await Tansu.proof({
@@ -217,8 +241,13 @@ export async function computeAnonymousVotingData(
         seeds: seedsArr.map((n) => BigInt(n)),
       });
       proofOk = !!proofRes.result;
-    } catch (_) {
+      if (!proofOk) {
+        proofErrorMessage =
+          "Proof verification failed (commitments do not match tallies/seeds).";
+      }
+    } catch (e: any) {
       proofOk = false;
+      proofErrorMessage = parseContractError(e) ?? "Proof verification failed.";
     }
   }
 
@@ -229,5 +258,6 @@ export async function computeAnonymousVotingData(
     voteStatus,
     decodedVotes: decodedPerVoter,
     proofOk,
+    proofErrorMessage: proofErrorMessage ?? undefined,
   };
 }
