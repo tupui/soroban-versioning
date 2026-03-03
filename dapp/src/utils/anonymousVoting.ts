@@ -109,9 +109,9 @@ export async function computeAnonymousVotingData(
     };
   }
 
-  // Init accumulators
-  const talliesArr = [0, 0, 0];
-  const seedsArr = [0, 0, 0];
+  // Init accumulators (BigInt to avoid precision loss for u128 values)
+  const talliesArr: bigint[] = [0n, 0n, 0n];
+  const seedsArr: bigint[] = [0n, 0n, 0n];
   const voteCounts = [0, 0, 0];
   const decodedPerVoter: DecodedVote[] = [];
 
@@ -185,9 +185,9 @@ export async function computeAnonymousVotingData(
       if (vDec > 0) voteChoiceIdx = i;
       if (vDec > 0) selectedSeedRaw = sDec; // capture per-voter unweighted seed for display
 
-      // Apply voting weight to both vote value and seed
-      talliesArr[i]! += vDec * weight;
-      seedsArr[i]! += sDec * weight;
+      // Apply voting weight to both vote value and seed (BigInt for exact u128)
+      talliesArr[i]! += BigInt(vDec) * BigInt(weight);
+      seedsArr[i]! += BigInt(sDec) * BigInt(weight);
       if (vDec > 0) voteCounts[i]! += 1;
     }
 
@@ -211,7 +211,7 @@ export async function computeAnonymousVotingData(
     throw new Error("Key file does not match any encrypted votes");
   }
 
-  // Build VoteStatus object used by UI components
+  // Build VoteStatus object used by UI components (Number for display only)
   const voteStatus: VoteStatus = {
     approve: {
       voteType: VoteType.APPROVE,
@@ -237,8 +237,8 @@ export async function computeAnonymousVotingData(
       const proofRes = await Tansu.proof({
         project_key,
         proposal: rawProposal,
-        tallies: talliesArr.map((n) => BigInt(n)),
-        seeds: seedsArr.map((n) => BigInt(n)),
+        tallies: talliesArr,
+        seeds: seedsArr,
       });
       proofOk = !!proofRes.result;
       if (!proofOk) {
@@ -252,8 +252,8 @@ export async function computeAnonymousVotingData(
   }
 
   return {
-    tallies: talliesArr.map((n) => BigInt(n)),
-    seeds: seedsArr.map((n) => BigInt(n)),
+    tallies: talliesArr,
+    seeds: seedsArr,
     voteCounts,
     voteStatus,
     decodedVotes: decodedPerVoter,
