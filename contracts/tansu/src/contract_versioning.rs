@@ -56,10 +56,8 @@ impl VersioningTrait for Tansu {
             // could add more checks but handled in any case with later calls
             panic_with_error!(&env, &errors::ContractErrors::InvalidDomainError);
         }
-        let mut slice: [u8; 15] = [0; 15];
-        name.copy_into_slice(&mut slice[..str_len]);
-        let name_b = Bytes::from_slice(&env, &slice[0..str_len]);
 
+        let name_b = name.to_bytes();
         let key: Bytes = env.crypto().keccak256(&name_b).into();
 
         let key_ = types::ProjectKey::Key(key.clone());
@@ -133,7 +131,7 @@ impl VersioningTrait for Tansu {
 
     /// Update the configuration of an existing project.
     ///
-    /// Allows maintainers to change the project's URL, commit hash, and maintainer list.
+    /// Allows maintainers to change the project's URL, IPFS metadata, and maintainer list.
     ///
     /// # Arguments
     /// * `env` - The environment object
@@ -141,7 +139,7 @@ impl VersioningTrait for Tansu {
     /// * `key` - The project key identifier
     /// * `maintainers` - New list of maintainer addresses
     /// * `url` - New Git repository URL
-    /// * `hash` - New commit hash
+    /// * `ipfs` - New CID of the tansu.toml file with metadata
     ///
     /// # Panics
     /// * If the project doesn't exist
@@ -196,7 +194,6 @@ impl VersioningTrait for Tansu {
         events::Commit { project_key, hash }.publish(&env);
     }
 
-    /// Get the last commit hash
     /// Get the latest commit hash for a project.
     ///
     /// # Arguments

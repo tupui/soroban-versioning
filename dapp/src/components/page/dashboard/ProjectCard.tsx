@@ -1,4 +1,4 @@
-import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
+import { fetchTomlFromIpfs } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
   getProjectHash,
@@ -42,28 +42,33 @@ const ProjectCard = ({ config }: { config: ProjectConfig }) => {
         if (username && repoName) {
           setProjectRepoInfo(username, repoName);
         }
-        const tomlData = await fetchTomlFromCid(project.config.ipfs);
-        if (tomlData) {
-          const configData = extractConfigData(tomlData, project);
-          setConfigData(configData);
-        } else {
-          setConfigData({});
-        }
-        try {
-          const latestSha = await getProjectHash();
-          if (
-            latestSha &&
-            typeof latestSha === "string" &&
-            latestSha.match(/^[a-f0-9]{40}$/)
-          ) {
-            setProjectLatestSha(latestSha);
-          } else {
-            setProjectLatestSha("");
-          }
-        } catch (error: any) {
-          toast.error("Something Went Wrong!", error.message);
-        }
+        setConfigData(extractConfigData({}, project));
         projectCardModalOpen.set(true);
+
+        (async () => {
+          try {
+            const tomlData = await fetchTomlFromIpfs(project.config.ipfs);
+            if (tomlData) {
+              setConfigData(extractConfigData(tomlData, project));
+            }
+          } catch (_) {
+            // TOML load failed; modal already shows minimal config
+          }
+          try {
+            const latestSha = await getProjectHash();
+            if (
+              latestSha &&
+              typeof latestSha === "string" &&
+              latestSha.match(/^[a-f0-9]{40}$/)
+            ) {
+              setProjectLatestSha(latestSha);
+            } else {
+              setProjectLatestSha("");
+            }
+          } catch (error: any) {
+            toast.error("Something Went Wrong!", error.message);
+          }
+        })();
       } else {
         toast.error(
           "Something Went Wrong!",
@@ -91,7 +96,7 @@ const ProjectCard = ({ config }: { config: ProjectConfig }) => {
               : "/fallback-image.jpg"
           }
           alt={config.projectName}
-          className={`thumbnail w-30 h-30 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-110 ${config.logoImageLink ? "object-cover" : "object-fill"}`}
+          className="thumbnail w-30 h-30 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-lg object-contain transition-transform duration-300 ease-in-out group-hover:scale-110"
         />
       </div>
       <div className="flex-grow bg-white p-4 sm:p-6 flex flex-col gap-4 sm:gap-[30px] justify-between">

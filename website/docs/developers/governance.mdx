@@ -20,20 +20,22 @@ graph LR;
     F -->|Supermajority Approve| H[Approved];
     F -->|Supermajority Reject| I[Rejected];
     F -->|No Supermajority| J[Cancelled];
-    H -->|If outcomes_contract| K[Call approve_outcome];
-    I -->|If outcomes_contract| L[Call reject_outcome];
-    J -->|If outcomes_contract| M[Call abstain_outcome];
+    H -->|"If outcome_contracts[0]"| K["Invoke approved contract"];
+    I -->|"If outcome_contracts[1]"| L["Invoke rejected contract"];
+    J -->|"If outcome_contracts[2]"| M["Invoke cancelled contract"];
 ```
 
-1. **create_proposal** – a maintainer submits a new proposal (title, ipfs, voting_ends_at, public_voting, optional outcomes_contract).
-2. **Active** – during the voting window members cast weighted votes (approve, reject, abstain).
-3. **Tallies** – once voting ends, a maintainer can tally (using execute) – if anonymous, tallies & seeds are supplied.
+1. **create_proposal** -- a maintainer submits a new proposal (title, ipfs, voting_ends_at, public_voting, optional outcome_contracts).
+2. **Active** -- during the voting window members cast weighted votes (approve, reject, abstain).
+3. **Tallies** -- once voting ends, a maintainer can tally (using execute) -- if anonymous, tallies & seeds are supplied.
 4. The proposal status becomes **Approved**, **Rejected** or **Cancelled** based on supermajority rules.
-5. If an **outcomes_contract** is specified, the appropriate callback is triggered automatically:
+5. If **outcome_contracts** are specified, the contract at the matching index is invoked:
 
-- **Approved** → `approve_outcome()`
-- **Rejected** → `reject_outcome()`
-- **Cancelled** → `abstain_outcome()`
+- **Approved** → `outcome_contracts[0].execute_fn(args)`
+- **Rejected** → `outcome_contracts[1].execute_fn(args)`
+- **Cancelled** → `outcome_contracts[2].execute_fn(args)`
+
+Each `OutcomeContract` specifies its own target `address`, `execute_fn` (function name), and `args`. Not all indices need to be present -- missing indices are skipped.
 
 ### Voting Timeline
 
@@ -362,6 +364,7 @@ Common errors when interacting with governance functions:
 | `CollateralError` | Insufficient balance for collateral | Ensure sufficient XLM balance |
 | `VoteLimitExceeded` | More than 1000 votes on proposal | DoS protection, proposal closed to new votes |
 | `NoAnonymousVotingConfig` | Anonymous voting not set up for project | Run `anonymous_voting_setup` first |
+| `OutcomeError` | Outcome contract invocation failed during execution | Check the outcome contract address, function name, and arguments |
 
 See `contracts/tansu/src/errors.rs` for complete error definitions.
 
@@ -412,14 +415,15 @@ Custom quorum logic (percentage, thresholds…) can be built off-chain before de
 
 ### Voting Eligibility
 
-To cast a vote on a proposal, users must:
+**Badge-based proposals:** Any authenticated Stellar address can vote with a minimum weight of 1 (the `Default` badge). Registered members with assigned badges can vote with higher weights up to their `get_max_weight` value. The collateral deposit (10 XLM) serves as the economic barrier to spam. See [Membership & Badges](./membership.mdx) for details on how badges increase voting power.
 
-- Be registered as a member using `add_member`
-- Have one or more badges assigned for the project (see [Membership & Badges](./membership.mdx))
+**Token-based proposals:** Any address holding the proposal's token can vote. The vote weight equals the number of tokens locked as collateral. Badge validation is skipped.
+
+All voters must:
+
 - Vote with a weight not exceeding their maximum allowed weight
 - Vote before the proposal's deadline
-
-Members with zero voting weight (no badges) cannot participate in voting.
+- Pay the required collateral deposit
 
 ## Pagination helpers
 

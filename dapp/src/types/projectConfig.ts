@@ -1,6 +1,6 @@
 export enum ProjectType {
   SOFTWARE = "SOFTWARE",
-  GENERIC = "GENERIC"
+  GENERIC = "GENERIC",
 }
 
 export interface ConfigData {

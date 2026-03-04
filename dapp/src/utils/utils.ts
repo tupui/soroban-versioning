@@ -11,7 +11,6 @@ import {
   type ProposalView,
   type ProposalViewStatus,
 } from "types/proposal";
-// Import the extracted IPFS functions have been moved to ipfsFunctions.ts
 
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
@@ -29,9 +28,10 @@ export function truncateMiddle(str: string, maxLength: number): string {
 export function extractConfigData(tomlData: any, project: Project) {
   const projectType = tomlData.PROJECT_TYPE || "SOFTWARE";
 
-  const authorHandles = tomlData.PRINCIPALS?.map((p: { github?: string; handle?: string }) =>
-    p.handle || p.github || ""
-  ) || [];
+  const authorHandles =
+    tomlData.PRINCIPALS?.map(
+      (p: { github?: string; handle?: string }) => p.handle || p.github || "",
+    ) || [];
 
   return {
     projectName: project.name,
@@ -83,8 +83,6 @@ export const processDecodedData = (xdrData: string): any => {
 export const modifySlashInXdr = (xdr: string) => {
   return xdr.replaceAll("/", "//");
 };
-
-// IPFS functions are now directly imported from ipfsFunctions.ts
 
 export const modifyProposalStatusToView = (
   status: ProposalStatus,

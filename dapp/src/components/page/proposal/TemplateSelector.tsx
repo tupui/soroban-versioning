@@ -8,6 +8,7 @@ import Button from "../../../components/utils/Button";
 
 interface TemplateSelectorProps {
   onTemplateSelect: (template: ProposalTemplate) => void;
+  currentContent?: string;
 }
 
 export default function TemplateSelector({
@@ -20,7 +21,6 @@ export default function TemplateSelector({
   const handleTemplateClick = useCallback(
     (template: ProposalTemplate) => {
       onTemplateSelect(template);
-      console.log("Selected: ", template);
       setIsOpen(false);
     },
     [onTemplateSelect],
@@ -37,7 +37,6 @@ export default function TemplateSelector({
   const handleUseTemplate = useCallback(() => {
     if (previewTemplate) {
       onTemplateSelect(previewTemplate);
-      console.log("Selected: ", previewTemplate);
       setPreviewTemplate(null);
       setIsOpen(false);
     }

@@ -6,7 +6,7 @@ import Tooltip from "components/utils/Tooltip";
 import CopyButton from "components/utils/CopyButton";
 import { useEffect, useState } from "react";
 import { formatDate } from "utils/formatTimeFunctions";
-import { projectInfoLoaded } from "utils/store";
+import { projectHasSubProjects, projectInfoLoaded } from "utils/store";
 import { getIpfsBasicLink } from "utils/ipfsFunctions";
 
 enum Status {
@@ -17,12 +17,25 @@ enum Status {
 
 const LatestCommit = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
-  const [commitData, setCommitData] = useState<any>(null);
+  const hasSubProjects = useStore(projectHasSubProjects);
+  const [commitData, setCommitData] = useState<{
+    sha: string;
+    commit: {
+      message: string;
+      author: { name: string };
+      committer: { date: string };
+    };
+    html_url?: string;
+  } | null>(null);
   const [latestCommitStatus, setLatestCommitStatus] = useState<Status>(
     Status.NotFound,
   );
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadLatestCommitData = async () => {
+    setLoadError(null);
+    setIsLoading(true);
     const projectInfo = loadProjectInfo();
     const latestSha = await getProjectHash();
     if (
@@ -38,22 +51,51 @@ const LatestCommit = () => {
         );
         if (latestCommit) {
           setCommitData(latestCommit);
-          if (latestCommit.sha === latestSha) {
-            setLatestCommitStatus(Status.Match);
-          } else {
-            setLatestCommitStatus(Status.NotMatch);
-          }
+          setLatestCommitStatus(
+            latestCommit.sha === latestSha ? Status.Match : Status.NotMatch,
+          );
+        } else {
+          setLatestCommitStatus(Status.NotFound);
         }
       } catch {
-        // Failed to load commit data - keep status as NotFound
         setLatestCommitStatus(Status.NotFound);
+        setLoadError("Could not load commit data.");
       }
+    } else {
+      setLatestCommitStatus(Status.NotFound);
     }
+    setIsLoading(false);
   };
 
   useEffect(() => {
     loadLatestCommitData();
   }, [isProjectInfoLoaded]);
+
+  const configCid = loadProjectInfo()?.config?.ipfs;
+  const tomlLink =
+    configCid && getIpfsBasicLink(configCid) ? (
+      <a
+        href={`${getIpfsBasicLink(configCid)}/tansu.toml`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1 text-[#07711E] hover:underline"
+      >
+        <img src="/icons/ipfs.svg" className="w-4 h-4" alt="" />
+        <span className="text-base">tansu.toml</span>
+      </a>
+    ) : null;
+
+  if (hasSubProjects) {
+    return <div className="flex flex-col gap-3">{tomlLink}</div>;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-3" aria-busy="true">
+        <p className="text-base text-tertiary">Loading latest commit…</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-3">
@@ -88,9 +130,9 @@ const LatestCommit = () => {
           <div className="flex items-center gap-2">
             <div className="flex gap-[6px]">
               {latestCommitStatus == Status.Match ? (
-                <img src="/icons/check.svg" />
+                <img src="/icons/check.svg" alt="" />
               ) : (
-                <img src="/icons/failed.svg" />
+                <img src="/icons/failed.svg" alt="" />
               )}
               <p className="text-base text-medium text-[#07711E]">
                 Commit Hash
@@ -103,7 +145,7 @@ const LatestCommit = () => {
                   : "Latest SHA on-chain cannot be found in Git history"
               }
             >
-              <img src="/icons/info.svg" />
+              <img src="/icons/info.svg" alt="" />
             </Tooltip>
           </div>
         </div>
@@ -119,17 +161,12 @@ const LatestCommit = () => {
           </p>
         </div>
       )}
-      {/* Configuration link */}
-      {isProjectInfoLoaded && (
-        <a
-          href={`${getIpfsBasicLink(loadProjectInfo()?.config.ipfs || "")}/tansu.toml`}
-          target="_blank"
-          className="flex items-center gap-1 text-[#07711E] hover:underline"
-        >
-          <img src="/icons/ipfs.svg" className="w-4 h-4" />
-          <span className="text-base">tansu.toml</span>
-        </a>
+      {loadError && (
+        <p className="text-sm text-red-600" role="alert">
+          {loadError}
+        </p>
       )}
+      {tomlLink}
     </div>
   );
 };

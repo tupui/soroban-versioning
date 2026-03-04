@@ -14,7 +14,7 @@ const UpdateHashModal = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
   const [showButton, setShowButton] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [lastestHash, setLatestHash] = useState("");
+  const [latestHash, setLatestHash] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [updateSuccessful, setUpdateSuccessful] = useState(false);
   useEffect(() => {
@@ -39,10 +39,10 @@ const UpdateHashModal = () => {
   }, [isProjectInfoLoaded]);
 
   const handleClose = () => {
+    const shouldReload = updateSuccessful;
     setIsOpen(false);
     setUpdateSuccessful(false);
-    // Reload page if update was successful to show fresh data
-    if (updateSuccessful) {
+    if (shouldReload) {
       window.location.reload();
     }
   };
@@ -50,7 +50,7 @@ const UpdateHashModal = () => {
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
-      await commitHash(lastestHash);
+      await commitHash(latestHash);
 
       // Successfully updated - refresh project data and reload the page
       try {
@@ -87,13 +87,11 @@ const UpdateHashModal = () => {
       {showButton && (
         <button
           id="commit-button"
-          className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
+          className="inline-flex items-center gap-2 px-4 py-3 sm:px-5 sm:py-3.5 min-w-0 flex-1 sm:flex-initial rounded-lg border border-zinc-200 bg-white text-primary text-sm font-medium shadow-[var(--shadow-card)] hover:bg-zinc-50 hover:border-zinc-300 transition-colors cursor-pointer text-left"
           onClick={() => setIsOpen(true)}
         >
-          <img src="/icons/git.svg" className="w-5 h-5 flex-shrink-0" />
-          <span className="text-sm sm:text-base text-primary font-medium">
-            Update Hash
-          </span>
+          <img src="/icons/git.svg" className="w-5 h-5 flex-shrink-0" alt="" />
+          <span>Update Hash</span>
         </button>
       )}
       {isOpen && (
@@ -116,7 +114,7 @@ const UpdateHashModal = () => {
                     type="text"
                     className="p-3 sm:p-[18px] border border-[#978AA1] outline-none w-full text-sm sm:text-base"
                     placeholder="Latest Commit Hash"
-                    value={lastestHash}
+                    value={latestHash}
                     onChange={(e) => setLatestHash(e.target.value)}
                     required
                   />

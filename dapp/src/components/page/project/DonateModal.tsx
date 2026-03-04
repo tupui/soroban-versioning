@@ -109,7 +109,7 @@ const DonateModal: FC<Props> = ({ children, onBeforeOpen }) => {
       );
 
       if (payment) {
-        toast.success("Congratulation!", "You successfully donated.");
+        toast.success("Congratulations!", "You successfully donated.");
         setUpdateSuccessful(true);
       } else {
         toast.error(

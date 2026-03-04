@@ -50,7 +50,7 @@ See the [Membership](developers/membership.mdx) page for details.
 - **Title**
 - **Description** – rich-text editor (stored on IPFS)
 - **Voting end** – calendar picker (1-30 days)
-- **Outcome Contract** – external contract address for callbacks (optional)
+- **Outcome Contracts** – optional contracts to invoke on each outcome (approved, rejected, cancelled), each with a target address, function name, and arguments
 
 4. Submit and sign.
 
@@ -62,7 +62,7 @@ While a proposal is **Active** press **Vote** and choose **Approve**, **Reject**
 
 ## 7. Execute
 
-After the voting window closes any maintainer can press **Execute**. If the proposal includes an outcome contract, the appropriate callback is triggered based on the result (Approved, Rejected, or Cancelled).
+After the voting window closes any maintainer can press **Execute**. If the proposal includes outcome contracts, the contract matching the result index is invoked (Approved = index 0, Rejected = index 1, Cancelled = index 2).
 
 ---
 

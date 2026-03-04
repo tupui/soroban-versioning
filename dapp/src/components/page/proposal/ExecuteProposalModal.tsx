@@ -43,6 +43,9 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   const [isMaintainer, setIsMaintainer] = useState(false);
   const [decodedVotes, setDecodedVotes] = useState<any[]>([]);
   const [proofOk, setProofOk] = useState<boolean | null>(null);
+  const [proofErrorMessage, setProofErrorMessage] = useState<string | null>(
+    null,
+  );
   const [_privateKey, setPrivateKey] = useState<string>("");
 
   // Local vote status that may be updated once we compute tallies for
@@ -102,16 +105,10 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
   }, [voteStatus]);
 
   useEffect(() => {
-    if (!displayVoteStatus) return;
-    // computedResult is derived via useMemo; no state updates needed here
-  }, [displayVoteStatus]);
-
-  useEffect(() => {
     const checkMaintainer = async () => {
       try {
-        const { getProjectFromName } = await import(
-          "@service/ReadContractService"
-        );
+        const { getProjectFromName } =
+          await import("@service/ReadContractService");
         const project = await getProjectFromName(projectName);
         const addr = loadedPublicKey();
         if (project && addr) {
@@ -137,9 +134,8 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       if (!parsed.privateKey)
         throw new Error("Invalid key-file – missing privateKey field");
       // Validate uploaded key against on-chain config (centralized helper)
-      const { validateAnonymousKeyForProject } = await import(
-        "../../../utils/anonymousVoting"
-      );
+      const { validateAnonymousKeyForProject } =
+        await import("../../../utils/anonymousVoting");
       await validateAnonymousKeyForProject(projectName!, parsed.publicKey);
       setPrivateKey(parsed.privateKey);
       await computeTallies(parsed.privateKey);
@@ -164,6 +160,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
       setDisplayVoteStatus(data.voteStatus);
       setDecodedVotes(data.decodedVotes);
       setProofOk(data.proofOk ?? null);
+      setProofErrorMessage(data.proofErrorMessage ?? null);
       setProcessingError(null);
       if (isAnonymous) setStep(2);
     } catch (err: any) {
@@ -196,7 +193,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
         seeds ?? undefined,
       );
       setStep(step + 1);
-      toast.success("Congratulation!", "Proposal executed successfully");
+      toast.success("Congratulations!", "Proposal executed successfully");
     } catch (error: any) {
       toast.error("Execute Proposal", error.message);
       onClose();
@@ -291,6 +288,7 @@ const ExecuteProposalModal: React.FC<ExecuteProposalModalProps> = ({
                 voteStatus={displayVoteStatus}
                 decodedVotes={decodedVotes}
                 proofOk={proofOk}
+                proofErrorMessage={proofErrorMessage}
               />
             </div>
           </div>

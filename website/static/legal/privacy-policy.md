@@ -26,6 +26,7 @@ Consulting Manao GmbH is the data controller responsible for processing your per
 ## 3. Types of Data We Collect
 
 **Important**: We do not operate backend servers or databases. All data is either:
+
 - Stored on-chain via the Stellar blockchain (publicly visible and permanent)
 - Stored on decentralized IPFS networks (publicly accessible)
 - Stored locally in your browser using local storage (never leaves your device)
@@ -33,6 +34,7 @@ Consulting Manao GmbH is the data controller responsible for processing your per
 ### 3.1 Data You Provide Directly
 
 **Account Information**:
+
 - Stellar wallet addresses (public keys)
 - Profile information voluntarily submitted
 - Project metadata uploaded to IPFS
@@ -42,23 +44,27 @@ Consulting Manao GmbH is the data controller responsible for processing your per
 ### 3.2 Data Collected Automatically
 
 **Blockchain Data** (publicly visible on Stellar Network):
+
 - Transaction hashes and timestamps
 - Smart contract interaction data
 - Voting records and outcomes
 - Badge assignments and voting weights
 
 **Technical Data** (collected by hosting providers):
+
 - **IP Addresses**: Logged by Cloudflare CDN for security and DDoS protection (retained for 30 days). This processing is based on our legitimate interest under GDPR Article 6(1)(f) to protect our systems and users from cyber threats, fraud, and abuse. We have conducted a balancing test and determined this limited retention is necessary and proportionate.
 - **Browser and Device Information**: Collected for analytics and performance optimization
 - **Usage Patterns**: Anonymous analytics to improve services
 
 **Browser Local Storage** (stored on your device only):
+
 - Wallet connection preferences
 - UI preferences and settings
 - Session management data
 - Analytics preferences (if using privacy-focused analytics)
 
 **IPFS Data** (publicly accessible):
+
 - Content Identifiers (CIDs) for uploaded content
 - Content metadata and timestamps
 - File sizes and types
@@ -66,12 +72,14 @@ Consulting Manao GmbH is the data controller responsible for processing your per
 ### 3.3 Data from Third-Party Services
 
 **GitHub Integration**:
+
 - Repository information
 - Commit history and metadata
 - Contributor information
 - README files and project documentation
 
 **Stellar Network**:
+
 - Account balances and transaction history
 - Network fees and transaction status
 - Account metadata
@@ -123,6 +131,7 @@ We share data with third-party services necessary for operations (Stellar Networ
 ### 6.2 No Backend Data Storage
 
 We do not store any user data on our own servers. All data exists on:
+
 - The Stellar blockchain (permanent, public, immutable)
 - IPFS networks (distributed, public, persistent)
 - Your browser's local storage (client-side only)
@@ -193,6 +202,7 @@ You can request deletion of your personal data in certain circumstances, includi
 - Objection to processing
 
 **Technical Limitations**:
+
 - **Blockchain Data**: Permanently recorded and immutable (GDPR Article 17(3)(b) exception for data made public by the data subject)
 - **IPFS Content**: Cannot be deleted once uploaded to the decentralized IPFS network
 - **On-Chain Unlinking**: We can remove IPFS CID references from our smart contracts (e.g., by revoking proposals), making content no longer discoverable through our dApp
@@ -275,6 +285,7 @@ We **do not use cookies**. Instead, we rely on browser local storage for essenti
 ### 12.2 Local Storage
 
 Browser local storage data:
+
 - Stays on your device only (never transmitted to our servers)
 - Can be cleared through your browser settings
 - Is essential for dApp functionality
@@ -283,6 +294,7 @@ Browser local storage data:
 ### 12.3 Third-Party Tracking
 
 We do not use third-party tracking services. Any analytics we implement are:
+
 - Privacy-focused and cookieless
 - Aggregate only (no individual tracking)
 - Opt-out available through browser settings
@@ -319,6 +331,7 @@ Continued use of our services after policy updates constitutes acceptance of the
 As a small GmbH, we are not required to appoint a Data Protection Officer under GDPR Article 37, but privacy inquiries can be directed to legal@consulting-manao.com.
 
 **Why No DPO Required**: Under GDPR Article 37(1), DPO appointment is mandatory only for:
+
 - Public authorities
 - Organizations whose core activities consist of processing operations requiring regular and systematic monitoring of data subjects on a large scale
 - Organizations whose core activities consist of processing on a large scale of special categories of data

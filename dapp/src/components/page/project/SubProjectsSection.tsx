@@ -1,14 +1,14 @@
 import { useStore } from "@nanostores/react";
 import { useEffect, useState } from "react";
-import { projectInfoLoaded } from "utils/store";
+import { projectHasSubProjects, projectInfoLoaded } from "utils/store";
 import { loadProjectInfo } from "@service/StateService";
-import { deriveProjectKey } from "utils/projectKey";
+import { getProjectFromId } from "@service/ReadContractService";
+import { deriveProjectKey, normalizeSubProjectKeys } from "utils/projectKey";
 import Tansu from "contracts/soroban_tansu";
 import { checkSimulationError } from "utils/contractErrors";
-import { fetchTomlFromCid } from "utils/ipfsFunctions";
+import { fetchTomlFromIpfs } from "utils/ipfsFunctions";
 import { extractConfigData } from "utils/utils";
 import ProjectCard from "../dashboard/ProjectCard";
-import { Buffer } from "buffer";
 
 const SubProjectsSection = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
@@ -17,6 +17,18 @@ const SubProjectsSection = () => {
 
   useEffect(() => {
     if (!isProjectInfoLoaded) return;
+
+    function showCommitHistoryAndMetrics() {
+      const commitHistorySection = document.getElementById(
+        "commit-history-section",
+      );
+      const contributionMetricsSection = document.getElementById(
+        "contribution-metrics-section",
+      );
+      if (commitHistorySection) commitHistorySection.style.display = "block";
+      if (contributionMetricsSection)
+        contributionMetricsSection.style.display = "block";
+    }
 
     const loadSubProjects = async () => {
       try {
@@ -31,23 +43,10 @@ const SubProjectsSection = () => {
 
         // Check if method exists (contract might not be deployed yet)
         if (typeof (Tansu as any).get_sub_projects !== "function") {
+          projectHasSubProjects.set(false);
           setSubProjects([]);
           setIsLoading(false);
-          // Show commit history and contribution metrics
-          const commitHistorySection = document.getElementById(
-            "commit-history-section",
-          );
-          const contributionMetricsSection = document.getElementById(
-            "contribution-metrics-section",
-          );
-          const latestCommitSection = document.getElementById(
-            "latest-commit-section",
-          );
-          if (commitHistorySection)
-            commitHistorySection.style.display = "block";
-          if (contributionMetricsSection)
-            contributionMetricsSection.style.display = "block";
-          if (latestCommitSection) latestCommitSection.style.display = "block";
+          showCommitHistoryAndMetrics();
           return;
         }
 
@@ -56,85 +55,49 @@ const SubProjectsSection = () => {
         });
         checkSimulationError(res);
 
-        const subProjectKeys = res.result || [];
+        const subProjectKeys = normalizeSubProjectKeys(res.result);
         if (subProjectKeys.length === 0) {
+          projectHasSubProjects.set(false);
           setSubProjects([]);
           setIsLoading(false);
-          // Show commit history and contribution metrics
-          const commitHistorySection = document.getElementById(
-            "commit-history-section",
-          );
-          const contributionMetricsSection = document.getElementById(
-            "contribution-metrics-section",
-          );
-          const latestCommitSection = document.getElementById(
-            "latest-commit-section",
-          );
-          if (commitHistorySection)
-            commitHistorySection.style.display = "block";
-          if (contributionMetricsSection)
-            contributionMetricsSection.style.display = "block";
-          if (latestCommitSection) latestCommitSection.style.display = "block";
+          showCommitHistoryAndMetrics();
           return;
         }
 
-        // Hide commit history and contribution metrics when sub-projects exist
+        projectHasSubProjects.set(true);
+
+        // When sub-projects exist, hide commit history and contribution metrics.
         const commitHistorySection = document.getElementById(
           "commit-history-section",
         );
         const contributionMetricsSection = document.getElementById(
           "contribution-metrics-section",
-        );
-        const latestCommitSection = document.getElementById(
-          "latest-commit-section",
         );
         if (commitHistorySection) commitHistorySection.style.display = "none";
         if (contributionMetricsSection)
           contributionMetricsSection.style.display = "none";
-        if (latestCommitSection) latestCommitSection.style.display = "none";
 
-        const projects: any[] = [];
-        for (const key of subProjectKeys) {
-          try {
-            const keyBuffer = Buffer.isBuffer(key)
-              ? key
-              : Buffer.from(key, "hex");
-            const project = await Tansu.get_project({
-              project_key: keyBuffer,
-            });
-            checkSimulationError(project);
-
-            if (project.result) {
-              const projectData = project.result;
-              const tomlData = await fetchTomlFromCid(projectData.config.ipfs);
+        const results = await Promise.all(
+          subProjectKeys.map(async (keyBuffer) => {
+            try {
+              const projectData = await getProjectFromId(keyBuffer);
+              if (!projectData?.config?.ipfs) return null;
+              const tomlData = await fetchTomlFromIpfs(projectData.config.ipfs);
               const configData = extractConfigData(tomlData || "", projectData);
-              projects.push({
-                ...projectData,
-                configData,
-              });
+              return { ...projectData, configData };
+            } catch {
+              return null;
             }
-          } catch {
-            // Silently handle errors loading individual sub-projects
-          }
-        }
-
+          }),
+        );
+        const projects = results.filter(
+          (p): p is NonNullable<typeof p> => p !== null,
+        );
         setSubProjects(projects);
       } catch {
+        projectHasSubProjects.set(false);
         setSubProjects([]);
-        // Show commit history and contribution metrics on error
-        const commitHistorySection = document.getElementById(
-          "commit-history-section",
-        );
-        const contributionMetricsSection = document.getElementById(
-          "contribution-metrics-section",
-        );
-        const latestCommitSection = document.getElementById(
-          "latest-commit-section",
-        );
-        if (commitHistorySection) commitHistorySection.style.display = "block";
-        if (contributionMetricsSection)
-          contributionMetricsSection.style.display = "block";
-        if (latestCommitSection) latestCommitSection.style.display = "block";
+        showCommitHistoryAndMetrics();
       } finally {
         setIsLoading(false);
       }
@@ -182,7 +145,7 @@ const SubProjectsSection = () => {
 
             return (
               <div
-                key={index}
+                key={project.name}
                 onClick={() => {
                   window.location.href = `/project?name=${encodeURIComponent(project.name)}`;
                 }}

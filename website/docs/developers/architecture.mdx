@@ -60,8 +60,9 @@ The contract emits events for all state changes:
 **Project Events:**
 
 - `ProjectRegistered` - New project created
-- `ProjectUpdated` - Metadata or maintainers changed
-- `CommitUpdated` - New commit hash set
+- `ProjectConfigUpdated` - Metadata or maintainers changed
+- `Commit` - New commit hash set
+- `SubProjectsUpdated` - Sub-projects added or changed
 
 **Governance Events:**
 
@@ -73,7 +74,15 @@ The contract emits events for all state changes:
 **Membership Events:**
 
 - `MemberAdded` - New member registered
-- `BadgesSet` - Badges assigned/updated
+- `BadgesUpdated` - Badges assigned/updated
+
+**Admin Events:**
+
+- `ContractPaused` - Contract paused or unpaused
+- `ContractUpdated` - Domain or collateral contract changed
+- `UpgradeProposed` - Contract upgrade proposed
+- `UpgradeApproved` - Upgrade approval recorded
+- `UpgradeStatus` - Upgrade executed or cancelled
 
 Events are indexed by the backend API for efficient querying.
 

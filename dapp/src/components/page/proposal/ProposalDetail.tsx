@@ -16,6 +16,21 @@ import {
 import "github-markdown-css";
 import "react18-json-view/src/style.css";
 
+const OUTCOME_TYPES = ["approved", "rejected", "cancelled"] as const;
+const OUTCOME_FALLBACK_MESSAGE =
+  "No outcome data available or IPFS content could not be loaded.";
+
+function hasUsableOutcomeContent(
+  detail: ProposalOutcome[keyof ProposalOutcome] | undefined,
+): detail is NonNullable<ProposalOutcome[keyof ProposalOutcome]> {
+  if (!detail) return false;
+  return !!(
+    (detail.description && detail.description.trim()) ||
+    detail.contract ||
+    (detail.xdr && detail.xdr.trim())
+  );
+}
+
 interface ProposalDetailProps {
   ipfsLink: string | null;
   description: string;
@@ -70,19 +85,32 @@ const ProposalDetail: React.FC<ProposalDetailProps> = ({
           <p className="text-2xl font-medium text-primary">Proposal Outcome</p>
         </div>
         <div className="flex flex-col gap-3">
-          {outcome &&
-            Object.entries(outcome).map(([key, value]) => (
-              <OutcomeDetail
-                key={key}
-                type={key}
-                detail={value}
-                isXdrInit={isReady}
-              />
-            ))}
-          {!outcome && (
+          {!outcome ? (
             <p className="p-[30px] text-gray-500 italic bg-white">
-              No outcome data available or IPFS content could not be loaded.
+              {OUTCOME_FALLBACK_MESSAGE}
             </p>
+          ) : (
+            OUTCOME_TYPES.map((type) => {
+              const detail = outcome[type];
+              if (hasUsableOutcomeContent(detail)) {
+                return (
+                  <OutcomeDetail
+                    key={type}
+                    type={type}
+                    detail={detail}
+                    isXdrInit={isReady}
+                  />
+                );
+              }
+              return (
+                <p
+                  key={type}
+                  className="p-[30px] text-gray-500 italic bg-white"
+                >
+                  {OUTCOME_FALLBACK_MESSAGE}
+                </p>
+              );
+            })
           )}
         </div>
       </div>

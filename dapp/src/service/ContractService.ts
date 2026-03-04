@@ -197,7 +197,10 @@ export async function voteToProposal(
     });
     // Ensure config actually exists (not an error bubbled in result)
     checkSimulationError(configTx as any);
-    const publicKeyStr = configTx.result.public_key;
+    const publicKeyStr = configTx.result?.public_key;
+    if (!publicKeyStr) {
+      throw new Error("Anonymous voting config missing public key");
+    }
 
     // Encrypt votes and seeds using project-configured public key
     const saltPrefix = `${client.options.publicKey}:${project_name}:${proposal_id}`;

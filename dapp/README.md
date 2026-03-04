@@ -47,6 +47,8 @@ A decentralized application built on Soroban for governance and voting, powered 
    cp .env.example .env
    ```
 
+   All variables in `.env.example` are required. `PUBLIC_DELEGATION_API_URL` is used for IPFS upload flows.
+
 See the [contributing guide](../CONTRIBUTING.md) for details about IPFS.
 
 4. **Start development server**:

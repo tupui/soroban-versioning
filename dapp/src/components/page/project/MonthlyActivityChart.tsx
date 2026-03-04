@@ -148,8 +148,8 @@ const MonthlyActivityChart: React.FC<MonthlyActivityChartProps> = ({
                     color: "#ffffff",
                     padding: "8px 12px",
                   }}
-                  formatter={(value: number) => [
-                    value,
+                  formatter={(value: number | undefined) => [
+                    value ?? 0,
                     metric === "commits" ? "Commits" : "Contributors",
                   ]}
                   labelFormatter={(label) => label}

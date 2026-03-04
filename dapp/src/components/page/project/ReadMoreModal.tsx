@@ -101,7 +101,7 @@ const ReadMoreModal: FC<ReadMoreModalProps> = ({
     <Modal onClose={onClose}>
       <div className="flex flex-col items-center sm:items-start gap-4 sm:gap-6">
         <img
-          className="w-[90px] h-[90px] sm:w-[110px] sm:h-[110px] lg:w-[150px] lg:h-[150px]"
+          className="w-[90px] h-[90px] sm:w-[110px] sm:h-[110px] lg:w-[150px] lg:h-[150px] object-contain"
           alt="Project thumbnail"
           src={projectData?.logoImageLink || ""}
         />

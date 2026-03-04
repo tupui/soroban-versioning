@@ -7,12 +7,9 @@ mod domain_contract {
     soroban_sdk::contractimport!(file = "../domain_current.wasm");
 }
 
-mod outcomes_contract {
-    soroban_sdk::contractimport!(file = "../outcomes.wasm");
-}
-
 mod contract_dao;
 mod contract_membership;
+mod contract_migration;
 mod contract_tansu;
 mod contract_versioning;
 mod errors;
@@ -136,7 +133,8 @@ pub trait DaoTrait {
         ipfs: String,
         voting_ends_at: u64,
         public_voting: bool,
-        outcomes_contract: Option<Address>,
+        token_contract: Option<Address>,
+        outcome_contracts: Option<Vec<types::OutcomeContract>>,
     ) -> u32;
 
     fn vote(env: Env, voter: Address, project_key: Bytes, proposal_id: u32, vote: types::Vote);
@@ -163,6 +161,10 @@ pub trait DaoTrait {
     fn get_dao(env: Env, project_key: Bytes, page: u32) -> types::Dao;
 
     fn get_proposal(env: Env, project_key: Bytes, proposal_id: u32) -> types::Proposal;
+}
+
+pub trait MigrationTrait {
+    fn add_projects_to_pagination(env: Env, admin: Address, names: Vec<String>);
 }
 
 fn auth_maintainers(env: &Env, maintainer: &Address, project_key: &Bytes) -> types::Project {

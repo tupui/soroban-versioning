@@ -1,7 +1,7 @@
 ---
 import ProposalPageTitle from "components/page/proposal/ProposalPageTitle.astro";
 import Container from "../../components/layout/Container.astro";
-import ProposalPage from "../../components/page/proposal/ProposalPage.tsx";
+import ProposalPageWithBoundary from "../../components/page/proposal/ProposalPageWithBoundary.tsx";
 import Layout from "../../layouts/Layout.astro";
 ---
 
@@ -12,7 +12,7 @@ import Layout from "../../layouts/Layout.astro";
 <Layout title="Tansu" page="proposal">
   <Container>
     <ProposalPageTitle />
-    <ProposalPage client:only />
+    <ProposalPageWithBoundary client:only />
   </Container>
 </Layout>
 

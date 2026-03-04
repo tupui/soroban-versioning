@@ -16,7 +16,7 @@ import Button from "components/utils/Button";
               id="project-thumbnail"
               alt="Project Thumbnail"
               src="/fallback-image.jpg"
-              class="w-[220px] object-cover"
+              class="w-[220px] h-[220px] object-contain"
             />
             <div class="flex flex-col gap-9">
               <div class="flex flex-col gap-3">
@@ -129,7 +129,11 @@ import Button from "components/utils/Button";
     convertGitHubLink,
     getAuthorRepo,
   } from "../../../utils/editLinkFunctions";
-  import { projectInfoLoaded } from "../../../utils/store";
+  import {
+    configData as configDataStore,
+    projectHasSubProjects,
+    projectInfoLoaded,
+  } from "../../../utils/store";
   import { getBadges, getMember } from "@service/ReadContractService";
 
   document.addEventListener("astro:page-load", async () => {
@@ -271,7 +275,7 @@ import Button from "components/utils/Button";
       if (maintainersList) {
         const viewAllButtonContainer =
           maintainersList.querySelector(".view-all");
-        if (viewAllButtonContainer) viewAllButtonContainer.innerHTML = "";
+        if (viewAllButtonContainer) viewAllButtonContainer.replaceChildren();
         const viewAllButton = document.createElement("button");
         viewAllButton.className =
           "leading-[18px] text-lg font-[450] text-primary underline";
@@ -283,7 +287,7 @@ import Button from "components/utils/Button";
         }
         const ul = maintainersList.querySelector("ul");
         if (ul) {
-          ul.innerHTML = "";
+          ul.replaceChildren();
           // Prefer the order straight from tansu.toml (guaranteed 1-1)
           const hasMapping =
             configData &&
@@ -417,7 +421,7 @@ import Button from "components/utils/Button";
 
         const officialLinks = document.getElementById("official-links");
         if (officialLinks) {
-          officialLinks.innerHTML = "";
+          officialLinks.replaceChildren();
           if (configData && configData.officials) {
             if (configData.officials.githubLink) {
               addLinkButton(
@@ -457,8 +461,16 @@ import Button from "components/utils/Button";
 
           const donateTipPopup = document.getElementById("donate-tip-popup");
           if (donateTipPopup) {
-            donateTipPopup.innerHTML = `Help us run the Tansu platform sustainability
-                <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800"></div>`;
+            donateTipPopup.replaceChildren();
+            donateTipPopup.appendChild(
+              document.createTextNode(
+                "Help us run the Tansu platform sustainability",
+              ),
+            );
+            const triangle = document.createElement("div");
+            triangle.className =
+              "absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800";
+            donateTipPopup.appendChild(triangle);
           }
         }
 
@@ -466,29 +478,8 @@ import Button from "components/utils/Button";
           "project-sync-status",
         );
         if (syncStatusContainer) {
-          syncStatusContainer.innerHTML = "";
-
-          // Replace configuration badge with direct link to tansu.toml on IPFS
-          const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.ipfs)}/tansu.toml`;
-
-          const link = document.createElement("a");
-          link.href = ipfsUrl;
-          link.target = "_blank";
-          link.className = "flex items-center space-x-2 hover:underline";
-
-          const icon = document.createElement("img");
-          icon.className = "w-5 h-5";
-          icon.src = "/icons/ipfs.svg";
-          icon.alt = "IPFS";
-
-          const text = document.createElement("span");
-          text.className = "text-sm sm:text-base";
-          text.textContent = "tansu.toml";
-
-          link.appendChild(icon);
-          link.appendChild(text);
-
-          syncStatusContainer.appendChild(link);
+          syncStatusContainer.replaceChildren();
+          syncStatusContainer.appendChild(createTansuTomlLink(projectInfo));
 
           // Add commit badge - only for SOFTWARE projects
           const isSoftwareProject = configData?.projectType === "SOFTWARE";
@@ -527,25 +518,30 @@ import Button from "components/utils/Button";
                 ) {
                   commitIcon.src = "/icons/check.svg";
                   commitIcon.alt = "Check";
-                  commitPopup.innerHTML =
-                    '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain exists on GitHub</p>';
+                  commitPopup.replaceChildren();
+                  const p1 = document.createElement("p");
+                  p1.className = "text-sm w-36 sm:w-max";
+                  p1.textContent = "Commit SHA on-chain exists on GitHub";
+                  commitPopup.appendChild(p1);
                 } else {
-                  commitIcon.src = "/icons/check.svg";
+                  commitIcon.src = "/icons/failed.svg";
                   commitIcon.alt = "Failed";
-                  commitPopup.innerHTML =
-                    '<p class="text-sm w-36 sm:w-max">Commit SHA on-chain cannot be found on GitHub</p>';
+                  commitPopup.replaceChildren();
+                  const p2 = document.createElement("p");
+                  p2.className = "text-sm w-36 sm:w-max";
+                  p2.textContent = "No commit SHA on-chain yet";
+                  commitPopup.appendChild(p2);
                 }
-              } else {
-                commitIcon.src = "/icons/failed.svg";
-                commitIcon.alt = "Failed";
-                commitPopup.innerHTML =
-                  '<p class="text-sm w-36 sm:w-max">No commit SHA on-chain yet</p>';
               }
             } catch (error) {
               commitIcon.src = "/icons/failed.svg";
               commitIcon.alt = "Failed";
-              commitPopup.innerHTML =
-                '<p class="text-sm w-36 sm:w-max">No commit SHA can be found on-chain or on GitHub</p>';
+              commitPopup.replaceChildren();
+              const p3 = document.createElement("p");
+              p3.className = "text-sm w-36 sm:w-max";
+              p3.textContent =
+                "No commit SHA can be found on-chain or on GitHub";
+              commitPopup.appendChild(p3);
             }
 
             commitPopup.appendChild(commitTriangle);
@@ -598,7 +594,9 @@ import Button from "components/utils/Button";
 
           // Render ContributionMetrics - only for SOFTWARE projects
           if (projectInfo?.name && projectInfo?.config?.url) {
-            const { username, repoName } = getAuthorRepo(projectInfo.config.url);
+            const { username, repoName } = getAuthorRepo(
+              projectInfo.config.url,
+            );
             if (username && repoName) {
               contributionMetricsRoot.render(
                 React.createElement(ContributionMetrics, {
@@ -614,21 +612,27 @@ import Button from "components/utils/Button";
         // Hide Git-specific UI components for non-software projects
         if (!isSoftwareProject) {
           // Hide LatestCommit component
-          const latestCommitEl = document.querySelector('[data-component="LatestCommit"]');
+          const latestCommitEl = document.querySelector(
+            '[data-component="LatestCommit"]',
+          );
           if (latestCommitEl) {
-            (latestCommitEl as HTMLElement).style.display = 'none';
+            (latestCommitEl as HTMLElement).style.display = "none";
           }
 
           // Hide CommitHistory component
-          const commitHistoryEl = document.querySelector('[data-component="CommitHistory"]');
+          const commitHistoryEl = document.querySelector(
+            '[data-component="CommitHistory"]',
+          );
           if (commitHistoryEl) {
-            (commitHistoryEl as HTMLElement).style.display = 'none';
+            (commitHistoryEl as HTMLElement).style.display = "none";
           }
 
           // Hide contribution metrics section
-          const contributionMetricsEl = document.getElementById('contribution-metrics-section');
+          const contributionMetricsEl = document.getElementById(
+            "contribution-metrics-section",
+          );
           if (contributionMetricsEl) {
-            contributionMetricsEl.style.display = 'none';
+            contributionMetricsEl.style.display = "none";
           }
         }
 
@@ -642,6 +646,45 @@ import Button from "components/utils/Button";
         updateProjectInfo();
       }
     });
+
+    configDataStore.subscribe((config) => {
+      if (projectInfoLoaded.get() && config) {
+        updateProjectInfo();
+      }
+    });
+
+    projectHasSubProjects.subscribe((hasSubProjects) => {
+      if (!hasSubProjects) return;
+      const syncStatusContainer = document.getElementById(
+        "project-sync-status",
+      );
+      if (!syncStatusContainer) return;
+      const projectInfo = loadProjectInfo();
+      if (!projectInfo?.config?.ipfs) return;
+      syncStatusContainer.replaceChildren();
+      syncStatusContainer.appendChild(createTansuTomlLink(projectInfo));
+    });
+
+    function createTansuTomlLink(projectInfo: {
+      config: { ipfs: string };
+    }): HTMLAnchorElement {
+      const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.ipfs)}/tansu.toml`;
+      const link = document.createElement("a");
+      link.href = ipfsUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.className = "flex items-center space-x-2 hover:underline";
+      const icon = document.createElement("img");
+      icon.className = "w-5 h-5";
+      icon.src = "/icons/ipfs.svg";
+      icon.alt = "IPFS";
+      const text = document.createElement("span");
+      text.className = "text-sm sm:text-base";
+      text.textContent = "tansu.toml";
+      link.appendChild(icon);
+      link.appendChild(text);
+      return link;
+    }
 
     function addLinkButton(
       container: HTMLElement,
@@ -683,7 +726,7 @@ import Button from "components/utils/Button";
         const contentDiv =
           communityContainer.querySelector(".community-content");
         if (!contentDiv) return;
-        contentDiv.innerHTML = "";
+        contentDiv.replaceChildren();
 
         const sections = [
           { key: "developer", label: "Developer", list: badgeData.developer },
@@ -752,9 +795,8 @@ import Button from "components/utils/Button";
           import("react-dom/client"),
         ]);
 
-        const { default: MemberProfileModal } = await import(
-          "components/page/dashboard/MemberProfileModal.tsx"
-        );
+        const { default: MemberProfileModal } =
+          await import("components/page/dashboard/MemberProfileModal.tsx");
 
         const root = createRoot(container);
         const handleClose = () => {
@@ -782,9 +824,8 @@ import Button from "components/utils/Button";
           import("react-dom/client"),
         ]);
 
-        const { default: MemberProfileModal } = await import(
-          "components/page/dashboard/MemberProfileModal.tsx"
-        );
+        const { default: MemberProfileModal } =
+          await import("components/page/dashboard/MemberProfileModal.tsx");
 
         const root = createRoot(container);
         const handleClose = () => {

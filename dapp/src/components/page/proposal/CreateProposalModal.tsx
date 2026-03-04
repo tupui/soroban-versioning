@@ -79,6 +79,8 @@ const CreateProposalModal = () => {
   const [proposalId, setProposalId] = useState<number | null>(null);
   const [_ipfsLink, setIpfsLink] = useState("");
   const [isAnonymousVoting, setIsAnonymousVoting] = useState(false);
+  const [votingType, setVotingType] = useState<"badge" | "token">("badge");
+  const [tokenContract, setTokenContract] = useState<string>("");
   const [preparedFiles, setPreparedFiles] = useState<File[] | null>(null);
   const [generatedKeys, setGeneratedKeys] = useState<{
     publicKey: string;
@@ -131,7 +133,7 @@ const CreateProposalModal = () => {
       throw new Error("Only maintainers can submit proposals");
   };
 
-  const handleSubmmitProposal = useCallback(() => {
+  const handleSubmitProposal = useCallback(() => {
     try {
       checkSubmitAvailability();
       setShowModal(true);
@@ -148,25 +150,30 @@ const CreateProposalModal = () => {
     setProjectName(name);
     const showModalButton = document.querySelector("#create-proposal-button");
 
-    // pre-existing flag check
-    if ((window as any).__nextFunc === "create_proposal") {
+    if (
+      import.meta.env.DEV &&
+      typeof (window as Window & { __nextFunc?: string }).__nextFunc ===
+        "string" &&
+      (window as Window & { __nextFunc?: string }).__nextFunc ===
+        "create_proposal"
+    ) {
       setShowModal(true);
       setStep(1);
     }
 
     if (showModalButton) {
       setStep(1);
-      showModalButton.addEventListener("click", handleSubmmitProposal);
+      showModalButton.addEventListener("click", handleSubmitProposal);
       return () => {
         unsubscribe();
-        showModalButton.removeEventListener("click", handleSubmmitProposal);
+        showModalButton.removeEventListener("click", handleSubmitProposal);
       };
     }
 
     return () => {
       unsubscribe();
     };
-  }, [handleSubmmitProposal]);
+  }, [handleSubmitProposal]);
 
   useEffect(() => {
     if (projectName) {
@@ -256,10 +263,9 @@ const CreateProposalModal = () => {
     return files;
   };
 
-  // Helper function to get parameter name by index for a given function
+  // Best-effort display labels for outcome contract args. Not from introspection;
+  // Tansu outcome contracts may use different function signatures.
   const getParamName = (functionName: string, paramIndex: number): string => {
-    // This is a simplified mapping - in a real implementation you'd get this
-    // from the contract introspection service based on the function signature
     const paramMappings: Record<string, string[]> = {
       mint: ["message", "signature", "recovery_id", "public_key", "nonce"],
       transfer: [
@@ -372,21 +378,6 @@ const CreateProposalModal = () => {
 
       const { createProposalFlow } = await import("@service/FlowService");
 
-      console.log("🔍 DEBUG: createProposalFlow parameters:");
-      console.log("projectName:", projectName);
-      console.log("proposalName:", proposalName);
-      console.log("files:", files);
-      console.log("votingEndsAt:", votingEndsAt, typeof votingEndsAt);
-      console.log("publicVoting:", !isAnonymousVoting ? true : false);
-      console.log(
-        "outcomeContracts:",
-        JSON.stringify(contractOutcomes, null, 2),
-      );
-      console.log(
-        "contractOutcomes types:",
-        contractOutcomes.map((oc) => typeof oc),
-      );
-
       const proposalId = await createProposalFlow({
         projectName: projectName!,
         proposalName,
@@ -394,6 +385,7 @@ const CreateProposalModal = () => {
         votingEndsAt: votingEndsAt,
         publicVoting: !isAnonymousVoting ? true : false,
         outcomeContracts: contractOutcomes,
+        ...(votingType === "token" && tokenContract && { tokenContract }),
         onProgress: setStep,
       });
 
@@ -504,9 +496,8 @@ const CreateProposalModal = () => {
     if (!projectName) return;
 
     try {
-      const { hasAnonymousVotingConfig } = await import(
-        "@service/ReadContractService"
-      );
+      const { hasAnonymousVotingConfig } =
+        await import("@service/ReadContractService");
 
       const exists = await hasAnonymousVotingConfig(projectName);
 
@@ -651,6 +642,39 @@ const CreateProposalModal = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Voting type: Badge based (default) or Token based */}
+              <div className="flex flex-col gap-2 sm:gap-3 max-w-2xl">
+                <label className="text-sm font-semibold text-primary">
+                  Voting type
+                </label>
+                <select
+                  value={votingType}
+                  onChange={(e) =>
+                    setVotingType(e.target.value as "badge" | "token")
+                  }
+                  className="rounded-md border border-zinc-700 bg-transparent px-3 py-2 text-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="badge">Badge based</option>
+                  <option value="token">Token based</option>
+                </select>
+                {votingType === "token" && (
+                  <>
+                    <Input
+                      label="Token Contract Address (Optional)"
+                      placeholder="Enter token contract address for token-based voting"
+                      value={tokenContract}
+                      onChange={(e) => setTokenContract(e.target.value)}
+                    />
+                    {tokenContract && (
+                      <span className="text-sm text-blue-600">
+                        Voting weight will be determined by token balance
+                        instead of badges.
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="max-w-2xl">

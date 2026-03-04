@@ -21,6 +21,7 @@ import { updateConfigFlow } from "@service/FlowService";
 import { toast, extractConfigData } from "utils/utils";
 import { getProject } from "@service/ReadContractService";
 import { calculateDirectoryCid } from "utils/ipfsFunctions";
+import toml from "toml";
 
 const UpdateConfigModal = () => {
   const infoLoaded = useStore(projectInfoLoaded);
@@ -145,10 +146,14 @@ const UpdateConfigModal = () => {
       });
       // refresh state
       const p = await getProject();
-      if (p) setProject(p);
-      await calculateDirectoryCid([tomlFile]); // Ensure IPFS upload completed
-      const configData = extractConfigData(JSON.parse("{}"), p as any); // placeholder parse later
-      setConfigData(configData);
+      if (p) {
+        setProject(p);
+        await calculateDirectoryCid([tomlFile]);
+        const parsedToml = toml.parse(tomlContent) as Parameters<
+          typeof extractConfigData
+        >[0];
+        setConfigData(extractConfigData(parsedToml, p));
+      }
       toast.success(
         "Config updated",
         "Project configuration updated successfully.",
@@ -167,13 +172,11 @@ const UpdateConfigModal = () => {
   return (
     <>
       <button
-        className="px-4 py-3 sm:px-6 sm:py-4 flex gap-2 items-center bg-white cursor-pointer w-full sm:w-auto text-left border border-gray-200 hover:bg-gray-50 transition-colors rounded-md"
+        className="inline-flex items-center gap-2 px-4 py-3 sm:px-5 sm:py-3.5 min-w-0 flex-1 sm:flex-initial rounded-lg border border-zinc-200 bg-white text-primary text-sm font-medium shadow-[var(--shadow-card)] hover:bg-zinc-50 hover:border-zinc-300 transition-colors cursor-pointer text-left"
         onClick={() => setOpen(true)}
       >
-        <img src="/icons/gear.svg" className="w-5 h-5 flex-shrink-0" />
-        <span className="text-sm sm:text-base text-primary font-medium">
-          Update config
-        </span>
+        <img src="/icons/gear.svg" className="w-5 h-5 flex-shrink-0" alt="" />
+        <span>Update config</span>
       </button>
       {open && (
         <FlowProgressModal

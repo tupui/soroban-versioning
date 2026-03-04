@@ -37,7 +37,9 @@ type ModalProps = {
 const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const [step, setStep] = useState(1);
   const [projectName, setProjectName] = useState("");
-  const [projectType, setProjectType] = useState<ProjectType>(ProjectType.SOFTWARE);
+  const [projectType, setProjectType] = useState<ProjectType>(
+    ProjectType.SOFTWARE,
+  );
   const [maintainerAddresses, setMaintainerAddresses] = useState<string[]>([
     loadedPublicKey() || "",
   ]);
@@ -298,7 +300,7 @@ const CreateProjectModal: FC<ModalProps> = ({ onClose }) => {
   const handleRegisterProject = async () => {
     setIsLoading(true);
     // Dynamic imports for heavy libs
-    const [{ fetchTomlFromCid }] = await Promise.all([
+    const [{ fetchTomlFromIpfs }] = await Promise.all([
       import("utils/ipfsFunctions"),
     ]);
     const { loadedPublicKey } = await import("@service/walletService");
@@ -347,7 +349,8 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\nhandle="${gh}"`).join("\n\n")}
       await createProjectFlow({
         projectName,
         tomlFile,
-        githubRepoUrl: projectType === ProjectType.SOFTWARE ? githubRepoUrl : "",
+        githubRepoUrl:
+          projectType === ProjectType.SOFTWARE ? githubRepoUrl : "",
         maintainers: maintainerAddresses,
         onProgress: setStep,
         ...(additionalFiles && { additionalFiles }),
@@ -363,7 +366,7 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\nhandle="${gh}"`).join("\n\n")}
           setProjectRepoInfo(username, repoName);
         }
 
-        const tomlData = await fetchTomlFromCid(project.config.ipfs);
+        const tomlData = await fetchTomlFromIpfs(project.config.ipfs);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigData(configData);
@@ -522,7 +525,9 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\nhandle="${gh}"`).join("\n\n")}
                         onChange={() => setProjectType(ProjectType.SOFTWARE)}
                         className="w-4 h-4"
                       />
-                      <span className="text-primary">Software Project (uses Git/GitHub)</span>
+                      <span className="text-primary">
+                        Software Project (uses Git/GitHub)
+                      </span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -625,7 +630,12 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\nhandle="${gh}"`).join("\n\n")}
                         <Input
                           className="flex-1"
                           value={maintainerGithubs[i] ?? ""}
-                          {...(i == 0 && { label: projectType === ProjectType.SOFTWARE ? "GitHub Handle" : "Handle" })}
+                          {...(i == 0 && {
+                            label:
+                              projectType === ProjectType.SOFTWARE
+                                ? "GitHub Handle"
+                                : "Handle",
+                          })}
                           placeholder="username"
                           onChange={(e) => {
                             setMaintainerGithubs(
@@ -804,9 +814,10 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\nhandle="${gh}"`).join("\n\n")}
               <Button
                 onClick={() => {
                   // Only validate GitHub URL for software projects
-                  const isGithubUrlValid = projectType === ProjectType.SOFTWARE
-                    ? validateGithubRepoUrl()
-                    : true;
+                  const isGithubUrlValid =
+                    projectType === ProjectType.SOFTWARE
+                      ? validateGithubRepoUrl()
+                      : true;
                   const areOrgFieldsValid = validateOrgFields();
 
                   if (isGithubUrlValid && areOrgFieldsValid) {
@@ -865,7 +876,9 @@ ${maintainerGithubs.map((gh) => `[[PRINCIPALS]]\nhandle="${gh}"`).join("\n\n")}
             </Label>
             <Label label="Project type">
               <p className="leading-6 text-xl text-primary">
-                {projectType === ProjectType.SOFTWARE ? "Software Project" : "Non-Software Project"}
+                {projectType === ProjectType.SOFTWARE
+                  ? "Software Project"
+                  : "Non-Software Project"}
               </p>
             </Label>
           </div>

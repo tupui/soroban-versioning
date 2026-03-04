@@ -112,7 +112,8 @@ contract_deploy:  ## Deploy Soroban contract to testnet
   		--source-account $(admin) \
   		--network $(network) \
   		--salt $(shell printf tansu | openssl sha256 | cut -d " " -f2) \
-  		--fee 200 \
+  		--inclusion-fee 200000000 \
+  		--cost \
   		-- \
   		--admin $(shell stellar keys address $(admin)) \
   		> .stellar/tansu_id-$(network) && \

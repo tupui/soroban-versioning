@@ -129,7 +129,7 @@ impl TansuTrait for Tansu {
             admin,
             contract_key: String::from_str(&env, "collateral"),
             address: collateral_contract.address,
-            wasm_hash: None,
+            wasm_hash: collateral_contract.wasm_hash,
         }
         .publish(&env);
     }
@@ -244,6 +244,8 @@ impl TansuTrait for Tansu {
     ///
     /// Upgrades can always be cancelled but only executed if there are enough
     /// approvals and the timelock period is over.
+    /// Note that current governance rules apply. New config changes only
+    /// in force after an update.
     ///
     /// # Panics
     /// * If the admin is not authorized
@@ -320,12 +322,12 @@ impl TansuTrait for Tansu {
     /// # Returns
     /// * `u32` - The contract version number
     fn version() -> u32 {
-        1
+        2
     }
 }
 
 /// Authenticate that the caller is an admin, panic if not
-fn auth_admin(env: &Env, admin: &Address) -> types::AdminsConfig {
+pub fn auth_admin(env: &Env, admin: &Address) -> types::AdminsConfig {
     admin.require_auth();
     let admins_config = Tansu::get_admins_config(env.clone());
     if !admins_config.admins.contains(admin) {

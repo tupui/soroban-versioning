@@ -4,6 +4,8 @@ import Footer from "../components/layout/Footer.astro";
 import { ClientRouter } from "astro:transitions";
 import { SEO } from "astro-seo";
 import { readFileSync } from "fs";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 import "../styles/global.css";
 
@@ -14,99 +16,53 @@ interface Props {
 
 const { title, page } = Astro.props;
 
-// Read the terms summary JSON file
-let summaryContent = {};
+let summaryContent: Record<string, unknown> = {
+  introduction: "Terms of Service",
+};
 try {
-  const jsonContent = readFileSync(
-    "../website/static/legal/terms-summary.json",
-    "utf-8",
-  );
-  summaryContent = JSON.parse(jsonContent);
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const termsPath = join(__dirname, "../../public/legal/terms-summary.json");
+  const jsonContent = readFileSync(termsPath, "utf-8");
+  summaryContent = JSON.parse(jsonContent) as Record<string, unknown>;
 } catch (error) {
-  console.error("Error reading terms summary:", error);
-  summaryContent = { introduction: "Terms of Service" };
+  if (import.meta.env.DEV) {
+    console.error("Error reading terms summary:", error);
+  }
 }
 ---
 
 <script>
   import { Buffer } from "buffer";
+  import { mountModal } from "../utils/mountModal";
+
   global.Buffer = Buffer;
 
-  // Add these event listeners to handle the new button events
-  document.addEventListener("astro:page-load", () => {
-    // Handle Add Project button on any page
-    document.addEventListener("show-create-project-modal", async () => {
-      // Modal code kept inline for better performance
-      try {
-        if (document.querySelector(".project-modal-container")) return;
-        const container = document.createElement("div");
-        container.className = "project-modal-container fixed inset-0 z-[9999]";
-        document.body.appendChild(container);
+  const MODAL_CLASS = "fixed inset-0 z-[9999]";
 
-        const [{ default: React }, { createRoot }] = await Promise.all([
-          import("react"),
-          import("react-dom/client"),
-        ]);
-        const { default: CreateProjectModal } = await import(
-          "components/page/dashboard/CreateProjectModal.tsx"
-        );
-        const root = createRoot(container);
-        const handleClose = () => {
-          if (document.body.contains(container))
-            document.body.removeChild(container);
-          try {
-            root.unmount();
-          } catch (e) {}
-        };
-        container.addEventListener("click", (e) => {
-          if (e.target === container) handleClose();
-        });
-        root.render(
-          React.createElement(CreateProjectModal, { onClose: handleClose }),
+  document.addEventListener("astro:page-load", () => {
+    document.addEventListener("show-create-project-modal", async () => {
+      try {
+        await mountModal(
+          `project-modal-container ${MODAL_CLASS}`,
+          () => import("components/page/dashboard/CreateProjectModal.tsx"),
+          () => ({}),
         );
       } catch (e) {
         console.error("Error opening modal:", e);
       }
     });
 
-    // Simplified inline handlers for better performance
-    window.addEventListener("openJoinCommunity", async (event) => {
+    window.addEventListener("openJoinCommunity", async (event: Event) => {
       try {
-        if (document.querySelector(".join-modal-container")) return;
-        const container = document.createElement("div");
-        container.className = "join-modal-container fixed inset-0 z-[9999]";
-        document.body.appendChild(container);
-
-        const [{ default: React }, { createRoot }] = await Promise.all([
-          import("react"),
-          import("react-dom/client"),
-        ]);
-        const { default: JoinCommunityModal } = await import(
-          "components/page/dashboard/JoinCommunityModal.tsx"
-        );
-        const root = createRoot(container);
-        const handleClose = () => {
-          if (document.body.contains(container))
-            document.body.removeChild(container);
-          try {
-            root.unmount();
-          } catch (e) {}
-        };
-        container.addEventListener("click", (e) => {
-          if (e.target === container) handleClose();
-        });
-
         const address =
           event && typeof event === "object" && "detail" in event
-            ? // @ts-ignore - runtime check above
-              event.detail?.address || ""
+            ? ((event as CustomEvent<{ address?: string }>).detail?.address ??
+              "")
             : "";
-
-        root.render(
-          React.createElement(JoinCommunityModal, {
-            onClose: handleClose,
-            prefillAddress: address,
-          }),
+        await mountModal(
+          `join-modal-container ${MODAL_CLASS}`,
+          () => import("components/page/dashboard/JoinCommunityModal.tsx"),
+          () => ({ prefillAddress: address }),
         );
       } catch (e) {
         console.error("Error opening join community modal:", e);
@@ -115,117 +71,56 @@ try {
 
     window.addEventListener("openProfileModal", async () => {
       try {
-        if (document.querySelector(".profile-modal-container")) return;
-        const container = document.createElement("div");
-        container.className = "profile-modal-container fixed inset-0 z-[9999]";
-        document.body.appendChild(container);
-
-        const [{ default: React }, { createRoot }] = await Promise.all([
-          import("react"),
-          import("react-dom/client"),
-        ]);
-        const { default: MemberProfileModal } = await import(
-          "components/page/dashboard/MemberProfileModal.tsx"
-        );
-        const root = createRoot(container);
-        const handleClose = () => {
-          if (document.body.contains(container))
-            document.body.removeChild(container);
-          try {
-            root.unmount();
-          } catch (e) {}
-        };
-        container.addEventListener("click", (e) => {
-          if (e.target === container) handleClose();
-        });
-
-        // Get current connected wallet address
         const { loadedPublicKey } = await import("service/walletService");
         const currentAddress = loadedPublicKey();
+        if (!currentAddress) return;
 
-        if (currentAddress) {
-          // Fetch member data from the blockchain
+        let memberData = null;
+        try {
           const { getMember } = await import("service/ReadContractService");
-          let memberData = null;
-
-          try {
-            memberData = await getMember(currentAddress);
-          } catch (error) {
-            // Expected for non-members - getMember will return null
-            memberData = null;
-          }
-
-          root.render(
-            React.createElement(MemberProfileModal, {
-              onClose: handleClose,
-              address: currentAddress,
-              member: memberData,
-            }),
-          );
+          memberData = await getMember(currentAddress);
+        } catch {
+          memberData = null;
         }
+
+        await mountModal(
+          `profile-modal-container ${MODAL_CLASS}`,
+          () => import("components/page/dashboard/MemberProfileModal.tsx"),
+          () => ({ address: currentAddress, member: memberData }),
+        );
       } catch (e) {
         console.error("Error opening profile modal:", e);
       }
     });
 
-    // Check URL params
     if (
       window.location.pathname === "/" &&
       new URLSearchParams(window.location.search).get(
         "openCreateProjectModal",
       ) === "true"
     ) {
-      document.dispatchEvent(new CustomEvent("create-project-global"));
+      sessionStorage.setItem("openCreateProjectModal", "true");
     }
 
-    // Check Terms of Service acceptance
     const checkTermsAcceptance = async () => {
       try {
         const accepted = localStorage.getItem("tansu_tos_accepted");
         if (!accepted) {
-          // Show Terms acceptance modal
-          if (document.querySelector(".terms-modal-container")) return;
-          const container = document.createElement("div");
-          container.className = "terms-modal-container fixed inset-0 z-[9999]";
-          document.body.appendChild(container);
-
-          const [{ default: React }, { createRoot }] = await Promise.all([
-            import("react"),
-            import("react-dom/client"),
-          ]);
-          const { default: TermsAcceptanceModal } = await import(
-            "components/utils/TermsAcceptanceModal.tsx"
+          const summaryContent = JSON.parse(
+            document.body.dataset.summaryContent ?? "{}",
           );
-          const root = createRoot(container);
-
-          const handleAccept = () => {
-            if (document.body.contains(container))
-              document.body.removeChild(container);
-            try {
-              root.unmount();
-            } catch (e) {}
-          };
-
-          const handleDecline = () => {
-            // Redirect to main website
-            window.location.href = "https://tansu.dev";
-          };
-
-          container.addEventListener("click", (e) => {
-            if (e.target === container) {
-              // Prevent closing by clicking outside
-              e.preventDefault();
-            }
-          });
-
-          root.render(
-            React.createElement(TermsAcceptanceModal, {
-              onAccept: handleAccept,
-              onDecline: handleDecline,
-              summaryContent: JSON.parse(
-                document.body.dataset.summaryContent || "{}",
-              ),
+          await mountModal(
+            `terms-modal-container ${MODAL_CLASS}`,
+            () => import("components/utils/TermsAcceptanceModal.tsx"),
+            (onClose) => ({
+              onAccept: onClose,
+              onDecline: () => {
+                onClose();
+                window.location.href = "https://tansu.dev";
+              },
+              summaryContent,
             }),
+            { closeOnOverlayClick: false },
           );
         }
       } catch (e) {
@@ -233,7 +128,6 @@ try {
       }
     };
 
-    // Check terms acceptance on page load
     checkTermsAcceptance();
   });
 </script>

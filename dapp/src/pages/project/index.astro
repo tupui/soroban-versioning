@@ -17,7 +17,7 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
 </Layout>
 
 <script>
-  import { fetchTomlFromCid } from "../../utils/ipfsFunctions";
+  import { fetchTomlFromIpfs } from "../../utils/ipfsFunctions";
   import {
     getProjectFromName,
     getProjectHash,
@@ -31,13 +31,18 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
     setProjectRepoInfo,
   } from "../../service/StateService";
   import { getAuthorRepo } from "../../utils/editLinkFunctions";
-  import { projectInfoLoaded } from "../../utils/store";
+  import { projectHasSubProjects, projectInfoLoaded } from "../../utils/store";
   import { extractConfigData, toast } from "../../utils/utils";
 
   document.addEventListener("astro:page-load", async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const projectName = urlParams.get("name") || "";
-    if (projectName) {
+    if (!projectName) {
+      window.location.href = "/";
+      return;
+    }
+    projectHasSubProjects.set(false);
+    {
       setProjectId(projectName);
       try {
         const project = await getProjectFromName(projectName);
@@ -78,6 +83,26 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
           }
 
           projectInfoLoaded.set(true);
+
+          (async () => {
+            const [tomlResult, hashResult] = await Promise.allSettled([
+              fetchTomlFromIpfs(project.config.ipfs),
+              getProjectHash(),
+            ]);
+            if (tomlResult.status === "fulfilled" && tomlResult.value) {
+              setConfigData(extractConfigData(tomlResult.value, project));
+            }
+            const sha =
+              hashResult.status === "fulfilled" ? hashResult.value : null;
+            setProjectLatestSha(
+              sha && typeof sha === "string" && /^[a-f0-9]{40}$/.test(sha)
+                ? sha
+                : "",
+            );
+            if (hashResult.status === "rejected") {
+              toast.error("Something Went Wrong!", hashResult.reason?.message);
+            }
+          })();
         } else {
           refreshLocalStorage();
           window.location.href = "/";

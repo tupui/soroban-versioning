@@ -48,8 +48,11 @@ const ProposalPage: React.FC = () => {
     }
   };
 
+  const isValidProposalId =
+    Number.isInteger(id) && id >= 0 && projectName.length > 0;
+
   const getProposalDetails = async () => {
-    if (id !== undefined && projectName) {
+    if (isValidProposalId) {
       setIsLoading(true);
       try {
         const proposalData = await getProposal(projectName, id);

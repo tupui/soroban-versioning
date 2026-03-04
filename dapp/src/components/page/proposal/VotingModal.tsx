@@ -68,7 +68,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
     return () => {
       ignore = true;
     };
-  }, [projectName]);
+  }, [projectName, proposalId]);
 
   const validateVote = (): boolean => {
     if (!selectedOption) {
@@ -105,6 +105,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
       );
       setIsVoted?.(true);
       setStep(2);
+      onClose();
     } catch (error: any) {
       setIsLoading(false);
 
@@ -199,7 +200,7 @@ const VotingModal: React.FC<VotersModalProps> = ({
                   onChange={(e) => {
                     const percentage = Number(e.target.value);
                     setSelectedWeight(
-                      Math.round((percentage / 100) * maxWeight),
+                      Math.max(1, Math.round((percentage / 100) * maxWeight)),
                     );
                   }}
                   className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-primary"

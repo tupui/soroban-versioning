@@ -2,8 +2,7 @@ import { useState, type FC, useEffect } from "react";
 import Input from "components/utils/Input";
 import Button from "components/utils/Button";
 import FlowProgressModal from "components/utils/FlowProgressModal";
-import { loadedPublicKey } from "@service/walletService";
-import { toast } from "utils/utils";
+import { loadedPublicKey, setConnection } from "@service/walletService";
 import { validateStellarAddress, validateUrl } from "utils/validations";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
 
@@ -139,87 +138,98 @@ const JoinCommunityModal: FC<{
     return isAddressValid && isSocialValid;
   };
 
+  const doJoinFlow = async (memberAddress: string) => {
+    if (!hasProfileData()) {
+      const { joinCommunityFlow } = await import("@service/FlowService");
+      await joinCommunityFlow({
+        memberAddress,
+        profileFiles: [],
+        onProgress: setStep,
+      });
+      onJoined?.();
+      setUpdateSuccessful(true);
+      setStep(0);
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const profileData = {
+        name: name.trim(),
+        description: description.trim(),
+        social: social.trim(),
+      };
+      const profileBlob = new Blob([JSON.stringify(profileData)], {
+        type: "application/json",
+      });
+      const files = [new File([profileBlob], "profile.json")];
+      if (profileImage) {
+        files.push(
+          new File(
+            [profileImage.source],
+            "profile-image." + profileImage.source.type.split("/")[1],
+          ),
+        );
+      }
+      const { joinCommunityFlow } = await import("@service/FlowService");
+      await joinCommunityFlow({
+        memberAddress,
+        profileFiles: files,
+        onProgress: setStep,
+      });
+      onJoined?.();
+      setUpdateSuccessful(true);
+      setStep(0);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleJoin = async () => {
-    if (!validateForm()) {
+    if (!validateForm()) return;
+
+    const publicKey = loadedPublicKey();
+    if (!publicKey) {
+      try {
+        const { kit } = await import("../../stellar-wallets-kit");
+        await kit.openModal({
+          onWalletSelected: async (option: { id: string }) => {
+            try {
+              setIsLoading(true);
+              setStep(6);
+              kit.setWallet(option.id);
+              const { address: connectedAddress } = await kit.getAddress();
+              setConnection(connectedAddress, option.id);
+              window.dispatchEvent(
+                new CustomEvent("walletConnected", {
+                  detail: { address: connectedAddress, provider: option.id },
+                }),
+              );
+              await doJoinFlow(connectedAddress);
+            } catch (err: any) {
+              console.error("Join community error:", err);
+              setError(err?.message || "Something went wrong");
+              setStep(0);
+            } finally {
+              setIsLoading(false);
+              setIsUploading(false);
+            }
+          },
+        });
+      } catch {
+        // User closed connect modal without selecting a wallet
+      }
       return;
     }
 
     try {
       setIsLoading(true);
       setStep(6);
-
-      // Check if user has provided any profile data
-      if (!hasProfileData()) {
-        // No profile data, use the new flow with empty files
-        const { joinCommunityFlow } = await import("@service/FlowService");
-        await joinCommunityFlow({
-          memberAddress: address,
-          profileFiles: [],
-          onProgress: setStep,
-        });
-
-        toast.success("Success", "You have successfully joined the community!");
-        onJoined?.();
-        setUpdateSuccessful(true);
-        setIsLoading(false);
-        setIsUploading(false);
-        setStep(0); // Reset step to show success screen
-        // Don't close modal immediately - let user close it manually
-        return;
-      }
-
-      // User has profile data, prepare files for IPFS
-      setIsUploading(true);
-
-      try {
-        // Create profile data JSON
-        const profileData = {
-          name: name.trim(),
-          description: description.trim(),
-          social: social.trim(),
-        };
-
-        const profileBlob = new Blob([JSON.stringify(profileData)], {
-          type: "application/json",
-        });
-
-        // Create files array
-        const files = [new File([profileBlob], "profile.json")];
-
-        // Add image if provided
-        if (profileImage) {
-          files.push(
-            new File(
-              [profileImage.source],
-              "profile-image." + profileImage.source.type.split("/")[1],
-            ),
-          );
-        }
-
-        // Use the new Flow 2
-        const { joinCommunityFlow } = await import("@service/FlowService");
-        await joinCommunityFlow({
-          memberAddress: address,
-          profileFiles: files,
-          onProgress: setStep,
-        });
-
-        toast.success("Success", "You have successfully joined the community!");
-        onJoined?.();
-        setUpdateSuccessful(true);
-        setIsLoading(false);
-        setIsUploading(false);
-        setStep(0); // Reset step to show success screen
-        // Don't close modal immediately - let user close it manually
-      } catch (ipfsError: any) {
-        console.error("IPFS upload error:", ipfsError);
-        setIsUploading(false);
-        throw ipfsError;
-      }
+      await doJoinFlow(address || publicKey);
     } catch (err: any) {
       console.error("Join community error:", err);
-      setError(err.message || "Something went wrong");
-      setStep(0); // Reset step on error
+      setError(err?.message || "Something went wrong");
+      setStep(0);
     } finally {
       setIsLoading(false);
       setIsUploading(false);
