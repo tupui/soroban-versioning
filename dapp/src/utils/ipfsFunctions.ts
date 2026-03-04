@@ -1,63 +1,48 @@
-/**
- * IPFS utility functions
- *
- * This file contains all utility functions for working with IPFS links and data.
- */
+/** IPFS gateway and fetch helpers. */
 
 import toml from "toml";
 
-// Cache for IPFS content to avoid repeated network requests
 const ipfsCache: Record<string, any> = {};
+const VALID_CID_PATTERN = /^(bafy|Qm)[a-zA-Z0-9]{44,}$/;
+const STORACHA_URL_PATTERN = /^https:\/\/([^/]+)\.ipfs\.storacha\.link(\/.*)?$/;
 
-/**
- * Get the basic IPFS gateway link for a CID
- *
- * @param cid - The IPFS content identifier
- * @returns The gateway URL for the content
- */
+const IPFS_GATEWAYS: ReadonlyArray<{
+  name: string;
+  retries: number;
+  buildUrl: (cid: string, path: string) => string;
+}> = [
+  {
+    name: "storacha",
+    retries: 2,
+    buildUrl: (cid, path) => `https://${cid}.ipfs.storacha.link${path}`,
+  },
+  {
+    name: "filebase",
+    retries: 2,
+    buildUrl: (cid, path) => `https://ipfs.filebase.io/ipfs/${cid}${path}`,
+  },
+];
+
+const PER_ATTEMPT_TIMEOUT_MS = 4000;
+
 export const getIpfsBasicLink = (cid: string): string => {
   if (!cid) return "";
-
-  // Validate CID format before constructing URL
-  const validCidPattern = /^(bafy|Qm)[a-zA-Z0-9]{44,}$/;
-  if (!validCidPattern.test(cid)) {
-    // Invalid CID format is a normal case, silently return empty string
+  if (!VALID_CID_PATTERN.test(cid)) {
     return "";
   }
-
-  return `https://${cid}.ipfs.storacha.link`;
+  return IPFS_GATEWAYS[0]!.buildUrl(cid, "");
 };
 
-/**
- * Get the proposal data link from IPFS
- *
- * @param cid - The IPFS content identifier
- * @returns The gateway URL for the proposal data
- */
 export const getProposalLinkFromIpfs = (cid: string): string => {
   if (!cid) return "";
   return `${getIpfsBasicLink(cid)}/proposal.md`;
 };
 
-/**
- * Get the outcome data link from IPFS
- *
- * @param cid - The IPFS content identifier
- * @returns The gateway URL for the outcome data
- */
 export const getOutcomeLinkFromIpfs = (cid: string): string => {
   if (!cid) return "";
   return `${getIpfsBasicLink(cid)}/outcomes.json`;
 };
 
-/**
- * Compute the CID that IPFS / Web3.Storage would assign to a directory without uploading it.
- * Uses createDirectoryEncoderStream from ipfs-car to create the same UnixFS + DAG-PB layout
- * that @storacha/client would use.
- *
- * @param files - Array of File objects or objects with path and content
- * @returns The calculated CID
- */
 export const calculateDirectoryCid = async (files: File[]): Promise<string> => {
   const { createDirectoryEncoderStream, CAREncoderStream } = await import(
     "ipfs-car"
@@ -90,86 +75,101 @@ export const calculateDirectoryCid = async (files: File[]): Promise<string> => {
   return rootCID.toString();
 };
 
-/**
- * Fetches content from IPFS with caching
- *
- * @param url - The IPFS URL to fetch from
- * @param options - Fetch options
- * @param timeout - Timeout in milliseconds
- * @returns The response from the fetch
- */
-export const fetchFromIPFS = async (
-  url: string,
-  options: RequestInit = {},
-  timeout: number = 10000,
-): Promise<Response> => {
-  // Return from cache if available
-  const cacheKey = `${url}-${JSON.stringify(options)}`;
-  if (ipfsCache[cacheKey]) {
-    // Clone the cached response to ensure it can be used multiple times
-    return ipfsCache[cacheKey].clone();
-  }
+function parseStorachaUrl(url: string): { cid: string; path: string } | null {
+  const match = url.match(STORACHA_URL_PATTERN);
+  if (!match) return null;
+  return { cid: match[1]!, path: match[2] ?? "" };
+}
 
+async function fetchOne(
+  url: string,
+  options: RequestInit,
+  timeout: number,
+): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
-
   try {
     const response = await fetch(url, {
       ...options,
       signal: controller.signal,
     });
-
-    // Cache successful responses
-    if (response.ok) {
-      // Clone the response before caching it
-      ipfsCache[cacheKey] = response.clone();
-    }
-
     clearTimeout(id);
     return response;
   } catch (error) {
     clearTimeout(id);
     throw error;
   }
+}
+
+export const fetchFromIPFS = async (
+  url: string,
+  options: RequestInit = {},
+  timeout: number = 10000,
+): Promise<Response> => {
+  const parsed = parseStorachaUrl(url);
+
+  if (parsed) {
+    const contentCacheKey = `ipfs:${parsed.cid}${parsed.path}`;
+    if (ipfsCache[contentCacheKey]) {
+      return ipfsCache[contentCacheKey].clone();
+    }
+
+    const attemptTimeout = Math.min(timeout, PER_ATTEMPT_TIMEOUT_MS);
+    let lastError: unknown;
+    let gatewayIndex = 0;
+    for (const gateway of IPFS_GATEWAYS) {
+      for (let attempt = 0; attempt < gateway.retries; attempt++) {
+        try {
+          const gatewayUrl = gateway.buildUrl(parsed.cid, parsed.path);
+          const response = await fetchOne(gatewayUrl, options, attemptTimeout);
+          if (response.ok) {
+            ipfsCache[contentCacheKey] = response.clone();
+            return response;
+          }
+          lastError = new Error(`HTTP ${response.status}`);
+        } catch (err) {
+          lastError = err;
+        }
+      }
+      const next = IPFS_GATEWAYS[gatewayIndex + 1];
+      if (next && import.meta.env?.DEV) {
+        console.warn(
+          `[IPFS] Gateway "${gateway.name}" failed, trying ${next.name}`,
+        );
+      }
+      gatewayIndex++;
+    }
+    throw lastError;
+  }
+
+  const cacheKey = `${url}-${JSON.stringify(options)}`;
+  if (ipfsCache[cacheKey]) {
+    return ipfsCache[cacheKey].clone();
+  }
+  const response = await fetchOne(url, options, timeout);
+  if (response.ok) {
+    ipfsCache[cacheKey] = response.clone();
+  }
+  return response;
 };
 
-/**
- * Fetches and parses JSON data from IPFS with caching
- *
- * @param url - The IPFS URL to fetch JSON from
- * @param options - Fetch options
- * @returns The parsed JSON data
- */
 export const fetchJSONFromIPFS = async (
   url: string,
   options: RequestInit = {},
 ): Promise<any> => {
-  // Skip empty or invalid URLs
   if (!url) {
     return null;
   }
 
   try {
     const response = await fetchFromIPFS(url, options);
-    if (!response.ok) {
-      // Not finding content is a normal case for IPFS, silently return null
-      return null;
-    }
+    if (!response.ok) return null;
     return await response.json();
   } catch {
-    // Network errors or parsing errors are expected cases, silently return null
     return null;
   }
 };
 
-/**
- * Fetches and parses a TOML file (e.g. `tansu.toml`) from a directory CID on IPFS.
- * The TOML file must live at the root of the directory.
- *
- * @param cid - The directory CID that contains the `tansu.toml` file
- * @param timeoutMs - Timeout in milliseconds (default 5000)
- * @returns The parsed TOML data or `undefined` if not found / parse error
- */
 export const fetchTomlFromCid = async (
   cid: string,
   timeoutMs: number = 5000,
@@ -185,7 +185,6 @@ export const fetchTomlFromCid = async (
     const text = await response.text();
     return toml.parse(text);
   } catch (_) {
-    // Parsing or network errors are considered expected – return undefined so callers can fallback.
     return undefined;
   }
 };
