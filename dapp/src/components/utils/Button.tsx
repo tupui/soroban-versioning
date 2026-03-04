@@ -42,7 +42,7 @@ const Button: FC<Props> = ({
   return (
     <button
       id={id}
-      className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" : type == "tertiary" ? "border border-primary text-primary" : "bg-white text-primary"} cursor-pointer flex justify-center items-center ${sizeMap[size]} hover:opacity-90 transition-opacity`}
+      className={`${className} ${type == "primary" ? "bg-primary text-white" : type == "secondary" ? "bg-[#F5F1F9] text-primary" : type == "tertiary" ? "border border-primary text-primary" : "bg-white text-primary"} cursor-pointer flex justify-center items-center whitespace-nowrap ${sizeMap[size]} hover:opacity-90 transition-opacity`}
       onClick={onClick}
       title={title}
       disabled={disabled}

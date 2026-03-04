@@ -180,7 +180,7 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
   return (
     <>
       <button
-        className="inline-flex items-center gap-2 px-4 py-3 sm:px-5 sm:py-3.5 min-w-0 flex-1 sm:flex-initial rounded-lg border border-zinc-200 bg-white text-primary text-sm font-medium shadow-[var(--shadow-card)] hover:bg-zinc-50 hover:border-zinc-300 transition-colors cursor-pointer text-left"
+        className="inline-flex items-center gap-2 px-2 py-1.5 sm:px-3 sm:py-2 min-w-0 flex-1 sm:flex-initial rounded-lg border border-zinc-200 bg-white text-primary text-sm font-medium shadow-[var(--shadow-card)] hover:bg-zinc-50 hover:border-zinc-300 transition-colors cursor-pointer text-left whitespace-nowrap"
         onClick={() => setIsOpen(true)}
       >
         <img
@@ -188,15 +188,13 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
           className="w-5 h-5 flex-shrink-0"
           alt=""
         />
-        <span>Manage Sub-Projects</span>
+        <span>Sub-Projects</span>
       </button>
 
       {isOpen && (
         <Modal onClose={handleClose}>
           <div className="flex flex-col gap-6 w-full">
-            <h6 className="text-xl font-medium text-primary">
-              Manage Sub-Projects
-            </h6>
+            <h6 className="text-xl font-medium text-primary">Sub-Projects</h6>
 
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-md">

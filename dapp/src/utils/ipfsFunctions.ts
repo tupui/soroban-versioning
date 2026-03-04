@@ -62,7 +62,7 @@ async function fetchOne(
     const res = await fetch(url, {
       ...options,
       signal: controller.signal,
-      redirect: "manual",
+      redirect: "follow",
     });
     clearTimeout(id);
     return res;
@@ -103,16 +103,11 @@ export async function fetchFromIpfs(
         {},
         attemptMs,
       );
-      // Treat redirects (3xx) as failure so we try the other gateway
-      if (res.status >= 300 && res.status < 400) {
-        lastError = new Error(`HTTP ${res.status} redirect`);
-        continue;
-      }
       if (!res.ok) {
         lastError = new Error(`HTTP ${res.status}`);
         continue;
       }
-      // Verify body is readable (e.g. redirect target may fail when reading)
+      // Only accept when the final response body is readable (outcome of redirect), not just status
       try {
         const verifyClone = res.clone();
         await verifyClone.arrayBuffer();

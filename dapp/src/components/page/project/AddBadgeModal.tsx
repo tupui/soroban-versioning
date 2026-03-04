@@ -69,7 +69,7 @@ const AddBadgeModal = () => {
       {showButton && (
         <button
           id="badge-button"
-          className="inline-flex items-center gap-2 px-4 py-3 sm:px-5 sm:py-3.5 min-w-0 flex-1 sm:flex-initial rounded-lg border border-zinc-200 bg-white text-primary text-sm font-medium shadow-[var(--shadow-card)] hover:bg-zinc-50 hover:border-zinc-300 transition-colors cursor-pointer text-left"
+          className="inline-flex items-center gap-2 px-2 py-1.5 sm:px-3 sm:py-2 min-w-0 flex-1 sm:flex-initial rounded-lg border border-zinc-200 bg-white text-primary text-sm font-medium shadow-[var(--shadow-card)] hover:bg-zinc-50 hover:border-zinc-300 transition-colors cursor-pointer text-left whitespace-nowrap"
           onClick={() => setIsOpen(true)}
         >
           <img

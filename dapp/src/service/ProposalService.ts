@@ -36,11 +36,11 @@ async function fetchProposalFromIPFS(cid: string) {
  * Fetches proposal outcome data with precedence: contract outcomes take precedence over XDR
  *
  * @param proposal - The proposal object
- * @returns The outcome data or null if not found
+ * @returns The outcome data (always an object; may be empty so UI can show all three sections)
  */
 export async function fetchProposalOutcomeData(
   proposal: Proposal,
-): Promise<ProposalOutcome | null> {
+): Promise<ProposalOutcome> {
   let outcomeData: ProposalOutcome = {};
 
   // Load IPFS data first (for descriptions and XDR)
@@ -91,8 +91,8 @@ export async function fetchProposalOutcomeData(
     }
   }
 
-  // Return merged data if we have any outcomes
-  return Object.keys(outcomeData).length > 0 ? outcomeData : null;
+  // Always return the outcome object so the UI can show all three sections (approved, rejected, cancelled)
+  return outcomeData;
 }
 
 /**

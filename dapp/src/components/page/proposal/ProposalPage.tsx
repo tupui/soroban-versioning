@@ -67,9 +67,13 @@ const ProposalPage: React.FC = () => {
               proposalData.ipfs,
             );
             setDescription(fetchedDescription || "");
+          }
 
+          try {
             const outcomeData = await fetchProposalOutcomeData(proposalData);
             setOutcome(outcomeData);
+          } catch {
+            setOutcome({});
           }
 
           // Fetch project maintainers – errors are logged but won't trigger a second toast
