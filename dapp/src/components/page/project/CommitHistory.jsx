@@ -6,12 +6,17 @@ import {
   loadProjectRepoInfo,
 } from "../../../service/StateService.ts";
 import { formatDate } from "../../../utils/formatTimeFunctions.ts";
-import { latestCommit, projectInfoLoaded } from "../../../utils/store.ts";
+import {
+  configData as configDataStore,
+  latestCommit,
+  projectInfoLoaded,
+} from "../../../utils/store.ts";
 import CommitPeriod from "./CommitPeriod.jsx";
 import CommitRecord from "../../CommitRecord";
 
 const CommitHistory = () => {
   const isProjectInfoLoaded = useStore(projectInfoLoaded);
+  const configData = useStore(configDataStore);
   const [commitHistory, setCommitHistory] = useState([]);
   const [authors, setAuthors] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -54,38 +59,38 @@ const CommitHistory = () => {
 
   const addMaintainerBadge = () => {
     try {
-      const configData = loadConfigData();
+      const cfg = loadConfigData();
       if (
-        configData &&
-        configData.authorGithubNames &&
-        Array.isArray(configData.authorGithubNames) &&
-        configData.authorGithubNames.length > 0
+        cfg &&
+        cfg.authorGithubNames &&
+        Array.isArray(cfg.authorGithubNames) &&
+        cfg.authorGithubNames.length > 0
       ) {
-        const authors = configData.authorGithubNames
+        const authorList = cfg.authorGithubNames
           .map((name) =>
             name && typeof name === "string" ? name.toLowerCase() : "",
           )
           .filter(Boolean);
-        setAuthors(authors);
+        setAuthors(authorList);
       }
     } catch (error) {
-      // Config data not available - this is expected for some projects
       setAuthors([]);
     }
   };
 
-  const loadCommitInfo = () => {
+  useEffect(() => {
     if (isProjectInfoLoaded) {
       fetchCommitHistory();
-      addMaintainerBadge();
     } else {
       setIsLoading(false);
     }
-  };
+  }, [isProjectInfoLoaded]);
 
   useEffect(() => {
-    loadCommitInfo();
-  }, [isProjectInfoLoaded]);
+    if (configData) {
+      addMaintainerBadge();
+    }
+  }, [configData]);
 
   return (
     <>

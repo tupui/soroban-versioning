@@ -479,28 +479,7 @@ import Button from "components/utils/Button";
         );
         if (syncStatusContainer) {
           syncStatusContainer.replaceChildren();
-
-          // Replace configuration badge with direct link to tansu.toml on IPFS
-          const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.ipfs)}/tansu.toml`;
-
-          const link = document.createElement("a");
-          link.href = ipfsUrl;
-          link.target = "_blank";
-          link.className = "flex items-center space-x-2 hover:underline";
-
-          const icon = document.createElement("img");
-          icon.className = "w-5 h-5";
-          icon.src = "/icons/ipfs.svg";
-          icon.alt = "IPFS";
-
-          const text = document.createElement("span");
-          text.className = "text-sm sm:text-base";
-          text.textContent = "tansu.toml";
-
-          link.appendChild(icon);
-          link.appendChild(text);
-
-          syncStatusContainer.appendChild(link);
+          syncStatusContainer.appendChild(createTansuTomlLink(projectInfo));
 
           // Add commit badge
           const latestSha = loadProjectLatestSha();
@@ -647,8 +626,14 @@ import Button from "components/utils/Button";
       if (!syncStatusContainer) return;
       const projectInfo = loadProjectInfo();
       if (!projectInfo?.config?.ipfs) return;
-      const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.ipfs)}/tansu.toml`;
       syncStatusContainer.replaceChildren();
+      syncStatusContainer.appendChild(createTansuTomlLink(projectInfo));
+    });
+
+    function createTansuTomlLink(projectInfo: {
+      config: { ipfs: string };
+    }): HTMLAnchorElement {
+      const ipfsUrl = `${getIpfsBasicLink(projectInfo.config.ipfs)}/tansu.toml`;
       const link = document.createElement("a");
       link.href = ipfsUrl;
       link.target = "_blank";
@@ -663,8 +648,8 @@ import Button from "components/utils/Button";
       text.textContent = "tansu.toml";
       link.appendChild(icon);
       link.appendChild(text);
-      syncStatusContainer.appendChild(link);
-    });
+      return link;
+    }
 
     function addLinkButton(
       container: HTMLElement,
