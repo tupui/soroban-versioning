@@ -180,13 +180,15 @@ const ManageSubProjectsModal: React.FC<ManageSubProjectsModalProps> = ({
   return (
     <>
       <button
-        className="px-4 py-3 flex gap-2 items-center bg-white cursor-pointer border border-gray-200 hover:bg-gray-50 rounded-md"
+        className="inline-flex items-center gap-2 px-4 py-3 sm:px-5 sm:py-3.5 min-w-0 flex-1 sm:flex-initial rounded-lg border border-zinc-200 bg-white text-primary text-sm font-medium shadow-[var(--shadow-card)] hover:bg-zinc-50 hover:border-zinc-300 transition-colors cursor-pointer text-left"
         onClick={() => setIsOpen(true)}
       >
-        <img src="/icons/plus-fill.svg" className="w-5 h-5" />
-        <span className="text-sm text-primary font-medium">
-          Manage Sub-Projects
-        </span>
+        <img
+          src="/icons/plus-fill.svg"
+          className="w-5 h-5 flex-shrink-0"
+          alt=""
+        />
+        <span>Manage Sub-Projects</span>
       </button>
 
       {isOpen && (

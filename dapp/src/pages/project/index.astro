@@ -17,7 +17,7 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
 </Layout>
 
 <script>
-  import { fetchTomlFromCid } from "../../utils/ipfsFunctions";
+  import { fetchTomlFromIpfs } from "../../utils/ipfsFunctions";
   import {
     getProjectFromName,
     getProjectHash,
@@ -57,7 +57,7 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
 
           (async () => {
             const [tomlResult, hashResult] = await Promise.allSettled([
-              fetchTomlFromCid(project.config.ipfs),
+              fetchTomlFromIpfs(project.config.ipfs),
               getProjectHash(),
             ]);
             if (tomlResult.status === "fulfilled" && tomlResult.value) {

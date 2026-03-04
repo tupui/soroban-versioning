@@ -1,4 +1,4 @@
-/** IPFS gateway and fetch helpers. */
+/** IPFS gateway and fetch helpers. Single retrieval path: CID + path → cache → gateways. */
 
 import toml from "toml";
 
@@ -36,38 +36,190 @@ const GATEWAYS: ReadonlyArray<{
 ];
 
 const CACHE_KEY_PREFIX = "ipfs:v3:";
+const DEFAULT_IPFS_TIMEOUT_MS = 8000;
 const PER_ATTEMPT_MS = 2000;
 
-function parseContentFromUrl(
-  url: string,
-): { cid: string; path: string } | null {
-  const storacha = url.match(
-    /^https:\/\/([^/]+)\.ipfs\.storacha\.link(\/.*)?$/,
-  );
-  if (storacha?.[1]) return { cid: storacha[1], path: storacha[2] ?? "" };
+export type FetchFromIpfsOptions = {
+  timeoutMs?: number;
+};
 
-  const filebase = url.match(
-    /^https:\/\/ipfs\.filebase\.io\/ipfs\/([^/]+)(\/.*)?$/,
-  );
-  if (filebase?.[1]) return { cid: filebase[1], path: filebase[2] ?? "" };
-
-  return null;
+function normalizePath(path: string): string {
+  return path.startsWith("/") ? path : `/${path}`;
 }
+
+function cacheKey(cid: string, path: string): string {
+  return `${CACHE_KEY_PREFIX}${cid}${normalizePath(path)}`;
+}
+
+async function fetchOne(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      redirect: "manual",
+    });
+    clearTimeout(id);
+    return res;
+  } catch (e) {
+    clearTimeout(id);
+    throw e;
+  }
+}
+
+/**
+ * Core IPFS fetch: CID + path. Checks cache; on miss tries gateway 1 then gateway 2.
+ * All retrieval in the app goes through this or a wrapper that calls it.
+ */
+export async function fetchFromIpfs(
+  cid: string,
+  path: string,
+  options: FetchFromIpfsOptions = {},
+): Promise<Response> {
+  if (!cid || !VALID_CID_PATTERN.test(cid)) {
+    throw new Error("Invalid IPFS CID");
+  }
+  const pathNorm = normalizePath(path);
+  const timeoutMs = options.timeoutMs ?? DEFAULT_IPFS_TIMEOUT_MS;
+
+  const cache = getGlobalIpfsCache();
+  const key = cacheKey(cid, pathNorm);
+  const cached = cache.responses[key];
+  if (cached) return cached.clone();
+
+  const attemptMs = Math.min(timeoutMs, PER_ATTEMPT_MS);
+  let lastError: unknown;
+
+  for (let i = 0; i < GATEWAYS.length; i++) {
+    const gateway = GATEWAYS[i]!;
+    try {
+      const res = await fetchOne(
+        gateway.buildUrl(cid, pathNorm),
+        {},
+        attemptMs,
+      );
+      if (res.ok) {
+        cache.responses[key] = res.clone();
+        return res;
+      }
+      lastError = new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      lastError = err;
+    }
+    const next = GATEWAYS[i + 1];
+    if (import.meta.env?.DEV && next) {
+      console.warn(`[IPFS] ${gateway.name} failed, trying ${next.name}`);
+    }
+  }
+
+  throw lastError ?? new Error("IPFS fetch failed");
+}
+
+/**
+ * Fetch IPFS content as text (e.g. markdown). Uses core fetch; no separate text cache.
+ */
+export async function fetchTextFromIpfs(
+  cid: string,
+  path: string,
+  options: FetchFromIpfsOptions = {},
+): Promise<string | null> {
+  try {
+    const res = await fetchFromIpfs(cid, path, options);
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch IPFS content as JSON. Uses core fetch; caches parsed JSON by (cid, path).
+ */
+export async function fetchJsonFromIpfs(
+  cid: string,
+  path: string,
+  options: FetchFromIpfsOptions = {},
+): Promise<any | null> {
+  if (!cid || !VALID_CID_PATTERN.test(cid)) return null;
+  const pathNorm = normalizePath(path);
+  const cache = getGlobalIpfsCache();
+  const key = cacheKey(cid, pathNorm);
+  const cached = cache.json[key];
+  if (cached !== undefined) return cached;
+
+  try {
+    const res = await fetchFromIpfs(cid, pathNorm, options);
+    if (!res.ok) return null;
+    const data = await res.json();
+    cache.json[key] = data;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+const TANSU_TOML_PATH = "/tansu.toml";
+
+/**
+ * Fetch and parse project tansu.toml from IPFS. Caches parsed result by CID.
+ */
+export async function fetchTomlFromIpfs(
+  cid: string,
+  options: FetchFromIpfsOptions = {},
+): Promise<any | undefined> {
+  if (!cid || !VALID_CID_PATTERN.test(cid)) return undefined;
+
+  const cache = getGlobalIpfsCache();
+  const cachedToml = cache.toml[cid];
+  if (cachedToml !== undefined) return cachedToml;
+
+  try {
+    const text = await fetchTextFromIpfs(cid, TANSU_TOML_PATH, options);
+    if (!text?.trim()) return undefined;
+
+    const data = toml.parse(text);
+    if (
+      !data ||
+      (typeof data === "object" &&
+        !(data as any).DOCUMENTATION &&
+        !(data as any).ACCOUNTS)
+    ) {
+      return undefined;
+    }
+    cache.toml[cid] = data;
+    return data;
+  } catch {
+    return undefined;
+  }
+}
+
+/** @deprecated Use fetchTomlFromIpfs. Kept for compatibility. */
+export const fetchTomlFromCid = fetchTomlFromIpfs;
+
+// --- URL helpers (display only; do not use for fetch) ---
 
 export const getIpfsBasicLink = (cid: string): string => {
   if (!cid || !VALID_CID_PATTERN.test(cid)) return "";
   return GATEWAYS[0]!.buildUrl(cid, "");
 };
 
-export const getProposalLinkFromIpfs = (cid: string): string => {
-  const base = getIpfsBasicLink(cid);
-  return base ? `${base}/proposal.md` : "";
-};
+/** Build gateway URL for CID and optional path (e.g. for links). */
+export function getIpfsUrl(cid: string, path: string = ""): string {
+  if (!cid || !VALID_CID_PATTERN.test(cid)) return "";
+  const pathNorm = path ? normalizePath(path) : "";
+  return GATEWAYS[0]!.buildUrl(cid, pathNorm);
+}
 
-export const getOutcomeLinkFromIpfs = (cid: string): string => {
-  const base = getIpfsBasicLink(cid);
-  return base ? `${base}/outcomes.json` : "";
-};
+export const getProposalLinkFromIpfs = (cid: string): string =>
+  getIpfsUrl(cid, "/proposal.md");
+
+export const getOutcomeLinkFromIpfs = (cid: string): string =>
+  getIpfsUrl(cid, "/outcomes.json");
 
 export const calculateDirectoryCid = async (files: File[]): Promise<string> => {
   const { createDirectoryEncoderStream, CAREncoderStream } = await import(
@@ -96,147 +248,4 @@ export const calculateDirectoryCid = async (files: File[]): Promise<string> => {
 
   if (!rootCID) throw new Error("Failed to compute CID: no root block found");
   return rootCID.toString();
-};
-
-async function fetchOne(
-  url: string,
-  options: RequestInit,
-  timeoutMs: number,
-): Promise<Response> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-      redirect: "manual",
-    });
-    clearTimeout(id);
-    return res;
-  } catch (e) {
-    clearTimeout(id);
-    throw e;
-  }
-}
-
-async function fetchByCidPath(
-  cid: string,
-  path: string,
-  options: RequestInit,
-  timeoutMs: number,
-): Promise<Response> {
-  const cache = getGlobalIpfsCache();
-  const key = `${CACHE_KEY_PREFIX}${cid}${path}`;
-  const cached = cache.responses[key];
-  if (cached) return cached.clone();
-
-  const attemptMs = Math.min(timeoutMs, PER_ATTEMPT_MS);
-  let lastError: unknown;
-
-  for (let i = 0; i < GATEWAYS.length; i++) {
-    const gateway = GATEWAYS[i]!;
-    try {
-      const res = await fetchOne(
-        gateway.buildUrl(cid, path),
-        options,
-        attemptMs,
-      );
-      if (res.ok) {
-        cache.responses[key] = res.clone();
-        return res;
-      }
-      lastError = new Error(`HTTP ${res.status}`);
-    } catch (err) {
-      lastError = err;
-    }
-    const next = GATEWAYS[i + 1];
-    if (import.meta.env?.DEV && next) {
-      console.warn(`[IPFS] ${gateway.name} failed, trying ${next.name}`);
-    }
-  }
-
-  throw lastError ?? new Error("IPFS fetch failed");
-}
-
-export const fetchFromIPFS = async (
-  urlOrCid: string,
-  options: RequestInit = {},
-  timeoutMs: number = 8000,
-): Promise<Response> => {
-  const parsed = parseContentFromUrl(urlOrCid);
-
-  if (parsed) {
-    return fetchByCidPath(parsed.cid, parsed.path, options, timeoutMs);
-  }
-
-  const cache = getGlobalIpfsCache();
-  const key = `${CACHE_KEY_PREFIX}url:${urlOrCid}`;
-  const cached = cache.responses[key];
-  if (cached) return cached.clone();
-
-  const res = await fetchOne(
-    urlOrCid,
-    options,
-    Math.min(timeoutMs, PER_ATTEMPT_MS),
-  );
-  if (res.ok) cache.responses[key] = res.clone();
-  return res;
-};
-
-export const fetchJSONFromIPFS = async (
-  url: string,
-  options: RequestInit = {},
-): Promise<any> => {
-  if (!url) return null;
-  const cache = getGlobalIpfsCache();
-  const parsed = parseContentFromUrl(url);
-  const contentKey = parsed
-    ? `${CACHE_KEY_PREFIX}${parsed.cid}${parsed.path}`
-    : null;
-  if (contentKey) {
-    const cached = cache.json[contentKey];
-    if (cached !== undefined) return cached;
-  }
-  try {
-    const res = await fetchFromIPFS(url, options);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (contentKey) cache.json[contentKey] = data;
-    return data;
-  } catch {
-    return null;
-  }
-};
-
-export const fetchTomlFromCid = async (
-  cid: string,
-  timeoutMs: number = 4000,
-): Promise<any | undefined> => {
-  if (!cid || !VALID_CID_PATTERN.test(cid)) return undefined;
-
-  const cache = getGlobalIpfsCache();
-  const cachedToml = cache.toml[cid];
-  if (cachedToml !== undefined) return cachedToml;
-
-  try {
-    const res = await fetchByCidPath(cid, "/tansu.toml", {}, timeoutMs);
-    if (!res.ok) return undefined;
-
-    const text = await res.text();
-    if (!text?.trim()) return undefined;
-
-    const data = toml.parse(text);
-    if (
-      !data ||
-      (typeof data === "object" &&
-        !(data as any).DOCUMENTATION &&
-        !(data as any).ACCOUNTS)
-    ) {
-      return undefined;
-    }
-    cache.toml[cid] = data;
-    return data;
-  } catch {
-    return undefined;
-  }
 };

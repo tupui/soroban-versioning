@@ -366,12 +366,15 @@ export async function applyAllMocks(page) {
   await page.route("**/src/utils/ipfsFunctions.ts", async (route) => {
     const body =
       'export const getIpfsBasicLink = (cid) => (cid ? "https://" + cid + ".ipfs.storacha.link" : "");\n' +
+      'export const getIpfsUrl = (cid, path) => (cid ? getIpfsBasicLink(cid) + (path || "") : "");\n' +
       'export const getProposalLinkFromIpfs = (cid) => (cid ? getIpfsBasicLink(cid) + "/proposal.md" : "");\n' +
       'export const getOutcomeLinkFromIpfs = (cid) => (cid ? getIpfsBasicLink(cid) + "/outcomes.json" : "");\n' +
       'export const calculateDirectoryCid = async () => "bafytestcidmock";\n' +
-      "export const fetchFromIPFS = async (...args) => fetch(...args);\n" +
-      "export const fetchJSONFromIPFS = async () => null;\n" +
-      "export const fetchTomlFromCid = async () => undefined;\n";
+      "export const fetchFromIpfs = async () => ({ ok: true, text: () => Promise.resolve(''), json: () => Promise.resolve(null), clone: () => ({ ok: true, text: () => Promise.resolve(''), json: () => Promise.resolve(null) }) });\n" +
+      "export const fetchTextFromIpfs = async () => null;\n" +
+      "export const fetchJsonFromIpfs = async () => null;\n" +
+      "export const fetchTomlFromIpfs = async () => undefined;\n" +
+      "export const fetchTomlFromCid = fetchTomlFromIpfs;\n";
     route.fulfill({
       status: 200,
       headers: { "content-type": "application/javascript" },

@@ -1,4 +1,4 @@
-import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
+import { fetchTomlFromIpfs } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
   getProjectHash,
@@ -47,7 +47,7 @@ const ProjectCard = ({ config }: { config: ProjectConfig }) => {
 
         (async () => {
           try {
-            const tomlData = await fetchTomlFromCid(project.config.ipfs, 5000);
+            const tomlData = await fetchTomlFromIpfs(project.config.ipfs);
             if (tomlData) {
               setConfigData(extractConfigData(tomlData, project));
             }

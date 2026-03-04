@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Modal, { type ModalProps } from "components/utils/Modal";
 import Button from "components/utils/Button";
 import type { Member, Badge } from "../../../../packages/tansu";
-import { getIpfsBasicLink, fetchJSONFromIPFS } from "utils/ipfsFunctions";
+import { getIpfsBasicLink, fetchJsonFromIpfs } from "utils/ipfsFunctions";
 import Markdown from "markdown-to-jsx";
 import { connectedPublicKey } from "../../../utils/store";
 import { refreshLocalStorage } from "@service/StateService";
@@ -73,23 +73,24 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
           }
 
           const ipfsUrl = getIpfsBasicLink(member.meta);
-          if (!ipfsUrl) {
-            setIsLoading(false);
-            return;
-          }
 
           // Fetch profile.json
           try {
-            // Standard path format
-            const profileUrl = `${ipfsUrl}/profile.json`;
-            const profileData = await fetchJSONFromIPFS(profileUrl);
+            const profileData = await fetchJsonFromIpfs(
+              member.meta,
+              "/profile.json",
+            );
 
             if (profileData) {
               setProfileData(profileData);
               setHasValidMetadata(true);
 
               // Determine profile image path
-              if (profileData.image && typeof profileData.image === "string") {
+              if (
+                profileData.image &&
+                typeof profileData.image === "string" &&
+                ipfsUrl
+              ) {
                 setProfileImageUrl(`${ipfsUrl}/${profileData.image}`);
               }
             }
@@ -98,7 +99,7 @@ const MemberProfileModal: FC<Props> = ({ onClose, member, address }) => {
           }
 
           // If not already set from profile.json, try the standard file name pattern
-          if (!profileImageUrl) {
+          if (!profileImageUrl && ipfsUrl) {
             const exts = ["png", "jpg", "jpeg"];
             let found = false;
             exts.forEach((ext, idx) => {

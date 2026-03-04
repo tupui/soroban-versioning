@@ -6,7 +6,7 @@ import { getProjectFromId } from "@service/ReadContractService";
 import { deriveProjectKey, normalizeSubProjectKeys } from "utils/projectKey";
 import Tansu from "contracts/soroban_tansu";
 import { checkSimulationError } from "utils/contractErrors";
-import { fetchTomlFromCid } from "utils/ipfsFunctions";
+import { fetchTomlFromIpfs } from "utils/ipfsFunctions";
 import { extractConfigData } from "utils/utils";
 import ProjectCard from "../dashboard/ProjectCard";
 
@@ -82,7 +82,7 @@ const SubProjectsSection = () => {
             try {
               const projectData = await getProjectFromId(keyBuffer);
               if (!projectData?.config?.ipfs) return null;
-              const tomlData = await fetchTomlFromCid(projectData.config.ipfs);
+              const tomlData = await fetchTomlFromIpfs(projectData.config.ipfs);
               const configData = extractConfigData(tomlData || "", projectData);
               return { ...projectData, configData };
             } catch {

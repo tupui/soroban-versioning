@@ -1,7 +1,7 @@
 import { useStore } from "@nanostores/react";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { getFeaturedProjectsConfigData } from "../../../constants/featuredProjectsConfigData.js";
-import { fetchTomlFromCid } from "../../../utils/ipfsFunctions";
+import { fetchTomlFromIpfs } from "../../../utils/ipfsFunctions";
 import {
   getProjectFromName,
   getMember,
@@ -215,7 +215,7 @@ const ProjectList = () => {
     try {
       const project = await getProjectFromName(projectName);
       if (project && project.name && project.config && project.maintainers) {
-        const tomlData = await fetchTomlFromCid(project.config.ipfs, 5000);
+        const tomlData = await fetchTomlFromIpfs(project.config.ipfs);
         if (tomlData) {
           const configData = extractConfigData(tomlData, project);
           setConfigInfo(configData);
@@ -311,7 +311,7 @@ const ProjectList = () => {
       setIsLoadingOnChain(false);
 
       const results = await Promise.allSettled(
-        projects.map((p) => fetchTomlFromCid(p.config.ipfs, 5000)),
+        projects.map((p) => fetchTomlFromIpfs(p.config.ipfs)),
       );
       const enrichedList = projects.map((project, i) => {
         const result = results[i];
