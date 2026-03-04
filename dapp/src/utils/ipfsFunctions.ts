@@ -103,11 +103,25 @@ export async function fetchFromIpfs(
         {},
         attemptMs,
       );
-      if (res.ok) {
-        cache.responses[key] = res.clone();
-        return res;
+      // Treat redirects (3xx) as failure so we try the other gateway
+      if (res.status >= 300 && res.status < 400) {
+        lastError = new Error(`HTTP ${res.status} redirect`);
+        continue;
       }
-      lastError = new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        lastError = new Error(`HTTP ${res.status}`);
+        continue;
+      }
+      // Verify body is readable (e.g. redirect target may fail when reading)
+      try {
+        const verifyClone = res.clone();
+        await verifyClone.arrayBuffer();
+      } catch (bodyErr) {
+        lastError = bodyErr;
+        continue;
+      }
+      cache.responses[key] = res.clone();
+      return res;
     } catch (err) {
       lastError = err;
     }
