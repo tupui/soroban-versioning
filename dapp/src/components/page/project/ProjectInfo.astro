@@ -130,6 +130,7 @@ import Button from "components/utils/Button";
     getAuthorRepo,
   } from "../../../utils/editLinkFunctions";
   import {
+    configData as configDataStore,
     projectHasSubProjects,
     projectInfoLoaded,
   } from "../../../utils/store";
@@ -628,6 +629,12 @@ import Button from "components/utils/Button";
 
     projectInfoLoaded.subscribe((loaded) => {
       if (loaded) {
+        updateProjectInfo();
+      }
+    });
+
+    configDataStore.subscribe((config) => {
+      if (projectInfoLoaded.get() && config) {
         updateProjectInfo();
       }
     });

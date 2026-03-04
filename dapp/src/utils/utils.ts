@@ -11,7 +11,6 @@ import {
   type ProposalView,
   type ProposalViewStatus,
 } from "types/proposal";
-// Import the extracted IPFS functions have been moved to ipfsFunctions.ts
 
 export function truncateMiddle(str: string, maxLength: number): string {
   if (str.length <= maxLength) return str;
@@ -74,8 +73,6 @@ export const processDecodedData = (xdrData: string): any => {
 export const modifySlashInXdr = (xdr: string) => {
   return xdr.replaceAll("/", "//");
 };
-
-// IPFS functions are now directly imported from ipfsFunctions.ts
 
 export const modifyProposalStatusToView = (
   status: ProposalStatus,

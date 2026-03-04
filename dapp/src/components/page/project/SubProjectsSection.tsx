@@ -77,26 +77,22 @@ const SubProjectsSection = () => {
         if (contributionMetricsSection)
           contributionMetricsSection.style.display = "none";
 
-        const projects: Array<{
-          name: string;
-          config: { ipfs: string; url?: string };
-          configData: ReturnType<typeof extractConfigData>;
-        }> = [];
-        for (const keyBuffer of subProjectKeys) {
-          try {
-            const projectData = await getProjectFromId(keyBuffer);
-            if (!projectData?.config?.ipfs) continue;
-            const tomlData = await fetchTomlFromCid(projectData.config.ipfs);
-            const configData = extractConfigData(tomlData || "", projectData);
-            projects.push({
-              ...projectData,
-              configData,
-            });
-          } catch {
-            // Skip sub-projects that fail to load
-          }
-        }
-
+        const results = await Promise.all(
+          subProjectKeys.map(async (keyBuffer) => {
+            try {
+              const projectData = await getProjectFromId(keyBuffer);
+              if (!projectData?.config?.ipfs) return null;
+              const tomlData = await fetchTomlFromCid(projectData.config.ipfs);
+              const configData = extractConfigData(tomlData || "", projectData);
+              return { ...projectData, configData };
+            } catch {
+              return null;
+            }
+          }),
+        );
+        const projects = results.filter(
+          (p): p is NonNullable<typeof p> => p !== null,
+        );
         setSubProjects(projects);
       } catch {
         projectHasSubProjects.set(false);

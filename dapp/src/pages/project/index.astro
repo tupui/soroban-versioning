@@ -56,28 +56,22 @@ import ProjectInfoTitle from "../../components/page/project/ProjectInfoTitle.ast
           projectInfoLoaded.set(true);
 
           (async () => {
-            try {
-              const tomlData = await fetchTomlFromCid(
-                project.config.ipfs,
-                5000,
-              );
-              if (tomlData) {
-                setConfigData(extractConfigData(tomlData, project));
-              }
-            } catch (_) {}
-            try {
-              const latestSha = await getProjectHash();
-              if (
-                latestSha &&
-                typeof latestSha === "string" &&
-                latestSha.match(/^[a-f0-9]{40}$/)
-              ) {
-                setProjectLatestSha(latestSha);
-              } else {
-                setProjectLatestSha("");
-              }
-            } catch (error: any) {
-              toast.error("Something Went Wrong!", error.message);
+            const [tomlResult, hashResult] = await Promise.allSettled([
+              fetchTomlFromCid(project.config.ipfs),
+              getProjectHash(),
+            ]);
+            if (tomlResult.status === "fulfilled" && tomlResult.value) {
+              setConfigData(extractConfigData(tomlResult.value, project));
+            }
+            const sha =
+              hashResult.status === "fulfilled" ? hashResult.value : null;
+            setProjectLatestSha(
+              sha && typeof sha === "string" && /^[a-f0-9]{40}$/.test(sha)
+                ? sha
+                : "",
+            );
+            if (hashResult.status === "rejected") {
+              toast.error("Something Went Wrong!", hashResult.reason?.message);
             }
           })();
         } else {

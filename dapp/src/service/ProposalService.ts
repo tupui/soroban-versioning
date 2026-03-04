@@ -14,18 +14,10 @@ import type { Proposal, ProposalOutcome } from "types/proposal";
  * @returns The markdown content with image paths corrected, or null if not found
  */
 async function fetchProposalFromIPFS(url: string) {
-  // Validate CID format
-  const validCidPattern = /^(bafy|Qm)[a-zA-Z0-9]{44,}$/;
-  if (!url || !validCidPattern.test(url)) {
-    return null;
-  }
+  const proposalUrl = getProposalLinkFromIpfs(url);
+  if (!proposalUrl) return null;
 
   try {
-    const proposalUrl = getProposalLinkFromIpfs(url);
-    if (!proposalUrl) {
-      return null;
-    }
-
     const response = await fetchFromIPFS(proposalUrl);
     if (!response.ok) {
       return null;
