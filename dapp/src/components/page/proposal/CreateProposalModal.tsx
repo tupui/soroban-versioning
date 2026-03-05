@@ -15,6 +15,7 @@ import { capitalizeFirstLetter, toast } from "utils/utils";
 import { getIpfsBasicLink } from "utils/ipfsFunctions";
 import { validateProposalName, validateTextContent } from "utils/validations";
 import OutcomeInput from "./OutcomeInput";
+import TemplateSelector from "./TemplateSelector";
 import { generateRSAKeyPair } from "utils/crypto";
 import { setupAnonymousVoting } from "@service/ContractService";
 import SimpleMarkdownEditor from "components/utils/SimpleMarkdownEditor";
@@ -695,6 +696,12 @@ const CreateProposalModal = () => {
 
           {/* Description Section */}
           <div className="space-y-4">
+            <TemplateSelector
+              onTemplateSelect={(template) => {
+                setMdText(template.content);
+                setDescriptionError(null);
+              }}
+            />
             <div className="flex items-center justify-between">
               <p className="text-lg font-semibold text-primary">Description</p>
               <span className="text-sm text-secondary">
