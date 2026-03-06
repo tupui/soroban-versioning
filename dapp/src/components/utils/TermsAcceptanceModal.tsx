@@ -9,9 +9,17 @@ type LegalView = "summary" | "fullTerms" | "privacy";
 interface TermsAcceptanceModalProps {
   onAccept: () => void;
   onDecline: () => void;
-  summaryContent: any;
-  fullTermsMarkdown?: string;
-  privacyMarkdown?: string;
+}
+
+async function fetchText(path: string): Promise<string> {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
+  return res.text();
+}
+
+async function fetchJson(path: string): Promise<Record<string, unknown>> {
+  const text = await fetchText(path);
+  return JSON.parse(text) as Record<string, unknown>;
 }
 
 const markdownOverrides = {
@@ -41,52 +49,67 @@ const markdownOverrides = {
 const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
   onAccept,
   onDecline,
-  summaryContent,
-  fullTermsMarkdown: fullTermsMarkdownProp = "",
-  privacyMarkdown: privacyMarkdownProp = "",
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const [view, setView] = useState<LegalView>("summary");
+  const [summary, setSummary] = useState<Record<string, unknown> | null>(null);
+  const [fullTerms, setFullTerms] = useState<string | null>(null);
+  const [privacy, setPrivacy] = useState<string | null>(null);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 100);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    fetchJson("/legal/terms-summary.json")
+      .then(setSummary)
+      .catch(() =>
+        setSummary({ introduction: "Terms of Service", sections: {} }),
+      );
+  }, []);
+
+  useEffect(() => {
+    if (view !== "fullTerms" || fullTerms !== null) return;
+    fetchText("/legal/terms-of-service.md")
+      .then(setFullTerms)
+      .catch(() => setFullTerms(""));
+  }, [view, fullTerms]);
+
+  useEffect(() => {
+    if (view !== "privacy" || privacy !== null) return;
+    fetchText("/legal/privacy-policy.md")
+      .then(setPrivacy)
+      .catch(() => setPrivacy(""));
+  }, [view, privacy]);
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLDivElement;
-    const scrollTop = target.scrollTop;
-    const scrollHeight = target.scrollHeight;
-    const clientHeight = target.clientHeight;
-    if (scrollTop + clientHeight >= scrollHeight * 0.8) {
+    const el = e.target as HTMLDivElement;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight * 0.8)
       setHasScrolled(true);
-    }
   };
 
   const handleAccept = () => {
-    const acceptanceData = {
-      accepted: true,
-      timestamp: new Date().toISOString(),
-      version: "October 21, 2025",
-    };
-    localStorage.setItem("tansu_tos_accepted", JSON.stringify(acceptanceData));
+    localStorage.setItem(
+      "tansu_tos_accepted",
+      JSON.stringify({
+        accepted: true,
+        timestamp: new Date().toISOString(),
+        version: "October 21, 2025",
+      }),
+    );
     onAccept();
   };
 
-  const handleDecline = () => {
-    onDecline();
-  };
-
-  const summary = summaryContent;
-  const sections = summary.sections || {};
+  const s = summary ?? { introduction: "Terms of Service", sections: {} };
+  const sections = (s.sections as Record<string, unknown>) ?? {};
 
   if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 bg-white/35 backdrop-blur-md flex justify-center items-center z-[9999] p-2 sm:p-4">
       <div className="modal relative bg-white shadow-modal rounded-lg max-w-[95vw] w-full sm:w-auto max-w-4xl flex flex-col max-h-[90vh]">
-        {/* Header */}
         <div className="flex-shrink-0 p-3 sm:p-4 md:p-6 lg:p-8 pb-2">
           <div className="flex flex-col gap-3">
             <div className="leading-6 text-2xl font-medium text-primary">
@@ -99,8 +122,6 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
               Last Updated: October 21, 2025
             </div>
           </div>
-
-          {/* Tabs: Summary | Full Terms | Privacy */}
           <div className="flex gap-2 mt-4 border-b border-gray-200">
             <button
               type="button"
@@ -138,7 +159,6 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
           </div>
         </div>
 
-        {/* Single scrollable body */}
         <div
           className="flex-1 min-h-0 overflow-auto p-3 sm:p-4 md:p-6 lg:p-8 pt-4"
           onScroll={handleScroll}
@@ -172,14 +192,12 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                   </div>
                 </div>
               </div>
-
               <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-card">
                 <p className="text-secondary leading-relaxed">
-                  {summary.introduction ||
+                  {(s.introduction as string) ||
                     "Tansu is a decentralized governance platform operated by Consulting Manao GmbH, located in Austria. By using our dApp, you agree to be bound by these Terms of Service."}
                 </p>
               </div>
-
               {sections.keyPoints && (
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-card">
                   <div className="flex items-center gap-2 mb-4">
@@ -189,8 +207,10 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                     </h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {sections.keyPoints.map((item: any, index: number) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3">
+                    {(
+                      sections.keyPoints as { title: string; content: string }[]
+                    ).map((item, i) => (
+                      <div key={i} className="bg-gray-50 rounded-lg p-3">
                         <h3 className="font-semibold text-primary mb-1">
                           {item.title}
                         </h3>
@@ -200,7 +220,6 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                   </div>
                 </div>
               )}
-
               {sections.importantRisks && (
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-card">
                   <div className="flex items-center gap-2 mb-4">
@@ -210,8 +229,13 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                     </h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {sections.importantRisks.map((item: any, index: number) => (
-                      <div key={index} className="bg-red-50 rounded-lg p-3">
+                    {(
+                      sections.importantRisks as {
+                        title: string;
+                        content: string;
+                      }[]
+                    ).map((item, i) => (
+                      <div key={i} className="bg-red-50 rounded-lg p-3">
                         <h4 className="font-semibold text-red-800 mb-1">
                           {item.title}
                         </h4>
@@ -221,7 +245,6 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                   </div>
                 </div>
               )}
-
               {sections.yourResponsibilities && (
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-card">
                   <div className="flex items-center gap-2 mb-4">
@@ -231,9 +254,9 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                     </h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {sections.yourResponsibilities.map(
-                      (item: any, index: number) => (
-                        <div key={index} className="bg-blue-50 rounded-lg p-3">
+                    {(sections.yourResponsibilities as string[]).map(
+                      (item, i) => (
+                        <div key={i} className="bg-blue-50 rounded-lg p-3">
                           <p className="text-blue-700 text-sm font-medium">
                             {item}
                           </p>
@@ -243,7 +266,6 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                   </div>
                 </div>
               )}
-
               {sections.serviceModifications && (
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-card">
                   <div className="flex items-center gap-2 mb-4">
@@ -254,20 +276,33 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                   </div>
                   <div className="space-y-3">
                     <p className="text-secondary text-sm mb-3">
-                      {sections.serviceModifications.description}
+                      {
+                        (
+                          sections.serviceModifications as {
+                            description: string;
+                            administrativeRights: string;
+                          }
+                        ).description
+                      }
                     </p>
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                       <h4 className="font-semibold text-yellow-800 mb-1">
                         Administrative Rights
                       </h4>
                       <p className="text-yellow-700 text-sm">
-                        {sections.serviceModifications.administrativeRights}
+                        {
+                          (
+                            sections.serviceModifications as {
+                              description: string;
+                              administrativeRights: string;
+                            }
+                          ).administrativeRights
+                        }
                       </p>
                     </div>
                   </div>
                 </div>
               )}
-
               {sections.limitationsOfLiability && (
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-card">
                   <div className="flex items-center gap-2 mb-4">
@@ -277,12 +312,9 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                     </h2>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {sections.limitationsOfLiability.map(
-                      (item: any, index: number) => (
-                        <div
-                          key={index}
-                          className="bg-yellow-50 rounded-lg p-3"
-                        >
+                    {(sections.limitationsOfLiability as string[]).map(
+                      (item, i) => (
+                        <div key={i} className="bg-yellow-50 rounded-lg p-3">
                           <p className="text-yellow-700 text-sm font-medium">
                             {item}
                           </p>
@@ -292,7 +324,6 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                   </div>
                 </div>
               )}
-
               {sections.contactInformation && (
                 <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-card">
                   <div className="flex items-center gap-2 mb-4">
@@ -304,10 +335,30 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                   <div className="space-y-3">
                     <div>
                       <h4 className="font-semibold text-primary mb-1">
-                        {sections.contactInformation.company}
+                        {
+                          (
+                            sections.contactInformation as {
+                              company: string;
+                              details: string;
+                              address: string;
+                              email: string;
+                              website: string;
+                            }
+                          ).company
+                        }
                       </h4>
                       <p className="text-secondary text-sm whitespace-pre-line">
-                        {sections.contactInformation.details}
+                        {
+                          (
+                            sections.contactInformation as {
+                              company: string;
+                              details: string;
+                              address: string;
+                              email: string;
+                              website: string;
+                            }
+                          ).details
+                        }
                       </p>
                     </div>
                     <div>
@@ -315,13 +366,33 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                         Address:
                       </span>
                       <p className="text-secondary text-sm">
-                        {sections.contactInformation.address}
+                        {
+                          (
+                            sections.contactInformation as {
+                              company: string;
+                              details: string;
+                              address: string;
+                              email: string;
+                              website: string;
+                            }
+                          ).address
+                        }
                       </p>
                     </div>
                     <div>
                       <span className="font-semibold text-primary">Email:</span>
                       <p className="text-secondary text-sm">
-                        {sections.contactInformation.email}
+                        {
+                          (
+                            sections.contactInformation as {
+                              company: string;
+                              details: string;
+                              address: string;
+                              email: string;
+                              website: string;
+                            }
+                          ).email
+                        }
                       </p>
                     </div>
                     <div>
@@ -329,7 +400,17 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
                         Website:
                       </span>
                       <p className="text-secondary text-sm">
-                        {sections.contactInformation.website}
+                        {
+                          (
+                            sections.contactInformation as {
+                              company: string;
+                              details: string;
+                              address: string;
+                              email: string;
+                              website: string;
+                            }
+                          ).website
+                        }
                       </p>
                     </div>
                   </div>
@@ -340,30 +421,29 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
 
           {view === "fullTerms" && (
             <div className="markdown-body legal-content prose max-w-none">
-              {fullTermsMarkdownProp ? (
-                <Markdown options={{ overrides: markdownOverrides }}>
-                  {DOMPurify.sanitize(fullTermsMarkdownProp)}
-                </Markdown>
+              {fullTerms === null ? (
+                <p className="text-secondary">Loading…</p>
               ) : (
-                <p className="text-secondary">Full terms not available.</p>
+                <Markdown options={{ overrides: markdownOverrides }}>
+                  {DOMPurify.sanitize(fullTerms)}
+                </Markdown>
               )}
             </div>
           )}
 
           {view === "privacy" && (
             <div className="markdown-body legal-content prose max-w-none">
-              {privacyMarkdownProp ? (
-                <Markdown options={{ overrides: markdownOverrides }}>
-                  {DOMPurify.sanitize(privacyMarkdownProp)}
-                </Markdown>
+              {privacy === null ? (
+                <p className="text-secondary">Loading…</p>
               ) : (
-                <p className="text-secondary">Privacy policy not available.</p>
+                <Markdown options={{ overrides: markdownOverrides }}>
+                  {DOMPurify.sanitize(privacy)}
+                </Markdown>
               )}
             </div>
           )}
         </div>
 
-        {/* Footer */}
         <div className="flex-shrink-0 flex flex-col gap-4 pt-4 pb-6 px-3 sm:px-4 md:px-6 lg:px-8 border-t border-zinc-200">
           <div className="text-center sm:text-left">
             <p className="text-sm text-secondary">
@@ -378,7 +458,7 @@ const TermsAcceptanceModal: React.FC<TermsAcceptanceModalProps> = ({
           </div>
           <div className="flex gap-4 justify-center sm:justify-end">
             <button
-              onClick={handleDecline}
+              onClick={onDecline}
               className="px-6 py-3 bg-zinc-200 hover:bg-zinc-300 text-zinc-700 font-semibold rounded-lg transition-colors duration-200"
             >
               Decline

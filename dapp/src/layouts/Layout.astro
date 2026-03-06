@@ -3,9 +3,6 @@ import Navbar from "../components/layout/Navbar.astro";
 import Footer from "../components/layout/Footer.astro";
 import { ClientRouter } from "astro:transitions";
 import { SEO } from "astro-seo";
-import { readFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
 
 import "../styles/global.css";
 
@@ -15,35 +12,6 @@ interface Props {
 }
 
 const { title, page } = Astro.props;
-
-let summaryContent: Record<string, unknown> = {
-  introduction: "Terms of Service",
-};
-let fullTermsMarkdown = "";
-let privacyMarkdown = "";
-try {
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-  const termsPath = join(__dirname, "../../public/legal/terms-summary.json");
-  const jsonContent = readFileSync(termsPath, "utf-8");
-  summaryContent = JSON.parse(jsonContent) as Record<string, unknown>;
-} catch (error) {
-  if (import.meta.env.DEV) {
-    console.error("Error reading terms summary:", error);
-  }
-}
-try {
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-  const legalDir = join(__dirname, "../../public/legal");
-  fullTermsMarkdown = readFileSync(
-    join(legalDir, "terms-of-service.md"),
-    "utf-8",
-  );
-  privacyMarkdown = readFileSync(join(legalDir, "privacy-policy.md"), "utf-8");
-} catch (error) {
-  if (import.meta.env.DEV) {
-    console.error("Error reading legal markdown:", error);
-  }
-}
 ---
 
 <script>
@@ -123,13 +91,6 @@ try {
       try {
         const accepted = localStorage.getItem("tansu_tos_accepted");
         if (!accepted) {
-          const summaryContent = JSON.parse(
-            document.body.dataset.summaryContent ?? "{}",
-          );
-          const legalMarkdown = JSON.parse(
-            document.body.dataset.legalMarkdown ??
-              '{"fullTerms":"","privacy":""}',
-          );
           await mountModal(
             `terms-modal-container ${MODAL_CLASS}`,
             () => import("components/utils/TermsAcceptanceModal.tsx"),
@@ -139,9 +100,6 @@ try {
                 onClose();
                 window.location.href = "https://tansu.dev";
               },
-              summaryContent,
-              fullTermsMarkdown: legalMarkdown.fullTerms ?? "",
-              privacyMarkdown: legalMarkdown.privacy ?? "",
             }),
             { closeOnOverlayClick: false },
           );
@@ -256,14 +214,7 @@ try {
       }
     </script>
   </head>
-  <body
-    class="font-firacode min-h-screen flex flex-col"
-    data-summary-content={JSON.stringify(summaryContent)}
-    data-legal-markdown={JSON.stringify({
-      fullTerms: fullTermsMarkdown,
-      privacy: privacyMarkdown,
-    })}
-  >
+  <body class="font-firacode min-h-screen flex flex-col">
     <img
       src="/logo-background.png"
       alt="Tansu background decoration"
