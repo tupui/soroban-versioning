@@ -1,4 +1,7 @@
-# Tansu - Decentralized project governance on Stellar
+# Moved to: https://github.com/Consulting-Manao/tansu
+
+
+## Tansu - Decentralized project governance on Stellar
 
 [![SCF Awards](https://img.shields.io/badge/SCF-28,30,41-blue)](https://github.com/your-org/tansu)
 [![Contract on Stellar Testnet Network](https://img.shields.io/badge/network-testnet-purple)](https://stellar.expert/explorer/testnet/contract/CBXKUSLQPVF35FYURR5C42BPYA5UOVDXX2ELKIM2CAJMCI6HXG2BHGZA)
