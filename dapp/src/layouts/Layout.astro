@@ -19,6 +19,8 @@ const { title, page } = Astro.props;
 let summaryContent: Record<string, unknown> = {
   introduction: "Terms of Service",
 };
+let fullTermsMarkdown = "";
+let privacyMarkdown = "";
 try {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const termsPath = join(__dirname, "../../public/legal/terms-summary.json");
@@ -27,6 +29,19 @@ try {
 } catch (error) {
   if (import.meta.env.DEV) {
     console.error("Error reading terms summary:", error);
+  }
+}
+try {
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const legalDir = join(__dirname, "../../../website/static/legal");
+  fullTermsMarkdown = readFileSync(
+    join(legalDir, "terms-of-service.md"),
+    "utf-8",
+  );
+  privacyMarkdown = readFileSync(join(legalDir, "privacy-policy.md"), "utf-8");
+} catch (error) {
+  if (import.meta.env.DEV) {
+    console.error("Error reading legal markdown:", error);
   }
 }
 ---
@@ -103,11 +118,17 @@ try {
     }
 
     const checkTermsAcceptance = async () => {
+      const path = window.location.pathname;
+      if (path === "/terms" || path === "/privacy") return;
       try {
         const accepted = localStorage.getItem("tansu_tos_accepted");
         if (!accepted) {
           const summaryContent = JSON.parse(
             document.body.dataset.summaryContent ?? "{}",
+          );
+          const legalMarkdown = JSON.parse(
+            document.body.dataset.legalMarkdown ??
+              '{"fullTerms":"","privacy":""}',
           );
           await mountModal(
             `terms-modal-container ${MODAL_CLASS}`,
@@ -119,6 +140,8 @@ try {
                 window.location.href = "https://tansu.dev";
               },
               summaryContent,
+              fullTermsMarkdown: legalMarkdown.fullTerms ?? "",
+              privacyMarkdown: legalMarkdown.privacy ?? "",
             }),
             { closeOnOverlayClick: false },
           );
@@ -236,6 +259,10 @@ try {
   <body
     class="font-firacode min-h-screen flex flex-col"
     data-summary-content={JSON.stringify(summaryContent)}
+    data-legal-markdown={JSON.stringify({
+      fullTerms: fullTermsMarkdown,
+      privacy: privacyMarkdown,
+    })}
   >
     <img
       src="/logo-background.png"

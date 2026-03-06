@@ -124,6 +124,38 @@ test.describe("Tansu dApp – Happy-path User Flows", () => {
     await expect(page.locator(".project-modal-container")).not.toBeVisible();
   });
 
+  test("Terms of Service modal – tabs and accept flow", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => localStorage.removeItem("tansu_tos_accepted"));
+    await page.reload();
+    await page.waitForLoadState("networkidle", { timeout: 15000 });
+
+    const termsModal = page.locator(".terms-modal-container");
+    await expect(termsModal).toBeVisible({ timeout: 5000 });
+
+    // Summary tab is default; switch to Full Terms of Service
+    await termsModal.getByRole("button", { name: "Terms of Service" }).click();
+    await page.waitForTimeout(500);
+    // Wait for full terms content to load (fetch)
+    await expect(termsModal.locator(".markdown-body")).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Scroll the modal body to enable Accept
+    await termsModal.evaluate((el) => {
+      const scrollable = el.querySelector(".overflow-auto");
+      if (scrollable) scrollable.scrollTop = scrollable.scrollHeight;
+    });
+    await page.waitForTimeout(200);
+
+    const acceptButton = termsModal.getByRole("button", {
+      name: /accept terms/i,
+    });
+    await expect(acceptButton).toBeEnabled();
+    await acceptButton.click();
+    await expect(termsModal).not.toBeVisible();
+  });
+
   test("Join community modal – adapt to wallet state", async ({ page }) => {
     await page.goto("/");
 
