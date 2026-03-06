@@ -71,7 +71,9 @@ const ProposalTitle: React.FC<Props> = ({
             src="/images/box-with-coin-outside.svg"
             className="w-12 sm:w-16 md:w-auto"
           />
-        ) : proposal?.status == "cancelled" || proposal?.status == "voted" ? (
+        ) : proposal?.status == "approved" ||
+          proposal?.status == "cancelled" ||
+          proposal?.status == "voted" ? (
           <img
             src="/images/box-with-coin-inside.svg"
             className="w-12 sm:w-16 md:w-auto"

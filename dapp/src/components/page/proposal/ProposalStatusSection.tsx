@@ -12,14 +12,24 @@ const ProposalStatusSection: React.FC<Props> = ({ proposal }) => {
     if (!proposal) return {};
     const status = proposal.status;
     const voteStatus = proposal.voteStatus;
+
+    // Executed proposal result comes from on-chain status.
     let voteResult: VoteResultType | undefined = undefined;
-    const { approve, abstain, reject } = voteStatus;
-    if (approve.score > abstain.score + reject.score) {
-      voteResult = VoteResultType.APPROVE;
-    } else if (approve.score + abstain.score < reject.score) {
-      voteResult = VoteResultType.REJECT;
+    if (
+      status === "approved" ||
+      status === "rejected" ||
+      status === "cancelled"
+    ) {
+      voteResult = status as VoteResultType;
     } else {
-      voteResult = VoteResultType.CANCEL;
+      const { approve, abstain, reject } = voteStatus;
+      if (approve.score > abstain.score + reject.score) {
+        voteResult = VoteResultType.APPROVE;
+      } else if (approve.score + abstain.score < reject.score) {
+        voteResult = VoteResultType.REJECT;
+      } else if (approve.score + abstain.score + reject.score > 0) {
+        voteResult = VoteResultType.CANCEL;
+      }
     }
 
     return {
@@ -29,9 +39,7 @@ const ProposalStatusSection: React.FC<Props> = ({ proposal }) => {
           : status == "active"
             ? "active"
             : "finished",
-      voteResult: ["approved", "rejected", "cancelled"].includes(status)
-        ? voteResult
-        : undefined,
+      voteResult,
       endDate: status == "active" ? proposal.endDate : undefined,
     };
   }, [proposal]);
