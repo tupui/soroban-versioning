@@ -86,6 +86,15 @@ function getProjectKey(projectName: string): Buffer {
 
 /**
  * Commit hash to project
+ *
+ * For SOFTWARE projects: commit_hash should be a Git SHA (40 character hex string)
+ * For GENERIC projects: commit_hash can represent:
+ *   - Project milestone identifier
+ *   - Status update hash
+ *   - Version checkpoint
+ *   - Any project-specific update identifier
+ *
+ * The hash is stored on-chain and serves as a verifiable record of project updates.
  */
 export async function commitHash(commit_hash: string): Promise<boolean> {
   const projectId = loadedProjectId();

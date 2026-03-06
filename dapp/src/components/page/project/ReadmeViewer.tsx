@@ -2,9 +2,10 @@ import { useStore } from "@nanostores/react";
 import Markdown from "markdown-to-jsx";
 import { useEffect, useState } from "react";
 import { fetchReadmeContentFromConfigUrl } from "../../../service/GithubService";
-import { loadProjectInfo } from "../../../service/StateService";
+import { loadProjectInfo, loadConfigData } from "../../../service/StateService";
 import { projectInfoLoaded } from "../../../utils/store";
 import DOMPurify from "dompurify";
+import { getIpfsBasicLink } from "../../../utils/ipfsFunctions";
 
 import "github-markdown-css";
 
@@ -15,13 +16,36 @@ const ReadmeViewer = () => {
   const loadReadme = async () => {
     if (isProjectInfoLoaded) {
       const projectInfo = loadProjectInfo();
+      const configData = loadConfigData();
+
       if (projectInfo) {
-        const configUrl = projectInfo.config.url;
-        if (configUrl) {
-          const readmeContent =
-            await fetchReadmeContentFromConfigUrl(configUrl);
-          if (readmeContent) {
-            setReadmeContent(readmeContent);
+        const projectType = configData?.projectType || "SOFTWARE";
+
+        if (projectType === "SOFTWARE") {
+          const configUrl = projectInfo.config.url;
+          if (configUrl) {
+            const readmeContent =
+              await fetchReadmeContentFromConfigUrl(configUrl);
+            if (readmeContent) {
+              setReadmeContent(readmeContent);
+            }
+          }
+        } else {
+          try {
+            const ipfsCid = projectInfo.config.ipfs;
+            if (ipfsCid) {
+              const readmeUrl = `${getIpfsBasicLink(ipfsCid)}/README.md`;
+              const response = await fetch(readmeUrl);
+              if (response.ok) {
+                const content = await response.text();
+                setReadmeContent(content);
+              } else {
+                setReadmeContent("No README available for this project.");
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching README from IPFS:", error);
+            setReadmeContent("Error loading README from IPFS.");
           }
         }
       }

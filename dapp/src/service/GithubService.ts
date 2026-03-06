@@ -12,6 +12,10 @@ async function getCommitHistory(
   page: number = 1,
   perPage: number = 30,
 ): Promise<{ date: string; commits: FormattedCommit[] }[] | null> {
+  if (!username || !repo) {
+    return null;
+  }
+
   try {
     const response = await axios.get(
       `https://api.github.com/repos/${username}/${repo}/commits`,
@@ -85,9 +89,13 @@ async function getLatestCommitData(
   configUrl: string,
   sha: string,
 ): Promise<any> {
+  if (!configUrl) {
+    return undefined;
+  }
+
   const { username, repoName } = getAuthorRepo(configUrl);
   if (!username || !repoName) {
-    // Expected condition (URL may be malformed)
+    // Expected condition (URL may be malformed or not a GitHub URL)
     return undefined;
   }
 
@@ -97,9 +105,13 @@ async function getLatestCommitData(
 async function getLatestCommitHash(
   configUrl: string,
 ): Promise<string | undefined> {
+  if (!configUrl) {
+    return undefined;
+  }
+
   const { username, repoName } = getAuthorRepo(configUrl);
   if (!username || !repoName) {
-    // Expected condition (URL may be malformed)
+    // Expected condition (URL may be malformed or not a GitHub URL)
     return undefined;
   }
 
@@ -133,6 +145,10 @@ async function getLatestCommitHash(
 }
 
 async function fetchReadmeContentFromConfigUrl(configUrl: string) {
+  if (!configUrl) {
+    return undefined;
+  }
+
   try {
     const url = getGithubContentUrlFromReadmeUrl(configUrl);
 

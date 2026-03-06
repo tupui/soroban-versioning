@@ -4,7 +4,7 @@ Cloudflare Worker that generates Storacha delegations for IPFS uploads.
 
 ## API
 
-```json
+```http
 POST /
 {
   "did": "did:key:...",

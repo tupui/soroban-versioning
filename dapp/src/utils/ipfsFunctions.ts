@@ -231,9 +231,8 @@ export const getOutcomeLinkFromIpfs = (cid: string): string =>
   getIpfsUrl(cid, "/outcomes.json");
 
 export const calculateDirectoryCid = async (files: File[]): Promise<string> => {
-  const { createDirectoryEncoderStream, CAREncoderStream } = await import(
-    "ipfs-car"
-  );
+  const { createDirectoryEncoderStream, CAREncoderStream } =
+    await import("ipfs-car");
 
   let rootCID: { toString(): string } | undefined;
 

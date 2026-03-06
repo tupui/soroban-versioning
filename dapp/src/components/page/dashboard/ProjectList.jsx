@@ -226,11 +226,12 @@ const ProjectList = () => {
             thumbnailImageLink: "",
             description: "",
             organizationName: "",
+            projectType: "SOFTWARE",
             officials: {
               githubLink: project.config.url,
             },
             socialLinks: {},
-            authorGithubNames: [],
+            authorHandles: [],
             maintainersAddresses: project.maintainers,
           };
           setConfigInfo(configData);
