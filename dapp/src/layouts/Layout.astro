@@ -33,7 +33,7 @@ try {
 }
 try {
   const __dirname = dirname(fileURLToPath(import.meta.url));
-  const legalDir = join(__dirname, "../../../website/static/legal");
+  const legalDir = join(__dirname, "../../public/legal");
   fullTermsMarkdown = readFileSync(
     join(legalDir, "terms-of-service.md"),
     "utf-8",
